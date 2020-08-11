@@ -1,0 +1,97 @@
+{
+  "openapi": "3.0.2",
+  "info": {
+    "title": "LidoPlayer Server",
+    "description": "LidoPlayer Server",
+    "version": "0.1.0",
+    "license": {
+      "name": "Proprietary"
+    }
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000"
+    },
+    {
+      "url": "https://lidoplayer.innovationcenter.id/api"
+    }
+  ],
+  "paths": {
+    "/login": {
+      "post": {
+        "description": "Login to LidoPlayer dashboard",
+        "tags": [
+          "Session"
+        ],
+        "requestBody": {
+          "content": {
+            "application/x-www-form-urlencoded": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "post_type": {
+                    "type": "string",
+                    "enum": "[POSTER,GUIDANCE,NEWS]"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "sessionKey": "c5e29b29d159c23dc5a16e6aa93f74e10bbb1506cd18b0dd1814f6f713112222",
+                  "expired": "2020-05-09T11:00:52+00:00"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": "Wrong password"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "Custom"
+      }
+    }
+  }
+}

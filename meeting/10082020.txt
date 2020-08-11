@@ -1,0 +1,25 @@
+register :
+
+email
+hp
+password
+
+----------------------------------
+
+HOME
+
+getPost
+getFundType
+login-->customer login
+
+----------------------------------
+
+Calculator
+
+tujuan
+tabel ffs_nav_performance order by (based on year)
+
+---------------------------------
+
+send otp email
+verifikasi email
