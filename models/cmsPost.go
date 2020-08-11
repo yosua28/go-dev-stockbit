@@ -75,7 +75,9 @@ func GetAllCmsPost(c *[]CmsPost, limit uint64, offset uint64, params map[string]
 	var condition string
 	
 	for field, value := range params {
-		whereClause = append(whereClause, "cms_post."+field + " = " + value)
+		if !(field == "orderBy" || field == "orderType"){
+			whereClause = append(whereClause, "cms_post."+field + " = " + value)
+		}
 	} 
 
 	// Combile where clause
@@ -118,7 +120,7 @@ func GetAllCmsPost(c *[]CmsPost, limit uint64, offset uint64, params map[string]
 	return http.StatusOK, nil
 }
 
-func GetCmsPostIn(c *[]CmsPost, value []string, field string) (int, error) {
+func GetCmsPostIn(c *[]CmsPost, value []string, field string,limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
 				cms_post.* FROM 
@@ -126,8 +128,46 @@ func GetCmsPostIn(c *[]CmsPost, value []string, field string) (int, error) {
 				cms_post.post_publish_start <= NOW() AND 
 				cms_post.post_publish_thru > NOW() AND 
 				cms_post.rec_status = 1 `
-	query := query2 + " AND cms_post."+field+" IN(" + inQuery + ") ORDER BY FIELD(cms_post."+field+", " + inQuery + ")"
+	query := query2 + " AND cms_post."+field+" IN(" + inQuery + ")"
+	
+	var present bool
+	var whereClause []string
+	var condition string
+	
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType"){
+			whereClause = append(whereClause, "cms_post."+field + " = " + value)
+		}
+	} 
 
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
 	// Main query
 	log.Println(query)
 	err := db.Db.Select(c, query)

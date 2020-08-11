@@ -11,6 +11,6 @@ func router() *echo.Echo {
 	
 	db.Db = db.DBInit()
 	e := echo.New()
-	e.GET("/posts", controllers.GetCmsPostTypeData).Name = "test"
+	e.GET("/posts/:field/:key", controllers.GetCmsPost).Name = "test"
 	return e
 }
