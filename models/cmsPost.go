@@ -48,10 +48,10 @@ type CmsPostData struct {
 	PostKey                   uint64             `json:"post_key"`
 	PostSubtype               CmsPostSubtypeInfo `json:"post_subtype"`
 	PostTitle                 string             `json:"post_title"`
-	PostSubTitle             *string             `json:"post_sub_title"`
-	PostContent              *string             `json:"post_content"`
-	PostContentAuthor        *string             `json:"post_content_author"`
-	PostContentSources       *string             `json:"post_content_sources"`
+	PostSubTitle              string             `json:"post_sub_title"`
+	PostContent               string             `json:"post_content"`
+	PostContentAuthor         string             `json:"post_content_author"`
+	PostContentSources        string             `json:"post_content_sources"`
 	PostPublishStart          string             `json:"post_publish_start"`
 	PostPublishThru           string             `json:"post_publish_thru"`
 	PostPageAllowed           bool               `json:"post_page_allowed"`
@@ -59,8 +59,22 @@ type CmsPostData struct {
 	PostCommentDisplayed      bool               `json:"post_comment_displayed"`
 	PostFilesAllowed          bool               `json:"post_files_allowed"`
 	PostVideoAllowed          bool               `json:"post_video_allowed"`
-	PostVideoUrl             *string             `json:"post_video_url"`
+	PostVideoUrl              string             `json:"post_video_url"`
 	PostPinned                bool               `json:"post_pinned"`
+	RecImage1                 string             `json:"rec_image1"`
+}
+
+type CmsPostList struct {
+	PostKey                   uint64             `json:"post_key"`
+	PostSubtype               CmsPostSubtypeInfo `json:"post_subtype"`
+	PostTitle                 string             `json:"post_title"`
+	PostSubTitle              string             `json:"post_sub_title"`
+	PostContentAuthor         string             `json:"post_content_author"`
+	PostContentSources        string             `json:"post_content_sources"`
+	PostPublishStart          string             `json:"post_publish_start"`
+	PostPublishThru           string             `json:"post_publish_thru"`
+	PostPinned                bool               `json:"post_pinned"`
+	RecImage1                 string             `json:"rec_image1"`
 }
 
 func GetAllCmsPost(c *[]CmsPost, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -76,7 +90,7 @@ func GetAllCmsPost(c *[]CmsPost, limit uint64, offset uint64, params map[string]
 	
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType"){
-			whereClause = append(whereClause, "cms_post."+field + " = " + value)
+			whereClause = append(whereClause, "cms_post."+field + " = '" + value + "'")
 		}
 	} 
 
@@ -174,6 +188,18 @@ func GetCmsPostIn(c *[]CmsPost, value []string, field string,limit uint64, offse
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetCmsPost(c *CmsPost, key string) (int, error) {
+	query := `SELECT cms_post.* WHERE cms_post.post_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

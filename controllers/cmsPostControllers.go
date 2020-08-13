@@ -2,7 +2,7 @@ package controllers
 
 import (
 	"api/models"
-	_ "api/config"
+	"api/config"
 	"api/lib"
 	"net/http"
 	"strconv"
@@ -11,10 +11,10 @@ import (
 	"github.com/labstack/echo"
 )
 
-func GetCmsPost(c echo.Context) error {
+func GetCmsPostList(c echo.Context) error {
 	var err error
 	var status int
-	Get parameter limit
+	//Get parameter limit
 	limitStr := c.QueryParam("limit")
 	var limit uint64
 	if limitStr != "" {
@@ -113,27 +113,33 @@ func GetCmsPost(c echo.Context) error {
 	if len(posts) < 1 {
 		return lib.CustomError(http.StatusNotFound)
 	}
-	var data models.CmsPostTypeData
+	var responseData models.CmsPostTypeData
 	if field == "type"{
-		data.PostTypeKey = postTypeDB.PostTypeKey
-		data.PostTypeCode = postTypeDB.PostTypeCode
-		data.PostTypeName = postTypeDB.PostTypeName
-		data.PostTypeDesc = postTypeDB.PostTypeDesc
-		data.PostTypeGroup = postTypeDB.PostTypeGroup
+		responseData.PostTypeKey = postTypeDB.PostTypeKey
+		responseData.PostTypeCode = postTypeDB.PostTypeCode
+		responseData.PostTypeName = postTypeDB.PostTypeName
+		responseData.PostTypeDesc = postTypeDB.PostTypeDesc
+		responseData.PostTypeGroup = postTypeDB.PostTypeGroup
 	}
-	var postData []models.CmsPostData
+	var postData []models.CmsPostList
 	for _, post := range posts {
-		var data models.CmsPostData
+		var data models.CmsPostList
 	
 		data.PostKey = post.PostKey
 		data.PostSubtype.PostSubtypeKey = postSubtypeData[post.PostSubtypeKey].PostSubtypeKey
 		data.PostSubtype.PostSubtypeCode = postSubtypeData[post.PostSubtypeKey].PostSubtypeCode
 		data.PostSubtype.PostSubtypeName = postSubtypeData[post.PostSubtypeKey].PostSubtypeName
 		data.PostTitle = post.PostTitle
-		data.PostSubTitle = post.PostSubTitle
-		data.PostContent = post.PostContent
-		data.PostContentAuthor = post.PostContentAuthor
-		data.PostContentSources = post.PostContentSources
+		if post.PostSubTitle != nil {
+			data.PostSubTitle = *post.PostSubTitle
+		}
+		if post.PostContentAuthor != nil {
+			data.PostContentAuthor = *post.PostContentAuthor
+		}
+		
+		if post.PostContentSources != nil {
+			data.PostContentSources = *post.PostContentSources
+		}
 
 		layout := "2006-01-02 15:04:05"
 		newLayout := "02 Jan 2006"
@@ -142,45 +148,106 @@ func GetCmsPost(c echo.Context) error {
 		date, _ = time.Parse(layout, post.PostPublishThru)
 		data.PostPublishThru = date.Format(newLayout)
 
-		if post.PostPageAllowed > 0 {
-			data.PostPageAllowed = true
-		}
-		if post.PostCommentAllowed > 0 {
-			data.PostCommentAllowed = true
-		}
-		if post.PostCommentDisplayed > 0 {
-			data.PostCommentDisplayed = true
-		}
-		if post.PostFilesAllowed > 0 {
-			data.PostFilesAllowed = true
-		}
-		if post.PostVideoAllowed > 0 {
-			data.PostVideoAllowed = true
-		}
-
-		data.PostVideoUrl = post.PostVideoUrl
-
 		if post.PostPinned > 0 {
 			data.PostPinned = true
 		}
 
+		if post.RecImage1 != nil {
+			data.RecImage1 = *post.RecImage1
+		}
+		
 		postData = append(postData, data)
 	}
 
-	data.PostList = postData
+	responseData.PostList = postData
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = data
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 	
 }
 
-func Test(c echo.Context) error {
+func GetCmsPostData(c echo.Context) error {
+	var err error
+	var status int
 
-	return c.JSON(http.StatusOK, "okeh")
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var post models.CmsPost
+	status, err = models.GetCmsPost(&post, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var postSubtype models.CmsPostSubtype
+	status, err = models.GetCmsPostSubtype(&postSubtype, strconv.FormatUint(post.PostSubtypeKey, 10))
+
+	var responseData models.CmsPostData
+
+	responseData.PostKey = post.PostKey
+	responseData.PostSubtype.PostSubtypeKey = postSubtype.PostSubtypeKey
+	responseData.PostSubtype.PostSubtypeCode = postSubtype.PostSubtypeCode
+	responseData.PostSubtype.PostSubtypeName = postSubtype.PostSubtypeName
+	responseData.PostTitle = post.PostTitle
+	if post.PostSubTitle != nil {
+		responseData.PostSubTitle = *post.PostSubTitle
+	}
+	if post.PostContentAuthor != nil {
+		responseData.PostContentAuthor = *post.PostContentAuthor
+	}
+	if post.PostContentSources != nil {
+		responseData.PostContentSources = *post.PostContentSources
+	}
+	if post.PostContent != nil {
+		responseData.PostContent = *post.PostContent
+	}
 	
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	date, _ := time.Parse(layout, post.PostPublishStart)
+	responseData.PostPublishStart = date.Format(newLayout)
+	date, _ = time.Parse(layout, post.PostPublishThru)
+	responseData.PostPublishThru = date.Format(newLayout)
+
+	if post.PostPageAllowed > 0 {
+		responseData.PostPageAllowed = true
+	}
+	if post.PostCommentAllowed > 0 {
+		responseData.PostCommentAllowed = true
+	}
+	if post.PostCommentDisplayed > 0 {
+		responseData.PostCommentDisplayed = true
+	}
+	if post.PostFilesAllowed > 0 {
+		responseData.PostFilesAllowed = true
+	}
+	if post.PostVideoAllowed > 0 {
+		responseData.PostVideoAllowed = true
+	}
+	if post.PostVideoUrl != nil {
+		responseData.PostVideoUrl = *post.PostVideoUrl
+	}
+	if post.PostPinned > 0 {
+		responseData.PostPinned = true
+	}
+	if post.RecImage1 != nil {
+		responseData.RecImage1 = *post.RecImage1
+	}	
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
 }

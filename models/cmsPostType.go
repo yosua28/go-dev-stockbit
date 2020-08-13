@@ -13,7 +13,7 @@ type CmsPostTypeData struct{
 	PostTypeName             *string        `json:"post_type_name,omitempty"`
 	PostTypeDesc             *string        `json:"post_type_desc,omitempty"`
 	PostTypeGroup            *string        `json:"post_type_group,omitempty"`
-	PostList                 []CmsPostData  `json:"post_list"`
+	PostList                 []CmsPostList  `json:"post_list"`
 }
 type CmsPostType struct{
 	PostTypeKey               uint64    `db:"post_type_key"             json:"post_type_key"`
@@ -49,7 +49,7 @@ func GetAllCmsPostType(c *[]CmsPostType, limit uint64, offset uint64, params map
 	var condition string
 
 	for field, value := range params {
-		whereClause = append(whereClause, field + " = " + value)
+		whereClause = append(whereClause, field + " = '" + value + "'")
 	} 
 
 	// Combile where clause

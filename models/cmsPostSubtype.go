@@ -88,3 +88,16 @@ func GetAllCmsPostSubtype(c *[]CmsPostSubtype, limit uint64, offset uint64, para
 
 	return http.StatusOK, nil
 }
+
+
+func GetCmsPostSubtype(c *CmsPostSubtype, key string) (int, error) {
+	query := `SELECT cms_post_subtype.* WHERE cms_post_subtype.post_key_subtype = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
