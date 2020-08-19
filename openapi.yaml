@@ -7,6 +7,7 @@ info:
     name: Proprietary
 servers:
   - url: http://127.0.0.1:8000
+  - url: http://devapi.mncasset.com
 paths:
   /register:
       post:
