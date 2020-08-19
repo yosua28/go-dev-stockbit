@@ -6,7 +6,7 @@ info:
   license:
     name: Proprietary
 servers:
-  - url: http://localhost:8000
+  - url: http://127.0.0.1:8000
 paths:
   /register:
       post:
@@ -30,11 +30,22 @@ paths:
                   - password
                   - phone
         responses:
-          '201':
+          '200':
             description: Success register
             content:
               text/plain:
-                example: Success register
+                example: 
+                  {
+                    "status": {
+                        "code": 200,
+                        "message_server": "OK",
+                        "message_client": "OK"
+                    },
+                    "data": {
+                        "ulogin_email": "riotesting92@gmail.com",
+                        "ulogin_mobileno": "08388644366"
+                    }
+                  }
           '400':
             description: Bad request
             content:
@@ -45,6 +56,134 @@ paths:
             content:
               text/plain:
                 example: Error get email
+  /verifyemail:
+    post:
+      description: Verify email of LidoPlayer account
+      tags:
+        - Session
+      requestBody:
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+              required:
+                - token
+      responses:
+        '201':
+          description: Success
+          content:
+            text/plain:
+              example: Success verify email
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              example: Missing required parameter
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              example: Token is expired
+        '404':
+          description: Not found
+          content:
+            text/plain:
+              example: Token not found
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              example: Error get email
+  /verifyotp:
+    post:
+      description: Verify otp of MNCduit account
+      tags:
+        - Session
+      requestBody:
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  otp:
+                    type: string
+                required:
+                  - otp
+      responses:
+        '201':
+          description: Success
+          content:
+            text/plain:
+              example: Success verify mobile phone
+        '400':
+          description: Bad request
+          content:
+            text/plain:
+              example: Missing required parameter
+        '403':
+          description: Forbidden
+          content:
+            text/plain:
+              example: OTP is expired
+        '404':
+          description: Not found
+          content:
+            text/plain:
+              example: OTP not found
+        '500':
+          description: Internal server error
+          content:
+            text/plain:
+              example: Error get email
+  /login:
+      post:
+        description: Login MNCDuit
+        tags:
+          - Session
+        requestBody:
+          content:
+            multipart/form-data:
+              schema:
+                type: object
+                properties:
+                  email:
+                    type: string
+                  password:
+                    type: string
+                required:
+                  - email
+                  - password
+        responses:
+          '200':
+            description: Success register
+            content:
+              text/plain:
+                example: 
+                  {
+                    "status": {
+                        "code": 200,
+                        "message_server": "OK",
+                        "message_client": "OK"
+                    },
+                    "data": {
+                        "session_id": "17hhoIH8sdUugW92bJBfpNaldkNLsd",
+                        "email": "yogasutrisna@gmail.com",
+                        "expired": "2006-01-02T15:04:05+00:00"
+                    }
+                  }
+          '400':
+            description: Bad request
+            content:
+              text/plain:
+                example: Missing required parameter
+          '500':
+            description: Internal server error
+            content:
+              text/plain:
+                example: Login failed
   /posts/{field}/{key}:
     get:
       description: Get Post
@@ -133,8 +272,8 @@ paths:
                       "post_content": "Investasi masa kini semakin mudah. MNC Asset Mnanagement menyediakan kemudahan untuk investasi bagi nasabah retail mulai dari 100.000",
                       "post_content_author": null,
                       "post_content_sources": null,
-                      "post_publish_start": "31 Dec 2050",
-                      "post_publish_thru": "",
+                      "post_publish_start": "31 Dec 2020",
+                      "post_publish_thru": "31 Dec 2021",
                       "post_page_allowed": false,
                       "post_comment_allowed": false,
                       "post_comment_displayed": false,
@@ -211,39 +350,44 @@ paths:
               example:
                 {
                   "status": {
-                    "code": 200,
-                    "message_server": "OK",
-                    "message_client": "OK"
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
                   },
-                  "data": {
-                    "post_type_key": 3,
-                    "post_type_code": "NEWS",
-                    "post_type_name": "News",
-                    "post_type_desc": "Berbagai berita-berita",
-                    "post_type_group": "HOME",
-                    "post_list": [{
-                      "post_key": 2,
-                      "post_subtype": {
-                        "post_subtype_key": 1,
-                        "post_subtype_code": "GENERAL",
-                        "post_subtype_name": "Category General"
+                  "data": [
+                      {
+                          "fund_type_key": 1,
+                          "fund_type_code": "MM",
+                          "fund_type_name": "Money Market",
+                          "fund_type_desc": "Money Market",
+                          "rec_order": 0,
+                          "rec_image1": ""
                       },
-                      "post_title": "Investasi Jangan Hanya Mimpi",
-                      "post_sub_title": "Wujudkan impian anda dengan mulai berinvestasi sebesar 100.00",
-                      "post_content": "Investasi masa kini semakin mudah. MNC Asset Mnanagement menyediakan kemudahan untuk investasi bagi nasabah retail mulai dari 100.000",
-                      "post_content_author": null,
-                      "post_content_sources": null,
-                      "post_publish_start": "31 Dec 2050",
-                      "post_publish_thru": "",
-                      "post_page_allowed": false,
-                      "post_comment_allowed": false,
-                      "post_comment_displayed": false,
-                      "post_files_allowed": false,
-                      "post_video_allowed": false,
-                      "post_video_url": null,
-                      "post_pinned": false
-                    }]
-                  }
+                      {
+                          "fund_type_key": 2,
+                          "fund_type_code": "FI",
+                          "fund_type_name": "Fix Income",
+                          "fund_type_desc": "Fix Income",
+                          "rec_order": 1,
+                          "rec_image1": ""
+                      },
+                      {
+                          "fund_type_key": 3,
+                          "fund_type_code": "BF",
+                          "fund_type_name": "Balance Fund",
+                          "fund_type_desc": "Balance Fund",
+                          "rec_order": 2,
+                          "rec_image1": ""
+                      },
+                      {
+                          "fund_type_key": 4,
+                          "fund_type_code": "EQ",
+                          "fund_type_name": "Ekuitas",
+                          "fund_type_desc": "Ekuitas",
+                          "rec_order": 3,
+                          "rec_image1": ""
+                      }
+                  ]
                 }
         '400':
           description: Bad request

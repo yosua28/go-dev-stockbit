@@ -9,39 +9,25 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type ScUserLoginRegister struct {
-	UloginEmail             string    `json:"ulogin_email"`
-	UloginMobileno          string    `json:"ulogin_mobileno"`
+type ScLoginSessionInfo struct {
+	SessionID              string    `json:"session_id"`
+	Email                  string    `json:"session_id"`
+	Expired                string    `json:"expired"`
 }
 
-type ScUserLogin struct {
+type ScLoginSession struct {
+	LoginSessionKey         uint64    `db:"login_session_key"         json:"login_session_key"`
+	SessionID              *string    `db:"session_id"                json:"session_id"`
+	LoginDate               string    `db:"login_date"                json:"login_date"`
+	LogoutDate             *string    `db:"logout_date"               json:"logout_date"`
 	UserLoginKey            uint64    `db:"user_login_key"            json:"user_login_key"`
-	UserCategoryKey         uint64    `db:"user_category_key"         json:"user_category_key"`
-	UserDeptKey            *uint64    `db:"user_dept_key"             json:"user_dept_key"`
-	UserDeptKey1           *uint64    `db:"user_dept_key1"            json:"user_dept_key1"`
-	UloginName              string    `db:"ulogin_name"               json:"ulogin_name"`
-	UloginFullName          string    `db:"ulogin_full_name"          json:"ulogin_full_name"`
-	UloginPassword          string    `db:"ulogin_password"           json:"ulogin_password"`
-	UloginEmail             string    `db:"ulogin_email"              json:"ulogin_email"`
-	VerifiedEmail          *uint8     `db:"verified_email"            json:"verified_email"`
-	LastVerifiedEmail      *string    `db:"last_verified_email"       json:"last_verified_email"`
-	StringToken            *string    `db:"string_token"              json:"string_token"`
-	TokenExpired           *string    `db:"token_expired"             json:"token_expired"`
-	UloginPin              *string    `db:"ulogin_pin"                json:"ulogin_pin"`
-	LastChangedPin         *string    `db:"last_changed_pin"          json:"last_changed_pin"`
-	UloginMobileno         *string    `db:"ulogin_mobileno"           json:"ulogin_mobileno"`
-	LastVerifiedMobileno   *string    `db:"last_verified_mobileno"    json:"last_verified_mobileno"`
-	VerifiedMobileno        uint8     `db:"verified_mobileno"         json:"verified_mobileno"`
-	UloginMustChangepwd     string    `db:"ulogin_must_changepwd"     json:"ulogin_must_changepwd"`
-	LastPasswordChanged    *string    `db:"last_password_changed"     json:"last_password_changed"`
-	OtpNumber              *string    `db:"otp_number"                json:"otp_number"`
-	OtpNumberExpired       *string    `db:"otp_number_expired"        json:"otp_number_expired"`
-	UloginLocked            uint8     `db:"ulogin_locked"             json:"ulogin_locked"`
-	UloginEnabled           uint8     `db:"ulogin_enabled"            json:"ulogin_enabled"`
-	UloginFailedCount       uint64    `db:"ulogin_failed_count"       json:"ulogin_failed_count"`
-	LastAccess             *string    `db:"last_access"               json:"last_access"`
-	AcceptLoginTnc          uint8     `db:"accept_login_tnc"          json:"accept_login_tnc"`
-	AllowedSharingLogin     uint8     `db:"allowed_sharing_login"     json:"allowed_sharing_login"`
+	TerminalName           *string    `db:"terminal_name"             json:"terminal_name"`
+	DeviceModel            *string    `db:"device_model"              json:"device_model"`
+	WorkstationName        *string    `db:"workstation_name"          json:"workstation_name"`
+	WorkstationIpaddress   *string    `db:"workstation_ipaddress"     json:"workstation_ipaddress"`
+	ClientAgent            *string    `db:"client_agent"              json:"client_agent"`
+	AccessLocation         *string    `db:"access_location"           json:"access_location"`
+	AccessNotes            *string    `db:"access_notes"              json:"access_notes"`
 	RecOrder               *uint64    `db:"rec_order"                 json:"rec_order"`
 	RecStatus               uint8     `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate         *string    `db:"rec_created_date"          json:"rec_created_date"`
@@ -61,17 +47,17 @@ type ScUserLogin struct {
 	RecAttributeID3        *string    `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
-func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+func GetAllScLoginSession(c *[]ScLoginSession, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
-              sc_user_login.* FROM 
-			  sc_user_login`
+              sc_login_session.* FROM 
+			  sc_login_session`
 	var present bool
 	var whereClause []string
 	var condition string
 	
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType"){
-			whereClause = append(whereClause, "sc_user_login."+field + " = '" + value + "'")
+			whereClause = append(whereClause, "sc_login_session."+field + " = '" + value + "'")
 		}
 	} 
 
@@ -115,8 +101,8 @@ func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map
 	return http.StatusOK, nil
 }
 
-func GetScUserLogin(c *ScUserLogin, email string) (int, error) {
-	query := `SELECT sc_user_login.* WHERE sc_user_login.ulogin_email = ` + email
+func GetScLoginSession(c *ScLoginSession, key string) (int, error) {
+	query := `SELECT sc_login_session.* WHERE sc_login_session.user_login_key = ` + key
 	log.Info(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -127,8 +113,8 @@ func GetScUserLogin(c *ScUserLogin, email string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CreateScUserLogin(params map[string]string) (int, error){
-	query := "INSERT INTO sc_user_login"
+func CreateScLoginSession(params map[string]string) (int, error){
+	query := "INSERT INTO sc_login_session"
 		// Get params
 		var fields, values string
 		var bindvars []interface{}
@@ -158,12 +144,12 @@ func CreateScUserLogin(params map[string]string) (int, error){
 		return http.StatusOK, nil
 }
 
-func UpdateScUserLogin(params map[string]string) (int, error) {
-	query := "UPDATE sc_user_login SET "
+func UpdateScLoginSession(params map[string]string) (int, error) {
+	query := "UPDATE sc_login_session SET "
 	// Get params
 	i := 0
 	for key, value := range params {
-		if key != "user_login_key" {
+		if key != "login_session_key" {
 
 			query += key + " = '" + value + "'"
 			

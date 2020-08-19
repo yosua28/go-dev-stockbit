@@ -25,6 +25,7 @@ type CmsPost struct{
 	PostVideoAllowed          uint8     `db:"post_video_allowed"        json:"post_video_allowed"`
 	PostVideoUrl             *string    `db:"post_video_url"            json:"post_video_url"`
 	PostPinned                uint8     `db:"post_pinned"               json:"post_pinned"`
+	PostOwnerKey             *uint64    `db:"post_owner_key"            json:"post_owner_key"`
 	RecOrder                 *uint64    `db:"rec_order"                 json:"rec_order"`
 	RecStatus                 uint8     `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate           *string    `db:"rec_created_date"          json:"rec_created_date"`
@@ -62,6 +63,7 @@ type CmsPostData struct {
 	PostVideoUrl              string             `json:"post_video_url"`
 	PostPinned                bool               `json:"post_pinned"`
 	RecImage1                 string             `json:"rec_image1"`
+	RecImage2                 string             `json:"rec_image2"`
 }
 
 type CmsPostList struct {
@@ -194,7 +196,7 @@ func GetCmsPostIn(c *[]CmsPost, value []string, field string,limit uint64, offse
 }
 
 func GetCmsPost(c *CmsPost, key string) (int, error) {
-	query := `SELECT cms_post.* WHERE cms_post.post_key = ` + key
+	query := `SELECT cms_post.* FROM cms_post WHERE cms_post.post_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

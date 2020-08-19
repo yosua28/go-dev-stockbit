@@ -18,6 +18,7 @@ type CmsPostSubtype struct{
 	PostTypeKey               uint64    `db:"post_type_key"             json:"post_type_key"`
 	PostSubtypeCode           string    `db:"post_subtype_code"         json:"post_subtype_code"`
 	PostSubtypeName          *string    `db:"post_subtype_name"         json:"post_subtype_name"`
+	PostSubtypeDesc          *string    `db:"post_subtype_desc"         json:"post_subtype_desc"`
 	RecOrder                 *uint64    `db:"rec_order"                 json:"rec_order"`
 	RecStatus                 uint8     `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate           *string    `db:"rec_created_date"          json:"rec_created_date"`

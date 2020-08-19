@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"time"
 
+	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
 )
 
@@ -24,6 +25,7 @@ func GetCmsPostList(c echo.Context) error {
 				limit = config.LimitQuery
 			}
 		} else {
+			log.Error("Limit should be number")
 			return lib.CustomError(http.StatusBadRequest)
 		}
 	} else {
@@ -39,6 +41,7 @@ func GetCmsPostList(c echo.Context) error {
 				page = 1
 			}
 		} else {
+			log.Error("Page should be number")
 			return lib.CustomError(http.StatusBadRequest)
 		}
 	} else {
@@ -54,6 +57,7 @@ func GetCmsPostList(c echo.Context) error {
 	if noLimitStr != "" {
 		noLimit, err = strconv.ParseBool(noLimitStr)
 		if err != nil {
+			log.Error("Nolimit parameter should be true/false")
 			return lib.CustomError(http.StatusBadRequest)
 		}
 	} else {
@@ -83,7 +87,12 @@ func GetCmsPostList(c echo.Context) error {
 	
 	var postSubtypeDB []models.CmsPostSubtype
 	status, err = models.GetAllCmsPostSubtype(&postSubtypeDB, 0, 0, paramType, true)
-
+	if err != nil {
+		return lib.CustomError(status, "Error get data", "Failed get data")
+	}
+	if len(postSubtypeDB) < 1 {
+		return lib.CustomError(http.StatusNotFound, "Post not found", "Post not found")
+	}
 	postSubtypeData := make(map[uint64]models.CmsPostSubtype)
 	var postSubtypeIDs []string
 	for _, postSubtyp := range postSubtypeDB {
@@ -106,13 +115,14 @@ func GetCmsPostList(c echo.Context) error {
 		params["orderType"] = orderType
 	}
 	var posts []models.CmsPost
-	status, err = models.GetCmsPostIn(&posts,  postSubtypeIDs, "post_subtype_key", limit, offset, params, noLimit)
+	status, err = models.GetCmsPostIn(&posts, postSubtypeIDs, "post_subtype_key", limit, offset, params, noLimit)
 	if err != nil {
 		return lib.CustomError(status)
 	}
 	if len(posts) < 1 {
 		return lib.CustomError(http.StatusNotFound)
 	}
+	
 	var responseData models.CmsPostTypeData
 	if field == "type"{
 		responseData.PostTypeKey = postTypeDB.PostTypeKey
@@ -155,7 +165,6 @@ func GetCmsPostList(c echo.Context) error {
 		if post.RecImage1 != nil {
 			data.RecImage1 = *post.RecImage1
 		}
-		
 		postData = append(postData, data)
 	}
 
@@ -166,9 +175,8 @@ func GetCmsPostList(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-
-	return c.JSON(http.StatusOK, response)
 	
+	return c.JSON(http.StatusOK, response)
 }
 
 func GetCmsPostData(c echo.Context) error {
@@ -241,6 +249,9 @@ func GetCmsPostData(c echo.Context) error {
 	}
 	if post.RecImage1 != nil {
 		responseData.RecImage1 = *post.RecImage1
+	}	
+	if post.RecImage2 != nil {
+		responseData.RecImage2 = *post.RecImage2
 	}	
 
 	var response lib.Response
