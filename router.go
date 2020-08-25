@@ -32,7 +32,8 @@ func router() *echo.Echo {
 	e.POST("/register", controllers.Register).Name = "Register"
 	e.POST("/verifyemail", controllers.VerifyEmail).Name = "VerifyEmail"
 	e.POST("/verifyotp", controllers.VerifyOtp).Name = "VerifyOtp"
-	e.POST("/login", controllers.VerifyOtp).Name = "Login"
+	e.POST("/login", controllers.Login).Name = "Login"
+	e.POST("/resendverification", controllers.ResendVerification).Name = "ResendVerification"
 	return e
 }
 

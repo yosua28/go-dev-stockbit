@@ -60,8 +60,8 @@ func Register(c echo.Context) error {
 	params["ulogin_email"] = email 
 	status, err = models.GetAllScUserLogin(&user, 0, 0, params, true)
 	if err != nil {
-		log.Error("Error get " + email)
-		return lib.CustomError(status, "Error get email", "Error get email")
+		log.Error("Error get email " + email)
+		return lib.CustomError(status, err.Error(), "Error get email")
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
@@ -76,12 +76,12 @@ func Register(c echo.Context) error {
 	}
 
 	// Encrypt password
-	encryptedPasswordByte := sha256.Sum256([]byte(password))
-	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	// encryptedPasswordByte := sha256.Sum256([]byte(password))
+	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 
 	// Set expired for token
 	date := time.Now().AddDate(0, 0, 1)
-	dateLayout := "2006-01-02T15:04:05+00:00"
+	dateLayout := "2006-01-02 15:04:05"
 	expired := date.Format(dateLayout)
 
 	// Generate verify key
@@ -89,18 +89,32 @@ func Register(c echo.Context) error {
 	verifyKey := hex.EncodeToString(verifyKeyByte[:])
 
 	// Input to database
-	params["ulogin_email"] = email 
-	params["ulogin_password"] = encryptedPassword 
-	params["ulogin_mobileno"] = phone 
-	params["user_category_key"] = "1" 
-	params["string_token"] = verifyKey 
-	params["token_expired"] = expired 
+	// params["ulogin_email"] = email 
+	// params["ulogin_name"] = email 
+	// params["ulogin_must_changepwd"] = "0" 
+	// params["user_category_key"] = "1" 
+	// params["user_dept_key"] = "1" 
+	// params["last_password_changed"] = time.Now().Format(dateLayout) 
+	// params["ulogin_password"] = encryptedPassword 
+	// params["verified_email"] = "0" 
+	// params["verified_mobileno"] = "0" 
+	// params["ulogin_mobileno"] = phone 
+	// params["ulogin_enabled"] = "1" 
+	// params["ulogin_locked"] = "0" 
+	// params["ulogin_failed_count"] = "0" 
+	// params["user_category_key"] = "1" 
+	// params["last_access"] = time.Now().Format(dateLayout) 
+	// params["accept_login_tnc"] = "1" 
+	// params["allowed_sharing_login"] = "1" 
+	// params["string_token"] = verifyKey 
+	// params["token_expired"] = expired 
+	// params["rec_status"] = "1" 
 
-	status, err = models.CreateScUserLogin(params)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
-	}
+	// status, err = models.CreateScUserLogin(params)
+	// if err != nil {
+	// 	log.Error(err.Error())
+	// 	return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	// }
 
 	// Send email
 	mailer := gomail.NewMessage()
@@ -159,7 +173,7 @@ func VerifyEmail(c echo.Context) error {
 	log.Info("Found account with email " + accountData.UloginEmail)
 	
 	// Check if token is expired
-	dateLayout := "2006-01-02T15:04:05+00:00"
+	dateLayout := "2006-01-02 15:04:05"
 	expired, err := time.Parse(dateLayout, *accountData.TokenExpired)
 	if err != nil {
 		log.Error("Error parsing data")
@@ -227,7 +241,7 @@ func VerifyOtp(c echo.Context) error {
 	log.Info("Found account with email " + accountData.UloginEmail)
 	
 	// Check if token is expired
-	dateLayout := "2006-01-02T15:04:05+00:00"
+	dateLayout := "2006-01-02 15:04:05"
 	expired, err := time.Parse(dateLayout, *accountData.OtpNumberExpired)
 	if err != nil {
 		log.Error("Error parsing data")
@@ -306,7 +320,7 @@ func Login(c echo.Context) error {
 	uuid := uuid.Must(uuid.NewV4(), nil)
 	uuidString := uuid.String()
 	sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
-	dateLayout := "2006-01-02T15:04:05+00:00"
+	dateLayout := "2006-01-02 15:04:05"
 	expired := date.Add(time.Second * time.Duration(config.SessionExpired)).Format(dateLayout)
 
 	// Check previous login
@@ -315,6 +329,8 @@ func Login(c echo.Context) error {
 	paramsSession["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	status, err = models.GetAllScLoginSession(&loginSession, 0, 0, params, true)
 	paramsSession["session_id"] = sessionKey
+	paramsSession["login_date"] = time.Now().Format(dateLayout)
+	paramsSession["rec_status"] = "1"
 	if err == nil && len(loginSession) > 0 {
 		log.Info("Active session for previous login, overwrite whit new session")
 		if len(loginSession) > 1 {
@@ -348,6 +364,113 @@ func Login(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = data
+	log.Info(response)
+	return c.JSON(http.StatusOK, response)
+}
+
+func ResendVerification(c echo.Context) error {
+	var err error
+	var status int
+	// Check parameters
+	email := c.FormValue("email")
+	if email == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	params := make(map[string]string)
+	params["ulogin_email"] = email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status, err.Error(), "Failed get email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("No matching email " + email)
+		return lib.CustomError(http.StatusBadRequest,"Email not registered","Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info("Found account with email " + accountData.UloginEmail)
+
+	dateLayout := "2006-01-02 15:04:05"
+	if accountData.VerifiedEmail != nil && *accountData.VerifiedEmail == 1 {
+		date := time.Now().Add(1*time.Minute)
+		expiredOTP := date.Format(dateLayout)
+	
+		// Generate otp
+		otp := lib.EncodeToString(6)
+	
+		params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+		params["otp_number"] = otp
+		params["otp_number_expired"] = expiredOTP
+		params["verified_email"] = "1"
+		params["last_verified_email"] = time.Now().Format(dateLayout)
+		params["string_token"] = ""
+	
+		_ ,err = models.UpdateScUserLogin(params)
+		if err != nil {
+			log.Error("Error update user data")
+			return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
+		}
+		
+		// Send otp
+		//
+		//
+		//
+		//
+		//
+		
+		log.Info("Success send otp")
+	} else {
+		// Set expired for token
+		date := time.Now().AddDate(0, 0, 1)
+		expired := date.Format(dateLayout)
+
+		// Generate verify key
+		verifyKeyByte := sha256.Sum256([]byte(email + "_" + expired))
+		verifyKey := hex.EncodeToString(verifyKeyByte[:])
+
+		// Update token
+		params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+		params["string_token"] = verifyKey 
+		params["token_expired"] = expired 
+
+		status, err = models.UpdateScUserLogin(params)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed update token")
+		}
+
+		// Send email
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", email)
+		mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
+		mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://api.mncduit.id/emailverification?key="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
+
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error(err)
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+		}
+		log.Info("Email sent")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 }
 

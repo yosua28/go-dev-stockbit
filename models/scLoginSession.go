@@ -11,7 +11,7 @@ import (
 
 type ScLoginSessionInfo struct {
 	SessionID              string    `json:"session_id"`
-	Email                  string    `json:"session_id"`
+	Email                  string    `json:"email"`
 	Expired                string    `json:"expired"`
 }
 

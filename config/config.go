@@ -16,10 +16,14 @@ var DBName string = "mam_core"
 var DBHost string = "localhost:3306"
 
 // Email
-var EmailSMTPHost string = "smtp.gmail.com"
-var EmailSMTPPort uint64 = 587
-var EmailFrom string = "gameraja82@gmail.com"
-var EmailFromPassword string = "kmzway87aa"
+// var EmailSMTPHost string = "smtp.gmail.com"
+// var EmailSMTPPort uint64 = 587
+// var EmailFrom string = "gameraja82@gmail.com"
+// var EmailFromPassword string = "kmzway87aa"
+var EmailSMTPHost string = "172.17.20.124"
+var EmailSMTPPort uint64 = 25
+var EmailFrom string = "cso.mam@mncgroup.com"
+var EmailFromPassword string = "Welcome2MNCAM!"
 
 // Session
 var SessionExpired int64 = 10000
