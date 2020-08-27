@@ -121,7 +121,7 @@ func Register(c echo.Context) error {
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
-	mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://api.mncduit.id/emailverification?key="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
+	mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/api/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
 
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
