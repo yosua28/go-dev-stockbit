@@ -76,8 +76,8 @@ func Register(c echo.Context) error {
 	}
 
 	// Encrypt password
-	// encryptedPasswordByte := sha256.Sum256([]byte(password))
-	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	encryptedPasswordByte := sha256.Sum256([]byte(password))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 
 	// Set expired for token
 	date := time.Now().AddDate(0, 0, 1)
@@ -89,32 +89,32 @@ func Register(c echo.Context) error {
 	verifyKey := hex.EncodeToString(verifyKeyByte[:])
 
 	// Input to database
-	// params["ulogin_email"] = email 
-	// params["ulogin_name"] = email 
-	// params["ulogin_must_changepwd"] = "0" 
-	// params["user_category_key"] = "1" 
-	// params["user_dept_key"] = "1" 
-	// params["last_password_changed"] = time.Now().Format(dateLayout) 
-	// params["ulogin_password"] = encryptedPassword 
-	// params["verified_email"] = "0" 
-	// params["verified_mobileno"] = "0" 
-	// params["ulogin_mobileno"] = phone 
-	// params["ulogin_enabled"] = "1" 
-	// params["ulogin_locked"] = "0" 
-	// params["ulogin_failed_count"] = "0" 
-	// params["user_category_key"] = "1" 
-	// params["last_access"] = time.Now().Format(dateLayout) 
-	// params["accept_login_tnc"] = "1" 
-	// params["allowed_sharing_login"] = "1" 
-	// params["string_token"] = verifyKey 
-	// params["token_expired"] = expired 
-	// params["rec_status"] = "1" 
+	params["ulogin_email"] = email 
+	params["ulogin_name"] = email 
+	params["ulogin_must_changepwd"] = "0" 
+	params["user_category_key"] = "1" 
+	params["user_dept_key"] = "1" 
+	params["last_password_changed"] = time.Now().Format(dateLayout) 
+	params["ulogin_password"] = encryptedPassword 
+	params["verified_email"] = "0" 
+	params["verified_mobileno"] = "0" 
+	params["ulogin_mobileno"] = phone 
+	params["ulogin_enabled"] = "1" 
+	params["ulogin_locked"] = "0" 
+	params["ulogin_failed_count"] = "0" 
+	params["user_category_key"] = "1" 
+	params["last_access"] = time.Now().Format(dateLayout) 
+	params["accept_login_tnc"] = "1" 
+	params["allowed_sharing_login"] = "1" 
+	params["string_token"] = verifyKey 
+	params["token_expired"] = expired 
+	params["rec_status"] = "1" 
 
-	// status, err = models.CreateScUserLogin(params)
-	// if err != nil {
-	// 	log.Error(err.Error())
-	// 	return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
-	// }
+	status, err = models.CreateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	}
 
 	// Send email
 	mailer := gomail.NewMessage()
