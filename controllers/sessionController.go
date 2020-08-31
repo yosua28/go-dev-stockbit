@@ -91,6 +91,7 @@ func Register(c echo.Context) error {
 	// Input to database
 	params["ulogin_email"] = email 
 	params["ulogin_name"] = email 
+	params["ulogin_full_name"] = email 
 	params["ulogin_must_changepwd"] = "0" 
 	params["user_category_key"] = "1" 
 	params["user_dept_key"] = "1" 
