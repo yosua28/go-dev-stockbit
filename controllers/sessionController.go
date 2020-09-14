@@ -8,7 +8,7 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/hex"
-	"encoding/base64"
+	_ "encoding/base64"
 	"time"
 	"unicode"
 	"strconv"
@@ -17,6 +17,7 @@ import (
 	"github.com/badoux/checkmail"
 	log "github.com/sirupsen/logrus"
 	uuid "github.com/satori/go.uuid"
+	jwt "github.com/dgrijalva/jwt-go"
 	"gopkg.in/gomail.v2"
 )
 
@@ -320,7 +321,20 @@ func Login(c echo.Context) error {
 	date := time.Now()
 	uuid := uuid.Must(uuid.NewV4(), nil)
 	uuidString := uuid.String()
-	sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
+	
+	atClaims := jwt.MapClaims{}
+	atClaims["authorized"] = true
+	atClaims["user_id"] = accountData.UserLoginKey
+	atClaims["uuid"] = uuidString
+	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, err := at.SignedString([]byte(config.Secret))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusUnauthorized,err.Error(),"Login failed")
+	}
+
+	// sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
 	dateLayout := "2006-01-02 15:04:05"
 	expired := date.Add(time.Second * time.Duration(config.SessionExpired)).Format(dateLayout)
 
@@ -329,7 +343,7 @@ func Login(c echo.Context) error {
 	paramsSession := make(map[string]string)
 	paramsSession["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	status, err = models.GetAllScLoginSession(&loginSession, 0, 0, params, true)
-	paramsSession["session_id"] = sessionKey
+	paramsSession["session_id"] = uuidString
 	paramsSession["login_date"] = time.Now().Format(dateLayout)
 	paramsSession["rec_status"] = "1"
 	if err == nil && len(loginSession) > 0 {
@@ -355,7 +369,7 @@ func Login(c echo.Context) error {
 	log.Info("Success login")
 
 	var data models.ScLoginSessionInfo
-	data.SessionID = sessionKey
+	data.SessionID = token
 	data.Expired = expired
 	data.Email = email
 	log.Info(data)

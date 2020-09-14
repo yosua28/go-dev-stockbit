@@ -20,7 +20,7 @@ type ScUserLogin struct {
 	UserDeptKey            *uint64    `db:"user_dept_key"             json:"user_dept_key"`
 	UserDeptKey1           *uint64    `db:"user_dept_key1"            json:"user_dept_key1"`
 	UloginName              string    `db:"ulogin_name"               json:"ulogin_name"`
-	UloginFullName         *string    `db:"ulogin_full_name"          json:"ulogin_full_name"`
+	UloginFullName          string    `db:"ulogin_full_name"          json:"ulogin_full_name"`
 	UloginPassword          string    `db:"ulogin_password"           json:"ulogin_password"`
 	UloginEmail             string    `db:"ulogin_email"              json:"ulogin_email"`
 	VerifiedEmail          *uint8     `db:"verified_email"            json:"verified_email"`

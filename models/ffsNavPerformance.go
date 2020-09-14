@@ -5,34 +5,50 @@ import (
 	"log"
 	"strconv"
 	"net/http"
+	"strings"
 )
 
+type FfsNavPerformanceInfo struct {
+	NavDate       string      `json:"nav_date,omitempty"`
+	D1            string      `json:"1d,omitempty"`
+	MTD           string      `json:"mtd,omitempty"`
+	M1            string      `json:"1m,omitempty"`
+	M3            string      `json:"3m,omitempty"`
+	M6            string      `json:"6m,omitempty"`
+	Y1            string      `json:"1y,omitempty"`
+	Y3            string      `json:"3y,omitempty"`
+	Y5            string      `json:"5y,omitempty"`
+	YTD           string      `json:"ytd,omitempty"`
+	CAGR          string      `json:"cagr,omitempty"`
+	ALL           string      `json:"all,omitempty"`
+}
+
 type FfsNavPerformance struct {
-	NavPerformanceKey    uint64    `db:"nav_performance_key"   json:"nav_performance_key"`
+	NavPerformKey        uint64    `db:"nav_perform_key"       json:"nav_perform_key"`
 	ProductKey           uint64    `db:"product_key"           json:"product_key"`
 	PeriodeKey           uint64    `db:"periode_key"           json:"periode_key"`
 	NavDate              string    `db:"nav_date"              json:"nav_date"`
-	NavD0                float32   `db:"nav_d0"                json:"nav_d0"`
-	NavD1                float32   `db:"nav_d1"                json:"nav_d1"`
-	NavM0                float32   `db:"nav_m0"                json:"nav_m0"`
-	NavM1                float32   `db:"nav_m1"                json:"nav_m1"`
-	NavM3                float32   `db:"nav_m3"                json:"nav_m3"`
-	NavM6                float32   `db:"nav_m6"                json:"nav_m6"`
-	NavYtd               float32   `db:"nav_ytd"               json:"nav_ytd"`
-	Navy1                float32   `db:"nav_y1"                json:"nav_y1"`
-	Navy3                float32   `db:"nav_y3"                json:"nav_y3"`
-	Navy5                float32   `db:"nav_y5"                json:"nav_y5"`
-	PerformD1            float32   `db:"perform_d1"            json:"perform_d1"`
-	PerformMtd           float32   `db:"perform_mtd"           json:"perform_mtd"`
-	PerformM1            float32   `db:"perform_m1"            json:"perform_m1"`
-	PerformM3            float32   `db:"perform_m3"            json:"perform_m3"`
-	PerformM6            float32   `db:"perform_m6"            json:"perform_m6"`
-	PerformYtd           float32   `db:"perform_ytd"           json:"perform_ytd"`
-	PerformY1            float32   `db:"perform_y1"            json:"perform_y1"`
-	PerformY3            float32   `db:"perform_y3"            json:"perform_y3"`
-	PerformY5            float32   `db:"perform_y5"            json:"perform_y5"`
-	PerformCagr          float32   `db:"perform_cagr"          json:"perform_cagr"`
-	PerformAll           float32   `db:"perform_all"           json:"perform_all"`
+	NavD0                float64   `db:"nav_d0"                json:"nav_d0"`
+	NavD1                float64   `db:"nav_d1"                json:"nav_d1"`
+	NavM0                float64   `db:"nav_m0"                json:"nav_m0"`
+	NavM1                float64   `db:"nav_m1"                json:"nav_m1"`
+	NavM3                float64   `db:"nav_m3"                json:"nav_m3"`
+	NavM6                float64   `db:"nav_m6"                json:"nav_m6"`
+	NavYtd               float64   `db:"nav_ytd"               json:"nav_ytd"`
+	Navy1                float64   `db:"nav_y1"                json:"nav_y1"`
+	Navy3                float64   `db:"nav_y3"                json:"nav_y3"`
+	Navy5                float64   `db:"nav_y5"                json:"nav_y5"`
+	PerformD1            float64   `db:"perform_d1"            json:"perform_d1"`
+	PerformMtd           float64   `db:"perform_mtd"           json:"perform_mtd"`
+	PerformM1            float64   `db:"perform_m1"            json:"perform_m1"`
+	PerformM3            float64   `db:"perform_m3"            json:"perform_m3"`
+	PerformM6            float64   `db:"perform_m6"            json:"perform_m6"`
+	PerformYtd           float64   `db:"perform_ytd"           json:"perform_ytd"`
+	PerformY1            float64   `db:"perform_y1"            json:"perform_y1"`
+	PerformY3            float64   `db:"perform_y3"            json:"perform_y3"`
+	PerformY5            float64   `db:"perform_y5"            json:"perform_y5"`
+	PerformCagr          float64   `db:"perform_cagr"          json:"perform_cagr"`
+	PerformAll           float64   `db:"perform_all"           json:"perform_all"`
 	RecOrder             *uint64   `db:"rec_order"             json:"rec_order"`
 	RecStatus            uint8     `db:"rec_status"            json:"rec_status"`
 	RecCreatedDate       *string   `db:"rec_created_date"      json:"rec_created_date"`
@@ -96,6 +112,35 @@ func GetAllFfsNavPerformance(c *[]FfsNavPerformance, limit uint64, offset uint64
 	}
 
 	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetLastNavPerformanceIn(c *[]FfsNavPerformance, productKey []string,) (int, error) {
+	inQuery := strings.Join(productKey, ",")
+	query2 := `SELECT 
+				MAX( nav_perform_key ) as nav_perform_key, 
+				product_key, nav_date, 
+				perform_d1,
+				perform_mtd,
+				perform_m1,
+				perform_m3,
+				perform_m6,
+				perform_ytd,
+				perform_y1,
+				perform_y3,
+				perform_y5,
+				perform_cagr,
+				perform_all FROM
+				ffs_nav_performance`
+	query := query2 + " WHERE ffs_nav_performance.product_key IN(" + inQuery + ") GROUP BY product_key"
+	
 	log.Println(query)
 	err := db.Db.Select(c, query)
 	if err != nil {

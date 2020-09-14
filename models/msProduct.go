@@ -1,5 +1,38 @@
 package models
 
+import (
+	"api/db"
+	"log"
+	"strconv"
+	"net/http"
+)
+
+type MsProductList struct {
+	ProductKey             uint64                `json:"product_key"`
+	ProductID              uint64                `json:"product_id"`
+	ProductCode            string                `json:"product_code"`
+	ProductName            string                `json:"product_name"`
+	ProductNameAlt         string                `json:"product_name_alt"`
+	MinSubAmount           float32               `json:"min_sub_amount"`
+	RecImage1              string                `json:"rec_image1"`
+	FundType              *MsFundTypeInfo        `json:"fund_type,omitempty"`
+	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
+	Nav                   *TrNavInfo             `json:"nav,omitempty"`
+}
+
+type MsProductData struct {
+	ProductKey             uint64                `json:"product_key"`
+	ProductID              uint64                `json:"product_id"`
+	ProductCode            string                `json:"product_code"`
+	ProductName            string                `json:"product_name"`
+	ProductNameAlt         string                `json:"product_name_alt"`
+	MinSubAmount           float32               `json:"min_sub_amount"`
+	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
+	Nav                   *TrNavInfo             `json:"nav,omitempty"`
+	CustodianBank         *MsCustodianBankInfo   `json:"custodian_bank,omitempty"`
+	RiskProfile           *MsRiskProfileInfo     `json:"risk_profile,omitempty"`
+}
+
 type MsProduct struct {
 	ProductKey             uint64     `db:"product_key"             json:"product_key"`
 	ProductID              uint64     `db:"product_id"              json:"product_id"`
@@ -14,8 +47,8 @@ type MsProduct struct {
 	RiskProfileKey         *uint64    `db:"risk_profile_key"        json:"risk_profile_key"`
 	ProductProfile         *string    `db:"product_profile"         json:"product_profile"`
 	InvestmentObjectives   *string    `db:"investment_objectives"   json:"investment_objectives"`
-	LogoLink               *string    `db:"logo_link"               json:"logo_link"`
-	BannerLink             *string    `db:"banner_link"             json:"banner_link"`
+	ProductPhase            uint8     `db:"product_phase"           json:"product_phase"`
+	NavValuationType        uint8     `db:"nav_valuation_type"      json:"nav_valuation_type"`
 	ProspectusLink         *string    `db:"prospectus_link"         json:"prospectus_link"`
 	LaunchDate             *string    `db:"launch_date"             json:"launch_date"`
 	InceptionDate          *string    `db:"inception_date"          json:"inception_date"`
@@ -33,8 +66,8 @@ type MsProduct struct {
 	CustodianKey           *uint64    `db:"custodian_key"           json:"custodian_key"`
 	OjkFee                 float32    `db:"ojk_fee"                 json:"ojk_fee"`
 	ProductFeeAmount       float32    `db:"product_fee_amount"      json:"product_fee_amount"`
-	ProductFeeDateStart    *string    `db:"product_fee_date_start"  json:"product_fee_date_start"`
-	ProductFeeDateThru     *string    `db:"product_fee_date_thru"   json:"product_fee_date_thru"`
+	OverwriteTransactFlag  uint8      `db:"overwrite_transact_flag" json:"overwrite_transact_flag"`
+	OverwriteFeeFlag       uint8    `db:"overwrite_fee_flag"      json:"overwrite_fee_flag"`
 	OtherFeeAmount         float32    `db:"other_fee_amount"        json:"other_fee_amount"`
 	SettlementPeriod       *uint64    `db:"settlement_period"       json:"settlement_period"`
 	SinvestFundCode        *string    `db:"sinvest_fund_code"       json:"sinvest_fund_code"`
@@ -60,4 +93,71 @@ type MsProduct struct {
 	RecAttributeID1        *string    `db:"rec_attribute_id1"       json:"rec_attribute_id1"`
 	RecAttributeID2        *string    `db:"rec_attribute_id2"       json:"rec_attribute_id2"`
 	RecAttributeID3        *string    `db:"rec_attribute_id3"       json:"rec_attribute_id3"`
+}
+
+func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	query := `SELECT
+              ms_product.* FROM 
+			  ms_product WHERE
+			  ms_product.rec_status = 1 `
+	var present bool
+	var whereClause []string
+	var condition string
+	
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType"){
+			whereClause = append(whereClause, "ms_product."+field + " = '" + value + "'")
+		}
+	} 
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProduct(c *MsProduct, key string) (int, error) {
+	query := `SELECT ms_product.* FROM ms_product WHERE ms_product.product_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
 }

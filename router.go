@@ -4,6 +4,7 @@ import (
 	"api/db"
 	"api/controllers"
 	"api/config"
+	"api/lib"
 	"log"
 
 	"github.com/labstack/echo"
@@ -20,13 +21,25 @@ func router() *echo.Echo {
 	}))
 
 	e.Use(printUrlMiddleware)
+	e.Use(middleware.Logger())
+
+	auth := e.Group("/auth")
+
+	auth.Use(lib.AuthenticationMiddleware)
 
 	// Post
-	e.GET("/posts/:field/:key", controllers.GetCmsPostList).Name = "GetCmsPostList"
-	e.GET("/posts/:key", controllers.GetCmsPostData).Name = "GetCmsPost"
+	auth.GET("/posts/:field/:key", controllers.GetCmsPostList).Name = "GetCmsPostList"
+	auth.GET("/posts/:key", controllers.GetCmsPostData).Name = "GetCmsPost"
 
 	// Fund Type
-	e.GET("/fundtype", controllers.GetMsFundTypeList).Name = "GetMsFundTypeList"
+	auth.GET("/fundtype", controllers.GetMsFundTypeList).Name = "GetMsFundTypeList"
+
+	// Product
+	auth.GET("/product", controllers.GetMsProductList).Name = "GetMsProductList"
+	auth.GET("/product/:key", controllers.GetMsProductData).Name = "GetMsProductData"
+
+	// Nav
+	auth.GET("/nav/:duration/:product_key", controllers.GetTrNavProduct).Name = "GetTrNavProduct"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"

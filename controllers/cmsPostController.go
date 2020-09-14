@@ -66,6 +66,10 @@ func GetCmsPostList(c echo.Context) error {
 
 	params := make(map[string]string)
 	field := c.Param("field")
+	if field == "" {
+		log.Error("Missing required parameters")
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameters","Missing required parameters")
+	}
 	keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
 	if key == 0 {
@@ -86,7 +90,7 @@ func GetCmsPostList(c echo.Context) error {
 	}
 	
 	var postSubtypeDB []models.CmsPostSubtype
-	status, err = models.GetAllCmsPostSubtype(&postSubtypeDB, 0, 0, paramType, true)
+	status, err = models.GetAllCmsPostSubtype(&postSubtypeDB, limit, offset, paramType, noLimit)
 	if err != nil {
 		return lib.CustomError(status, "Error get data", "Failed get data")
 	}
@@ -115,7 +119,7 @@ func GetCmsPostList(c echo.Context) error {
 		params["orderType"] = orderType
 	}
 	var posts []models.CmsPost
-	status, err = models.GetCmsPostIn(&posts, postSubtypeIDs, "post_subtype_key", limit, offset, params, noLimit)
+	status, err = models.GetCmsPostIn(&posts, postSubtypeIDs, "post_subtype_key")
 	if err != nil {
 		return lib.CustomError(status)
 	}
@@ -162,8 +166,10 @@ func GetCmsPostList(c echo.Context) error {
 			data.PostPinned = true
 		}
 
-		if post.RecImage1 != nil {
-			data.RecImage1 = *post.RecImage1
+		if post.RecImage1 != nil && *post.RecImage1 != "" {
+			data.RecImage1 = config.BaseUrl + "/images/post/" + *post.RecImage1
+		}else{
+			data.RecImage1 = config.BaseUrl + "/images/post/default.png"
 		}
 		postData = append(postData, data)
 	}
@@ -247,11 +253,15 @@ func GetCmsPostData(c echo.Context) error {
 	if post.PostPinned > 0 {
 		responseData.PostPinned = true
 	}
-	if post.RecImage1 != nil {
-		responseData.RecImage1 = *post.RecImage1
+	if post.RecImage1 != nil && *post.RecImage1 != "" {
+		responseData.RecImage1 = config.BaseUrl + "/images/post/" + *post.RecImage1
+	}else{
+		responseData.RecImage1 = config.BaseUrl + "/images/post/default.png"
 	}	
-	if post.RecImage2 != nil {
-		responseData.RecImage2 = *post.RecImage2
+	if post.RecImage2 != nil && *post.RecImage2 != "" {
+		responseData.RecImage1 = config.BaseUrl + "/images/post/" + *post.RecImage1
+	}else{
+		responseData.RecImage2 = config.BaseUrl + "/images/post/default.png"
 	}	
 
 	var response lib.Response

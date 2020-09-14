@@ -1,5 +1,18 @@
 package models
 
+import (
+	"api/db"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
+type MsCustodianBankInfo struct {
+	CustodianCode        string     `json:"custodian_code"`
+	CustodianShortName   string     `json:"custodian_short_name"`
+	CustodianFullName   *string     `json:"custodian_full_name"`
+}
+
 type MsCustodianBank struct {
 	CustodianKey         uint64     `db:"custodian_key"         json:"custodian_key"`
 	CustodianCode        string     `db:"custodian_code"        json:"custodian_code"`
@@ -9,6 +22,7 @@ type MsCustodianBank struct {
 	SwiftCode            *string    `db:"swift_code"            json:"swift_code"`
 	FlagLocal            uint8      `db:"flag_local"            json:"flag_local"`
 	FlagGoverment        uint8      `db:"flag_government"       json:"flag_government"`
+	BankWebUrl           *string    `db:"bank_web_url"          json:"bank_web_url"`
 	BankLogo             *string    `db:"bank_logo"             json:"bank_logo"`
 	CustodianProfile     *string    `db:"custodian_profile"     json:"custodian_profile"`
 	RecOrder             *uint64    `db:"rec_order"             json:"rec_order"`
@@ -28,4 +42,16 @@ type MsCustodianBank struct {
 	RecAttributeID1      *string    `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
 	RecAttributeID2      *string    `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+}
+
+func GetMsCustodianBank(c *MsCustodianBank, key string) (int, error) {
+	query := `SELECT ms_custodian_bank.* FROM ms_custodian_bank WHERE ms_custodian_bank.custodian_key = ` + key
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
 }

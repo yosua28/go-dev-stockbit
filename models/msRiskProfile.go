@@ -1,5 +1,18 @@
 package models
 
+import (
+	"api/db"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
+type MsRiskProfileInfo struct {
+	RiskCode             string     `json:"risk_code"`
+	RiskName            *string     `json:"risk_name"`
+	RiskDesc            *string     `json:"risk_desc"`
+}
+
 type MsRiskProfile struct {
 	RiskProfileKey       uint64     `db:"risk_profile_key"      json:"risk_profile_key"`
 	RiskCode             string     `db:"risk_code"             json:"risk_code"`
@@ -25,4 +38,16 @@ type MsRiskProfile struct {
 	RecAttributeID1      *string    `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
 	RecAttributeID2      *string    `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+}
+
+func GetMsRiskProfile(c *MsRiskProfile, key string) (int, error) {
+	query := `SELECT ms_risk_profile.* FROM ms_risk_profile WHERE ms_risk_profile.risk_profile_key = ` + key
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
 }
