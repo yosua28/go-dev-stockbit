@@ -7,9 +7,17 @@ import (
 	"net/http"
 )
 
+type CmsPostTypeList struct{
+	PostTypeKey               uint64                `json:"post_type_key"`
+	PostTypeCode              string                `json:"post_type_code"`
+	PostTypeName              string                `json:"post_type_name"`
+	PostTypeDesc              string                `json:"post_type_desc"`
+	PostTypeGroup             string                `json:"post_type_group"`
+	SubType                   []CmsPostSubtypeInfo  `json:"subtype,omitempty"`
+}
 type CmsPostTypeData struct{
-	PostTypeKey               uint64        `json:"post_type_key,omitempty"`
-	PostTypeCode              string        `json:"post_type_code,omitempty"`
+	PostTypeKey               uint64        `json:"post_type_key"`
+	PostTypeCode              string        `json:"post_type_code"`
 	PostTypeName             *string        `json:"post_type_name,omitempty"`
 	PostTypeDesc             *string        `json:"post_type_desc,omitempty"`
 	PostTypeGroup            *string        `json:"post_type_group,omitempty"`

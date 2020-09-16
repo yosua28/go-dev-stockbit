@@ -30,6 +30,7 @@ func router() *echo.Echo {
 	// Post
 	auth.GET("/posts/:field/:key", controllers.GetCmsPostList).Name = "GetCmsPostList"
 	auth.GET("/posts/:key", controllers.GetCmsPostData).Name = "GetCmsPost"
+	auth.GET("/posttype", controllers.GetCmsPostTypeList).Name = "GetCmsPostTypeList"
 
 	// Fund Type
 	auth.GET("/fundtype", controllers.GetMsFundTypeList).Name = "GetMsFundTypeList"

@@ -303,7 +303,7 @@ func Login(c echo.Context) error {
 	}
 	if len(userLogin) < 1 {
 		log.Error("Email not registered")
-		return lib.CustomError(status,"Email not registered","Email not registered")
+		return lib.CustomError(http.StatusUnauthorized,"Email not registered","Email not registered")
 	}
 
 	accountData := userLogin[0]
@@ -318,12 +318,12 @@ func Login(c echo.Context) error {
 	}
 
 	// Create session key
-	date := time.Now()
+	// date := time.Now()
 	uuid := uuid.Must(uuid.NewV4(), nil)
 	uuidString := uuid.String()
 	
 	atClaims := jwt.MapClaims{}
-	atClaims["authorized"] = true
+	atClaims["email"] = email
 	atClaims["user_id"] = accountData.UserLoginKey
 	atClaims["uuid"] = uuidString
 	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
@@ -336,7 +336,7 @@ func Login(c echo.Context) error {
 
 	// sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
 	dateLayout := "2006-01-02 15:04:05"
-	expired := date.Add(time.Second * time.Duration(config.SessionExpired)).Format(dateLayout)
+	// expired := date.Add(time.Second * time.Duration(config.SessionExpired)).Format(dateLayout)
 
 	// Check previous login
 	var loginSession []models.ScLoginSession
@@ -370,8 +370,6 @@ func Login(c echo.Context) error {
 
 	var data models.ScLoginSessionInfo
 	data.SessionID = token
-	data.Expired = expired
-	data.Email = email
 	log.Info(data)
 
 	var response lib.Response

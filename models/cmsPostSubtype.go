@@ -10,7 +10,7 @@ import (
 type CmsPostSubtypeInfo struct{
 	PostSubtypeKey           uint64    `json:"post_subtype_key"`
 	PostSubtypeCode          string    `json:"post_subtype_code"`
-	PostSubtypeName         *string    `json:"post_subtype_name"`
+	PostSubtypeName          string    `json:"post_subtype_name"`
 }
 
 type CmsPostSubtype struct{

@@ -142,7 +142,9 @@ func GetCmsPostList(c echo.Context) error {
 		data.PostKey = post.PostKey
 		data.PostSubtype.PostSubtypeKey = postSubtypeData[post.PostSubtypeKey].PostSubtypeKey
 		data.PostSubtype.PostSubtypeCode = postSubtypeData[post.PostSubtypeKey].PostSubtypeCode
-		data.PostSubtype.PostSubtypeName = postSubtypeData[post.PostSubtypeKey].PostSubtypeName
+		if postSubtypeData[post.PostSubtypeKey].PostSubtypeName != nil {
+			data.PostSubtype.PostSubtypeName = *postSubtypeData[post.PostSubtypeKey].PostSubtypeName
+		}
 		data.PostTitle = post.PostTitle
 		if post.PostSubTitle != nil {
 			data.PostSubTitle = *post.PostSubTitle
@@ -209,7 +211,9 @@ func GetCmsPostData(c echo.Context) error {
 	responseData.PostKey = post.PostKey
 	responseData.PostSubtype.PostSubtypeKey = postSubtype.PostSubtypeKey
 	responseData.PostSubtype.PostSubtypeCode = postSubtype.PostSubtypeCode
-	responseData.PostSubtype.PostSubtypeName = postSubtype.PostSubtypeName
+	if postSubtype.PostSubtypeName != nil {
+		responseData.PostSubtype.PostSubtypeName = *postSubtype.PostSubtypeName
+	}
 	responseData.PostTitle = post.PostTitle
 	if post.PostSubTitle != nil {
 		responseData.PostSubTitle = *post.PostSubTitle

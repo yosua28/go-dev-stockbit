@@ -13,6 +13,15 @@ import (
 	"github.com/labstack/echo"
 )
 
+type CProfile struct {
+	UserID      uint64  `json:"user_id"`
+	Email       string  `json:"email"`
+	PhoneNumber string  `json:"phone_number"`
+	Admin       *bool   `json:"admin,omitempty"`
+}
+
+var Profile CProfile
+
 func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		var tokenString string
@@ -62,6 +71,11 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 				log.Error("No user login")
 				return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
 			}
+
+			Profile.UserID = userLogin[0].UserLoginKey
+			Profile.Email = userLogin[0].UloginEmail
+			Profile.PhoneNumber = *userLogin[0].UloginMobileno
+
 		} else {
 			log.Error("Invalid token")
 			return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
