@@ -17,6 +17,7 @@ type ScUserLoginRegister struct {
 type ScUserLogin struct {
 	UserLoginKey            uint64    `db:"user_login_key"            json:"user_login_key"`
 	UserCategoryKey         uint64    `db:"user_category_key"         json:"user_category_key"`
+	CustomerKey            *uint64    `db:"customer_key"              json:"customer_key"`
 	UserDeptKey            *uint64    `db:"user_dept_key"             json:"user_dept_key"`
 	UserDeptKey1           *uint64    `db:"user_dept_key1"            json:"user_dept_key1"`
 	UloginName              string    `db:"ulogin_name"               json:"ulogin_name"`

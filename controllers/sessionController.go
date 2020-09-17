@@ -309,6 +309,11 @@ func Login(c echo.Context) error {
 	accountData := userLogin[0]
 	log.Info(accountData)
 
+	if *accountData.VerifiedEmail != 1 || accountData.VerifiedMobileno != 1 {
+		log.Error("Email or Mobile number not verified")
+		return lib.CustomError(http.StatusUnauthorized,"Email or Mobile number not verified","Email or Mobile number not verified")
+	}
+
 	// Check valid password
 	encryptedPasswordByte := sha256.Sum256([]byte(password))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
