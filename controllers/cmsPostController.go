@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"time"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -26,7 +27,7 @@ func GetCmsPostList(c echo.Context) error {
 			}
 		} else {
 			log.Error("Limit should be number")
-			return lib.CustomError(http.StatusBadRequest)
+			return lib.CustomError(http.StatusBadRequest,"Limit should be number","Limit should be number")
 		}
 	} else {
 		limit = config.LimitQuery
@@ -42,7 +43,7 @@ func GetCmsPostList(c echo.Context) error {
 			}
 		} else {
 			log.Error("Page should be number")
-			return lib.CustomError(http.StatusBadRequest)
+			return lib.CustomError(http.StatusBadRequest,"Page should be number","Page should be number")
 		}
 	} else {
 		page = 1
@@ -58,7 +59,7 @@ func GetCmsPostList(c echo.Context) error {
 		noLimit, err = strconv.ParseBool(noLimitStr)
 		if err != nil {
 			log.Error("Nolimit parameter should be true/false")
-			return lib.CustomError(http.StatusBadRequest)
+			return lib.CustomError(http.StatusBadRequest,"Nolimit parameter should be true/false","Nolimit parameter should be true/false")
 		}
 	} else {
 		noLimit = false
@@ -75,34 +76,43 @@ func GetCmsPostList(c echo.Context) error {
 	if key == 0 {
 		return lib.CustomError(http.StatusNotFound)
 	}
-	var postTypeDB models.CmsPostType
+	
 	paramType := make(map[string]string)
 	if field == "type" {	
-		status, err = models.GetCmsPostType(&postTypeDB, "post_type_key", keyStr)
 		paramType["post_type_key"] = keyStr
-		if err != nil {
-			return lib.CustomError(status)
-		}
 	}else if field == "subtype" {
 		paramType["post_subtype_key"] = keyStr
 	}else{
-		return lib.CustomError(http.StatusBadRequest)
+		log.Error("Wrong value for parameter: field")
+		return lib.CustomError(http.StatusBadRequest,"Wrong value for parameter: field","Wrong value for parameter: field")
 	}
 	
 	var postSubtypeDB []models.CmsPostSubtype
 	status, err = models.GetAllCmsPostSubtype(&postSubtypeDB, limit, offset, paramType, noLimit)
 	if err != nil {
-		return lib.CustomError(status, "Error get data", "Failed get data")
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 	if len(postSubtypeDB) < 1 {
-		return lib.CustomError(http.StatusNotFound, "Post not found", "Post not found")
+		log.Error("post not found")
+		return lib.CustomError(http.StatusNotFound, "Post subtype not found", "Post subtype not found")
 	}
+
 	postSubtypeData := make(map[uint64]models.CmsPostSubtype)
 	var postSubtypeIDs []string
 	for _, postSubtyp := range postSubtypeDB {
 		postSubtypeData[postSubtyp.PostSubtypeKey] = postSubtyp
 		postSubtypeIDs = append(postSubtypeIDs, strconv.FormatUint(postSubtyp.PostSubtypeKey, 10))
 	}
+
+	var postTypeDB models.CmsPostType
+	status, err = models.GetCmsPostType(&postTypeDB, "post_type_key", strconv.FormatUint(postSubtypeDB[0].PostTypeKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get post type data")
+	}
+
+	dir := strings.ToLower(postTypeDB.PostTypeCode)
 
 	// Get parameter order_by
 	orderBy := c.QueryParam("order_by")
@@ -169,7 +179,7 @@ func GetCmsPostList(c echo.Context) error {
 		}
 
 		if post.RecImage1 != nil && *post.RecImage1 != "" {
-			data.RecImage1 = config.BaseUrl + "/images/post/" + *post.RecImage1
+			data.RecImage1 = config.BaseUrl + "/images/post/" + dir + "/" + *post.RecImage1
 		}else{
 			data.RecImage1 = config.BaseUrl + "/images/post/default.png"
 		}
@@ -205,6 +215,15 @@ func GetCmsPostData(c echo.Context) error {
 
 	var postSubtype models.CmsPostSubtype
 	status, err = models.GetCmsPostSubtype(&postSubtype, strconv.FormatUint(post.PostSubtypeKey, 10))
+
+	var postTypeDB models.CmsPostType
+	status, err = models.GetCmsPostType(&postTypeDB, "post_type_key", strconv.FormatUint(postSubtype.PostTypeKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get post type data")
+	}
+
+	dir := strings.ToLower(postTypeDB.PostTypeCode)
 
 	var responseData models.CmsPostData
 
@@ -258,12 +277,12 @@ func GetCmsPostData(c echo.Context) error {
 		responseData.PostPinned = true
 	}
 	if post.RecImage1 != nil && *post.RecImage1 != "" {
-		responseData.RecImage1 = config.BaseUrl + "/images/post/" + *post.RecImage1
+		responseData.RecImage1 = config.BaseUrl + "/images/post/" + dir + "/" + *post.RecImage1
 	}else{
 		responseData.RecImage1 = config.BaseUrl + "/images/post/default.png"
 	}	
 	if post.RecImage2 != nil && *post.RecImage2 != "" {
-		responseData.RecImage1 = config.BaseUrl + "/images/post/" + *post.RecImage1
+		responseData.RecImage1 = config.BaseUrl + "/images/post/" + dir + "/" + *post.RecImage1
 	}else{
 		responseData.RecImage2 = config.BaseUrl + "/images/post/default.png"
 	}	
