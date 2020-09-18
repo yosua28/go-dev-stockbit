@@ -18,6 +18,7 @@ type MsProductList struct {
 	FundType              *MsFundTypeInfo        `json:"fund_type,omitempty"`
 	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
 	Nav                   *TrNavInfo             `json:"nav,omitempty"`
+	RiskProfile           *MsRiskProfileInfo     `json:"risk_profile,omitempty"`
 }
 
 type MsProductData struct {
@@ -27,6 +28,8 @@ type MsProductData struct {
 	ProductName            string                `json:"product_name"`
 	ProductNameAlt         string                `json:"product_name_alt"`
 	MinSubAmount           float32               `json:"min_sub_amount"`
+	ProspectusLink         string                `json:"prospectus_link"`
+	FundFactSheet          string                `json:"ffs_link"`
 	RecImage1              string                `json:"rec_image1"`
 	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
 	Nav                   *TrNavInfo             `json:"nav,omitempty"`
@@ -68,7 +71,7 @@ type MsProduct struct {
 	OjkFee                 float32    `db:"ojk_fee"                 json:"ojk_fee"`
 	ProductFeeAmount       float32    `db:"product_fee_amount"      json:"product_fee_amount"`
 	OverwriteTransactFlag  uint8      `db:"overwrite_transact_flag" json:"overwrite_transact_flag"`
-	OverwriteFeeFlag       uint8    `db:"overwrite_fee_flag"      json:"overwrite_fee_flag"`
+	OverwriteFeeFlag       uint8      `db:"overwrite_fee_flag"      json:"overwrite_fee_flag"`
 	OtherFeeAmount         float32    `db:"other_fee_amount"        json:"other_fee_amount"`
 	SettlementPeriod       *uint64    `db:"settlement_period"       json:"settlement_period"`
 	SinvestFundCode        *string    `db:"sinvest_fund_code"       json:"sinvest_fund_code"`

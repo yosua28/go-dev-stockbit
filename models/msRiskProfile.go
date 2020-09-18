@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -47,6 +48,24 @@ func GetMsRiskProfile(c *MsRiskProfile, key string) (int, error) {
 	if err != nil {
 		log.Error(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsRiskProfileIn(c *[]MsRiskProfile, value []string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				ms_risk_profile.* FROM 
+				ms_risk_profile `
+	query := query2 + " WHERE ms_risk_profile.risk_profile_key IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

@@ -106,12 +106,16 @@ func GetMsProductList(c echo.Context) error {
 
 	var productIDs []string
 	var fundTypeIDs []string
+	var riskIDs []string
 	for _, product := range productDB {
 		if _, ok := lib.Find(productIDs, strconv.FormatUint(product.ProductKey, 10)); !ok {
 			productIDs = append(productIDs, strconv.FormatUint(product.ProductKey, 10))
 		}
 		if _, ok := lib.Find(fundTypeIDs, strconv.FormatUint(*product.FundTypeKey, 10)); !ok {
 			fundTypeIDs = append(fundTypeIDs, strconv.FormatUint(*product.FundTypeKey, 10))
+		}
+		if _, ok := lib.Find(riskIDs, strconv.FormatUint(*product.RiskProfileKey, 10)); !ok {
+			riskIDs = append(riskIDs, strconv.FormatUint(*product.RiskProfileKey, 10))
 		}
 	}
 
@@ -124,19 +128,26 @@ func GetMsProductList(c echo.Context) error {
 	var fundTypeDB []models.MsFundType
 	status, err = models.GetMsFundTypeIn(&fundTypeDB, fundTypeIDs, "fund_type_key")
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Get fund type: " + err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 	var performanceDB []models.FfsNavPerformance
 	status, err = models.GetLastNavPerformanceIn(&performanceDB, productIDs)
 	if err != nil {
-		log.Error(err.Error())
+		log.Error("Get performance: " + err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	var riskDB []models.MsRiskProfile
+	status, err = models.GetMsRiskProfileIn(&riskDB, riskIDs)
+	if err != nil {
+		log.Error("Get risk profile: "+err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 
 	nData := make(map[uint64]models.TrNav)
 	fData := make(map[uint64]models.MsFundType)
 	pData := make(map[uint64]models.FfsNavPerformance)
+	rData := make(map[uint64]models.MsRiskProfile)
 
 	for _, nav := range navDB {
 		nData[nav.ProductKey] = nav
@@ -146,6 +157,9 @@ func GetMsProductList(c echo.Context) error {
 	}
 	for _, performance := range performanceDB {
 		pData[performance.ProductKey] = performance
+	}
+	for _, risk := range riskDB {
+		rData[risk.RiskProfileKey] = risk
 	}
 	
 	
@@ -159,6 +173,8 @@ func GetMsProductList(c echo.Context) error {
 		data.ProductName = product.ProductName
 		data.ProductNameAlt = product.ProductNameAlt
 		data.MinSubAmount = product.MinSubAmount
+		data.MinSubAmount = product.MinSubAmount
+
 		if product.RecImage1 != nil && *product.RecImage1 != ""{
 			data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
 		}else{
@@ -167,39 +183,47 @@ func GetMsProductList(c echo.Context) error {
 
 		var fundType models.MsFundTypeInfo
 		fundType.FundTypeKey = *product.FundTypeKey
-		if _, ok := fData[*product.FundTypeKey]; ok {
-			fundType.FundTypeCode = fData[*product.FundTypeKey].FundTypeCode
-			fundType.FundTypeName = fData[*product.FundTypeKey].FundTypeName
+		if ft, ok := fData[*product.FundTypeKey]; ok {
+			fundType.FundTypeCode = ft.FundTypeCode
+			fundType.FundTypeName = ft.FundTypeName
 		}
 		data.FundType = &fundType
+
+		var risk models.MsRiskProfileInfo
+		if r, ok := rData[*product.RiskProfileKey]; ok {
+			risk.RiskCode = r.RiskCode
+			risk.RiskName = r.RiskName
+			risk.RiskDesc = r.RiskDesc
+		}
+		data.RiskProfile = &risk
 
 		layout := "2006-01-02 15:04:05"
 		newLayout := "02 Jan 2006"
 		
 		var nav models.TrNavInfo
-		if _, ok := nData[product.ProductKey]; ok {
-			date, _ := time.Parse(layout, nData[product.ProductKey].NavDate)
+		if n, ok := nData[product.ProductKey]; ok {
+			date, _ := time.Parse(layout, n.NavDate)
 			fmt.Println(date)
 			nav.NavDate = date.Format(newLayout)
-			nav.NavValue = nData[product.ProductKey].NavValue
+			nav.NavValue = n.NavValue
 		}
 		data.Nav = &nav
 		
 		var perform models.FfsNavPerformanceInfo
-		if _, ok := pData[product.ProductKey]; ok {
-			date, _ := time.Parse(layout, pData[product.ProductKey].NavDate)
+		if p, ok := pData[product.ProductKey]; ok {
+			date, _ := time.Parse(layout, p.NavDate)
 			perform.NavDate = date.Format(newLayout)
-			perform.D1 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformD1) + `%`
-			perform.MTD = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformMtd) + `%`
-			perform.M1 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformM1) + `%`
-			perform.M3 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformM3) + `%`
-			perform.M6 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformM6) + `%`
-			perform.Y1 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformY1) + `%`
-			perform.Y3 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformY3) + `%`
-			perform.Y5 = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformY5) + `%`
-			perform.YTD = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformYtd) + `%`
-			perform.CAGR = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformCagr) + `%`
-			perform.ALL = fmt.Sprintf("%.3f", pData[product.ProductKey].PerformAll) + `%`
+			perform.D1 = fmt.Sprintf("%.3f", p.PerformD1) + `%`
+			perform.MTD = fmt.Sprintf("%.3f", p.PerformMtd) + `%`
+			perform.M1 = fmt.Sprintf("%.3f", p.PerformM1) + `%`
+			perform.M3 = fmt.Sprintf("%.3f", p.PerformM3) + `%`
+			perform.M6 = fmt.Sprintf("%.3f", p.PerformM6) + `%`
+			perform.Y1 = fmt.Sprintf("%.3f", p.PerformY1) + `%`
+			perform.Y3 = fmt.Sprintf("%.3f", p.PerformY3) + `%`
+			perform.Y5 = fmt.Sprintf("%.3f", p.PerformY5) + `%`
+			perform.YTD = fmt.Sprintf("%.3f", p.PerformYtd) + `%`
+			perform.CAGR = fmt.Sprintf("%.3f", p.PerformCagr) + `%`
+			perform.ALL = fmt.Sprintf("%.3f", p.PerformAll) + `%`
 		} 
 		data.NavPerformance = &perform
 	
@@ -240,6 +264,13 @@ func GetMsProductData(c echo.Context) error {
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 
+	var ffsDB []models.FfsPublish
+	status, err = models.GetLastFfsIn(&ffsDB, productIDs)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
 	var performanceDB []models.FfsNavPerformance
 	status, err = models.GetLastNavPerformanceIn(&performanceDB, productIDs)
 	if err != nil {
@@ -269,6 +300,16 @@ func GetMsProductData(c echo.Context) error {
 	data.ProductName = product.ProductName
 	data.ProductNameAlt = product.ProductNameAlt
 	data.MinSubAmount = product.MinSubAmount
+	if ffsDB[0].FfsLink != nil && *ffsDB[0].FfsLink != ""{
+		data.FundFactSheet = *ffsDB[0].FfsLink
+	}else{
+		data.FundFactSheet = "#"
+	}
+	if product.ProspectusLink != nil && *product.ProspectusLink != ""{
+		data.ProspectusLink = *product.ProspectusLink
+	}else{
+		data.ProspectusLink = "#"
+	}
 	if product.RecImage1 != nil && *product.RecImage1 != ""{
 		data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
 	}else{

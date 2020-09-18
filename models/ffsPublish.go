@@ -1,5 +1,13 @@
 package models
 
+import(
+	"api/db"
+	"strings"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
 type FfsPublish struct {
 	FfsKey               uint64    `db:"ffs_key"              json:"ffs_key"`
 	PeriodeKey           uint64    `db:"periode_key"          json:"periode_key"`
@@ -24,4 +32,19 @@ type FfsPublish struct {
 	RecAttributeID1      *string   `db:"rec_attribute_id1"    json:"rec_attribute_id1"`
 	RecAttributeID2      *string   `db:"rec_attribute_id2"    json:"rec_attribute_id2"`
 	RecAttributeID3      *string   `db:"rec_attribute_id3"    json:"rec_attribute_id3"`
+}
+
+func GetLastFfsIn(c *[]FfsPublish, productKey []string,) (int, error) {
+	inQuery := strings.Join(productKey, ",")
+	query2 := `SELECT MAX( ffs_key ) as ffs_key, product_key, ffs_link FROM
+			   ffs_publish`
+	query := query2 + " WHERE ffs_publish.product_key IN(" + inQuery + ") GROUP BY product_key"
+	
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }
