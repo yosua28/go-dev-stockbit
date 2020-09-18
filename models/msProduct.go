@@ -27,6 +27,7 @@ type MsProductData struct {
 	ProductName            string                `json:"product_name"`
 	ProductNameAlt         string                `json:"product_name_alt"`
 	MinSubAmount           float32               `json:"min_sub_amount"`
+	RecImage1              string                `json:"rec_image1"`
 	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
 	Nav                   *TrNavInfo             `json:"nav,omitempty"`
 	CustodianBank         *MsCustodianBankInfo   `json:"custodian_bank,omitempty"`

@@ -159,6 +159,11 @@ func GetMsProductList(c echo.Context) error {
 		data.ProductName = product.ProductName
 		data.ProductNameAlt = product.ProductNameAlt
 		data.MinSubAmount = product.MinSubAmount
+		if product.RecImage1 != nil && *product.RecImage1 != ""{
+			data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
+		}else{
+			data.RecImage1 = config.BaseUrl + "/images/product/default.png"
+		}
 
 		var fundType models.MsFundTypeInfo
 		fundType.FundTypeKey = *product.FundTypeKey
@@ -264,6 +269,11 @@ func GetMsProductData(c echo.Context) error {
 	data.ProductName = product.ProductName
 	data.ProductNameAlt = product.ProductNameAlt
 	data.MinSubAmount = product.MinSubAmount
+	if product.RecImage1 != nil && *product.RecImage1 != ""{
+		data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
+	}else{
+		data.RecImage1 = config.BaseUrl + "/images/product/default.png"
+	}
 
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
