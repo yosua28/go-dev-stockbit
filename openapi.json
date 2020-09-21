@@ -347,6 +347,109 @@
         }
       }
     },
+    "/auth/city/{field}/{key}": {
+      "get": {
+        "description": "Get City",
+        "tags": [
+          "City"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "field",
+            "in": "path",
+            "description": "",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "parent_key",
+                "city_level"
+              ]
+            }
+          },
+          {
+            "name": "key",
+            "in": "path",
+            "description": "parent key or city level",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "city_key": 3,
+                      "parent_key": 0,
+                      "city_code": "WIB",
+                      "city_name": "WIB",
+                      "city_level": 1,
+                      "postal_code": ""
+                    },
+                    {
+                      "city_key": 1,
+                      "parent_key": 0,
+                      "city_code": "WIT",
+                      "city_name": "WIT",
+                      "city_level": 1,
+                      "postal_code": ""
+                    },
+                    {
+                      "city_key": 2,
+                      "parent_key": 0,
+                      "city_code": "WITA",
+                      "city_name": "WITA",
+                      "city_level": 1,
+                      "postal_code": ""
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/posts/{field}/{key}": {
       "get": {
         "description": "Get Post",
@@ -762,6 +865,93 @@
             "schema": {
               "type": "boolean"
             }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "fund_type_key": 1,
+                      "fund_type_code": "MM",
+                      "fund_type_name": "Money Market",
+                      "fund_type_desc": "Money Market",
+                      "rec_order": 0,
+                      "rec_image1": ""
+                    },
+                    {
+                      "fund_type_key": 2,
+                      "fund_type_code": "FI",
+                      "fund_type_name": "Fix Income",
+                      "fund_type_desc": "Fix Income",
+                      "rec_order": 1,
+                      "rec_image1": ""
+                    },
+                    {
+                      "fund_type_key": 3,
+                      "fund_type_code": "BF",
+                      "fund_type_name": "Balance Fund",
+                      "fund_type_desc": "Balance Fund",
+                      "rec_order": 2,
+                      "rec_image1": ""
+                    },
+                    {
+                      "fund_type_key": 4,
+                      "fund_type_code": "EQ",
+                      "fund_type_name": "Ekuitas",
+                      "fund_type_desc": "Ekuitas",
+                      "rec_order": 3,
+                      "rec_image1": ""
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/lookup": {
+      "get": {
+        "description": "Get Lookup Data",
+        "tags": [
+          "Lookup"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
           }
         ],
         "responses": {

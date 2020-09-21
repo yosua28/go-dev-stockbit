@@ -1,7 +1,24 @@
 package models
 
+import (
+	"api/db"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
+type MsCityList struct {
+	CityKey              uint64     `json:"city_key"`
+	ParentKey            uint64     `json:"parent_key"`
+	CityCode             string     `json:"city_code"`
+	CityName             string     `json:"city_name"`
+	CityLevel            uint64     `json:"city_level"`
+	PostalCode           string     `json:"postal_code"`
+}
+
 type MsCity struct {
 	CityKey              uint64     `db:"city_key"              json:"city_key"`
+	CountryKey           uint64     `db:"country_key"              json:"country_key"`
 	ParentKey            *uint64    `db:"parent_key"            json:"parent_key"`
 	CityCode             string     `db:"city_code"             json:"city_code"`
 	CityName             string     `db:"city_name"             json:"city_name"`
@@ -24,4 +41,50 @@ type MsCity struct {
 	RecAttributeID1      *string    `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
 	RecAttributeID2      *string    `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+}
+
+func GetAllMsCity(c *[]MsCity, params map[string]string) (int, error) {
+	query := `SELECT
+              ms_city.* FROM 
+			  ms_city `
+	var present bool
+	var whereClause []string
+	var condition string
+	
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType"){
+			whereClause = append(whereClause, "ms_city."+field + " = '" + value + "'")
+		}
+	} 
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }

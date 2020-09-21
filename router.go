@@ -41,6 +41,12 @@ func router() *echo.Echo {
 
 	// Nav
 	auth.GET("/nav/:duration/:product_key", controllers.GetTrNavProduct).Name = "GetTrNavProduct"
+	
+	// Lookup
+	auth.GET("/lookup", controllers.GetGenLookup).Name = "GetGenLookup"
+
+	// City
+	auth.GET("/city/:field/:key", controllers.GetMsCityList).Name = "GetMsCityList"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"
