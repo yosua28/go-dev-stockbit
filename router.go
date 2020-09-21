@@ -48,6 +48,9 @@ func router() *echo.Echo {
 	// City
 	auth.GET("/city/:field/:key", controllers.GetMsCityList).Name = "GetMsCityList"
 
+	// Bank
+	auth.GET("/bank", controllers.GetMsBankList).Name = "GetMsBankList"
+
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"
 	e.GET("/verifyemail", controllers.VerifyEmail).Name = "VerifyEmail"

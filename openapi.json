@@ -942,8 +942,7 @@
           }
         }
       }
-    },
-    "/auth/lookup": {
+    },"/auth/lookup": {
       "get": {
         "description": "Get Lookup Data",
         "tags": [
@@ -967,36 +966,120 @@
                   },
                   "data": [
                     {
-                      "fund_type_key": 1,
-                      "fund_type_code": "MM",
-                      "fund_type_name": "Money Market",
-                      "fund_type_desc": "Money Market",
-                      "rec_order": 0,
-                      "rec_image1": ""
+                      "group_name": "Boolean",
+                      "lookup": [
+                        {
+                          "name": "No",
+                          "value": "No"
+                        },
+                        {
+                          "name": "Yes",
+                          "value": "Yes"
+                        }
+                      ]
                     },
                     {
-                      "fund_type_key": 2,
-                      "fund_type_code": "FI",
-                      "fund_type_name": "Fix Income",
-                      "fund_type_desc": "Fix Income",
-                      "rec_order": 1,
-                      "rec_image1": ""
+                      "group_name": "Record status",
+                      "lookup": [
+                        {
+                          "name": "InActive",
+                          "value": "InActive"
+                        },
+                        {
+                          "name": "Active",
+                          "value": "Active"
+                        }
+                      ]
                     },
                     {
-                      "fund_type_key": 3,
-                      "fund_type_code": "BF",
-                      "fund_type_name": "Balance Fund",
-                      "fund_type_desc": "Balance Fund",
-                      "rec_order": 2,
-                      "rec_image1": ""
+                      "group_name": "Approval Status",
+                      "lookup": [
+                        {
+                          "name": "Waiting",
+                          "value": "Waiting"
+                        },
+                        {
+                          "name": "Approved",
+                          "value": "Approved"
+                        },
+                        {
+                          "name": "Reject",
+                          "value": "Reject"
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/bank": {
+      "get": {
+        "description": "Get Bank Data",
+        "tags": [
+          "Bank"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "bank_key": 1,
+                      "bank_code": "ABNAIDJA",
+                      "bank_name": "ABN AMRO",
+                      "bank_fullname": "ABN AMRO"
                     },
                     {
-                      "fund_type_key": 4,
-                      "fund_type_code": "EQ",
-                      "fund_type_name": "Ekuitas",
-                      "fund_type_desc": "Ekuitas",
-                      "rec_order": 3,
-                      "rec_image1": ""
+                      "bank_key": 2,
+                      "bank_code": "ANTDIDJD",
+                      "bank_name": "ANTAR DAERAH",
+                      "bank_fullname": "ANTAR DAERAH"
+                    },
+                    {
+                      "bank_key": 3,
+                      "bank_code": "ANZBIDJX",
+                      "bank_name": "ANZ BANK",
+                      "bank_fullname": "ANZ BANK"
                     }
                   ]
                 }
