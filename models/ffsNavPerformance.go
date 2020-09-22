@@ -125,21 +125,22 @@ func GetAllFfsNavPerformance(c *[]FfsNavPerformance, limit uint64, offset uint64
 func GetLastNavPerformanceIn(c *[]FfsNavPerformance, productKey []string,) (int, error) {
 	inQuery := strings.Join(productKey, ",")
 	query2 := `SELECT 
-				MAX( nav_perform_key ) as nav_perform_key, 
-				product_key, nav_date, 
-				perform_d1,
-				perform_mtd,
-				perform_m1,
-				perform_m3,
-				perform_m6,
-				perform_ytd,
-				perform_y1,
-				perform_y3,
-				perform_y5,
-				perform_cagr,
-				perform_all FROM
-				ffs_nav_performance`
-	query := query2 + " WHERE ffs_nav_performance.product_key IN(" + inQuery + ") GROUP BY product_key"
+				t1.nav_perform_key, 
+				t1.product_key, nav_date, 
+				t1.perform_d1,
+				t1.perform_mtd,
+				t1.perform_m1,
+				t1.perform_m3,
+				t1.perform_m6,
+				t1.perform_ytd,
+				t1.perform_y1,
+				t1.perform_y3,
+				t1.perform_y5,
+				t1.perform_cagr,
+				t1.perform_all FROM
+				ffs_nav_performance t1 JOIN (SELECT MAX(nav_perform_key) nav_perform_key FROM ffs_nav_performance GROUP BY product_key) t2
+				ON t1.nav_perform_key = t2.nav_perform_key`
+	query := query2 + " WHERE t1.product_key IN(" + inQuery + ")"
 	
 	log.Println(query)
 	err := db.Db.Select(c, query)
