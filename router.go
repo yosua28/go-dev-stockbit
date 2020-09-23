@@ -50,6 +50,9 @@ func router() *echo.Echo {
 
 	// Bank
 	auth.GET("/bank", controllers.GetMsBankList).Name = "GetMsBankList"
+	
+	// Country
+	auth.GET("/country", controllers.GetMsCountryList).Name = "GetMsCountryList"
 
 	// Request
 	auth.POST("/oarequest", controllers.CreateOaPersonalData).Name = "CreateOaPersonalData"

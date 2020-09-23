@@ -1,5 +1,18 @@
 package models
 
+import (
+	"api/db"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
+type MsCountryList struct {
+	CountryKey           uint64     `json:"country_key"`
+	CouCode              string     `json:"cou_code"`
+	CouName              string     `json:"cou_name"`
+}	
+
 type MsCountry struct {
 	CountryKey           uint64     `db:"country_key"           json:"country_key"`
 	CouCode              string     `db:"cou_code"              json:"cou_code"`
@@ -24,4 +37,50 @@ type MsCountry struct {
 	RecAttributeID1      *string    `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
 	RecAttributeID2      *string    `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+}
+
+func GetAllMsCountry(c *[]MsCountry, params map[string]string) (int, error) {
+	query := `SELECT
+              ms_country.* FROM 
+			  ms_country `
+	var present bool
+	var whereClause []string
+	var condition string
+	
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType"){
+			whereClause = append(whereClause, "ms_country."+field + " = '" + value + "'")
+		}
+	} 
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }
