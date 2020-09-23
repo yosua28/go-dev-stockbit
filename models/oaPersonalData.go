@@ -22,13 +22,13 @@ type OaPersonalData struct {
 	IDcardNeverExpired    *uint8     `db:"idcard_never_expired"       json:"idcard_never_expired"`
 	Gender                 string    `db:"gender"                     json:"gender"`
 	MaritalStatus          string    `db:"marital_status"             json:"marital_status"`
-	IDcardAddresKey       *uint64    `db:"idcard_addres_key"          json:"idcard_addres_key"`
-	DomicileAddresKey     *uint64    `db:"domicile_addres_key"        json:"domicile_addres_key"`
+	IDcardAddressKey      *uint64    `db:"idcard_address_key"         json:"idcard_address_key"`
+	DomicileAddressKey    *uint64    `db:"domicile_address_key"       json:"domicile_address_key"`
 	PhoneHome              string    `db:"phone_home"                 json:"phone_home"`
 	PhoneMobile            string    `db:"phone_mobile"               json:"phone_mobile"`
 	EmailAddress           string    `db:"email_address"              json:"email_address"`
 	CorrespondAddress     *string    `db:"correspond_address"         json:"correspond_address"`
-	Religion               string    `db:"region"                     json:"region"`
+	Religion               string    `db:"religion"                   json:"religion"`
 	PicSelfie             *string    `db:"pic_selfie"                 json:"pic_selfie"`
 	PicKtp                *string    `db:"pic_ktp"                    json:"pic_ktp"`
 	PicSelfieKtp          *string    `db:"pic_selfie_ktp"             json:"pic_selfie_ktp"`
@@ -40,17 +40,17 @@ type OaPersonalData struct {
 	OccupCompany          *string    `db:"occup_company"              json:"occup_company"`
 	OccupPosition         *string    `db:"occup_position"             json:"occup_position"`
 	OccupAddressKey       *uint64    `db:"occup_address_key"          json:"occup_address_key"`
-	OccupBusinessField     string    `db:"occup_business_field"       json:"occup_business_field"`
+	OccupBusinessFields    string    `db:"occup_business_fields"      json:"occup_business_fields"`
 	OccupPhone            *string    `db:"occup_phone"                json:"occup_phone"`
 	OccupWebUrl           *string    `db:"occup_web_url"              json:"occup_web_url"`
 	Correspondence        *string    `db:"correspondence"             json:"correspondence"`
 	AnnualIncome           string    `db:"annual_income"              json:"annual_income"`
 	SourceofFund           string    `db:"sourceof_fund"              json:"sourceof_fund"`
-	InvestmentObjectives   string    `db:"investment_objectives"      json:"investment_objectives"`
+	InvesmentObjectives    string    `db:"invesment_objectives"       json:"invesment_objectives"`
 	RelationType          *string    `db:"relation_type"              json:"relation_type"`
 	RelationFullName      *string    `db:"relation_full_name"         json:"relation_full_name"`
 	RelationOccupation    *string    `db:"relation_occupation"        json:"relation_occupation"`
-	RelationBusinessField *string    `db:"relation_business_field"    json:"relation_business_field"`
+	RelationBusinessFields *string   `db:"relation_business_fields"   json:"relation_business_fields"`
 	MotherMaidenName       string    `db:"mother_maiden_name"         json:"mother_maiden_name"`
 	EmergencyFullName     *string    `db:"emergency_full_name"        json:"emergency_full_name"`
 	EmergencyRelation     *string    `db:"emergency_relation"         json:"emergency_relation"`
