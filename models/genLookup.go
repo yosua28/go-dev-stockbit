@@ -53,7 +53,7 @@ func GetAllGenLookup(c *[]GenLookup, params map[string]string) (int, error) {
 	
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType"){
-			whereClause = append(whereClause, "gen_Lookup."+field + " = '" + value + "'")
+			whereClause = append(whereClause, "gen_lookup."+field + " = '" + value + "'")
 		}
 	} 
 

@@ -1182,6 +1182,17 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "name": "group_key",
+            "in": "query",
+            "description": "group_key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
