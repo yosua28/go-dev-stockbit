@@ -246,6 +246,7 @@ func CreateOaPersonalData(c echo.Context) error {
 				log.Println(err)
 				return lib.CustomError(http.StatusInternalServerError)
 			}
+			params["pic_ktp"] = filename + extension
 		} 
 
 		file, err = c.FormFile("pic_selfie_ktp")
@@ -274,6 +275,7 @@ func CreateOaPersonalData(c echo.Context) error {
 				log.Println(err)
 				return lib.CustomError(http.StatusInternalServerError)
 			}
+			params["pic_selfie_ktp"] = filename + extension
 		} 
 	}
 	
