@@ -1,5 +1,14 @@
 package models
 
+import (
+	"api/db"
+	"net/http"
+	"database/sql"
+	"strconv"
+
+	log "github.com/sirupsen/logrus"
+)
+
 type MsBankAccount struct {
 	BankAccountKey       uint64    `db:"bank_account_key"       json:"bank_account_key"`
 	BankKey              uint64    `db:"bank_key"               json:"bank_key"`
@@ -27,4 +36,37 @@ type MsBankAccount struct {
 	RecAttributeID1      *string   `db:"rec_attribute_id1"      json:"rec_attribute_id1"`
 	RecAttributeID2      *string   `db:"rec_attribute_id2"      json:"rec_attribute_id2"`
 	RecAttributeID3      *string   `db:"rec_attribute_id3"      json:"rec_attribute_id3"`
+}
+
+func CreateMsBankAccount(params map[string]string) (int, error, string){
+	query := "INSERT INTO ms_bank_account"
+		// Get params
+		var fields, values string
+		var bindvars []interface{}
+		for key, value := range params {
+			fields += key + ", "
+			values += "?, "
+			bindvars = append(bindvars, value)
+		}
+		fields = fields[:(len(fields) - 2)]
+		values = values[:(len(values) - 2)]
+		
+		// Combine params to build query
+		query += "("+fields + ") VALUES(" + values + ")"
+		log.Info(query)
+	
+		tx, err := db.Db.Begin()
+		if err != nil {
+			log.Error(err)
+			return http.StatusBadGateway, err, "0"
+		}
+		var ret sql.Result
+		ret, err = tx.Exec(query, bindvars...)
+		tx.Commit()
+		if err != nil {
+			log.Error(err)
+			return http.StatusBadRequest, err, "0"
+		}
+		lastID, _ := ret.LastInsertId()
+		return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }

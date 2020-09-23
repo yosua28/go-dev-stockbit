@@ -612,6 +612,235 @@
         }
       }
     },
+    "/auth/oarequest": {
+      "post": {
+        "description": "Create Request",
+        "tags": [
+          "Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "nationality": {
+                    "type": "string"
+                  },
+                  "idcard_number": {
+                    "type": "string"
+                  },
+                  "gender": {
+                    "type": "string"
+                  },
+                  "marital_status": {
+                    "type": "string"
+                  },
+                  "address_type_idcard": {
+                    "type": "string"
+                  },
+                  "address_idcard": {
+                    "type": "string"
+                  },
+                  "kabupaten_idcard": {
+                    "type": "integer"
+                  },
+                  "kecamatan_idcard": {
+                    "type": "integer"
+                  },
+                  "postal_idcard": {
+                    "type": "string"
+                  },
+                  "address_domicile": {
+                    "type": "string"
+                  },
+                  "kabupaten_domicile": {
+                    "type": "integer"
+                  },
+                  "kecamatan_domicile": {
+                    "type": "integer"
+                  },
+                  "postal_domicile": {
+                    "type": "string"
+                  },
+                  "phone_home": {
+                    "type": "string"
+                  },
+                  "phone_mobile": {
+                    "type": "string"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "religion": {
+                    "type": "string"
+                  },
+                  "education": {
+                    "type": "string"
+                  },
+                  "pic_ktp": {
+                    "type": "file"
+                  },
+                  "pic_selfie_ktp": {
+                    "type": "file"
+                  },
+                  "job": {
+                    "type": "string"
+                  },
+                  "company": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "string"
+                  },
+                  "company_address": {
+                    "type": "string"
+                  },
+                  "business_field": {
+                    "type": "string"
+                  },
+                  "annual_income": {
+                    "type": "string"
+                  },
+                  "fund_source": {
+                    "type": "string"
+                  },
+                  "objectives": {
+                    "type": "string"
+                  },
+                  "corespondence": {
+                    "type": "string"
+                  },
+                  "relation_name": {
+                    "type": "string"
+                  },
+                  "relation_occupation": {
+                    "type": "string"
+                  },
+                  "relation_business_field": {
+                    "type": "string"
+                  },
+                  "mother_maiden_name": {
+                    "type": "string"
+                  },
+                  "emergency_name": {
+                    "type": "string"
+                  },
+                  "emergency_relation": {
+                    "type": "string"
+                  },
+                  "emergency_phone": {
+                    "type": "string"
+                  },
+                  "beneficial_name": {
+                    "type": "string"
+                  },
+                  "beneficial_relation": {
+                    "type": "string"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password",
+                  "phone"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "post_type_key": 3,
+                    "post_type_code": "NEWS",
+                    "post_type_name": "News",
+                    "post_type_desc": "Berbagai berita-berita",
+                    "post_type_group": "HOME",
+                    "post_list": [
+                      {
+                        "post_key": 2,
+                        "post_subtype": {
+                          "post_subtype_key": 1,
+                          "post_subtype_code": "GENERAL",
+                          "post_subtype_name": "Category General"
+                        },
+                        "post_title": "Investasi Jangan Hanya Mimpi",
+                        "post_sub_title": "Wujudkan impian anda dengan mulai berinvestasi sebesar 100.00",
+                        "post_content": "Investasi masa kini semakin mudah. MNC Asset Mnanagement menyediakan kemudahan untuk investasi bagi nasabah retail mulai dari 100.000",
+                        "post_content_author": null,
+                        "post_content_sources": null,
+                        "post_publish_start": "31 Dec 2020",
+                        "post_publish_thru": "31 Dec 2021",
+                        "post_page_allowed": false,
+                        "post_comment_allowed": false,
+                        "post_comment_displayed": false,
+                        "post_files_allowed": false,
+                        "post_video_allowed": false,
+                        "post_video_url": null,
+                        "post_pinned": false
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/posts/{key}": {
       "get": {
         "description": "Get Post",

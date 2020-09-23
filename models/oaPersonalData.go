@@ -10,7 +10,8 @@ import (
 )
 
 type OaPersonalData struct {
-	RegRequestKey          uint64    `db:"reg_request_key"            json:"reg_request_key"`
+	PersonalDataKey        uint64    `db:"personal_data_key"          json:"personal_data_key"`
+	OaRequestKey           uint64    `db:"oa_request_key"             json:"oa_request_key"`
 	FullName               string    `db:"full_name"                  json:"email"`
 	PlaceBirth             string    `db:"place_birth"                json:"place_birth"`
 	DateBirth              string    `db:"date_birth"                 json:"date_birth"`
