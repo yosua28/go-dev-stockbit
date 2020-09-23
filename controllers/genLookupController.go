@@ -26,7 +26,7 @@ func GetGenLookup(c echo.Context) error {
 	for _, lkp := range lookupDB {
 		var data models.GenLookupInfo
 		data.Name = *lkp.LkpText1
-		data.Value = *lkp.LkpName
+		data.Value = *lkp.LkpVal1
 		lookupData[lkp.LkpGroupKey] = append(lookupData[lkp.LkpGroupKey], data)
 	}
 
