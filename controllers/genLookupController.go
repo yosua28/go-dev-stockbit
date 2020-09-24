@@ -19,8 +19,8 @@ func GetGenLookup(c echo.Context) error {
 	groupKeyStr := c.QueryParam("group_key")
 	groupKey, _ := strconv.ParseUint(groupKeyStr, 10, 64)
 	if groupKey == 0 {
-		log.Error("Fund Type should be number")
-		return lib.CustomError(http.StatusNotFound,"Fund Type should be number","Fund Type should be number")
+		log.Error("Group key should be number")
+		return lib.CustomError(http.StatusNotFound,"Group key should be number","Group key should be number")
 	}
 
 	params["lkp_group_key"] = groupKeyStr
@@ -36,8 +36,10 @@ func GetGenLookup(c echo.Context) error {
 
 	for _, lkp := range lookupDB {
 		var data models.GenLookupInfo
-		data.Name = *lkp.LkpText1
-		data.Value = *lkp.LkpVal1
+		if lkp.LkpText1 != nil{
+			data.Name = *lkp.LkpText1
+		}
+		data.Value = lkp.LookupKey
 		lookupData[lkp.LkpGroupKey] = append(lookupData[lkp.LkpGroupKey], data)
 	}
 

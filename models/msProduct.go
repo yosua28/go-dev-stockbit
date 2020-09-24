@@ -5,6 +5,7 @@ import (
 	"log"
 	"strconv"
 	"net/http"
+	"strings"
 )
 
 type MsProductList struct {
@@ -161,6 +162,27 @@ func GetMsProduct(c *MsProduct, key string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductIn(c *[]MsProduct, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				cms_post.* FROM 
+				cms_post WHERE 
+				cms_post.post_publish_start <= NOW() AND 
+				cms_post.post_publish_thru > NOW() AND 
+				cms_post.rec_status = 1 `
+	query := query2 + " AND cms_post."+field+" IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

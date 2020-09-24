@@ -1171,7 +1171,8 @@
           }
         }
       }
-    },"/auth/lookup": {
+    },
+    "/auth/lookup": {
       "get": {
         "description": "Get Lookup Data",
         "tags": [
@@ -1279,7 +1280,132 @@
           }
         }
       }
-    },"/auth/bank": {
+    },
+    "/auth/quiz": {
+      "get": {
+        "description": "Get Quiz Data",
+        "tags": [
+          "Quiz"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "header_key",
+            "in": "query",
+            "description": "header_key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "quiz_header_key": 1,
+                    "quiz_name": "Survey Pengenalan RD",
+                    "quiz_desc": "Mengetahui apakah visitor kenal porduk RD",
+                    "questions": [
+                      {
+                        "quiz_question_key": 1,
+                        "quiz_title": "Seberapa jauh Anda kenal Reksadana",
+                        "file_image_allowed": false,
+                        "quiz_opetion_type": "MULTIPLE_CHOICE",
+                        "quiz_opetion_default": "",
+                        "options": [
+                          {
+                            "quiz_option_key": 1,
+                            "quiz_option_label": "A",
+                            "quiz_option_title": "Belum mengenal",
+                            "quiz_option_score": 0,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 2,
+                            "quiz_option_label": "B",
+                            "quiz_option_title": "Sedikit mengenal",
+                            "quiz_option_score": 1,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 3,
+                            "quiz_option_label": "C",
+                            "quiz_option_title": "Sangat mengenal",
+                            "quiz_option_score": 2,
+                            "quiz_option_default": 0
+                          }
+                        ]
+                      },
+                      {
+                        "quiz_question_key": 2,
+                        "quiz_title": "Apakah Anda sudah memiliki Reksadana?",
+                        "file_image_allowed": false,
+                        "quiz_opetion_type": "MULTIPLE_CHOICE",
+                        "quiz_opetion_default": "",
+                        "options": [
+                          {
+                            "quiz_option_key": 4,
+                            "quiz_option_label": "A",
+                            "quiz_option_title": "Belum",
+                            "quiz_option_score": 0,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 5,
+                            "quiz_option_label": "B",
+                            "quiz_option_title": "Sudah",
+                            "quiz_option_score": 1,
+                            "quiz_option_default": 0
+                          }
+                        ]
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/bank": {
       "get": {
         "description": "Get Bank Data",
         "tags": [

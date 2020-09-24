@@ -3,27 +3,26 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
-type GenLookupInfo struct {
-	Name         string         `json:"name"`
-	Value        uint64         `json:"value"`
+type CmsQuizOptionsInfo struct {
+	QuizOptionKey          uint64     `json:"quiz_option_key"`
+	QuizOptionLabel        string     `json:"quiz_option_label"`
+	QuizOptionTitle        string     `json:"quiz_option_title"`
+	QuizOptionScore        uint64     `json:"quiz_option_score"`
+	QuizOptionDefault      uint8      `json:"quiz_option_default"`
 }
 
-type GenLookup struct {
-	LookupKey              uint64     `db:"lookup_key"              json:"lookup_key"`
-	LkpGroupKey            uint64     `db:"lkp_group_key"           json:"lkp_group_key"`
-	LkpCode               *string     `db:"lkp_code"                json:"lkp_code"`
-	LkpName               *string     `db:"lkp_name"                json:"lkp_name"`
-	LkpDesc               *string     `db:"lkp_desc"                json:"lkp_desc"`
-	LkpVal1               *string     `db:"lkp_val1"                json:"lkp_val1"`
-	LkpVal2               *string     `db:"lkp_val2"                json:"lkp_val2"`
-	LkpVal3               *string     `db:"lkp_val3"                json:"lkp_val3"`
-	LkpText1              *string     `db:"lkp_text1"               json:"lkp_text1"`
-	LkpText2              *string     `db:"lkp_text2"               json:"lkp_text2"`
-	LkpText3              *string     `db:"lkp_text3"               json:"lkp_text3"`
+type CmsQuizOptions struct {
+	QuizOptionKey          uint64     `db:"quiz_option_key"         json:"quiz_option_key"`
+	QuizQuestionKey        uint64     `db:"quiz_question_key"       json:"quiz_question_key"`
+	QuizOptionLabel       *string     `db:"quiz_option_label"       json:"quiz_option_label"`
+	QuizOptionTitle       *string     `db:"quiz_option_title"       json:"quiz_option_title"`
+	QuizOptionScore       *uint64     `db:"quiz_option_score"       json:"quiz_option_score"`
+	QuizOptionDefault     *uint8      `db:"quiz_option_default"     json:"quiz_option_default"`
 	RecOrder              *uint64     `db:"rec_order"               json:"rec_order"`
 	RecStatus              uint8      `db:"rec_status"              json:"rec_status"`
 	RecCreatedDate        *string     `db:"rec_created_date"        json:"rec_created_date"`
@@ -43,17 +42,17 @@ type GenLookup struct {
 	RecAttributeID3       *string     `db:"rec_attribute_id3"       json:"rec_attribute_id3"`
 }
 
-func GetAllGenLookup(c *[]GenLookup, params map[string]string) (int, error) {
+func GetAllCmsQuizOptions(c *[]CmsQuizOptions, params map[string]string) (int, error) {
 	query := `SELECT
-              gen_lookup.* FROM 
-			  gen_lookup `
+              cms_quiz_options.* FROM 
+			  cms_quiz_options `
 	var present bool
 	var whereClause []string
 	var condition string
 	
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType"){
-			whereClause = append(whereClause, "gen_lookup."+field + " = '" + value + "'")
+			whereClause = append(whereClause, "cms_quiz_options."+field + " = '" + value + "'")
 		}
 	} 
 
@@ -80,6 +79,24 @@ func GetAllGenLookup(c *[]GenLookup, params map[string]string) (int, error) {
 
 	// Main query
 	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetCmsQuizOptionsIn(c *[]CmsQuizOptions, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				cms_quiz_options.* FROM 
+				cms_quiz_options `
+	query := query2 + " WHERE cms_quiz_options."+field+" IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
 	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)

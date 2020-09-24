@@ -80,7 +80,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	// Address Domicile Parameters
 	addressDomicileParams := make(map[string]string)
 
-	addressDomicileParams["address_type"] = "Domicile"
+	addressDomicileParams["address_type"] = "18"
 
 	addressDomicile := c.FormValue("address_domicile")
 	if addressDomicile == "" {
@@ -307,7 +307,7 @@ func CreateOaPersonalData(c echo.Context) error {
 		log.Error("Missing required parameter: company_address")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: company_address","Missing required parameter: company_address")
 	}
-	addressCompanyParams["address_type"] = "Company"
+	addressCompanyParams["address_type"] = "19"
 	addressCompanyParams["address_line1"] = companyAddress
 	addressCompanyParams["rec_status"] = "1"
 
