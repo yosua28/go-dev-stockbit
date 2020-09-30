@@ -67,31 +67,51 @@ func GetMsProductList(c echo.Context) error {
 
 	params := make(map[string]string)
 	fundTypeKeyStr := c.QueryParam("fund_type")
-	fundTypeKey, _ := strconv.ParseUint(fundTypeKeyStr, 10, 64)
-	if fundTypeKey == 0 {
-		log.Error("Fund Type should be number")
-		return lib.CustomError(http.StatusNotFound,"Fund Type should be number","Fund Type should be number")
+
+	if fundTypeKeyStr != ""{
+		fundTypeKey, _ := strconv.ParseUint(fundTypeKeyStr, 10, 64)
+		if fundTypeKey == 0 {
+			log.Error("Fund Type should be number")
+			return lib.CustomError(http.StatusNotFound,"Fund Type should be number","Fund Type should be number")
+		}
+		params["fund_type_key"] = fundTypeKeyStr
 	}
 
-	params["fund_type_key"] = fundTypeKeyStr
-
+	var performanceDB []models.FfsNavPerformance
+	var responseOrder []string
+	performData := false
 	// Get parameter order_by
 	orderBy := c.QueryParam("order_by")
 	if orderBy!=""{
 		if (orderBy == "post_title") || (orderBy == "post_publish_thru") || (orderBy == "post_publish_start") {
 			params["orderBy"] = orderBy
+			// Get parameter order_type
+			orderType := c.QueryParam("order_type")
+			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
+				params["orderType"] = orderType
+			}
+		}else if (orderBy == "y5") || (orderBy == "y3") || (orderBy == "y1") || (orderBy == "m6") || (orderBy == "m3") || (orderBy == "ytd"){
+			params := make(map[string]string)
+			params["orderBy"] = "perform_"+orderBy
+			params["orderType"] = "DESC"
+			status, err = models.GetAllLastNavPerformance(&performanceDB, params)
+			if err != nil {
+				log.Error("Get performance: " + err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+
+			for _, perform := range performanceDB {
+				responseOrder = append(responseOrder, strconv.FormatUint(perform.ProductKey, 10))
+			}
+			performData = true
 		}else{
 			log.Error("Wrong input for parameter order_by")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
 		}
 	}
-	// Get parameter order_type
-	orderType := c.QueryParam("order_type")
-	if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
-		params["orderType"] = orderType
-	}
 
 	params["flag_enabled"] = "1"
+	params["rec_status"] = "1"
 
 	var productDB []models.MsProduct
 	status, err = models.GetAllMsProduct(&productDB, limit, offset, params, noLimit)
@@ -107,7 +127,9 @@ func GetMsProductList(c echo.Context) error {
 	var productIDs []string
 	var fundTypeIDs []string
 	var riskIDs []string
+	productData := make(map[string]models.MsProduct)
 	for _, product := range productDB {
+		productData[strconv.FormatUint(product.ProductKey, 10)] = product
 		if _, ok := lib.Find(productIDs, strconv.FormatUint(product.ProductKey, 10)); !ok {
 			productIDs = append(productIDs, strconv.FormatUint(product.ProductKey, 10))
 		}
@@ -131,11 +153,13 @@ func GetMsProductList(c echo.Context) error {
 		log.Error("Get fund type: " + err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
-	var performanceDB []models.FfsNavPerformance
-	status, err = models.GetLastNavPerformanceIn(&performanceDB, productIDs)
-	if err != nil {
-		log.Error("Get performance: " + err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
+	if !performData {
+		status, err = models.GetLastNavPerformanceIn(&performanceDB, productIDs)
+		if err != nil {
+			log.Error("Get performance: " + err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		responseOrder = productIDs
 	}
 	var riskDB []models.MsRiskProfile
 	status, err = models.GetMsRiskProfileIn(&riskDB, riskIDs)
@@ -163,8 +187,9 @@ func GetMsProductList(c echo.Context) error {
 	}
 	
 	
-	var productData []models.MsProductList
-	for _, product := range productDB {
+	var responseData []models.MsProductList
+	for _, order := range responseOrder {
+		product := productData[order]
 		var data models.MsProductList
 	
 		data.ProductKey = product.ProductKey
@@ -203,7 +228,6 @@ func GetMsProductList(c echo.Context) error {
 		var nav models.TrNavInfo
 		if n, ok := nData[product.ProductKey]; ok {
 			date, _ := time.Parse(layout, n.NavDate)
-			fmt.Println(date)
 			nav.NavDate = date.Format(newLayout)
 			nav.NavValue = n.NavValue
 		}
@@ -227,14 +251,14 @@ func GetMsProductList(c echo.Context) error {
 		} 
 		data.NavPerformance = &perform
 	
-		productData = append(productData, data)
+		responseData = append(responseData, data)
 	}
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = productData
+	response.Data = responseData
 	
 	return c.JSON(http.StatusOK, response)
 }
@@ -315,7 +339,23 @@ func GetMsProductData(c echo.Context) error {
 	}else{
 		data.RecImage1 = config.BaseUrl + "/images/product/default.png"
 	}
-
+	data.FlagSubscription = false
+	if product.FlagSubscription == 1 {
+		data.FlagSubscription = true
+	}
+	data.FlagRedemption = false 
+	if product.FlagRedemption == 1 {
+		data.FlagRedemption = true
+	}
+	data.FlagSwitchOut = false 
+	if product.FlagSwitchOut == 1 {
+		data.FlagSwitchOut = true
+	}
+	data.FlagSwitchIn = false 
+	if product.FlagSwitchIn == 1 {
+		data.FlagSwitchIn = true
+	}
+	
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
 

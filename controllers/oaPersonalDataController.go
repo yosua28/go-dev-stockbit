@@ -23,12 +23,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	// Address ID Parameters
 	addressIDParams := make(map[string]string)
 
-	addressTypeID := c.FormValue("address_type_idcard")
-	if addressTypeID == "" {
-		log.Error("Missing required parameter: address_type_idcard")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: address_type_idcard","Missing required parameter: address_type_idcard")
-	}
-	addressIDParams["address_type"] = addressTypeID
+	addressIDParams["address_type"] = "17"
 
 	addressid := c.FormValue("address_idcard")
 	if addressid == "" {
@@ -145,13 +140,48 @@ func CreateOaPersonalData(c echo.Context) error {
 	}
 	params["full_name"] = fullName
 
+	idcardType := c.FormValue("idcard_type")
+	if idcardType == "" {
+		log.Error("Missing required parameter: idcard_type")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	params["idcard_type"] = idcardType
+
+	placeBirth := c.FormValue("place_birth")
+	if placeBirth == "" {
+		log.Error("Missing required parameter: place_birth")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	params["place_birth"] = placeBirth
+
+	dateBirth := c.FormValue("date_birth")
+	if dateBirth == "" {
+		log.Error("Missing required parameter: date_birth")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	log.Info("dateBirth: " + dateBirth)
+	layout := "2006-01-02 15:04:05"
+	dateBirth += " 00:00:00"
+	date, err := time.Parse(layout, dateBirth)
+	dateStr := date.Format(layout)
+	log.Info("dateBirth: " + dateStr)
+	params["date_birth"] = dateStr
+
 	nationality := c.FormValue("nationality")
 	if nationality == "" {
 		log.Error("Missing required parameter: nationality")
 		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		n, err := strconv.ParseUint(nationality, 10, 64)
+		if err == nil && n > 0{
+			params["nationality"] = nationality
+			
+		}else{
+			log.Error("Wrong input for parameter: nationality")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: nationality","Wrong input for parameter: nationality")
+		}
 	}
-	params["nationality"] = nationality
-
+	
 	idcardNumber := c.FormValue("idcard_number")
 	if idcardNumber == "" {
 		log.Error("Missing required parameter: idcard_number")
@@ -163,15 +193,29 @@ func CreateOaPersonalData(c echo.Context) error {
 	if gender == "" {
 		log.Error("Missing required parameter: gender")
 		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		n, err := strconv.ParseUint(gender, 10, 64)
+		if err == nil && n > 0{
+			params["gender"] = gender
+		}else{
+			log.Error("Wrong input for parameter: gender")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: gender","Wrong input for parameter: gender")
+		}
 	}
-	params["gender"] = gender
 
 	maritalStatus := c.FormValue("marital_status")
 	if maritalStatus == "" {
 		log.Error("Missing required parameter: marital_status")
 		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		n, err := strconv.ParseUint(maritalStatus, 10, 64)
+		if err == nil && n > 0{
+			params["marital_status"] = maritalStatus
+		}else{
+			log.Error("Wrong input for parameter: marital_status")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: marital_status","Wrong input for parameter: marital_status")
+		}
 	}
-	params["marital_status"] = maritalStatus
 
 	phoneHome := c.FormValue("phone_home")
 	if phoneHome == "" {
@@ -190,7 +234,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	email := c.FormValue("email")
 	if phoneHome == "" {
 		log.Error("Missing required parameter: email")
-		return lib.CustomError(http.StatusBadRequest)
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: email","Missing required parameter: email")
 	}
 	// Validate email
 	err = checkmail.ValidateFormat(email)
@@ -203,21 +247,34 @@ func CreateOaPersonalData(c echo.Context) error {
 	religion := c.FormValue("religion")
 	if religion == "" {
 		log.Error("Missing required parameter: religion")
-		return lib.CustomError(http.StatusBadRequest)
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: religion","Missing required parameter: religion")
+	} else {
+		n, err := strconv.ParseUint(religion, 10, 64)
+		if err == nil && n > 0{
+			params["religion"] = religion
+		}else{
+			log.Error("Wrong input for parameter: religion")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: religion","Wrong input for parameter: religion")
+		}
 	}
-	params["religion"] = religion
 
 	education := c.FormValue("education")
 	if education == "" {
 		log.Error("Missing required parameter: education")
 		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		n, err := strconv.ParseUint(education, 10, 64)
+		if err == nil && n > 0{
+			params["education"] = education
+		}else{
+			log.Error("Wrong input for parameter: education")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: education","Wrong input for parameter: education")
+		}
 	}
-	params["education"] = education
-
 	
 	err = os.MkdirAll(config.BasePath + "/images/user/" + strconv.FormatUint(lib.Profile.UserID, 10), 0755)
 	if err != nil {
-		log.Fatal(err)
+		log.Error(err.Error())
 	}else{
 		var file *multipart.FileHeader
 		file, err = c.FormFile("pic_ktp")
@@ -284,8 +341,15 @@ func CreateOaPersonalData(c echo.Context) error {
 	if job == "" {
 		log.Error("Missing required parameter: job")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: job","Missing required parameter: job")
+	} else {
+		n, err := strconv.ParseUint(job, 10, 64)
+		if err == nil && n > 0{
+			params["occup_job"] = job
+		}else{
+			log.Error("Wrong input for parameter: job")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: job","Wrong input for parameter: job")
+		}
 	}
-	params["occup_job"] = job
 
 	company := c.FormValue("company")
 	if company == "" {
@@ -334,29 +398,57 @@ func CreateOaPersonalData(c echo.Context) error {
 	if annualIncome == "" {
 		log.Error("Missing required parameter: annual_income")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: annual_income","Missing required parameter: annual_income")
+	} else {
+		n, err := strconv.ParseUint(annualIncome, 10, 64)
+		if err == nil && n > 0{
+			params["annual_income"] = annualIncome
+		}else{
+			log.Error("Wrong input for parameter: annual_income")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: annual_income","Wrong input for parameter: annual_income")
+		}
 	}
-	params["annual_income"] = annualIncome
 	
 	fundSource := c.FormValue("fund_source")
 	if fundSource == "" {
 		log.Error("Missing required parameter: fund_source")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: fund_source","Missing required parameter: fund_source")
+	} else {
+		n, err := strconv.ParseUint(fundSource, 10, 64)
+		if err == nil && n > 0{
+			params["sourceof_fund"] = fundSource
+		}else{
+			log.Error("Wrong input for parameter: fund_source")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: fund_source","Wrong input for parameter: fund_source")
+		}
 	}
-	params["sourceof_fund"] = fundSource
 	
 	objectives := c.FormValue("objectives")
 	if objectives == "" {
 		log.Error("Missing required parameter: objectives")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: objectives","Missing required parameter: objectives")
+	} else {
+		n, err := strconv.ParseUint(objectives, 10, 64)
+		if err == nil && n > 0{
+			params["invesment_objectives"] = objectives
+		}else{
+			log.Error("Wrong input for parameter: objectives")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: objectives","Wrong input for parameter: objectives")
+		}
 	}
-	params["invesment_objectives"] = objectives
 	
 	corespondence := c.FormValue("corespondence")
 	if corespondence == "" {
 		log.Error("Missing required parameter: corespondence")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: corespondence","Missing required parameter: corespondence")
+	} else {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0{
+			params["correspondence"] = corespondence
+		}else{
+			log.Error("Wrong input for parameter: corespondence")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: corespondence","Wrong input for parameter: corespondence")
+		}
 	}
-	params["correspondence"] = corespondence
 	
 	relationName := c.FormValue("relation_name")
 	if relationName == "" {
@@ -397,8 +489,15 @@ func CreateOaPersonalData(c echo.Context) error {
 	if emergencyRelation == "" {
 		log.Error("Missing required parameter: emergency_relation")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: emergency_relation","Missing required parameter: emergency_relation")
+	} else {
+		n, err := strconv.ParseUint(emergencyRelation, 10, 64)
+		if err == nil && n > 0{
+			params["emergency_relation"] = emergencyRelation
+		}else{
+			log.Error("Wrong input for parameter: emergency_relation")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: emergency_relation","Wrong input for parameter: emergency_relation")
+		}
 	}
-	params["emergency_relation"] = emergencyRelation
 	
 	emergencyPhone := c.FormValue("emergency_phone")
 	if emergencyPhone == "" {
@@ -418,8 +517,15 @@ func CreateOaPersonalData(c echo.Context) error {
 	if beneficialRelation == "" {
 		log.Error("Missing required parameter: beneficial_relation")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: beneficial_relation","Missing required parameter: beneficial_relation")
+	} else {
+		n, err := strconv.ParseUint(beneficialRelation, 10, 64)
+		if err == nil && n > 0{
+			params["beneficial_relation"] = beneficialRelation
+		}else{
+			log.Error("Wrong input for parameter: beneficial_relation")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: beneficial_relation","Wrong input for parameter: beneficial_relation")
+		}
 	}
-	params["beneficial_relation"] = beneficialRelation
 	
 	paramsBank := make(map[string]string)
 	bankKey := c.FormValue("bank_key")
@@ -474,14 +580,13 @@ func CreateOaPersonalData(c echo.Context) error {
 	params["bank_account_key"] = bankAccountID
 
 	// Create Request
-	dateLayout := "2006-01-02 15:04:05"
-	date := time.Now().Format(dateLayout)
+	dateNow := time.Now().Format(layout)
 	paramsRequest := make(map[string]string)
-	paramsRequest["oa_status"] = "NEW"
+	paramsRequest["oa_status"] = "5"
 	paramsRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID,10) 
-	paramsRequest["oa_entry_start"] = date 
-	paramsRequest["oa_entry_end"] = date 
-	paramsRequest["oa_request_type"] = "NEW" 
+	paramsRequest["oa_entry_start"] = dateNow 
+	paramsRequest["oa_entry_end"] = dateNow
+	paramsRequest["oa_request_type"] = "127" 
 	paramsRequest["rec_status"] = "1" 
 	status, err, requestID := models.CreateOaRequest(paramsRequest)
 	if err != nil {
@@ -495,7 +600,6 @@ func CreateOaPersonalData(c echo.Context) error {
 	}
 	params["oa_request_key"] = requestID
 	params["rec_status"] = "1"
-	params["idcard_type"] = addressTypeID
 
 	status, err = models.CreateOaPersonalData(params)
 	if err != nil {

@@ -26,7 +26,7 @@ type FfsNavPerformanceInfo struct {
 type FfsNavPerformance struct {
 	NavPerformKey        uint64    `db:"nav_perform_key"       json:"nav_perform_key"`
 	ProductKey           uint64    `db:"product_key"           json:"product_key"`
-	PeriodeKey           uint64    `db:"periode_key"           json:"periode_key"`
+	PeriodeKey          *uint64    `db:"periode_key"           json:"periode_key"`
 	NavDate              string    `db:"nav_date"              json:"nav_date"`
 	NavD0                float64   `db:"nav_d0"                json:"nav_d0"`
 	NavD1                float64   `db:"nav_d1"                json:"nav_d1"`
@@ -122,7 +122,7 @@ func GetAllFfsNavPerformance(c *[]FfsNavPerformance, limit uint64, offset uint64
 	return http.StatusOK, nil
 }
 
-func GetLastNavPerformanceIn(c *[]FfsNavPerformance, productKey []string,) (int, error) {
+func GetLastNavPerformanceIn(c *[]FfsNavPerformance, productKey []string) (int, error) {
 	inQuery := strings.Join(productKey, ",")
 	query2 := `SELECT 
 				t1.nav_perform_key, 
@@ -142,6 +142,65 @@ func GetLastNavPerformanceIn(c *[]FfsNavPerformance, productKey []string,) (int,
 				ON t1.nav_perform_key = t2.nav_perform_key`
 	query := query2 + " WHERE t1.product_key IN(" + inQuery + ")"
 	
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetAllLastNavPerformance(c *[]FfsNavPerformance, params map[string]string) (int, error) {
+	query := `SELECT 
+			t1.nav_perform_key, 
+			t1.product_key, nav_date, 
+			t1.perform_d1,
+			t1.perform_mtd,
+			t1.perform_m1,
+			t1.perform_m3,
+			t1.perform_m6,
+			t1.perform_ytd,
+			t1.perform_y1,
+			t1.perform_y3,
+			t1.perform_y5,
+			t1.perform_cagr,
+			t1.perform_all FROM
+			ffs_nav_performance t1 JOIN (SELECT MAX(nav_perform_key) nav_perform_key FROM ffs_nav_performance GROUP BY product_key) t2
+			ON t1.nav_perform_key = t2.nav_perform_key`
+	var present bool
+	var whereClause []string
+	var condition string
+	
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType"){
+			whereClause = append(whereClause, "ffs_nav_performance."+field + " = '" + value + "'")
+		}
+	} 
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
 	log.Println(query)
 	err := db.Db.Select(c, query)
 	if err != nil {

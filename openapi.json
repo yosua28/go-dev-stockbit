@@ -632,20 +632,27 @@
                   "full_name": {
                     "type": "string"
                   },
-                  "nationality": {
+                  "idcard_type": {
+                    "type": "integer"
+                  },
+                  "place_birth": {
                     "type": "string"
+                  },
+                  "date_birth": {
+                    "type": "string",
+                    "example": "2017-10-30"
+                  },
+                  "nationality": {
+                    "type": "integer"
                   },
                   "idcard_number": {
                     "type": "string"
                   },
                   "gender": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "marital_status": {
-                    "type": "string"
-                  },
-                  "address_type_idcard": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "address_idcard": {
                     "type": "string"
@@ -681,10 +688,10 @@
                     "type": "string"
                   },
                   "religion": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "education": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "pic_ktp": {
                     "type": "file"
@@ -693,7 +700,7 @@
                     "type": "file"
                   },
                   "job": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "company": {
                     "type": "string"
@@ -708,16 +715,16 @@
                     "type": "string"
                   },
                   "annual_income": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "fund_source": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "objectives": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "corespondence": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "relation_name": {
                     "type": "string"
@@ -735,7 +742,7 @@
                     "type": "string"
                   },
                   "emergency_relation": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "emergency_phone": {
                     "type": "string"
@@ -744,7 +751,7 @@
                     "type": "string"
                   },
                   "beneficial_relation": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "bank_key": {
                     "type": "integer"
@@ -758,12 +765,7 @@
                   "branch_name": {
                     "type": "string"
                   }
-                },
-                "required": [
-                  "email",
-                  "password",
-                  "phone"
-                ]
+                }
               }
             }
           }
@@ -1832,7 +1834,7 @@
             "name": "fund_type",
             "in": "query",
             "description": "fund type key",
-            "required": true,
+            "required": false,
             "schema": {
               "type": "integer"
             }
@@ -1847,7 +1849,13 @@
               "enum": [
                 "post_title",
                 "post_publish_thru",
-                "post_publish_start"
+                "post_publish_start",
+                "y5",
+                "y3",
+                "y1",
+                "ytd",
+                "m6",
+                "m3"
               ]
             }
           },

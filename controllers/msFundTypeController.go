@@ -3,6 +3,7 @@ package controllers
 import (
 	"api/models"
 	"api/lib"
+	"api/config"
 	"net/http"
 	"github.com/labstack/echo"
 )
@@ -51,8 +52,10 @@ func GetMsFundTypeList(c echo.Context) error {
 		if fund.RecOrder != nil {
 			data.RecOrder = *fund.RecOrder
 		}
-		if fund.RecImage1 != nil {
-			data.RecImage1 = *fund.RecImage1
+		if fund.RecImage1 != nil && *fund.RecImage1 != "" {
+			data.RecImage1 = config.BaseUrl + "/images/fund_type/" + *fund.RecImage1
+		}else{
+			data.RecImage1 = config.BaseUrl + "/images/fund_type/default.png"
 		}
 		responseData = append(responseData, data)
 	}

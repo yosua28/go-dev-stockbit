@@ -32,6 +32,10 @@ type MsProductData struct {
 	ProspectusLink         string                `json:"prospectus_link"`
 	FundFactSheet          string                `json:"ffs_link"`
 	RecImage1              string                `json:"rec_image1"`
+	FlagSubscription       bool                  `json:"flag_subscription"`
+	FlagRedemption         bool                  `json:"flag_redemption"`
+	FlagSwitchOut          bool                  `json:"flag_switch_out"`
+	FlagSwitchIn           bool                  `json:"flag_switch_in"`
 	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
 	Nav                   *TrNavInfo             `json:"nav,omitempty"`
 	CustodianBank         *MsCustodianBankInfo   `json:"custodian_bank,omitempty"`
@@ -52,8 +56,8 @@ type MsProduct struct {
 	RiskProfileKey         *uint64    `db:"risk_profile_key"        json:"risk_profile_key"`
 	ProductProfile         *string    `db:"product_profile"         json:"product_profile"`
 	InvestmentObjectives   *string    `db:"investment_objectives"   json:"investment_objectives"`
-	ProductPhase            uint8     `db:"product_phase"           json:"product_phase"`
-	NavValuationType        uint8     `db:"nav_valuation_type"      json:"nav_valuation_type"`
+	ProductPhase           *uint64    `db:"product_phase"           json:"product_phase"`
+	NavValuationType       *uint64    `db:"nav_valuation_type"      json:"nav_valuation_type"`
 	ProspectusLink         *string    `db:"prospectus_link"         json:"prospectus_link"`
 	LaunchDate             *string    `db:"launch_date"             json:"launch_date"`
 	InceptionDate          *string    `db:"inception_date"          json:"inception_date"`
@@ -103,8 +107,7 @@ type MsProduct struct {
 func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               ms_product.* FROM 
-			  ms_product WHERE
-			  ms_product.rec_status = 1 `
+			  ms_product `
 	var present bool
 	var whereClause []string
 	var condition string
@@ -117,7 +120,7 @@ func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[str
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " AND "
+		condition += " WHERE "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
