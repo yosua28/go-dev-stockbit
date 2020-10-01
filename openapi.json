@@ -2067,6 +2067,274 @@
           }
         }
       }
+    },
+    "/admin/oarequestlist": {
+      "get": {
+        "description": "Get All OA Request",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "oa_request_key",
+                "oa_request_type",
+                "oa_entry_start",
+                "oa_entry_end",
+                "oa_status",
+                "rec_order",
+                "rec_status"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 3,
+                  "data": [
+                    {
+                      "oa_request_key": 1,
+                      "oa_request_type": "127",
+                      "oa_entry_start": "2020-09-28 17:48:40.000000",
+                      "oa_entry_end": "2020-09-28 17:48:40.000000",
+                      "oa_status": "5",
+                      "user_login_key": 7,
+                      "customer_key": null,
+                      "sales_code": null,
+                      "check1_date": null,
+                      "check1_flag": null,
+                      "check1_references": null,
+                      "check1_notes": null,
+                      "check2_date": null,
+                      "check2_flag": null,
+                      "check2_references": null,
+                      "check2_notes": null,
+                      "oa_risk_level": null,
+                      "rec_order": null,
+                      "rec_status": 1,
+                      "rec_created_date": null,
+                      "rec_created_by": null,
+                      "rec_modified_date": null,
+                      "rec_modified_by": null,
+                      "rec_image1": null,
+                      "rec_image2": null,
+                      "rec_approval_status": null,
+                      "rec_approval_stage": null,
+                      "rec_approved_date": null,
+                      "rec_approved_by": null,
+                      "rec_deleted_date": null,
+                      "rec_deleted_by": null,
+                      "rec_attribute_id1": null,
+                      "rec_attribute_id2": null,
+                      "rec_attribute_id3": null
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/oarequestdata/{key}": {
+      "get": {
+        "description": "Get OA Request by ",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "oa request key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "oa_request_key": 1,
+                    "oa_request_type": "127",
+                    "oa_entry_start": "2020-09-28 17:48:40.000000",
+                    "oa_entry_end": "2020-09-28 17:48:40.000000",
+                    "oa_status": "5",
+                    "user_login_key": 7,
+                    "customer_key": null,
+                    "sales_code": null,
+                    "check1_date": null,
+                    "check1_flag": null,
+                    "check1_references": null,
+                    "check1_notes": null,
+                    "check2_date": null,
+                    "check2_flag": null,
+                    "check2_references": null,
+                    "check2_notes": null,
+                    "oa_risk_level": null,
+                    "rec_order": null,
+                    "rec_status": 1,
+                    "rec_created_date": null,
+                    "rec_created_by": null,
+                    "rec_modified_date": null,
+                    "rec_modified_by": null,
+                    "rec_image1": null,
+                    "rec_image2": null,
+                    "rec_approval_status": null,
+                    "rec_approval_stage": null,
+                    "rec_approved_date": null,
+                    "rec_approved_by": null,
+                    "rec_deleted_date": null,
+                    "rec_deleted_by": null,
+                    "rec_attribute_id1": null,
+                    "rec_attribute_id2": null,
+                    "rec_attribute_id3": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

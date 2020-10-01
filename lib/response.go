@@ -31,8 +31,11 @@ func CustomError(code int, messages ...string) *echo.HTTPError {
 		}
 	}
 
-
 	return echo.NewHTTPError(code, response)
 }
 
-
+type ResponseWithPagination struct {
+	Status     Status      `json:"status"`
+	Pagination int         `json:"pagination"`
+	Data       interface{} `json:"data"`
+}

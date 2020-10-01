@@ -1,9 +1,9 @@
 package main
 
 import (
-	"api/db"
-	"api/controllers"
 	"api/config"
+	"api/controllers"
+	"api/db"
 	"api/lib"
 	"log"
 
@@ -12,7 +12,7 @@ import (
 )
 
 func router() *echo.Echo {
-	
+
 	db.Db = db.DBInit()
 	e := echo.New()
 
@@ -24,8 +24,10 @@ func router() *echo.Echo {
 	e.Use(middleware.Logger())
 
 	auth := e.Group("/auth")
+	admin := e.Group("/admin")
 
 	auth.Use(lib.AuthenticationMiddleware)
+	admin.Use(lib.AuthenticationMiddleware)
 
 	// Post
 	auth.GET("/posts/:field/:key", controllers.GetCmsPostList).Name = "GetCmsPostList"
@@ -41,7 +43,7 @@ func router() *echo.Echo {
 
 	// Nav
 	auth.GET("/nav/:duration/:product_key", controllers.GetTrNavProduct).Name = "GetTrNavProduct"
-	
+
 	// Lookup
 	auth.GET("/lookup", controllers.GetGenLookup).Name = "GetGenLookup"
 
@@ -50,7 +52,7 @@ func router() *echo.Echo {
 
 	// Bank
 	auth.GET("/bank", controllers.GetMsBankList).Name = "GetMsBankList"
-	
+
 	// Country
 	auth.GET("/country", controllers.GetMsCountryList).Name = "GetMsCountryList"
 
@@ -66,10 +68,14 @@ func router() *echo.Echo {
 	e.POST("/verifyotp", controllers.VerifyOtp).Name = "VerifyOtp"
 	e.POST("/login", controllers.Login).Name = "Login"
 	e.POST("/resendverification", controllers.ResendVerification).Name = "ResendVerification"
+
+	//Admin OA Request
+	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"
+	admin.GET("/oarequestdata/:key", controllers.GetOaRequestData).Name = "GetOaRequestData"
 	return e
 }
 
-func printUrlMiddleware (next echo.HandlerFunc) echo.HandlerFunc {
+func printUrlMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 	return func(c echo.Context) error {
 		log.Println(c.Request().URL)
 		return next(c)
