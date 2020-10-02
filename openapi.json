@@ -87,7 +87,7 @@
       }
     },
     "/verifyemail": {
-      "post": {
+      "get": {
         "description": "Verify email of LidoPlayer account",
         "tags": [
           "Session"
@@ -450,16 +450,11 @@
         }
       }
     },
-    "/auth/posts/{field}/{key}": {
+    "/posts/{field}/{key}": {
       "get": {
         "description": "Get Post",
         "tags": [
           "Post"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -706,13 +701,13 @@
                     "type": "string"
                   },
                   "position": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "company_address": {
                     "type": "string"
                   },
                   "business_field": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "annual_income": {
                     "type": "integer"
@@ -730,10 +725,10 @@
                     "type": "string"
                   },
                   "relation_occupation": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "relation_business_field": {
-                    "type": "string"
+                    "type": "integer"
                   },
                   "mother_maiden_name": {
                     "type": "string"
@@ -843,16 +838,11 @@
         }
       }
     },
-    "/auth/posts/{key}": {
+    "/posts/{key}": {
       "get": {
         "description": "Get Post",
         "tags": [
           "Post"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ],
         "parameters": [
           {
@@ -946,7 +936,7 @@
           {
             "name": "key",
             "in": "path",
-            "description": "post key",
+            "description": "product key",
             "required": true,
             "schema": {
               "type": "integer"
@@ -1550,16 +1540,11 @@
         }
       }
     },
-    "/auth/posttype": {
+    "/posttype": {
       "get": {
         "description": "Get Post Type",
         "tags": [
           "Post"
-        ],
-        "security": [
-          {
-            "bearerAuth": []
-          }
         ],
         "parameters": [
           {
