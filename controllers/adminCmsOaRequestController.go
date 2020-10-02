@@ -83,11 +83,10 @@ func GetOaRequestList(c echo.Context) error {
 	}
 
 	statusStr := c.QueryParam("status")
-	var statusFilter uint64
 	if statusStr != "" {
-		statusFilter, err = strconv.ParseUint(statusStr, 10, 64)
+		_, err := strconv.ParseUint(statusStr, 10, 64)
 		if err == nil {
-			statusFilter = statusFilter
+			params["oa_status"] = statusStr
 		} else {
 			log.Error("Status should be number")
 			return lib.CustomError(http.StatusBadRequest, "Status should be number", "Status should be number")
@@ -95,7 +94,7 @@ func GetOaRequestList(c echo.Context) error {
 	}
 
 	var oaRequestDB []models.OaRequest
-	status, err = models.GetAllOaRequest(&oaRequestDB, limit, offset, noLimit, params, statusFilter)
+	status, err = models.GetAllOaRequest(&oaRequestDB, limit, offset, noLimit, params)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
@@ -234,7 +233,7 @@ func GetOaRequestList(c echo.Context) error {
 	var countData models.OaRequestCountData
 	var pagination int
 	if limit > 0 {
-		status, err = models.GetCountOaRequest(&countData, statusFilter)
+		status, err = models.GetCountOaRequest(&countData, params)
 		if err != nil {
 			log.Error(err.Error())
 			return lib.CustomError(status, err.Error(), "Failed get data")

@@ -144,17 +144,29 @@ func CreateOaRequest(params map[string]string) (int, error, string) {
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
 
-func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, params map[string]string, statusFilter uint64) (int, error) {
+func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, params map[string]string) (int, error) {
 	query := `SELECT
               oa_request.*
 			  FROM oa_request`
 	var present bool
-	// var whereClause []string
+	var whereClause []string
 	var condition string
 
-	// Check status by
-	if statusFilter > 0 {
-		condition += " WHERE oa_request.oa_status = " + strconv.FormatUint(statusFilter, 10)
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
 	}
 
 	// Check order by
@@ -199,14 +211,32 @@ func GetOaRequest(c *OaRequest, key string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func GetCountOaRequest(c *OaRequestCountData, statusFilter uint64) (int, error) {
+func GetCountOaRequest(c *OaRequestCountData, params map[string]string) (int, error) {
 	query := `SELECT
               count(oa_request.oa_request_key) as count_data
 			  FROM oa_request`
 
-	if statusFilter > 0 {
-		query += " WHERE oa_request.oa_status = " + strconv.FormatUint(statusFilter, 10)
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
+		}
 	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
 
 	// Main query
 	log.Println(query)
