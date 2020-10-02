@@ -365,7 +365,13 @@ func CreateOaPersonalData(c echo.Context) error {
 	
 	position := c.FormValue("position")
 	if position != "" {
-		params["occup_position"] = position
+		n, err := strconv.ParseUint(job, 10, 64)
+		if err == nil && n > 0{
+			params["occup_position"] = position
+		}else{
+			log.Error("Wrong input for parameter: position")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: position","Wrong input for parameter: position")
+		}
 	}
 	
 	addressCompanyParams := make(map[string]string)
