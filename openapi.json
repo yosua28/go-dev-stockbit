@@ -2137,6 +2137,15 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Oa Status ",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -2150,16 +2159,17 @@
                     "message_server": "OK",
                     "message_client": "OK"
                   },
-                  "pagination": 3,
+                  "pagination": 4,
                   "data": [
                     {
                       "oa_request_key": 1,
-                      "oa_request_type": "127",
+                      "oa_request_type": "New OA",
                       "oa_entry_start": "2020-09-28 17:48:40.000000",
                       "oa_entry_end": "2020-09-28 17:48:40.000000",
-                      "oa_status": "5",
-                      "user_login_key": 7,
-                      "customer_key": null,
+                      "oa_status": "Waiting",
+                      "user_login_name": "yogasutrisna902@gmail.com",
+                      "user_login_full_name": "yogasutrisna902@gmail.com",
+                      "customer": null,
                       "sales_code": null,
                       "check1_date": null,
                       "check1_flag": null,
@@ -2171,22 +2181,7 @@
                       "check2_notes": null,
                       "oa_risk_level": null,
                       "rec_order": null,
-                      "rec_status": 1,
-                      "rec_created_date": null,
-                      "rec_created_by": null,
-                      "rec_modified_date": null,
-                      "rec_modified_by": null,
-                      "rec_image1": null,
-                      "rec_image2": null,
-                      "rec_approval_status": null,
-                      "rec_approval_stage": null,
-                      "rec_approved_date": null,
-                      "rec_approved_by": null,
-                      "rec_deleted_date": null,
-                      "rec_deleted_by": null,
-                      "rec_attribute_id1": null,
-                      "rec_attribute_id2": null,
-                      "rec_attribute_id3": null
+                      "rec_status": 1
                     }
                   ]
                 }
@@ -2262,13 +2257,14 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "oa_request_key": 1,
-                    "oa_request_type": "127",
-                    "oa_entry_start": "2020-09-28 17:48:40.000000",
-                    "oa_entry_end": "2020-09-28 17:48:40.000000",
-                    "oa_status": "5",
-                    "user_login_key": 7,
-                    "customer_key": null,
+                    "oa_request_key": 2,
+                    "oa_request_type": "New OA",
+                    "oa_entry_start": "2020-09-28 17:49:41.000000",
+                    "oa_entry_end": "2020-09-28 17:49:41.000000",
+                    "oa_status": "Waiting",
+                    "user_login_name": "yogasutrisna902@gmail.com",
+                    "user_login_full_name": "yogasutrisna902@gmail.com",
+                    "customer": null,
                     "sales_code": null,
                     "check1_date": null,
                     "check1_flag": null,

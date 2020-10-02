@@ -11,10 +11,10 @@ import (
 
 type OaRequest struct {
 	OaRequestKey      uint64  `db:"oa_request_key"             json:"oa_request_key"`
-	OaRequestType     string  `db:"oa_request_type"            json:"oa_request_type"`
+	OaRequestType     *uint64 `db:"oa_request_type"            json:"oa_request_type"`
 	OaEntryStart      string  `db:"oa_entry_start"             json:"oa_entry_start"`
 	OaEntryEnd        string  `db:"oa_entry_end"               json:"oa_entry_end"`
-	Oastatus          string  `db:"oa_status"                  json:"oa_status"`
+	Oastatus          *uint64 `db:"oa_status"                  json:"oa_status"`
 	UserLoginKey      *uint64 `db:"user_login_key"             json:"user_login_key"`
 	CustomerKey       *uint64 `db:"customer_key"               json:"customer_key"`
 	SalesCode         *string `db:"sales_code"                 json:"sales_code"`
@@ -44,6 +44,67 @@ type OaRequest struct {
 	RecAttributeID1   *string `db:"rec_attribute_id1"          json:"rec_attribute_id1"`
 	RecAttributeID2   *string `db:"rec_attribute_id2"          json:"rec_attribute_id2"`
 	RecAttributeID3   *string `db:"rec_attribute_id3"          json:"rec_attribute_id3"`
+}
+
+type OaRequestDataResponse struct {
+	OaRequestKey      uint64  `json:"oa_request_key"`
+	OaRequestType     *string `json:"oa_request_type"`
+	OaEntryStart      string  `json:"oa_entry_start"`
+	OaEntryEnd        string  `json:"oa_entry_end"`
+	Oastatus          string  `json:"oa_status"`
+	UserLoginName     *string `json:"user_login_name"`
+	UserLoginFullName *string `json:"user_login_full_name"`
+	Customer          *string `json:"customer"`
+	SalesCode         *string `json:"sales_code"`
+	Check1Date        *string `json:"check1_date"`
+	Check1Flag        *uint8  `json:"check1_flag"`
+	Check1References  *string `json:"check1_references"`
+	Check1Notes       *string `json:"check1_notes"`
+	Check2Date        *string `json:"check2_date"`
+	Check2Flag        *uint8  `json:"check2_flag"`
+	Check2References  *string `json:"check2_references"`
+	Check2Notes       *string `json:"check2_notes"`
+	OaRiskLevel       *string `json:"oa_risk_level"`
+	RecOrder          *uint64 `json:"rec_order"`
+	RecStatus         uint8   `json:"rec_status"`
+	RecCreatedDate    *string `json:"rec_created_date"`
+	RecCreatedBy      *string `json:"rec_created_by"`
+	RecModifiedDate   *string `json:"rec_modified_date"`
+	RecModifiedBy     *string `json:"rec_modified_by"`
+	RecImage1         *string `json:"rec_image1"`
+	RecImage2         *string `json:"rec_image2"`
+	RecApprovalStatus *uint8  `json:"rec_approval_status"`
+	RecApprovalStage  *uint64 `json:"rec_approval_stage"`
+	RecApprovedDate   *string `json:"rec_approved_date"`
+	RecApprovedBy     *string `json:"rec_approved_by"`
+	RecDeletedDate    *string `json:"rec_deleted_date"`
+	RecDeletedBy      *string `json:"rec_deleted_by"`
+	RecAttributeID1   *string `json:"rec_attribute_id1"`
+	RecAttributeID2   *string `json:"rec_attribute_id2"`
+	RecAttributeID3   *string `json:"rec_attribute_id3"`
+}
+
+type OaRequestListResponse struct {
+	OaRequestKey      uint64  `json:"oa_request_key"`
+	OaRequestType     *string `json:"oa_request_type"`
+	OaEntryStart      string  `json:"oa_entry_start"`
+	OaEntryEnd        string  `json:"oa_entry_end"`
+	Oastatus          string  `json:"oa_status"`
+	UserLoginName     *string `json:"user_login_name"`
+	UserLoginFullName *string `json:"user_login_full_name"`
+	Customer          *string `json:"customer"`
+	SalesCode         *string `json:"sales_code"`
+	Check1Date        *string `json:"check1_date"`
+	Check1Flag        *uint8  `json:"check1_flag"`
+	Check1References  *string `json:"check1_references"`
+	Check1Notes       *string `json:"check1_notes"`
+	Check2Date        *string `json:"check2_date"`
+	Check2Flag        *uint8  `json:"check2_flag"`
+	Check2References  *string `json:"check2_references"`
+	Check2Notes       *string `json:"check2_notes"`
+	OaRiskLevel       *string `json:"oa_risk_level"`
+	RecOrder          *uint64 `json:"rec_order"`
+	RecStatus         uint8   `json:"rec_status"`
 }
 
 type OaRequestCountData struct {
@@ -83,13 +144,18 @@ func CreateOaRequest(params map[string]string) (int, error, string) {
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
 
-func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, params map[string]string) (int, error) {
+func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, params map[string]string, statusFilter uint64) (int, error) {
 	query := `SELECT
               oa_request.*
 			  FROM oa_request`
 	var present bool
 	// var whereClause []string
 	var condition string
+
+	// Check status by
+	if statusFilter > 0 {
+		condition += " WHERE oa_request.oa_status = " + strconv.FormatUint(statusFilter, 10)
+	}
 
 	// Check order by
 	var orderBy string
@@ -133,10 +199,14 @@ func GetOaRequest(c *OaRequest, key string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func GetCountOaRequest(c *OaRequestCountData) (int, error) {
+func GetCountOaRequest(c *OaRequestCountData, statusFilter uint64) (int, error) {
 	query := `SELECT
               count(oa_request.oa_request_key) as count_data
 			  FROM oa_request`
+
+	if statusFilter > 0 {
+		query += " WHERE oa_request.oa_status = " + strconv.FormatUint(statusFilter, 10)
+	}
 
 	// Main query
 	log.Println(query)
