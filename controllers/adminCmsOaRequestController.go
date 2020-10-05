@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -160,14 +161,21 @@ func GetOaRequestList(c echo.Context) error {
 				data.Oastatus = *n.LkpName
 			}
 		}
+
 		data.OaRequestKey = oareq.OaRequestKey
-		data.OaEntryStart = oareq.OaEntryStart
-		data.OaEntryEnd = oareq.OaEntryEnd
+
+		layout := "2006-01-02 15:04:05"
+		newLayout := "02 Jan 2006"
+		date, _ := time.Parse(layout, oareq.OaEntryStart)
+		data.OaEntryStart = date.Format(newLayout)
+		date, _ = time.Parse(layout, oareq.OaEntryEnd)
+		data.OaEntryEnd = date.Format(newLayout)
 
 		if n, ok := pdData[oareq.OaRequestKey]; ok {
 			data.EmailAddress = n.EmailAddress
 			data.PhoneNumber = n.PhoneMobile
-			data.DateBirth = n.DateBirth
+			date, _ = time.Parse(layout, n.DateBirth)
+			data.DateBirth = date.Format(newLayout)
 			data.FullName = n.FullName
 			data.IDCardNo = n.IDcardNo
 		}
@@ -221,9 +229,14 @@ func GetOaRequestData(c echo.Context) error {
 
 	var responseData models.OaRequestDetailResponse
 
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+
 	responseData.OaRequestKey = oareq.OaRequestKey
-	responseData.OaEntryStart = oareq.OaEntryStart
-	responseData.OaEntryEnd = oareq.OaEntryEnd
+	date, _ := time.Parse(layout, oareq.OaEntryStart)
+	responseData.OaEntryStart = date.Format(newLayout)
+	date, _ = time.Parse(layout, oareq.OaEntryEnd)
+	responseData.OaEntryEnd = date.Format(newLayout)
 
 	var oaRequestLookupIds []string
 
@@ -289,7 +302,8 @@ func GetOaRequestData(c echo.Context) error {
 	} else {
 		responseData.FullName = oapersonal.FullName
 		responseData.IDCardNo = oapersonal.IDcardNo
-		responseData.DateBirth = oapersonal.IDcardNo
+		date, _ = time.Parse(layout, oapersonal.DateBirth)
+		responseData.DateBirth = date.Format(newLayout)
 		responseData.PhoneNumber = oapersonal.PhoneMobile
 		responseData.EmailAddress = oapersonal.EmailAddress
 		responseData.PlaceBirth = oapersonal.PlaceBirth
