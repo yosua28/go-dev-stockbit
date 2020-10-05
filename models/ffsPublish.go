@@ -15,6 +15,7 @@ type FfsPublish struct {
 	FfsLink              *string   `db:"ffs_link"             json:"ffs_link"`
 	DatePeriode          string    `db:"date_periode"         json:"date_periode"`
 	DatePublished        *string   `db:"date_published"       json:"date_published"`
+	FfsNameDisplayed     *string   `db:"ffs_name_displayed"   json:"ffs_name_displayed"`
 	RecOrder             *uint64   `db:"rec_order"            json:"rec_order"`
 	RecStatus            uint8     `db:"rec_status"           json:"rec_status"`
 	RecCreatedDate       *string   `db:"rec_created_date"     json:"rec_created_date"`
