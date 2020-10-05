@@ -30,9 +30,9 @@ func router() *echo.Echo {
 	admin.Use(lib.AuthenticationMiddleware)
 
 	// Post
-	auth.GET("/posts/:field/:key", controllers.GetCmsPostList).Name = "GetCmsPostList"
-	auth.GET("/posts/:key", controllers.GetCmsPostData).Name = "GetCmsPost"
-	auth.GET("/posttype", controllers.GetCmsPostTypeList).Name = "GetCmsPostTypeList"
+	e.GET("/posts/:field/:key", controllers.GetCmsPostList).Name = "GetCmsPostList"
+	e.GET("/posts/:key", controllers.GetCmsPostData).Name = "GetCmsPost"
+	e.GET("/posttype", controllers.GetCmsPostTypeList).Name = "GetCmsPostTypeList"
 
 	// Fund Type
 	auth.GET("/fundtype", controllers.GetMsFundTypeList).Name = "GetMsFundTypeList"
@@ -61,6 +61,10 @@ func router() *echo.Echo {
 
 	// Request
 	auth.POST("/oarequest", controllers.CreateOaPersonalData).Name = "CreateOaPersonalData"
+
+	// Invest
+	auth.GET("/investpurpose", controllers.GetCmsInvestPurpose).Name = "GetCmsInvestPurpose"
+	auth.GET("/investpartner", controllers.GetCmsInvestParter).Name = "GetCmsInvestParter"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"

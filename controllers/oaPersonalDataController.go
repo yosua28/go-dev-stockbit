@@ -143,9 +143,16 @@ func CreateOaPersonalData(c echo.Context) error {
 	idcardType := c.FormValue("idcard_type")
 	if idcardType == "" {
 		log.Error("Missing required parameter: idcard_type")
-		return lib.CustomError(http.StatusBadRequest)
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: idcard_type", "Missing required parameter: idcard_type")
+	} else {
+		n, err := strconv.ParseUint(idcardType, 10, 64)
+		if err == nil && n > 0{
+			params["idcard_type"] = idcardType
+		}else{
+			log.Error("Wrong input for parameter: idcard_type")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: idcard_type", "Wrong input for parameter: idcard_type")
+		}
 	}
-	params["idcard_type"] = idcardType
 
 	placeBirth := c.FormValue("place_birth")
 	if placeBirth == "" {
@@ -352,47 +359,51 @@ func CreateOaPersonalData(c echo.Context) error {
 	}
 
 	company := c.FormValue("company")
-	if company == "" {
-		log.Error("Missing required parameter: company")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: company","Missing required parameter: company")
+	if company != "" {
+		params["occup_company"] = company
 	}
-	params["occup_company"] = company
 	
 	position := c.FormValue("position")
-	if position == "" {
-		log.Error("Missing required parameter: position")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: position","Missing required parameter: position")
+	if position != "" {
+		n, err := strconv.ParseUint(job, 10, 64)
+		if err == nil && n > 0{
+			params["occup_position"] = position
+		}else{
+			log.Error("Wrong input for parameter: position")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: position","Wrong input for parameter: position")
+		}
 	}
-	params["occup_position"] = position
 	
 	addressCompanyParams := make(map[string]string)
 	companyAddress := c.FormValue("company_address")
-	if companyAddress == "" {
-		log.Error("Missing required parameter: company_address")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: company_address","Missing required parameter: company_address")
+	if companyAddress != "" {
+		addressCompanyParams["address_type"] = "19"
+		addressCompanyParams["address_line1"] = companyAddress
+		addressCompanyParams["rec_status"] = "1"
+	
+		status, err, addressCompanyID := models.CreateOaPostalAddress(addressCompanyParams)
+		if err != nil {
+			log.Error("Failed create adrress data: "+err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+		addressID, err = strconv.ParseUint(addressCompanyID, 10, 64)
+		if addressID == 0 {
+			log.Error("Failed create adrress data")
+			return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+		}
+		params["occup_address_key"] = addressCompanyID
 	}
-	addressCompanyParams["address_type"] = "19"
-	addressCompanyParams["address_line1"] = companyAddress
-	addressCompanyParams["rec_status"] = "1"
-
-	status, err, addressCompanyID := models.CreateOaPostalAddress(addressCompanyParams)
-	if err != nil {
-		log.Error("Failed create adrress data: "+err.Error())
-		return lib.CustomError(status, err.Error(), "failed input data")
-	}
-	addressID, err = strconv.ParseUint(addressCompanyID, 10, 64)
-	if addressID == 0 {
-		log.Error("Failed create adrress data")
-		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
-	}
-	params["occup_address_key"] = addressCompanyID
 	
 	businessField := c.FormValue("business_field")
-	if businessField == "" {
-		log.Error("Missing required parameter: business_field")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: business_field","Missing required parameter: business_field")
+	if businessField != "" {
+		n, err := strconv.ParseUint(businessField, 10, 64)
+		if err == nil && n > 0{
+			params["occup_business_fields"] = businessField
+		}else{
+			log.Error("Wrong input for parameter: business_field")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: business_field","Wrong input for parameter: business_field")
+		}
 	}
-	params["occup_business_fields"] = businessField
 	
 	annualIncome := c.FormValue("annual_income")
 	if annualIncome == "" {
@@ -461,15 +472,26 @@ func CreateOaPersonalData(c echo.Context) error {
 	if relationOccupation == "" {
 		log.Error("Missing required parameter: relation_occupation")
 		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: relation_occupation","Missing required parameter: relation_occupation")
+	} else {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0{
+			params["relation_occupation"] = relationOccupation
+		}else{
+			log.Error("Wrong input for parameter: relation_occupation")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: relation_occupation","Wrong input for parameter: relation_occupation")
+		}
 	}
-	params["relation_occupation"] = relationOccupation
 	
 	relationBusinessField := c.FormValue("relation_business_field")
-	if relationBusinessField == "" {
-		log.Error("Missing required parameter: relation_business_field")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter: relation_business_field","Missing required parameter: relation_business_field")
+	if relationBusinessField != "" {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0{
+			params["relation_business_fields"] = relationBusinessField
+		}else{
+			log.Error("Wrong input for parameter: relation_business_field")
+			return lib.CustomError(http.StatusBadRequest,"Wrong input for parameter: relation_business_field","Wrong input for parameter: relation_business_field")
+		}
 	}
-	params["relation_business_fields"] = relationBusinessField
 	
 	MotherMaidenName := c.FormValue("mother_maiden_name")
 	if MotherMaidenName == "" {

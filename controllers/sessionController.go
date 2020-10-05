@@ -8,10 +8,13 @@ import (
 	"crypto/sha256"
 	"crypto/tls"
 	"encoding/hex"
+	"encoding/json"
 	_ "encoding/base64"
 	"time"
 	"unicode"
 	"strconv"
+	"strings"
+	"io/ioutil"
 
 	"github.com/labstack/echo"
 	"github.com/badoux/checkmail"
@@ -184,22 +187,26 @@ func VerifyEmail(c echo.Context) error {
 	now := time.Now()
 	if now.After(expired) {
 		log.Error("Token is expired")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Token is expired")
+		return lib.CustomError(http.StatusInternalServerError, "Token is expired", "Token is expired")
 	}
 	log.Info("Success verify email")
 	// Set expired for otp
 	date := time.Now().Add(1*time.Minute)
 	expiredOTP := date.Format(dateLayout)
 
-	// Generate otp
-	otp := lib.EncodeToString(6)
+	// Send otp
+	otp, err := sendOTP("0", *accountData.UloginMobileno)
+	if err != nil || otp == "" {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+	}
 
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	params["otp_number"] = otp
 	params["otp_number_expired"] = expiredOTP
 	params["verified_email"] = "1"
 	params["last_verified_email"] = time.Now().Format(dateLayout)
-	params["string_token"] = ""
+	//params["string_token"] = ""
 
 	_ ,err = models.UpdateScUserLogin(params)
 	if err != nil {
@@ -207,22 +214,16 @@ func VerifyEmail(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
 	}
 	
-	// Send otp
-	//
-	//
-	//
-	//
-	//
-	
 	log.Info("Success send otp")
 	
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = nil
+	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }
+
 func VerifyOtp(c echo.Context) error {
 	var err error
 	// Get parameter key
@@ -417,8 +418,12 @@ func ResendVerification(c echo.Context) error {
 		date := time.Now().Add(1*time.Minute)
 		expiredOTP := date.Format(dateLayout)
 	
-		// Generate otp
-		otp := lib.EncodeToString(6)
+		// Send otp
+		otp, err := sendOTP("0", *accountData.UloginMobileno)
+		if err != nil || otp == "" {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+		}
 	
 		params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 		params["otp_number"] = otp
@@ -432,13 +437,6 @@ func ResendVerification(c echo.Context) error {
 			log.Error("Error update user data")
 			return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
 		}
-		
-		// Send otp
-		//
-		//
-		//
-		//
-		//
 		
 		log.Info("Success send otp")
 	} else {
@@ -511,4 +509,41 @@ func verifyPassword(s string) (length, number, upper, special bool) {
 	length = letter && len(s) >= 8
 
 	return
+}
+
+func sendOTP(gateway, phone string) (string, error){
+	curlParam := make(map[string]string)
+	curlParam["gateway"] = gateway
+	curlParam["msisdn"] = phone
+	jsonString, err := json.Marshal(curlParam)
+	payload := strings.NewReader(string(jsonString))
+	
+	req, err := http.NewRequest("POST", config.CitcallUrl, payload)
+	if err != nil {
+		return "", err
+	}
+	req.Header.Add("content-type", "application/json")
+	req.Header.Add("Authorization", "Apikey 7f837aea98ceea9efcd33ca1d435c9cf")
+		
+	res, err := http.DefaultClient.Do(req)
+	if err != nil {
+		return "", err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		return "", err
+	}
+
+	var sec map[string]interface{}
+	if err = json.Unmarshal(body, &sec); err != nil {
+	    return "", err
+	}
+	log.Info(string(body))
+	var otp string
+	if sec["rc"].(float64) == 0 {
+		token := sec["token"].(string)
+		otp =  token[len(token)-4:]
+	}
+	return otp, nil
 }

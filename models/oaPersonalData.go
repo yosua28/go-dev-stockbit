@@ -15,49 +15,49 @@ type OaPersonalData struct {
 	FullName               string    `db:"full_name"                  json:"email"`
 	PlaceBirth             string    `db:"place_birth"                json:"place_birth"`
 	DateBirth              string    `db:"date_birth"                 json:"date_birth"`
-	Nationality            string    `db:"nationality"                json:"nationality"`
-	IDcardType             string    `db:"idcard_type"                json:"idcard_type"`
+	Nationality            uint64    `db:"nationality"                json:"nationality"`
+	IDcardType             uint64    `db:"idcard_type"                json:"idcard_type"`
 	IDcardNo               string    `db:"idcard_no"                  json:"idcard_no"`
-	IDcardExpiredDate      string    `db:"idcard_expired_date"        json:"idcard_expired_date"`
+	IDcardExpiredDate     *string    `db:"idcard_expired_date"        json:"idcard_expired_date"`
 	IDcardNeverExpired    *uint8     `db:"idcard_never_expired"       json:"idcard_never_expired"`
-	Gender                 string    `db:"gender"                     json:"gender"`
-	MaritalStatus          string    `db:"marital_status"             json:"marital_status"`
+	Gender                *uint64    `db:"gender"                     json:"gender"`
+	MaritalStatus         *uint64    `db:"marital_status"             json:"marital_status"`
 	IDcardAddressKey      *uint64    `db:"idcard_address_key"         json:"idcard_address_key"`
 	DomicileAddressKey    *uint64    `db:"domicile_address_key"       json:"domicile_address_key"`
 	PhoneHome              string    `db:"phone_home"                 json:"phone_home"`
 	PhoneMobile            string    `db:"phone_mobile"               json:"phone_mobile"`
 	EmailAddress           string    `db:"email_address"              json:"email_address"`
-	CorrespondAddress     *string    `db:"correspond_address"         json:"correspond_address"`
-	Religion               string    `db:"religion"                   json:"religion"`
+	CorrespondAddress     *uint64    `db:"correspond_address"         json:"correspond_address"`
+	Religion              *uint64    `db:"religion"                   json:"religion"`
 	PicSelfie             *string    `db:"pic_selfie"                 json:"pic_selfie"`
 	PicKtp                *string    `db:"pic_ktp"                    json:"pic_ktp"`
 	PicSelfieKtp          *string    `db:"pic_selfie_ktp"             json:"pic_selfie_ktp"`
 	GeolocName            *string    `db:"geoloc_name"                json:"geoloc_name"`
 	GeolocLongitude       *string    `db:"geoloc_longitude"           json:"geoloc_longitude"`
 	GeolocLatitude        *string    `db:"geoloc_latitude"            json:"geoloc_latitude"`
-	Education              string    `db:"education"                  json:"education"`
-	OccupJob               string    `db:"occup_job"                  json:"occup_job"`
+	Education             *uint64    `db:"education"                  json:"education"`
+	OccupJob              *uint64    `db:"occup_job"                  json:"occup_job"`
 	OccupCompany          *string    `db:"occup_company"              json:"occup_company"`
-	OccupPosition         *string    `db:"occup_position"             json:"occup_position"`
+	OccupPosition         *uint64    `db:"occup_position"             json:"occup_position"`
 	OccupAddressKey       *uint64    `db:"occup_address_key"          json:"occup_address_key"`
-	OccupBusinessFields    string    `db:"occup_business_fields"      json:"occup_business_fields"`
+	OccupBusinessFields   *uint64    `db:"occup_business_fields"      json:"occup_business_fields"`
 	OccupPhone            *string    `db:"occup_phone"                json:"occup_phone"`
 	OccupWebUrl           *string    `db:"occup_web_url"              json:"occup_web_url"`
-	Correspondence        *string    `db:"correspondence"             json:"correspondence"`
-	AnnualIncome           string    `db:"annual_income"              json:"annual_income"`
-	SourceofFund           string    `db:"sourceof_fund"              json:"sourceof_fund"`
-	InvesmentObjectives    string    `db:"invesment_objectives"       json:"invesment_objectives"`
-	RelationType          *string    `db:"relation_type"              json:"relation_type"`
+	Correspondence        *uint64    `db:"correspondence"             json:"correspondence"`
+	AnnualIncome          *uint64    `db:"annual_income"              json:"annual_income"`
+	SourceofFund          *uint64    `db:"sourceof_fund"              json:"sourceof_fund"`
+	InvesmentObjectives   *uint64    `db:"invesment_objectives"       json:"invesment_objectives"`
+	RelationType          *uint64    `db:"relation_type"              json:"relation_type"`
 	RelationFullName      *string    `db:"relation_full_name"         json:"relation_full_name"`
-	RelationOccupation    *string    `db:"relation_occupation"        json:"relation_occupation"`
-	RelationBusinessFields *string   `db:"relation_business_fields"   json:"relation_business_fields"`
+	RelationOccupation    *uint64    `db:"relation_occupation"        json:"relation_occupation"`
+	RelationBusinessFields *uint64   `db:"relation_business_fields"   json:"relation_business_fields"`
 	MotherMaidenName       string    `db:"mother_maiden_name"         json:"mother_maiden_name"`
 	EmergencyFullName     *string    `db:"emergency_full_name"        json:"emergency_full_name"`
-	EmergencyRelation     *string    `db:"emergency_relation"         json:"emergency_relation"`
+	EmergencyRelation     *uint64    `db:"emergency_relation"         json:"emergency_relation"`
 	EmergencyPhoneNo      *string    `db:"emergency_phone_no"         json:"emergency_phone_no"`
 	BeneficialFullName    *string    `db:"beneficial_full_name"       json:"beneficial_full_name"`
-	BeneficialRelation    *string    `db:"beneficial_relation"        json:"beneficial_relation"`
-	BankAccountKey        *string    `db:"bank_account_key"           json:"bank_account_key"`
+	BeneficialRelation    *uint64    `db:"beneficial_relation"        json:"beneficial_relation"`
+	BankAccountKey        *uint64    `db:"bank_account_key"           json:"bank_account_key"`
 	RecOrder              *uint64    `db:"rec_order"                  json:"rec_order"`
 	RecStatus              uint8     `db:"rec_status"                 json:"rec_status"`
 	RecCreatedDate        *string    `db:"rec_created_date"           json:"rec_created_date"`
