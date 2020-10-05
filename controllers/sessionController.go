@@ -196,8 +196,12 @@ func VerifyEmail(c echo.Context) error {
 
 	// Send otp
 	otp, err := sendOTP("0", *accountData.UloginMobileno)
-	if err != nil || otp == "" {
+	if err != nil {
 		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+	}
+	if otp == "" {
+		log.Error("Failed send otp")
 		return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
 	}
 
