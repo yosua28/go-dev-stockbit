@@ -36,7 +36,7 @@ func GetGenLookup(c echo.Context) error {
 
 	for _, lkp := range lookupDB {
 		var data models.GenLookupInfo
-		if lkp.LkpText1 != nil{
+		if lkp.LkpName != nil{
 			data.Name = *lkp.LkpName
 		}
 		data.Value = lkp.LookupKey
