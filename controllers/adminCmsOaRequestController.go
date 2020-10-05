@@ -388,6 +388,11 @@ func GetOaRequestData(c echo.Context) error {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationBusinessFields, 10))
 			}
 		}
+		if oapersonal.OccupBusinessFields != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10))
+			}
+		}
 		//gen lookup personal data
 		var lookupPersonData []models.GenLookup
 		if len(personalDataLookupIds) > 0 {
@@ -468,6 +473,11 @@ func GetOaRequestData(c echo.Context) error {
 				responseData.Correspondence = n.LkpName
 			}
 		}
+		if oapersonal.OccupBusinessFields != nil {
+			if n, ok := pData[*oapersonal.OccupBusinessFields]; ok {
+				responseData.OccupBusinessFields = n.LkpName
+			}
+		}
 
 		//mapping idcard address &  domicile
 		var postalAddressIds []string
@@ -480,11 +490,6 @@ func GetOaRequestData(c echo.Context) error {
 			if oapersonal.DomicileAddressKey != nil {
 				if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10)); !ok {
 					postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10))
-				}
-			}
-			if oapersonal.OccupBusinessFields != nil {
-				if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10)); !ok {
-					postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10))
 				}
 			}
 			if oapersonal.OccupAddressKey != nil {
@@ -577,41 +582,6 @@ func GetOaRequestData(c echo.Context) error {
 					}
 					if c, ok := cityData[p.KecamatanKey]; ok {
 						responseData.DomicileAddress.Kecamatan = &c.CityName
-					}
-				}
-			}
-			if oapersonal.OccupBusinessFields != nil {
-				if p, ok := postalData[*oapersonal.OccupBusinessFields]; ok {
-					responseData.OccupBusinessFields.Address = p.AddressLine1
-					responseData.OccupBusinessFields.PostalCode = p.PostalCode
-
-					var cityIds []string
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KabupatenKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KabupatenKey, 10))
-					}
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KecamatanKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KecamatanKey, 10))
-					}
-
-					var cityList []models.MsCity
-					if len(cityIds) > 0 {
-						status, err = models.GetMsCityIn(&cityList, cityIds, "city_key")
-						if err != nil {
-							if err != sql.ErrNoRows {
-								log.Error(err.Error())
-								return lib.CustomError(status, err.Error(), "Failed get data")
-							}
-						}
-					}
-					cityData := make(map[uint64]models.MsCity)
-					for _, city := range cityList {
-						cityData[city.CityKey] = city
-					}
-					if c, ok := cityData[p.KabupatenKey]; ok {
-						responseData.OccupBusinessFields.Kabupaten = &c.CityName
-					}
-					if c, ok := cityData[p.KecamatanKey]; ok {
-						responseData.OccupBusinessFields.Kecamatan = &c.CityName
 					}
 				}
 			}

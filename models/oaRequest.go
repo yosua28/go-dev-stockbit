@@ -97,9 +97,9 @@ type OaRequestDetailResponse struct {
 	MotherMaidenName    string      `json:"mother_maiden_name"`
 	BeneficialRelation  *string     `json:"beneficial_relation"`
 	BeneficialFullName  *string     `json:"beneficial_full_name"`
+	OccupBusinessFields *string     `json:"occup_business_fields"`
 	IDcardAddress       Address     `json:"idcard_address"`
 	DomicileAddress     Address     `json:"domicile_address"`
-	OccupBusinessFields Address     `json:"occup_business_fields"`
 	OccupAddressKey     Address     `json:"occup_address_key"`
 	BankAccount         BankAccount `json:"bank_account"`
 	Relation            Relation    `json:"relation"`

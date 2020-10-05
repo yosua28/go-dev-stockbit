@@ -2468,6 +2468,7 @@
                     "mother_maiden_name": "Lina",
                     "beneficial_relation": "Lainnya",
                     "beneficial_full_name": "Joko",
+                    "occup_business_fields": "Approved",
                     "idcard_address": {
                       "address": "Solo",
                       "kabupaten": "WITA",
@@ -2479,12 +2480,6 @@
                       "kabupaten": "Sumatra Barat",
                       "kecamatan": "Jambi",
                       "postal_code": "77845"
-                    },
-                    "occup_business_fields": {
-                      "address": "kb. Sirih",
-                      "kabupaten": "Kepulauan Riau",
-                      "kecamatan": "Kota Banda Aceh",
-                      "postal_code": "44543"
                     },
                     "occup_address_key": {
                       "address": "Menteng",
