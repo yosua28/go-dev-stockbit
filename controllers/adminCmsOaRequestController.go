@@ -745,3 +745,59 @@ func GetOaRequestData(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func UpdateStatusApproval(c echo.Context) error {
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	oastatus := c.FormValue("oa_status")
+	if oastatus == "" {
+		log.Error("Missing required parameter: oa_status")
+		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		n, err := strconv.ParseUint(oastatus, 10, 64)
+		if err == nil && n > 0 {
+			params["oa_status"] = oastatus
+		} else {
+			log.Error("Wrong input for parameter: oa_status")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_status", "Wrong input for parameter: oa_status")
+		}
+	}
+
+	oarequestkey := c.FormValue("oa_request_key")
+	if oarequestkey == "" {
+		log.Error("Missing required parameter: oa_request_key")
+		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		n, err := strconv.ParseUint(oarequestkey, 10, 64)
+		if err == nil && n > 0 {
+			params["oa_request_key"] = oarequestkey
+		} else {
+			log.Error("Wrong input for parameter: oa_request_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_request_key", "Wrong input for parameter: oa_request_key")
+		}
+	}
+
+	var oareq models.OaRequest
+	status, err = models.GetOaRequest(&oareq, oarequestkey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	_, err = models.UpdateOaRequest(params)
+	if err != nil {
+		log.Error("Error update oa request")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	log.Info("Success send otp")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}

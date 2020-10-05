@@ -289,3 +289,41 @@ func GetOaRequestsIn(c *[]OaRequest, value []string, field string) (int, error) 
 
 	return http.StatusOK, nil
 }
+
+func UpdateOaRequest(params map[string]string) (int, error) {
+	query := "UPDATE oa_request SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "oa_request_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE oa_request_key = " + params["oa_request_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}

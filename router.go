@@ -76,6 +76,7 @@ func router() *echo.Echo {
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"
 	admin.GET("/oarequestdata/:key", controllers.GetOaRequestData).Name = "GetOaRequestData"
+	admin.POST("/updatestatusapproval", controllers.UpdateStatusApproval).Name = "UpdateStatusApproval"
 	return e
 }
 
