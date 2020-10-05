@@ -1164,6 +1164,199 @@
         }
       }
     },
+    "/auth/investpurpose": {
+      "get": {
+        "description": "Get Invest Purpose List",
+        "tags": [
+          "Invest"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "rec_order",
+                "purpose_code",
+                "purpose_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "invest_purpose_key": 1,
+                      "purpose_code": "Education",
+                      "purpose_name": "Education",
+                      "purpose_desc": "Pendidikan"
+                    },
+                    {
+                      "invest_purpose_key": 2,
+                      "purpose_code": "Recidence",
+                      "purpose_name": "Recidence",
+                      "purpose_desc": "Tempat Tinggal"
+                    },
+                    {
+                      "invest_purpose_key": 3,
+                      "purpose_code": "Transport",
+                      "purpose_name": "Transport",
+                      "purpose_desc": "Transaport or Travelling"
+                    },
+                    {
+                      "invest_purpose_key": 4,
+                      "purpose_code": "Vacation",
+                      "purpose_name": "Vacation",
+                      "purpose_desc": "Vacation liburan"
+                    },
+                    {
+                      "invest_purpose_key": 5,
+                      "purpose_code": "Wedding",
+                      "purpose_name": "Wedding",
+                      "purpose_desc": "Menikah"
+                    },
+                    {
+                      "invest_purpose_key": 6,
+                      "purpose_code": "Other",
+                      "purpose_name": "Other",
+                      "purpose_desc": "Lainya"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/investpartner": {
+      "get": {
+        "description": "Get Invest Partner List",
+        "tags": [
+          "Invest"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "purpose_key",
+            "in": "query",
+            "description": "Purpose key",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "invest_partner_key": 1,
+                      "partner_code": "STIEMNC",
+                      "partner_business_name": "STIE MNC",
+                      "partner_url": "http://www.mnccollege.edu",
+                      "rec_image1": "https://devapi.mncasset.com/images/partner/default.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/lookup": {
       "get": {
         "description": "Get Lookup Data",
