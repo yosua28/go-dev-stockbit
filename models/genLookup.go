@@ -107,3 +107,15 @@ func GetGenLookupIn(c *[]GenLookup, value []string, field string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetGenLookup(c *GenLookup, key string) (int, error) {
+	query := `SELECT gen_lookup.* FROM gen_lookup WHERE gen_lookup.lookup_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

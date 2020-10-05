@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"net/http"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -46,69 +47,91 @@ type OaRequest struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"          json:"rec_attribute_id3"`
 }
 
-type OaRequestDataResponse struct {
-	OaRequestKey      uint64  `json:"oa_request_key"`
-	OaRequestType     *string `json:"oa_request_type"`
-	OaEntryStart      string  `json:"oa_entry_start"`
-	OaEntryEnd        string  `json:"oa_entry_end"`
-	Oastatus          string  `json:"oa_status"`
-	UserLoginName     *string `json:"user_login_name"`
-	UserLoginFullName *string `json:"user_login_full_name"`
-	Customer          *string `json:"customer"`
-	SalesCode         *string `json:"sales_code"`
-	Check1Date        *string `json:"check1_date"`
-	Check1Flag        *uint8  `json:"check1_flag"`
-	Check1References  *string `json:"check1_references"`
-	Check1Notes       *string `json:"check1_notes"`
-	Check2Date        *string `json:"check2_date"`
-	Check2Flag        *uint8  `json:"check2_flag"`
-	Check2References  *string `json:"check2_references"`
-	Check2Notes       *string `json:"check2_notes"`
-	OaRiskLevel       *string `json:"oa_risk_level"`
-	RecOrder          *uint64 `json:"rec_order"`
-	RecStatus         uint8   `json:"rec_status"`
-	RecCreatedDate    *string `json:"rec_created_date"`
-	RecCreatedBy      *string `json:"rec_created_by"`
-	RecModifiedDate   *string `json:"rec_modified_date"`
-	RecModifiedBy     *string `json:"rec_modified_by"`
-	RecImage1         *string `json:"rec_image1"`
-	RecImage2         *string `json:"rec_image2"`
-	RecApprovalStatus *uint8  `json:"rec_approval_status"`
-	RecApprovalStage  *uint64 `json:"rec_approval_stage"`
-	RecApprovedDate   *string `json:"rec_approved_date"`
-	RecApprovedBy     *string `json:"rec_approved_by"`
-	RecDeletedDate    *string `json:"rec_deleted_date"`
-	RecDeletedBy      *string `json:"rec_deleted_by"`
-	RecAttributeID1   *string `json:"rec_attribute_id1"`
-	RecAttributeID2   *string `json:"rec_attribute_id2"`
-	RecAttributeID3   *string `json:"rec_attribute_id3"`
-}
-
 type OaRequestListResponse struct {
-	OaRequestKey      uint64  `json:"oa_request_key"`
-	OaRequestType     *string `json:"oa_request_type"`
-	OaEntryStart      string  `json:"oa_entry_start"`
-	OaEntryEnd        string  `json:"oa_entry_end"`
-	Oastatus          string  `json:"oa_status"`
-	UserLoginName     *string `json:"user_login_name"`
-	UserLoginFullName *string `json:"user_login_full_name"`
-	Customer          *string `json:"customer"`
-	SalesCode         *string `json:"sales_code"`
-	Check1Date        *string `json:"check1_date"`
-	Check1Flag        *uint8  `json:"check1_flag"`
-	Check1References  *string `json:"check1_references"`
-	Check1Notes       *string `json:"check1_notes"`
-	Check2Date        *string `json:"check2_date"`
-	Check2Flag        *uint8  `json:"check2_flag"`
-	Check2References  *string `json:"check2_references"`
-	Check2Notes       *string `json:"check2_notes"`
-	OaRiskLevel       *string `json:"oa_risk_level"`
-	RecOrder          *uint64 `json:"rec_order"`
-	RecStatus         uint8   `json:"rec_status"`
+	OaRequestKey uint64 `json:"oa_request_key"`
+	OaEntryStart string `json:"oa_entry_start"`
+	OaEntryEnd   string `json:"oa_entry_end"`
+	Oastatus     string `json:"oa_status"`
+	EmailAddress string `json:"email_address"`
+	PhoneNumber  string `json:"phone_mobile"`
+	DateBirth    string `json:"date_birth"`
+	FullName     string `json:"full_name"`
+	IDCardNo     string `json:"idcard_no"`
 }
 
 type OaRequestCountData struct {
 	CountData int `db:"count_data"             json:"count_data"`
+}
+
+type OaRequestDetailResponse struct {
+	OaRequestKey        uint64      `json:"oa_request_key"`
+	OaRequestType       *string     `json:"oa_request_type"`
+	OaRiskLevel         *string     `json:"oa_risk_level"`
+	OaEntryStart        string      `json:"oa_entry_start"`
+	OaEntryEnd          string      `json:"oa_entry_end"`
+	Oastatus            string      `json:"oa_status"`
+	EmailAddress        string      `json:"email_address"`
+	PhoneNumber         string      `json:"phone_mobile"`
+	DateBirth           string      `json:"date_birth"`
+	FullName            string      `json:"full_name"`
+	IDCardNo            string      `json:"idcard_no"`
+	Nationality         *string     `json:"nationality"`
+	Gender              *string     `json:"gender"`
+	PlaceBirth          string      `json:"place_birth"`
+	MaritalStatus       *string     `json:"marital_status"`
+	PhoneHome           string      `json:"phone_home"`
+	Religion            *string     `json:"religion"`
+	Education           *string     `json:"education"`
+	PicKtp              *string     `json:"pic_ktp"`
+	PicSelfie           *string     `json:"pic_selfie"`
+	PicSelfieKtp        *string     `json:"pic_selfie_ktp"`
+	OccupJob            *string     `json:"occup_job"`
+	OccupCompany        *string     `json:"occup_company"`
+	OccupPosition       *string     `json:"occup_position"`
+	OccupPhone          *string     `json:"occup_phone"`
+	OccupWebURL         *string     `json:"occup_web_url"`
+	AnnualIncome        *string     `json:"annual_income"`
+	SourceofFund        *string     `json:"sourceof_fund"`
+	InvesmentObjectives *string     `json:"invesment_objectives"`
+	Correspondence      *string     `json:"correspondence"`
+	MotherMaidenName    string      `json:"mother_maiden_name"`
+	BeneficialRelation  *string     `json:"beneficial_relation"`
+	BeneficialFullName  *string     `json:"beneficial_full_name"`
+	IDcardAddress       Address     `json:"idcard_address"`
+	DomicileAddress     Address     `json:"domicile_address"`
+	OccupBusinessFields Address     `json:"occup_business_fields"`
+	OccupAddressKey     Address     `json:"occup_address_key"`
+	BankAccount         BankAccount `json:"bank_account"`
+	Relation            Relation    `json:"relation"`
+	Emergency           Emergency   `json:"emergency"`
+}
+
+type Address struct {
+	Address    *string `json:"address"`
+	Kabupaten  *string `json:"kabupaten"`
+	Kecamatan  *string `json:"kecamatan"`
+	PostalCode *string `json:"postal_code"`
+}
+
+type BankAccount struct {
+	BankKey           *string `json:"bank_key"`
+	AccountNo         *string `json:"account_no"`
+	AccountHolderName *string `json:"account_holder_name"`
+	BranchName        *string `json:"branch_name"`
+	BankAccountType   *string `json:"bank_account_type"`
+}
+
+type Relation struct {
+	RelationType           *string `json:"relation_type"`
+	RelationFullName       *string `json:"relation_full_name"`
+	RelationOccupation     *string `json:"relation_occupation"`
+	RelationBusinessFields *string `json:"relation_business_fields"`
+}
+
+type Emergency struct {
+	EmergencyFullName *string `json:"emergency_full_name"`
+	EmergencyRelation *string `json:"emergency_relation"`
+	EmergencyPhoneNo  *string `json:"emergency_phone_no"`
 }
 
 func CreateOaRequest(params map[string]string) (int, error, string) {
@@ -241,6 +264,24 @@ func GetCountOaRequest(c *OaRequestCountData, params map[string]string) (int, er
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetOaRequestsIn(c *[]OaRequest, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				oa_request.* FROM 
+				oa_request `
+	query := query2 + " WHERE oa_request." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
