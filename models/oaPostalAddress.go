@@ -13,8 +13,8 @@ import (
 type OaPostalAddress struct {
 	PostalAddressKey  uint64  `db:"postal_address_key"         json:"postal_address_key"`
 	AddressType       string  `db:"address_type"               json:"address_type"`
-	KabupatenKey      uint64  `db:"kabupaten_key"              json:"kabupaten_key"`
-	KecamatanKey      uint64  `db:"kecamatan_key"              json:"kecamatan_key"`
+	KabupatenKey      *uint64 `db:"kabupaten_key"              json:"kabupaten_key"`
+	KecamatanKey      *uint64 `db:"kecamatan_key"              json:"kecamatan_key"`
 	AddressLine1      *string `db:"address_line1"              json:"address_line1"`
 	AddressLine2      *string `db:"address_line2"              json:"address_line2"`
 	AddressLine3      *string `db:"address_line3"              json:"address_line3"`

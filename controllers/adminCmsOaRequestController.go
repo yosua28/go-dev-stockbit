@@ -308,9 +308,24 @@ func GetOaRequestData(c echo.Context) error {
 		responseData.EmailAddress = oapersonal.EmailAddress
 		responseData.PlaceBirth = oapersonal.PlaceBirth
 		responseData.PhoneHome = oapersonal.PhoneHome
-		responseData.PicKtp = oapersonal.PicKtp
-		responseData.PicSelfie = oapersonal.PicSelfie
-		responseData.PicSelfieKtp = oapersonal.PicSelfieKtp
+
+		dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(*oareq.UserLoginKey, 10) + "/"
+
+		if oapersonal.PicKtp != nil && *oapersonal.PicKtp != "" {
+			path := dir + *oapersonal.PicKtp
+			responseData.PicKtp = &path
+		}
+
+		if oapersonal.PicSelfie != nil && *oapersonal.PicSelfie != "" {
+			path := dir + *oapersonal.PicSelfie
+			responseData.PicSelfie = &path
+		}
+
+		if oapersonal.PicSelfieKtp != nil && *oapersonal.PicSelfieKtp != "" {
+			path := dir + *oapersonal.PicSelfieKtp
+			responseData.PicSelfieKtp = &path
+		}
+
 		responseData.OccupCompany = oapersonal.OccupCompany
 		responseData.OccupPhone = oapersonal.OccupPhone
 		responseData.OccupWebURL = oapersonal.OccupWebUrl
@@ -535,11 +550,15 @@ func GetOaRequestData(c echo.Context) error {
 					responseData.IDcardAddress.PostalCode = p.PostalCode
 
 					var cityIds []string
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KabupatenKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KabupatenKey, 10))
+					if p.KabupatenKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KabupatenKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KabupatenKey, 10))
+						}
 					}
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KecamatanKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KecamatanKey, 10))
+					if p.KecamatanKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KecamatanKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KecamatanKey, 10))
+						}
 					}
 
 					var cityList []models.MsCity
@@ -556,10 +575,10 @@ func GetOaRequestData(c echo.Context) error {
 					for _, city := range cityList {
 						cityData[city.CityKey] = city
 					}
-					if c, ok := cityData[p.KabupatenKey]; ok {
+					if c, ok := cityData[*p.KabupatenKey]; ok {
 						responseData.IDcardAddress.Kabupaten = &c.CityName
 					}
-					if c, ok := cityData[p.KecamatanKey]; ok {
+					if c, ok := cityData[*p.KecamatanKey]; ok {
 						responseData.IDcardAddress.Kecamatan = &c.CityName
 					}
 				}
@@ -570,11 +589,15 @@ func GetOaRequestData(c echo.Context) error {
 					responseData.DomicileAddress.PostalCode = p.PostalCode
 
 					var cityIds []string
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KabupatenKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KabupatenKey, 10))
+					if p.KabupatenKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KabupatenKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KabupatenKey, 10))
+						}
 					}
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KecamatanKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KecamatanKey, 10))
+					if p.KecamatanKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KecamatanKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KecamatanKey, 10))
+						}
 					}
 
 					var cityList []models.MsCity
@@ -591,11 +614,15 @@ func GetOaRequestData(c echo.Context) error {
 					for _, city := range cityList {
 						cityData[city.CityKey] = city
 					}
-					if c, ok := cityData[p.KabupatenKey]; ok {
-						responseData.DomicileAddress.Kabupaten = &c.CityName
+					if p.KabupatenKey != nil {
+						if c, ok := cityData[*p.KabupatenKey]; ok {
+							responseData.DomicileAddress.Kabupaten = &c.CityName
+						}
 					}
-					if c, ok := cityData[p.KecamatanKey]; ok {
-						responseData.DomicileAddress.Kecamatan = &c.CityName
+					if p.KecamatanKey != nil {
+						if c, ok := cityData[*p.KecamatanKey]; ok {
+							responseData.DomicileAddress.Kecamatan = &c.CityName
+						}
 					}
 				}
 			}
@@ -605,11 +632,15 @@ func GetOaRequestData(c echo.Context) error {
 					responseData.OccupAddressKey.PostalCode = p.PostalCode
 
 					var cityIds []string
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KabupatenKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KabupatenKey, 10))
+					if p.KabupatenKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KabupatenKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KabupatenKey, 10))
+						}
 					}
-					if _, ok := lib.Find(cityIds, strconv.FormatUint(p.KecamatanKey, 10)); !ok {
-						cityIds = append(cityIds, strconv.FormatUint(p.KecamatanKey, 10))
+					if p.KecamatanKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KecamatanKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KecamatanKey, 10))
+						}
 					}
 
 					var cityList []models.MsCity
@@ -626,11 +657,15 @@ func GetOaRequestData(c echo.Context) error {
 					for _, city := range cityList {
 						cityData[city.CityKey] = city
 					}
-					if c, ok := cityData[p.KabupatenKey]; ok {
-						responseData.OccupAddressKey.Kabupaten = &c.CityName
+					if p.KabupatenKey != nil {
+						if c, ok := cityData[*p.KabupatenKey]; ok {
+							responseData.DomicileAddress.Kabupaten = &c.CityName
+						}
 					}
-					if c, ok := cityData[p.KecamatanKey]; ok {
-						responseData.OccupAddressKey.Kecamatan = &c.CityName
+					if p.KecamatanKey != nil {
+						if c, ok := cityData[*p.KecamatanKey]; ok {
+							responseData.DomicileAddress.Kecamatan = &c.CityName
+						}
 					}
 				}
 			}
