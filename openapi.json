@@ -1357,6 +1357,77 @@
         }
       }
     },
+    "/auth/quizresult": {
+      "post": {
+        "description": "Post quiz result",
+        "tags": [
+          "Quiz"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/quiz"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "invest_partner_key": 1,
+                      "partner_code": "STIEMNC",
+                      "partner_business_name": "STIE MNC",
+                      "partner_url": "http://www.mnccollege.edu",
+                      "rec_image1": "https://devapi.mncasset.com/images/partner/default.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/lookup": {
       "get": {
         "description": "Get Lookup Data",
@@ -2253,6 +2324,19 @@
         "type": "http",
         "scheme": "bearer",
         "bearerFormat": "Custom"
+      }
+    },
+    "schemas": {
+      "quiz": {
+        "properties": {
+          "request_key": {
+            "type": "string"
+          },
+          "quiz": {
+            "type": "array",
+            "items": "object"
+          }
+        }
       }
     }
   }

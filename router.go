@@ -56,6 +56,7 @@ func router() *echo.Echo {
 
 	// Quiz
 	auth.GET("/quiz", controllers.GetCmsQuiz).Name = "GetCmsQuiz"
+	auth.POST("/quizresult", controllers.PostQuizAnswer).Name = "PostQuizAnswer"
 
 	// Request
 	auth.POST("/oarequest", controllers.CreateOaPersonalData).Name = "CreateOaPersonalData"

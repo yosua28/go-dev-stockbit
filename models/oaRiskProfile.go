@@ -3,25 +3,17 @@ package models
 import (
 	"api/db"
 	"net/http"
-	"strings"
+	_ "database/sql"
+	_ "strconv"
 
 	log "github.com/sirupsen/logrus"
 )
 
-type MsRiskProfileInfo struct {
-	RiskCode             string     `json:"risk_code"`
-	RiskName            *string     `json:"risk_name"`
-	RiskDesc            *string     `json:"risk_desc"`
-}
-
-type MsRiskProfile struct {
+type OaRiskProfile struct {
+	OaRiskProfileKey     uint64     `db:"oa_risk_profile_key"   json:"oa_risk_profile_key"`
+	OaRequestKey         uint64     `db:"oa_request_key"        json:"oa_request_key"`
 	RiskProfileKey       uint64     `db:"risk_profile_key"      json:"risk_profile_key"`
-	RiskCode             string     `db:"risk_code"             json:"risk_code"`
-	RiskName             *string    `db:"risk_name"             json:"risk_name"`
-	RiskDesc             *string    `db:"risk_desc"             json:"risk_desc"`
-	MinScore             float32    `db:"min_score"             json:"min_score"`
-	MaxScore             float32    `db:"max_score"             json:"max_score"`
-	MaxFlag              uint8      `db:"max_flag"              json:"max_flag"`
+	ScoreResult          *uint64    `db:"score_result"          json:"score_result"`
 	RecOrder             *uint64    `db:"rec_order"             json:"rec_order"`
 	RecStatus            uint8      `db:"rec_status"            json:"rec_status"`
 	RecCreatedDate       *string    `db:"rec_created_date"      json:"rec_created_date"`
@@ -41,44 +33,33 @@ type MsRiskProfile struct {
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
-func GetMsRiskProfile(c *MsRiskProfile, key string) (int, error) {
-	query := `SELECT ms_risk_profile.* FROM ms_risk_profile WHERE ms_risk_profile.risk_profile_key = ` + key
+func CreateOaRiskProfile(params map[string]string) (int, error){
+	query := "INSERT INTO oa_risk_profile"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+	
+	// Combine params to build query
+	query += "("+fields + ") VALUES(" + values + ")"
 	log.Info(query)
-	err := db.Db.Get(c, query)
+
+	tx, err := db.Db.Begin()
 	if err != nil {
 		log.Error(err)
-		return http.StatusNotFound, err
-	}
-
-	return http.StatusOK, nil
-}
-
-func GetMsRiskProfileIn(c *[]MsRiskProfile, value []string) (int, error) {
-	inQuery := strings.Join(value, ",")
-	query2 := `SELECT
-				ms_risk_profile.* FROM 
-				ms_risk_profile `
-	query := query2 + " WHERE ms_risk_profile.risk_profile_key IN(" + inQuery + ")"
-
-	// Main query
-	log.Println(query)
-	err := db.Db.Select(c, query)
-	if err != nil {
-		log.Println(err)
 		return http.StatusBadGateway, err
 	}
-
-	return http.StatusOK, nil
-}
-
-func GetMsRiskProfileScore(c *MsRiskProfile, score string) (int, error) {
-	query := "SELECT ms_risk_profile.* FROM ms_risk_profile WHERE ms_risk_profile.min_score <= " + score + " AND ms_risk_profile.max_score >= " + score
-	log.Info(query)
-	err := db.Db.Get(c, query)
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
 	if err != nil {
 		log.Error(err)
-		return http.StatusNotFound, err
+		return http.StatusBadRequest, err
 	}
-
 	return http.StatusOK, nil
 }

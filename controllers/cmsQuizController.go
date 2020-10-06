@@ -5,6 +5,7 @@ import (
 	"api/lib"
 	"net/http"
 	"strconv"
+	"fmt"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -123,6 +124,71 @@ func GetCmsQuiz(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
+	
+	return c.JSON(http.StatusOK, response)
+}
+
+func PostQuizAnswer(c echo.Context) error {
+
+	var err error
+	var status int
+
+	m := echo.Map{}
+	if err := c.Bind(&m); err != nil {
+		return err
+	}
+	requestKey := m["request_key"].(string)
+	fmt.Println(requestKey)
+	data := m["quiz"].([]interface{})
+	var bindVar []interface{}
+	var score uint64 = 0
+	for _, val := range data {
+		
+		var row []string
+		valueMap := val.(map[string]interface{})
+		row = append(row, requestKey)
+		row = append(row, valueMap["question_key"].(string))
+		row = append(row, valueMap["option_key"].(string))
+		row = append(row, valueMap["score"].(string))
+		row = append(row, "1")
+		s, err := strconv.ParseUint(valueMap["score"].(string), 10, 64)
+		if err == nil {
+			score += s
+		}
+		bindVar = append(bindVar, row) 
+	}
+
+	var riskProfile models.MsRiskProfile
+	scoreStr := strconv.FormatUint(score, 10)
+	status, err = models.GetMsRiskProfileScore(&riskProfile, scoreStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data risk profile")
+	}
+
+	params := make(map[string]string)
+	params["oa_request_key"] = requestKey
+	params["risk_profile_key"] = strconv.FormatUint(riskProfile.RiskProfileKey, 10)
+	params["score_result"] = scoreStr
+	params["rec_status"] = "1"
+
+	status, err = models.CreateOaRiskProfile(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	status, err = models.CreateMultipleOaRiskProfileQuiz(bindVar)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
 	
 	return c.JSON(http.StatusOK, response)
 }
