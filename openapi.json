@@ -949,47 +949,47 @@
             "content": {
               "application/json": {
                 "example": {
-                    "status": {
-                      "code": 200,
-                      "message_server": "OK",
-                      "message_client": "OK"
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "product_key": 1,
+                    "product_id": 5,
+                    "product_code": "BDLC",
+                    "product_name": "MNC DANA LANCAR",
+                    "product_name_alt": "DANA LANCAR",
+                    "min_sub_amount": 0,
+                    "nav_performance": {
+                      "nav_date": "21 Oct 2004",
+                      "1d": "0.000%",
+                      "mtd": "0.000%",
+                      "1m": "0.000%",
+                      "3m": "0.000%",
+                      "6m": "0.000%",
+                      "1y": "0.000%",
+                      "3y": "0.000%",
+                      "5y": "0.000%",
+                      "ytd": "0.000%",
+                      "cagr": "0.000%",
+                      "all": "0.000%"
                     },
-                    "data": {
-                      "product_key": 1,
-                      "product_id": 5,
-                      "product_code": "BDLC",
-                      "product_name": "MNC DANA LANCAR",
-                      "product_name_alt": "DANA LANCAR",
-                      "min_sub_amount": 0,
-                      "nav_performance": {
-                        "nav_date": "21 Oct 2004",
-                        "1d": "0.000%",
-                        "mtd": "0.000%",
-                        "1m": "0.000%",
-                        "3m": "0.000%",
-                        "6m": "0.000%",
-                        "1y": "0.000%",
-                        "3y": "0.000%",
-                        "5y": "0.000%",
-                        "ytd": "0.000%",
-                        "cagr": "0.000%",
-                        "all": "0.000%"
-                      },
-                      "nav": {
-                        "nav_date": "30 Dec 2010",
-                        "nav_value": 1000
-                      },
-                      "custodian_bank": {
-                        "custodian_code": "ABNAMRO",
-                        "custodian_short_name": "Bank ABN Amro",
-                        "custodian_full_name": "Bank ABN Amro"
-                      },
-                      "risk_profile": {
-                        "risk_code": "RendahMenengah",
-                        "risk_name": "Konservatif Moderate",
-                        "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
-                      }
+                    "nav": {
+                      "nav_date": "30 Dec 2010",
+                      "nav_value": 1000
+                    },
+                    "custodian_bank": {
+                      "custodian_code": "ABNAMRO",
+                      "custodian_short_name": "Bank ABN Amro",
+                      "custodian_full_name": "Bank ABN Amro"
+                    },
+                    "risk_profile": {
+                      "risk_code": "RendahMenengah",
+                      "risk_name": "Konservatif Moderate",
+                      "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
                     }
+                  }
                 }
               }
             }
@@ -2303,6 +2303,560 @@
             "content": {
               "text/plain": {
                 "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/oarequestlist": {
+      "get": {
+        "description": "Get All OA Request",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "oa_request_key",
+                "oa_request_type",
+                "oa_entry_start",
+                "oa_entry_end",
+                "oa_status",
+                "rec_order",
+                "rec_status"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "status",
+            "in": "query",
+            "description": "Oa Status ",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "oa_request_key": 2,
+                      "oa_entry_start": "01 Jan 2020",
+                      "oa_entry_end": "01 Jan 2020",
+                      "oa_status": "Waiting",
+                      "email_address": "yosua@mnc.com",
+                      "phone_mobile": "081353455",
+                      "date_birth": "2020-08-04 13:01:33",
+                      "full_name": "Yosua",
+                      "idcard_no": "6543543534"
+                    },
+                    {
+                      "oa_request_key": 1,
+                      "oa_entry_start": "01 Jan 2020",
+                      "oa_entry_end": "01 Jan 2020",
+                      "oa_status": "Waiting",
+                      "email_address": "",
+                      "phone_mobile": "",
+                      "date_birth": "",
+                      "full_name": "",
+                      "idcard_no": ""
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/oarequestdata/{key}": {
+      "get": {
+        "description": "Get OA Request by ",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "oa request key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "oa_request_key": 2,
+                    "oa_request_type": "NEW",
+                    "oa_risk_level": "WNI",
+                    "oa_entry_start": "01 Jan 2020",
+                    "oa_entry_end": "01 Jan 2020",
+                    "oa_status": "Waiting",
+                    "email_address": "yosua@mnc.com",
+                    "phone_mobile": "081353455",
+                    "date_birth": "01 Jan 2020",
+                    "full_name": "Yosua",
+                    "idcard_no": "6543543534",
+                    "nationality": "Orang tua",
+                    "gender": "Yes",
+                    "place_birth": "Solo",
+                    "marital_status": "InActive",
+                    "phone_home": "021332432",
+                    "religion": "InActive",
+                    "education": "WNI",
+                    "pic_ktp": "https://devapi.mncasset.com/user/images/hhh.jpg",
+                    "pic_selfie": "https://devapi.mncasset.com/user/images/qqqqq.jpg",
+                    "pic_selfie_ktp": "https://devapi.mncasset.com/user/images/lll.jpg",
+                    "occup_job": "Reject",
+                    "occup_company": "Asset Management",
+                    "occup_position": "Agen Perjalanan",
+                    "occup_phone": "081353454",
+                    "occup_web_url": "www.oke.com",
+                    "annual_income": "Reject",
+                    "sourceof_fund": "Gaji",
+                    "invesment_objectives": "> Rp 500 - 1 Milyar",
+                    "correspondence": "Approved",
+                    "mother_maiden_name": "Lina",
+                    "beneficial_relation": "Lainnya",
+                    "beneficial_full_name": "Joko",
+                    "occup_business_fields": "Approved",
+                    "idcard_address": {
+                      "address": "Solo",
+                      "kabupaten": "WITA",
+                      "kecamatan": "Aceh",
+                      "postal_code": "22346"
+                    },
+                    "domicile_address": {
+                      "address": "Jakarta Barat",
+                      "kabupaten": "Sumatra Barat",
+                      "kecamatan": "Jambi",
+                      "postal_code": "77845"
+                    },
+                    "occup_address_key": {
+                      "address": "Menteng",
+                      "kabupaten": "Kabupaten Karo",
+                      "kecamatan": "Kabupaten Padang Lawas Utara",
+                      "postal_code": "99887"
+                    },
+                    "bank_account": {
+                      "bank_key": "BANK AGRO",
+                      "account_no": "112324",
+                      "account_holder_name": "Yosua Susanto",
+                      "branch_name": "Cideng",
+                      "bank_account_type": "KTP"
+                    },
+                    "relation": {
+                      "relation_type": "Approved",
+                      "relation_full_name": "Estah",
+                      "relation_occupation": "Anak Kandung",
+                      "relation_business_fields": "Mini Market"
+                    },
+                    "emergency": {
+                      "emergency_full_name": "Joni",
+                      "emergency_relation": "KTP",
+                      "emergency_phone_no": "081243232"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/updatestatusapproval": {
+      "post": {
+        "description": "Update Status Oa Request",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oa_request_key": {
+                    "type": "integer"
+                  },
+                  "oa_status": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "oa_request_key",
+                  "oa_status"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/posts": {
+      "get": {
+        "description": "Get All CMS Post",
+        "tags": [
+          "Admin CMS Post"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "post_title",
+                "post_sub_title",
+                "post_content_author",
+                "post_publish_thru",
+                "post_publish_start"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "field",
+            "in": "query",
+            "description": "Field (type : for filter by cms_post_type)(subtype : for filter by cms_post_subtype)",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "type",
+                "subtype"
+              ]
+            }
+          },
+          {
+            "name": "key",
+            "in": "query",
+            "description": "If field is not empty, key not allowed empty ",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 5,
+                  "data": [
+                    {
+                      "post_key": 1,
+                      "post_type_key": 1,
+                      "post_type_code": "BANNER",
+                      "post_type_name": "Jumbotron",
+                      "post_type_desc": "Poster atau Banner di halaman HOME",
+                      "post_subtype_key": 1,
+                      "post_subtype_code": "JUMBOTRON",
+                      "post_subtype_name": "Top Home Banner",
+                      "post_title": "Banner Dana Dollar",
+                      "post_sub_title": "Banner Dana Dollar",
+                      "post_content_author": "QA",
+                      "post_content_sources": "-",
+                      "post_publish_start": "01 Jan 2020",
+                      "post_publish_thru": "31 Dec 2500",
+                      "post_pinned": true,
+                      "rec_image1": "https://devapi.mncasset.com/images/post/banner/dollar.png"
+                    },
+                    {
+                      "post_key": 2,
+                      "post_type_key": 1,
+                      "post_type_code": "BANNER",
+                      "post_type_name": "Jumbotron",
+                      "post_type_desc": "Poster atau Banner di halaman HOME",
+                      "post_subtype_key": 1,
+                      "post_subtype_code": "JUMBOTRON",
+                      "post_subtype_name": "Top Home Banner",
+                      "post_title": "Banner Ekuitas",
+                      "post_sub_title": "Banner Ekuitas",
+                      "post_content_author": "QA",
+                      "post_content_sources": "-",
+                      "post_publish_start": "01 Jan 2020",
+                      "post_publish_thru": "31 Dec 2500",
+                      "post_pinned": true,
+                      "rec_image1": "https://devapi.mncasset.com/images/post/banner/ekuitas.png"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
               }
             }
           },
