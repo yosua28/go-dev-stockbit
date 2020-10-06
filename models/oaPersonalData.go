@@ -144,7 +144,7 @@ func GetOaPersonalData(c *ScLoginSession, key string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CreateOaPersonalData(params map[string]string) (int, error) {
+func CreateOaPersonalData(params map[string]string) (int, error, string) {
 	query := "INSERT INTO oa_personal_data"
 	// Get params
 	var fields, values string
@@ -164,15 +164,16 @@ func CreateOaPersonalData(params map[string]string) (int, error) {
 	tx, err := db.Db.Begin()
 	if err != nil {
 		log.Error(err)
-		return http.StatusBadGateway, err
+		return http.StatusBadGateway, err, "0"
 	}
-	_, err = tx.Exec(query, bindvars...)
+	ret, err := tx.Exec(query, bindvars...)
 	tx.Commit()
 	if err != nil {
 		log.Error(err)
-		return http.StatusBadRequest, err
+		return http.StatusBadRequest, err, "0"
 	}
-	return http.StatusOK, nil
+	lastID, _ := ret.LastInsertId()
+	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
 
 func GetOaPersonalDataByOaRequestKey(c *OaPersonalData, key string) (int, error) {

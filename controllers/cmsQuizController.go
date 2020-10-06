@@ -183,12 +183,17 @@ func PostQuizAnswer(c echo.Context) error {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed input data")
 	}
+	var responseData models.MsRiskProfileInfo
+
+	responseData.RiskCode = riskProfile.RiskCode
+	responseData.RiskName = riskProfile.RiskName
+	responseData.RiskDesc = riskProfile.RiskDesc
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = nil
+	response.Data = responseData
 	
 	return c.JSON(http.StatusOK, response)
 }

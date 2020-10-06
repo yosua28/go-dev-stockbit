@@ -623,16 +623,17 @@ func CreateOaPersonalData(c echo.Context) error {
 	params["oa_request_key"] = requestID
 	params["rec_status"] = "1"
 
-	status, err = models.CreateOaPersonalData(params)
+	status, err, requestKey := models.CreateOaPersonalData(params)
 	if err != nil {
 		log.Error("Failed create personal data: "+err.Error())
 		return lib.CustomError(status, err.Error(), "failed input data")
 	}
-
+	responseData := make(map[string]string)
+	responseData["request_key"] = requestKey
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = nil
+	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }

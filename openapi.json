@@ -88,7 +88,7 @@
     },
     "/verifyemail": {
       "get": {
-        "description": "Verify email of LidoPlayer account",
+        "description": "Verify email of MNC duit account",
         "tags": [
           "Session"
         ],
@@ -777,35 +777,7 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "post_type_key": 3,
-                    "post_type_code": "NEWS",
-                    "post_type_name": "News",
-                    "post_type_desc": "Berbagai berita-berita",
-                    "post_type_group": "HOME",
-                    "post_list": [
-                      {
-                        "post_key": 2,
-                        "post_subtype": {
-                          "post_subtype_key": 1,
-                          "post_subtype_code": "GENERAL",
-                          "post_subtype_name": "Category General"
-                        },
-                        "post_title": "Investasi Jangan Hanya Mimpi",
-                        "post_sub_title": "Wujudkan impian anda dengan mulai berinvestasi sebesar 100.00",
-                        "post_content": "Investasi masa kini semakin mudah. MNC Asset Mnanagement menyediakan kemudahan untuk investasi bagi nasabah retail mulai dari 100.000",
-                        "post_content_author": null,
-                        "post_content_sources": null,
-                        "post_publish_start": "31 Dec 2020",
-                        "post_publish_thru": "31 Dec 2021",
-                        "post_page_allowed": false,
-                        "post_comment_allowed": false,
-                        "post_comment_displayed": false,
-                        "post_files_allowed": false,
-                        "post_video_allowed": false,
-                        "post_video_url": null,
-                        "post_pinned": false
-                      }
-                    ]
+                    "request_key": "1"
                   }
                 }
               }
@@ -1388,15 +1360,11 @@
                     "message_server": "OK",
                     "message_client": "OK"
                   },
-                  "data": [
-                    {
-                      "invest_partner_key": 1,
-                      "partner_code": "STIEMNC",
-                      "partner_business_name": "STIE MNC",
-                      "partner_url": "http://www.mnccollege.edu",
-                      "rec_image1": "https://devapi.mncasset.com/images/partner/default.png"
-                    }
-                  ]
+                  "data": {
+                    "risk_code": "MenengahTinggi",
+                    "risk_name": "Moderate Agresif",
+                    "risk_desc": "Investor mulai mencoba alternatif untuk mendapatkan hasil investasi yang relatif tinggi dan risiko fluktuasi investasi yang juga relatif tinggi."
+                  }
                 }
               }
             }
