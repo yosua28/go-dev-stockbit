@@ -1,16 +1,16 @@
 package controllers
 
 import (
-	"api/models"
 	"api/config"
 	"api/lib"
+	"api/models"
 	"net/http"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetCmsPostList(c echo.Context) error {
@@ -27,7 +27,7 @@ func GetCmsPostList(c echo.Context) error {
 			}
 		} else {
 			log.Error("Limit should be number")
-			return lib.CustomError(http.StatusBadRequest,"Limit should be number","Limit should be number")
+			return lib.CustomError(http.StatusBadRequest, "Limit should be number", "Limit should be number")
 		}
 	} else {
 		limit = config.LimitQuery
@@ -43,7 +43,7 @@ func GetCmsPostList(c echo.Context) error {
 			}
 		} else {
 			log.Error("Page should be number")
-			return lib.CustomError(http.StatusBadRequest,"Page should be number","Page should be number")
+			return lib.CustomError(http.StatusBadRequest, "Page should be number", "Page should be number")
 		}
 	} else {
 		page = 1
@@ -59,7 +59,7 @@ func GetCmsPostList(c echo.Context) error {
 		noLimit, err = strconv.ParseBool(noLimitStr)
 		if err != nil {
 			log.Error("Nolimit parameter should be true/false")
-			return lib.CustomError(http.StatusBadRequest,"Nolimit parameter should be true/false","Nolimit parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "Nolimit parameter should be true/false", "Nolimit parameter should be true/false")
 		}
 	} else {
 		noLimit = false
@@ -69,24 +69,24 @@ func GetCmsPostList(c echo.Context) error {
 	field := c.Param("field")
 	if field == "" {
 		log.Error("Missing required parameters")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameters","Missing required parameters")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameters", "Missing required parameters")
 	}
 	keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
 	if key == 0 {
 		return lib.CustomError(http.StatusNotFound)
 	}
-	
+
 	paramType := make(map[string]string)
-	if field == "type" {	
+	if field == "type" {
 		paramType["post_type_key"] = keyStr
-	}else if field == "subtype" {
+	} else if field == "subtype" {
 		paramType["post_subtype_key"] = keyStr
-	}else{
+	} else {
 		log.Error("Wrong value for parameter: field")
-		return lib.CustomError(http.StatusBadRequest,"Wrong value for parameter: field","Wrong value for parameter: field")
+		return lib.CustomError(http.StatusBadRequest, "Wrong value for parameter: field", "Wrong value for parameter: field")
 	}
-	
+
 	var postSubtypeDB []models.CmsPostSubtype
 	status, err = models.GetAllCmsPostSubtype(&postSubtypeDB, limit, offset, paramType, noLimit)
 	if err != nil {
@@ -116,10 +116,10 @@ func GetCmsPostList(c echo.Context) error {
 
 	// Get parameter order_by
 	orderBy := c.QueryParam("order_by")
-	if orderBy!=""{
+	if orderBy != "" {
 		if (orderBy == "post_title") || (orderBy == "post_publish_thru") || (orderBy == "post_publish_start") {
 			params["orderBy"] = orderBy
-		}else{
+		} else {
 			return lib.CustomError(http.StatusBadRequest)
 		}
 	}
@@ -136,9 +136,9 @@ func GetCmsPostList(c echo.Context) error {
 	if len(posts) < 1 {
 		return lib.CustomError(http.StatusNotFound)
 	}
-	
+
 	var responseData models.CmsPostTypeData
-	if field == "type"{
+	if field == "type" {
 		responseData.PostTypeKey = postTypeDB.PostTypeKey
 		responseData.PostTypeCode = postTypeDB.PostTypeCode
 		responseData.PostTypeName = postTypeDB.PostTypeName
@@ -148,7 +148,7 @@ func GetCmsPostList(c echo.Context) error {
 	var postData []models.CmsPostList
 	for _, post := range posts {
 		var data models.CmsPostList
-	
+
 		data.PostKey = post.PostKey
 		data.PostSubtype.PostSubtypeKey = postSubtypeData[post.PostSubtypeKey].PostSubtypeKey
 		data.PostSubtype.PostSubtypeCode = postSubtypeData[post.PostSubtypeKey].PostSubtypeCode
@@ -162,7 +162,7 @@ func GetCmsPostList(c echo.Context) error {
 		if post.PostContentAuthor != nil {
 			data.PostContentAuthor = *post.PostContentAuthor
 		}
-		
+
 		if post.PostContentSources != nil {
 			data.PostContentSources = *post.PostContentSources
 		}
@@ -180,7 +180,7 @@ func GetCmsPostList(c echo.Context) error {
 
 		if post.RecImage1 != nil && *post.RecImage1 != "" {
 			data.RecImage1 = config.BaseUrl + "/images/post/" + dir + "/" + *post.RecImage1
-		}else{
+		} else {
 			data.RecImage1 = config.BaseUrl + "/images/post/default.png"
 		}
 		postData = append(postData, data)
@@ -193,7 +193,7 @@ func GetCmsPostList(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -246,7 +246,6 @@ func GetCmsPostData(c echo.Context) error {
 	if post.PostContent != nil {
 		responseData.PostContent = *post.PostContent
 	}
-	
 
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
@@ -278,14 +277,14 @@ func GetCmsPostData(c echo.Context) error {
 	}
 	if post.RecImage1 != nil && *post.RecImage1 != "" {
 		responseData.RecImage1 = config.BaseUrl + "/images/post/" + dir + "/" + *post.RecImage1
-	}else{
+	} else {
 		responseData.RecImage1 = config.BaseUrl + "/images/post/default.png"
-	}	
+	}
 	if post.RecImage2 != nil && *post.RecImage2 != "" {
 		responseData.RecImage1 = config.BaseUrl + "/images/post/" + dir + "/" + *post.RecImage1
-	}else{
+	} else {
 		responseData.RecImage2 = config.BaseUrl + "/images/post/default.png"
-	}	
+	}
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
