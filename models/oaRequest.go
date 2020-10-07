@@ -223,7 +223,7 @@ func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, 
 }
 
 func GetOaRequest(c *OaRequest, key string) (int, error) {
-	query := `SELECT oa_request.* FROM oa_request WHERE oa_request.oa_request_key = ` + key
+	query := `SELECT oa_request.* FROM oa_request WHERE oa_request.rec_status = 1 AND oa_request.oa_request_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -277,7 +277,7 @@ func GetOaRequestsIn(c *[]OaRequest, value []string, field string) (int, error) 
 	query2 := `SELECT
 				oa_request.* FROM 
 				oa_request `
-	query := query2 + " WHERE oa_request." + field + " IN(" + inQuery + ")"
+	query := query2 + " WHERE oa_request.rec_status = 1 AND oa_request." + field + " IN(" + inQuery + ")"
 
 	// Main query
 	log.Println(query)

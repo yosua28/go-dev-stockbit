@@ -2355,7 +2355,7 @@
     },
     "/admin/oarequestlist": {
       "get": {
-        "description": "Get All OA Request",
+        "description": "Get All OA Request (User Allowed : RoleKey 11 & 12)",
         "tags": [
           "Admin OA Request"
         ],
@@ -2421,15 +2421,6 @@
             "required": false,
             "schema": {
               "type": "boolean"
-            }
-          },
-          {
-            "name": "status",
-            "in": "query",
-            "description": "Oa Status ",
-            "required": false,
-            "schema": {
-              "type": "integer"
             }
           }
         ],
@@ -2510,7 +2501,7 @@
     },
     "/admin/oarequestdata/{key}": {
       "get": {
-        "description": "Get OA Request by ",
+        "description": "Get OA Request by OaRequestKey (User Allowed : RoleKey 11 & 12)",
         "tags": [
           "Admin OA Request"
         ],
@@ -2652,9 +2643,9 @@
         }
       }
     },
-    "/admin/updatestatusapproval": {
+    "/admin/updatestatusapproval/cs": {
       "post": {
-        "description": "Update Status Oa Request",
+        "description": "Update Approval Oa Request by CS (User Allowed : RoleKey 11)",
         "tags": [
           "Admin OA Request"
         ],
@@ -2674,6 +2665,9 @@
                   },
                   "oa_status": {
                     "type": "integer"
+                  },
+                  "notes": {
+                    "type": "string"
                   }
                 },
                 "required": [
