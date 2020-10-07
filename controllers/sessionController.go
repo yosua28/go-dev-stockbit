@@ -277,8 +277,29 @@ func VerifyOtp(c echo.Context) error {
 	// Create session key
 	uuid := uuid.Must(uuid.NewV4(), nil)
 	uuidString := uuid.String()
-	
+
 	atClaims := jwt.MapClaims{}
+	paramsRequest := make(map[string]string)
+	paramsRequest["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsRequest["orderBy"] = "oa_request_key"
+	paramsRequest["orderType"] = "DESC"
+	var request []models.OaRequest
+	status, err = models.GetAllOaRequest(&request, config.LimitQuery, 0, true, paramsRequest)
+	if err != nil {
+		log.Error(err.Error)
+	} else if len(request) > 0 {
+		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
+			var lookup models.GenLookup
+			status, err = models.GetGenLookup(&lookup, strconv.FormatUint(*request[0].Oastatus, 10))
+			if err != nil {
+				log.Error(err.Error())
+			} else {
+				if lookup.LkpName != nil && *lookup.LkpName != "" {
+					atClaims["oa_status"] = *lookup.LkpName
+				}
+			}
+		}
+	}
 	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
 		atClaims["role_key"] = *accountData.RoleKey
 		paramsRole := make(map[string]string)
@@ -394,6 +415,27 @@ func Login(c echo.Context) error {
 	uuidString := uuid.String()
 	
 	atClaims := jwt.MapClaims{}
+	paramsRequest := make(map[string]string)
+	paramsRequest["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsRequest["orderBy"] = "oa_request_key"
+	paramsRequest["orderType"] = "DESC"
+	var request []models.OaRequest
+	status, err = models.GetAllOaRequest(&request, config.LimitQuery, 0, true, paramsRequest)
+	if err != nil {
+		log.Error(err.Error)
+	} else if len(request) > 0 {
+		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
+			var lookup models.GenLookup
+			status, err = models.GetGenLookup(&lookup, strconv.FormatUint(*request[0].Oastatus, 10))
+			if err != nil {
+				log.Error(err.Error())
+			} else {
+				if lookup.LkpName != nil && *lookup.LkpName != "" {
+					atClaims["oa_status"] = *lookup.LkpName
+				}
+			}
+		}
+	}
 	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
 		atClaims["role_key"] = *accountData.RoleKey
 		paramsRole := make(map[string]string)
