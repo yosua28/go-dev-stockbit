@@ -230,6 +230,7 @@ func VerifyEmail(c echo.Context) error {
 
 func VerifyOtp(c echo.Context) error {
 	var err error
+	var status int
 	// Get parameter key
 	otp := c.FormValue("otp")
 	if otp == ""{
@@ -272,12 +273,73 @@ func VerifyOtp(c echo.Context) error {
 		log.Error("Error update user data")
 		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
 	}
+
+	// Create session key
+	uuid := uuid.Must(uuid.NewV4(), nil)
+	uuidString := uuid.String()
 	
+	atClaims := jwt.MapClaims{}
+	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
+		atClaims["role_key"] = *accountData.RoleKey
+		paramsRole := make(map[string]string)
+		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey,10)
+		var role []models.ScRole
+		_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
+		if err != nil {
+			log.Error(err.Error())
+		}else if len(role) > 0 {
+			if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
+				atClaims["role_category_key"] = *role[0].RoleCategoryKey
+			}
+		}
+	}
+	atClaims["uuid"] = uuidString
+	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, err := at.SignedString([]byte(config.Secret))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusUnauthorized,err.Error(),"Login failed")
+	}
+
+	// Check previous login
+	var loginSession []models.ScLoginSession
+	paramsSession := make(map[string]string)
+	paramsSession["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	status, err = models.GetAllScLoginSession(&loginSession, 0, 0, params, true)
+	paramsSession["session_id"] = uuidString
+	paramsSession["login_date"] = time.Now().Format(dateLayout)
+	paramsSession["rec_status"] = "1"
+	if err == nil && len(loginSession) > 0 {
+		log.Info("Active session for previous login, overwrite whit new session")
+		if len(loginSession) > 1 {
+
+		}
+		paramsSession["login_session_key"] = strconv.FormatUint(loginSession[0].LoginSessionKey, 10)
+
+		status, err = models.UpdateScLoginSession(paramsSession)
+		if err != nil {
+			log.Error("Error update session")
+			return lib.CustomError(status,"Error update session","Login failed")
+		}
+	} else {
+		status, err = models.CreateScLoginSession(paramsSession)
+		if err != nil {
+			log.Error("Error create session")
+			return lib.CustomError(status,"Error create session","Login failed")
+		}
+	}
+	log.Info("Success login")
+	
+	var data models.ScLoginSessionInfo
+	data.SessionID = token
+	log.Info(data)
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = nil
+	response.Data = data
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -328,13 +390,24 @@ func Login(c echo.Context) error {
 	}
 
 	// Create session key
-	// date := time.Now()
 	uuid := uuid.Must(uuid.NewV4(), nil)
 	uuidString := uuid.String()
 	
 	atClaims := jwt.MapClaims{}
-	atClaims["email"] = email
-	atClaims["user_id"] = accountData.UserLoginKey
+	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
+		atClaims["role_key"] = *accountData.RoleKey
+		paramsRole := make(map[string]string)
+		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey,10)
+		var role []models.ScRole
+		_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
+		if err != nil {
+			log.Error(err.Error())
+		}else if len(role) > 0 {
+			if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
+				atClaims["role_category_key"] = *role[0].RoleCategoryKey
+			}
+		}
+	}
 	atClaims["uuid"] = uuidString
 	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)

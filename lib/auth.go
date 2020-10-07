@@ -14,10 +14,12 @@ import (
 )
 
 type CProfile struct {
-	UserID      uint64  `json:"user_id"`
-	Email       string  `json:"email"`
-	PhoneNumber string  `json:"phone_number"`
-	Admin       *bool   `json:"admin,omitempty"`
+	UserID              uint64  `json:"user_id"`
+	Email               string  `json:"email"`
+	PhoneNumber         string  `json:"phone_number"`
+	RoleKey             uint64  `json:"role_key"`
+	RoleCategoryKey     uint64  `json:"role_category_key"`
+	RecImage1           string  `json:"rec_image1"`
 }
 
 var Profile CProfile
@@ -49,7 +51,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			params := make(map[string]string)
 			params["session_id"] = accessUuid
 			var loginSession []models.ScLoginSession
-			_, err := models.GetAllScLoginSession(&loginSession, 0, 0, params, true)
+			_, err := models.GetAllScLoginSession(&loginSession, config.LimitQuery, 0, params, true)
 			if err != nil {
 				log.Error("Error get email")
 				return CustomError(http.StatusForbidden, "Forbidden", "you have to login first")
@@ -62,7 +64,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			paramsUser := make(map[string]string)
 			paramsUser["user_login_key"] = strconv.FormatUint(loginSession[0].UserLoginKey, 10)
 			var userLogin []models.ScUserLogin
-			_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsUser, true)
+			_, err = models.GetAllScUserLogin(&userLogin, config.LimitQuery, 0, paramsUser, true)
 			if err != nil {
 				log.Error("Error get email")
 				return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
@@ -72,10 +74,31 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 				return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
 			}
 
-			Profile.UserID = userLogin[0].UserLoginKey
-			Profile.Email = userLogin[0].UloginEmail
-			Profile.PhoneNumber = *userLogin[0].UloginMobileno
-
+			user := userLogin[0]
+			if user.RoleKey != nil && *user.RoleKey > 0 {
+				Profile.RoleKey = *user.RoleKey
+				paramsRole := make(map[string]string)
+				paramsRole["role_key"] = strconv.FormatUint(*user.RoleKey,10)
+				var role []models.ScRole
+				_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
+				if err != nil {
+					log.Error(err.Error())
+				}else if len(role) > 0 {
+					if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
+						Profile.RoleCategoryKey = *role[0].RoleCategoryKey
+					}
+				}
+			}
+			
+			Profile.UserID = user.UserLoginKey
+			Profile.Email = user.UloginEmail
+			Profile.PhoneNumber = *user.UloginMobileno
+			if user.RecImage1 != nil && *user.RecImage1 != "" {
+				Profile.RecImage1 = config.BaseUrl + "/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
+			} else {
+				Profile.RecImage1 = config.BaseUrl + "/user/default.png"
+			}
+			
 		} else {
 			log.Error("Invalid token")
 			return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
