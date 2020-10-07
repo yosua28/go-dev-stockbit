@@ -14,9 +14,68 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+func initAuthCs() error {
+	var roleKeyCs uint64
+	roleKeyCs = 11
+
+	if lib.Profile.RoleKey != roleKeyCs {
+		return lib.CustomError(http.StatusBadRequest, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	return nil
+}
+
+func initAuthKyc() error {
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+
+	if lib.Profile.RoleKey != roleKeyKyc {
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	return nil
+}
+
+func initAuthFundAdmin() error {
+	var roleKeyFundAdmin uint64
+	roleKeyFundAdmin = 13
+
+	if lib.Profile.RoleKey != roleKeyFundAdmin {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	return nil
+}
+
+func initAuthCsKyc() error {
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+
+	if (lib.Profile.RoleKey != roleKeyCs) && (lib.Profile.RoleKey != roleKeyKyc) {
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	return nil
+}
+
 func GetOaRequestList(c echo.Context) error {
+
+	errorAuth := initAuthCsKyc()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+
 	var err error
 	var status int
+
+	oaStatusCs := "258"
+	oaStatusKyc := "259"
+
 	//Get parameter limit
 	limitStr := c.QueryParam("limit")
 	var limit uint64
@@ -87,16 +146,21 @@ func GetOaRequestList(c echo.Context) error {
 		params["orderType"] = "DESC"
 	}
 
-	statusStr := c.QueryParam("status")
-	if statusStr != "" {
-		_, err := strconv.ParseUint(statusStr, 10, 64)
-		if err == nil {
-			params["oa_status"] = statusStr
-		} else {
-			log.Error("Status should be number")
-			return lib.CustomError(http.StatusBadRequest, "Status should be number", "Status should be number")
-		}
+	log.Println("hahaha : ")
+	log.Println(lib.Profile.RoleKey)
+	//if user approval CS
+	if lib.Profile.RoleKey == roleKeyCs {
+		log.Println("CS : ")
+		log.Println(lib.Profile.RoleKey)
+		params["oa_status"] = oaStatusCs
 	}
+	//if user approval KYC / Complainer
+	if lib.Profile.RoleKey == roleKeyKyc {
+		log.Println("KYC : ")
+		log.Println(lib.Profile.RoleKey)
+		params["oa_status"] = oaStatusKyc
+	}
+	params["rec_status"] = "1"
 
 	var oaRequestDB []models.OaRequest
 	status, err = models.GetAllOaRequest(&oaRequestDB, limit, offset, noLimit, params)
@@ -212,6 +276,11 @@ func GetOaRequestList(c echo.Context) error {
 }
 
 func GetOaRequestData(c echo.Context) error {
+	errorAuth := initAuthCsKyc()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
 	var err error
 	var status int
 	//Get parameter limit
@@ -746,7 +815,12 @@ func GetOaRequestData(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func UpdateStatusApproval(c echo.Context) error {
+func UpdateStatusApprovalCS(c echo.Context) error {
+	errorAuth := initAuthCs()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
 	var err error
 	var status int
 
@@ -766,6 +840,9 @@ func UpdateStatusApproval(c echo.Context) error {
 		}
 	}
 
+	check1notes := c.FormValue("notes")
+	params["check1_notes"] = check1notes
+
 	oarequestkey := c.FormValue("oa_request_key")
 	if oarequestkey == "" {
 		log.Error("Missing required parameter: oa_request_key")
@@ -779,6 +856,14 @@ func UpdateStatusApproval(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_request_key", "Wrong input for parameter: oa_request_key")
 		}
 	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["check1_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["check1_flag"] = "1"
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	params["check1_references"] = strKey
+	params["rec_modified_by"] = strKey
 
 	var oareq models.OaRequest
 	status, err = models.GetOaRequest(&oareq, oarequestkey)
