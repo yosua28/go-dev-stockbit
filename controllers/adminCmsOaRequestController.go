@@ -146,18 +146,12 @@ func GetOaRequestList(c echo.Context) error {
 		params["orderType"] = "DESC"
 	}
 
-	log.Println("hahaha : ")
-	log.Println(lib.Profile.RoleKey)
 	//if user approval CS
 	if lib.Profile.RoleKey == roleKeyCs {
-		log.Println("CS : ")
-		log.Println(lib.Profile.RoleKey)
 		params["oa_status"] = oaStatusCs
 	}
 	//if user approval KYC / Complainer
 	if lib.Profile.RoleKey == roleKeyKyc {
-		log.Println("KYC : ")
-		log.Println(lib.Profile.RoleKey)
 		params["oa_status"] = oaStatusKyc
 	}
 	params["rec_status"] = "1"
