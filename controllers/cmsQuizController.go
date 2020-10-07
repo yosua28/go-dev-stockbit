@@ -188,6 +188,7 @@ func PostQuizAnswer(c echo.Context) error {
 	responseData.RiskCode = riskProfile.RiskCode
 	responseData.RiskName = riskProfile.RiskName
 	responseData.RiskDesc = riskProfile.RiskDesc
+	responseData.Score = score 
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

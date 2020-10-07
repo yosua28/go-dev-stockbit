@@ -243,7 +243,7 @@
         },
         "responses": {
           "200": {
-            "description": "Success register",
+            "description": "Success login",
             "content": {
               "text/plain": {
                 "example": {
@@ -253,9 +253,7 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "session_id": "17hhoIH8sdUugW92bJBfpNaldkNLsd",
-                    "email": "yogasutrisna@gmail.com",
-                    "expired": "2006-01-02T15:04:05+00:00"
+                    "session_id": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDIwNjIyMjAsIm9hX3N0YXR1cyI6Ik9BIEVOVFJJRUQiLCJyb2xlX2NhdGVnb3J5X2tleSI6MSwicm9sZV9rZXkiOjEsInV1aWQiOiIzZGIzMzUzZC1jYzU5LTQ5ZjYtYWEwNC0zNzE0YjYxODAwZDEifQ.XnJVpSqz8cgN0oR7DHr5069yYJA_KGUvHJgGnl-FKhE"
                   }
                 }
               }
@@ -309,6 +307,75 @@
             "content": {
               "text/plain": {
                 "example": "Success verify send email/otp verification"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/user": {
+      "get": {
+        "description": "Get user data",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "user_id": 7,
+                    "email": "yogasutrisna902@gmail.com",
+                    "phone_number": "08388644363",
+                    "role_key": 1,
+                    "role_category_key": 1,
+                    "rec_image1": "https://devapi.mncasset.com/user/default.png"
+                  }
+                }
               }
             }
           },
@@ -1363,7 +1430,8 @@
                   "data": {
                     "risk_code": "MenengahTinggi",
                     "risk_name": "Moderate Agresif",
-                    "risk_desc": "Investor mulai mencoba alternatif untuk mendapatkan hasil investasi yang relatif tinggi dan risiko fluktuasi investasi yang juga relatif tinggi."
+                    "risk_desc": "Investor mulai mencoba alternatif untuk mendapatkan hasil investasi yang relatif tinggi dan risiko fluktuasi investasi yang juga relatif tinggi.",
+                    "score": 40
                   }
                 }
               }

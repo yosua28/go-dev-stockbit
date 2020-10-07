@@ -12,6 +12,7 @@ type MsRiskProfileInfo struct {
 	RiskCode             string     `json:"risk_code"`
 	RiskName            *string     `json:"risk_name"`
 	RiskDesc            *string     `json:"risk_desc"`
+	Score                uint64     `json:"score"`
 }
 
 type MsRiskProfile struct {

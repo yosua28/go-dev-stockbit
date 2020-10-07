@@ -609,6 +609,14 @@ func ResendVerification(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func GetUserLogin(c echo.Context) error {
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = lib.Profile
+	return c.JSON(http.StatusOK, response)
+}
 func verifyPassword(s string) (length, number, upper, special bool) {
 	var letter bool
 	for _, c := range s {
