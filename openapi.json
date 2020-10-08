@@ -2901,6 +2901,90 @@
           }
         }
       }
+    },
+    "/admin/updatestatusapproval/compliance": {
+      "post": {
+        "description": "Update Approval Oa Request by Compliance (User Allowed : RoleKey 12)",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "oa_request_key": {
+                    "type": "integer"
+                  },
+                  "oa_status": {
+                    "type": "integer",
+                    "example": "260"
+                  },
+                  "notes": {
+                    "type": "string"
+                  },
+                  "oa_risk_level": {
+                    "type": "integer",
+                    "example": "111"
+                  }
+                },
+                "required": [
+                  "oa_request_key",
+                  "oa_status",
+                  "oa_risk_level"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

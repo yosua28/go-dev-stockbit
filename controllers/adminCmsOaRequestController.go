@@ -2,6 +2,7 @@ package controllers
 
 import (
 	"api/config"
+	"api/db"
 	"api/lib"
 	"api/models"
 	"database/sql"
@@ -820,18 +821,17 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 
 	params := make(map[string]string)
 
-	oastatus := c.FormValue("oa_status")
+	oastatus := c.FormValue("oa_status") //259
 	if oastatus == "" {
 		log.Error("Missing required parameter: oa_status")
 		return lib.CustomError(http.StatusBadRequest)
+	}
+	n, err := strconv.ParseUint(oastatus, 10, 64)
+	if err == nil && n > 0 {
+		params["oa_status"] = oastatus
 	} else {
-		n, err := strconv.ParseUint(oastatus, 10, 64)
-		if err == nil && n > 0 {
-			params["oa_status"] = oastatus
-		} else {
-			log.Error("Wrong input for parameter: oa_status")
-			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_status", "Wrong input for parameter: oa_status")
-		}
+		log.Error("Wrong input for parameter: oa_status")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_status", "Wrong input for parameter: oa_status")
 	}
 
 	check1notes := c.FormValue("notes")
@@ -841,14 +841,13 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 	if oarequestkey == "" {
 		log.Error("Missing required parameter: oa_request_key")
 		return lib.CustomError(http.StatusBadRequest)
+	}
+	n, err = strconv.ParseUint(oarequestkey, 10, 64)
+	if err == nil && n > 0 {
+		params["oa_request_key"] = oarequestkey
 	} else {
-		n, err := strconv.ParseUint(oarequestkey, 10, 64)
-		if err == nil && n > 0 {
-			params["oa_request_key"] = oarequestkey
-		} else {
-			log.Error("Wrong input for parameter: oa_request_key")
-			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_request_key", "Wrong input for parameter: oa_request_key")
-		}
+		log.Error("Wrong input for parameter: oa_request_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_request_key", "Wrong input for parameter: oa_request_key")
 	}
 
 	dateLayout := "2006-01-02 15:04:05"
@@ -871,7 +870,183 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
 
-	log.Info("Success send otp")
+	log.Info("Success update approved CS")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
+
+func UpdateStatusApprovalCompliance(c echo.Context) error {
+	errorAuth := initAuthKyc()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	oastatus := c.FormValue("oa_status") //260
+	if oastatus == "" {
+		log.Error("Missing required parameter: oa_status")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	n, err := strconv.ParseUint(oastatus, 10, 64)
+	if err == nil && n > 0 {
+		params["oa_status"] = oastatus
+	} else {
+		log.Error("Wrong input for parameter: oa_status")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_status", "Wrong input for parameter: oa_status")
+	}
+
+	check2notes := c.FormValue("notes")
+	params["check2_notes"] = check2notes
+
+	oarequestkey := c.FormValue("oa_request_key")
+	if oarequestkey == "" {
+		log.Error("Missing required parameter: oa_request_key")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	n, err = strconv.ParseUint(oarequestkey, 10, 64)
+	if err == nil && n > 0 {
+		params["oa_request_key"] = oarequestkey
+	} else {
+		log.Error("Wrong input for parameter: oa_request_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_request_key", "Wrong input for parameter: oa_request_key")
+	}
+
+	oarisklevel := c.FormValue("oa_risk_level")
+	if oarisklevel == "" {
+		log.Error("Missing required parameter: oa_risk_level")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	n, err = strconv.ParseUint(oarisklevel, 10, 64)
+	if err == nil && n > 0 {
+		params["oa_risk_level"] = oarisklevel
+	} else {
+		log.Error("Wrong input for parameter: oa_risk_level")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: oa_request_key", "Wrong input for parameter: oa_request_key")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["check2_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["check2_flag"] = "1"
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	params["check2_references"] = strKey
+	params["rec_modified_by"] = strKey
+
+	var oareq models.OaRequest
+	status, err = models.GetOaRequest(&oareq, oarequestkey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	tx, err := db.Db.Begin()
+	//update oa request
+	_, err = models.UpdateOaRequest(params)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error update oa request")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+	log.Info("Success update approved Compliance Transaction")
+
+	//create customer
+	var oapersonal models.OaPersonalData
+	strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
+	status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error Personal Data not Found")
+		return lib.CustomError(status, err.Error(), "Personal data not found")
+	}
+
+	paramsCustomer := make(map[string]string)
+	paramsCustomer["id_customer"] = "0"
+	paramsCustomer["unit_holder_idno"] = "202010000001"
+	paramsCustomer["full_name"] = oapersonal.FullName
+	paramsCustomer["investor_type"] = "263"
+	paramsCustomer["customer_category"] = "265"
+	paramsCustomer["cif_suspend_flag"] = "0"
+	paramsCustomer["openacc_branch_key"] = "1"
+	paramsCustomer["openacc_agent_key"] = "1"
+	paramsCustomer["openacc_date"] = time.Now().Format(dateLayout)
+	paramsCustomer["flag_employee"] = "0"
+	paramsCustomer["flag_group"] = "0"
+	paramsCustomer["merging_flag"] = "0"
+	paramsCustomer["rec_status"] = "1"
+	paramsCustomer["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsCustomer["rec_created_by"] = strKey
+
+	status, err, requestID := models.CreateMsCustomer(paramsCustomer)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error create customer")
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	request, err := strconv.ParseUint(requestID, 10, 64)
+	if request == 0 {
+		tx.Rollback()
+		log.Error("Failed create customer")
+		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	}
+
+	paramOaUpdate := make(map[string]string)
+	paramOaUpdate["customer_key"] = requestID
+	paramOaUpdate["oa_request_key"] = oarequestkey
+
+	_, err = models.UpdateOaRequest(paramOaUpdate)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error update oa request")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//create user message
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	if oareq.UserLoginKey != nil {
+		strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
+		paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	} else {
+		paramsUserMessage["umessage_recipient_key"] = "0"
+	}
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strKey
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = "Pembuatan Akun DUIT"
+	paramsUserMessage["umessage_body"] = "Selamat !!! User anda telah disetujui dan sekarang anda telah menjadi Customer."
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strKey
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error create user message")
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	_, err = models.UpdateOaRequest(paramOaUpdate)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error update oa request")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	tx.Commit()
+	log.Info("Success create customer")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
