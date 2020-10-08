@@ -189,69 +189,70 @@ func GetMsProductList(c echo.Context) error {
 	
 	var responseData []models.MsProductList
 	for _, order := range responseOrder {
-		product := productData[order]
-		var data models.MsProductList
-	
-		data.ProductKey = product.ProductKey
-		data.ProductID = product.ProductID
-		data.ProductCode = product.ProductCode
-		data.ProductName = product.ProductName
-		data.ProductNameAlt = product.ProductNameAlt
-		data.MinSubAmount = product.MinSubAmount
-		data.MinSubAmount = product.MinSubAmount
-
-		if product.RecImage1 != nil && *product.RecImage1 != ""{
-			data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
-		}else{
-			data.RecImage1 = config.BaseUrl + "/images/product/default.png"
-		}
-
-		var fundType models.MsFundTypeInfo
-		fundType.FundTypeKey = *product.FundTypeKey
-		if ft, ok := fData[*product.FundTypeKey]; ok {
-			fundType.FundTypeCode = ft.FundTypeCode
-			fundType.FundTypeName = ft.FundTypeName
-		}
-		data.FundType = &fundType
-
-		var risk models.MsRiskProfileInfo
-		if r, ok := rData[*product.RiskProfileKey]; ok {
-			risk.RiskCode = r.RiskCode
-			risk.RiskName = r.RiskName
-			risk.RiskDesc = r.RiskDesc
-		}
-		data.RiskProfile = &risk
-
-		layout := "2006-01-02 15:04:05"
-		newLayout := "02 Jan 2006"
+		if product, ok := productData[order]; ok {
+			var data models.MsProductList
 		
-		var nav models.TrNavInfo
-		if n, ok := nData[product.ProductKey]; ok {
-			date, _ := time.Parse(layout, n.NavDate)
-			nav.NavDate = date.Format(newLayout)
-			nav.NavValue = n.NavValue
-		}
-		data.Nav = &nav
+			data.ProductKey = product.ProductKey
+			data.ProductID = product.ProductID
+			data.ProductCode = product.ProductCode
+			data.ProductName = product.ProductName
+			data.ProductNameAlt = product.ProductNameAlt
+			data.MinSubAmount = product.MinSubAmount
+			data.MinSubAmount = product.MinSubAmount
+
+			if product.RecImage1 != nil && *product.RecImage1 != ""{
+				data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
+			}else{
+				data.RecImage1 = config.BaseUrl + "/images/product/default.png"
+			}
+
+			var fundType models.MsFundTypeInfo
+			fundType.FundTypeKey = *product.FundTypeKey
+			if ft, ok := fData[*product.FundTypeKey]; ok {
+				fundType.FundTypeCode = ft.FundTypeCode
+				fundType.FundTypeName = ft.FundTypeName
+			}
+			data.FundType = &fundType
+
+			var risk models.MsRiskProfileInfo
+			if r, ok := rData[*product.RiskProfileKey]; ok {
+				risk.RiskCode = r.RiskCode
+				risk.RiskName = r.RiskName
+				risk.RiskDesc = r.RiskDesc
+			}
+			data.RiskProfile = &risk
+
+			layout := "2006-01-02 15:04:05"
+			newLayout := "02 Jan 2006"
+			
+			var nav models.TrNavInfo
+			if n, ok := nData[product.ProductKey]; ok {
+				date, _ := time.Parse(layout, n.NavDate)
+				nav.NavDate = date.Format(newLayout)
+				nav.NavValue = n.NavValue
+			}
+			data.Nav = &nav
+			
+			var perform models.FfsNavPerformanceInfo
+			if p, ok := pData[product.ProductKey]; ok {
+				date, _ := time.Parse(layout, p.NavDate)
+				perform.NavDate = date.Format(newLayout)
+				perform.D1 = fmt.Sprintf("%.3f", p.PerformD1) + `%`
+				perform.MTD = fmt.Sprintf("%.3f", p.PerformMtd) + `%`
+				perform.M1 = fmt.Sprintf("%.3f", p.PerformM1) + `%`
+				perform.M3 = fmt.Sprintf("%.3f", p.PerformM3) + `%`
+				perform.M6 = fmt.Sprintf("%.3f", p.PerformM6) + `%`
+				perform.Y1 = fmt.Sprintf("%.3f", p.PerformY1) + `%`
+				perform.Y3 = fmt.Sprintf("%.3f", p.PerformY3) + `%`
+				perform.Y5 = fmt.Sprintf("%.3f", p.PerformY5) + `%`
+				perform.YTD = fmt.Sprintf("%.3f", p.PerformYtd) + `%`
+				perform.CAGR = fmt.Sprintf("%.3f", p.PerformCagr) + `%`
+				perform.ALL = fmt.Sprintf("%.3f", p.PerformAll) + `%`
+			} 
+			data.NavPerformance = &perform
 		
-		var perform models.FfsNavPerformanceInfo
-		if p, ok := pData[product.ProductKey]; ok {
-			date, _ := time.Parse(layout, p.NavDate)
-			perform.NavDate = date.Format(newLayout)
-			perform.D1 = fmt.Sprintf("%.3f", p.PerformD1) + `%`
-			perform.MTD = fmt.Sprintf("%.3f", p.PerformMtd) + `%`
-			perform.M1 = fmt.Sprintf("%.3f", p.PerformM1) + `%`
-			perform.M3 = fmt.Sprintf("%.3f", p.PerformM3) + `%`
-			perform.M6 = fmt.Sprintf("%.3f", p.PerformM6) + `%`
-			perform.Y1 = fmt.Sprintf("%.3f", p.PerformY1) + `%`
-			perform.Y3 = fmt.Sprintf("%.3f", p.PerformY3) + `%`
-			perform.Y5 = fmt.Sprintf("%.3f", p.PerformY5) + `%`
-			perform.YTD = fmt.Sprintf("%.3f", p.PerformYtd) + `%`
-			perform.CAGR = fmt.Sprintf("%.3f", p.PerformCagr) + `%`
-			perform.ALL = fmt.Sprintf("%.3f", p.PerformAll) + `%`
-		} 
-		data.NavPerformance = &perform
-	
-		responseData = append(responseData, data)
+			responseData = append(responseData, data)
+		}
 	}
 
 	var response lib.Response
