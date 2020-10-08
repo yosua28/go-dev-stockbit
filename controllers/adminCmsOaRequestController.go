@@ -58,6 +58,20 @@ func initAuthCsKyc() error {
 	return nil
 }
 
+func initAuthCsKycFundAdmin() error {
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+	var roleKeyFundAdmin uint64
+	roleKeyFundAdmin = 13
+
+	if (lib.Profile.RoleKey != roleKeyCs) && (lib.Profile.RoleKey != roleKeyKyc) && (lib.Profile.RoleKey != roleKeyFundAdmin) {
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	return nil
+}
+
 func GetOaRequestList(c echo.Context) error {
 
 	errorAuth := initAuthCsKyc()
@@ -271,7 +285,7 @@ func GetOaRequestList(c echo.Context) error {
 }
 
 func GetOaRequestData(c echo.Context) error {
-	errorAuth := initAuthCsKyc()
+	errorAuth := initAuthCsKycFundAdmin()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
@@ -289,6 +303,42 @@ func GetOaRequestData(c echo.Context) error {
 	status, err = models.GetOaRequest(&oareq, keyStr)
 	if err != nil {
 		return lib.CustomError(status)
+	}
+
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+	var roleKeyFundAdmin uint64
+	roleKeyFundAdmin = 13
+
+	log.Println(lib.Profile.RoleKey)
+
+	strOaKey := strconv.FormatUint(*oareq.Oastatus, 10)
+
+	if lib.Profile.RoleKey == roleKeyCs {
+		oaStatusCs := strconv.FormatUint(uint64(258), 10)
+		if strOaKey != oaStatusCs {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+
+	if lib.Profile.RoleKey == roleKeyKyc {
+		oaStatusKyc := strconv.FormatUint(uint64(259), 10)
+		if strOaKey != oaStatusKyc {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+
+	if lib.Profile.RoleKey == roleKeyFundAdmin {
+		oaStatusFundAdmin1 := strconv.FormatUint(uint64(260), 10)
+		oaStatusFundAdmin2 := strconv.FormatUint(uint64(261), 10)
+		if (strOaKey != oaStatusFundAdmin1) && (strOaKey != oaStatusFundAdmin2) {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
 	}
 
 	var responseData models.OaRequestDetailResponse
@@ -864,6 +914,14 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
+	strOaKey := strconv.FormatUint(*oareq.Oastatus, 10)
+
+	oaStatusCs := strconv.FormatUint(uint64(258), 10)
+	if strOaKey != oaStatusCs {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
 	_, err = models.UpdateOaRequest(params)
 	if err != nil {
 		log.Error("Error update oa request")
@@ -947,7 +1005,16 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
+	strOaKey := strconv.FormatUint(*oareq.Oastatus, 10)
+
+	oaStatusKyc := strconv.FormatUint(uint64(259), 10)
+	if strOaKey != oaStatusKyc {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
 	tx, err := db.Db.Begin()
+
 	//update oa request
 	_, err = models.UpdateOaRequest(params)
 	if err != nil {
@@ -1038,7 +1105,15 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		return lib.CustomError(status, err.Error(), "failed input data")
 	}
 
-	_, err = models.UpdateOaRequest(paramOaUpdate)
+	//update sc user login
+	paramsUserLogin := make(map[string]string)
+	paramsUserLogin["customer_key"] = requestID
+	paramsUserLogin["rec_modified_date"] = time.Now().Format(dateLayout)
+	paramsUserLogin["rec_modified_by"] = strKey
+	paramsUserLogin["role_key"] = "1"
+	strUserLoginKeyOa := strconv.FormatUint(*oareq.UserLoginKey, 10)
+	paramsUserLogin["user_login_key"] = strUserLoginKeyOa
+	_, err = models.UpdateScUserLogin(paramsUserLogin)
 	if err != nil {
 		tx.Rollback()
 		log.Error("Error update oa request")
@@ -1046,6 +1121,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	}
 
 	tx.Commit()
+
 	log.Info("Success create customer")
 
 	var response lib.Response
