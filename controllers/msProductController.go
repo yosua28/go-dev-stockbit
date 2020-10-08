@@ -90,7 +90,7 @@ func GetMsProductList(c echo.Context) error {
 			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
 				params["orderType"] = orderType
 			}
-		}else if (orderBy == "y5") || (orderBy == "y3") || (orderBy == "y1") || (orderBy == "m6") || (orderBy == "m3") || (orderBy == "ytd"){
+		}else if (orderBy == "cagr") || (orderBy == "y5") || (orderBy == "y3") || (orderBy == "y1") || (orderBy == "m6") || (orderBy == "m3") || (orderBy == "ytd"){
 			params := make(map[string]string)
 			params["orderBy"] = "perform_"+orderBy
 			params["orderType"] = "DESC"
