@@ -397,3 +397,114 @@ func GetAllOaRequestApproval3(c *[]OaRequest, limit uint64, offset uint64,
 
 	return http.StatusOK, nil
 }
+
+func GetAllOaRequestDoTransaction(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, params map[string]string) (int, error) {
+	query := `SELECT oa_request.* 
+				FROM 
+				oa_request AS oa_request 
+				INNER JOIN ms_customer AS cus ON oa_request.customer_key = cus.customer_key 
+				INNER JOIN 
+				( 
+					SELECT customer_key 
+					FROM tr_transaction 
+					WHERE rec_status = 1 
+					GROUP BY customer_key 
+				) tr ON tr.customer_key = cus.customer_key 
+				WHERE cus.rec_status = 1 AND oa_request.oa_status IN (260, 261)`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetCountOaRequestDoTransaction(c *OaRequestCountData, params map[string]string) (int, error) {
+	query := `SELECT count(oa_request.oa_request_key) as count_data
+				FROM 
+				oa_request AS oa_request 
+				INNER JOIN ms_customer AS cus ON oa_request.customer_key = cus.customer_key 
+				INNER JOIN 
+				( 
+					SELECT customer_key 
+					FROM tr_transaction 
+					WHERE rec_status = 1 
+					GROUP BY customer_key 
+				) tr ON tr.customer_key = cus.customer_key 
+				WHERE cus.rec_status = 1 AND oa_request.oa_status IN (260, 261)`
+
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

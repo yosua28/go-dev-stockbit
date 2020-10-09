@@ -1131,3 +1131,199 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetOaRequestListDoTransaction(c echo.Context) error {
+
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var err error
+	var status int
+
+	//Get parameter limit
+	limitStr := c.QueryParam("limit")
+	var limit uint64
+	if limitStr != "" {
+		limit, err = strconv.ParseUint(limitStr, 10, 64)
+		if err == nil {
+			if (limit == 0) || (limit > config.LimitQuery) {
+				limit = config.LimitQuery
+			}
+		} else {
+			log.Error("Limit should be number")
+			return lib.CustomError(http.StatusBadRequest, "Limit should be number", "Limit should be number")
+		}
+	} else {
+		limit = config.LimitQuery
+	}
+	// Get parameter page
+	pageStr := c.QueryParam("page")
+	var page uint64
+	if pageStr != "" {
+		page, err = strconv.ParseUint(pageStr, 10, 64)
+		if err == nil {
+			if page == 0 {
+				page = 1
+			}
+		} else {
+			log.Error("Page should be number")
+			return lib.CustomError(http.StatusBadRequest, "Page should be number", "Page should be number")
+		}
+	} else {
+		page = 1
+	}
+	var offset uint64
+	if page > 1 {
+		offset = limit * (page - 1)
+	}
+
+	noLimitStr := c.QueryParam("nolimit")
+	var noLimit bool
+	if noLimitStr != "" {
+		noLimit, err = strconv.ParseBool(noLimitStr)
+		if err != nil {
+			log.Error("Nolimit parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "Nolimit parameter should be true/false", "Nolimit parameter should be true/false")
+		}
+	} else {
+		noLimit = false
+	}
+
+	items := []string{"oa_request_key", "oa_request_type", "oa_entry_start", "oa_entry_end", "oa_status", "rec_order", "rec_status", "oa_risk_level"}
+
+	params := make(map[string]string)
+	orderBy := c.QueryParam("order_by")
+	if orderBy != "" {
+		_, found := lib.Find(items, orderBy)
+		if found {
+			params["orderBy"] = orderBy
+			orderType := c.QueryParam("order_type")
+			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
+				params["orderType"] = orderType
+			}
+		} else {
+			log.Error("Wrong input for parameter order_by")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
+		}
+	} else {
+		params["orderBy"] = "oa_request_key"
+		params["orderType"] = "DESC"
+	}
+
+	params["rec_status"] = "1"
+
+	var oaRequestDB []models.OaRequest
+	status, err = models.GetAllOaRequestDoTransaction(&oaRequestDB, limit, offset, noLimit, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(oaRequestDB) < 1 {
+		log.Error("oa not found")
+		return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
+	}
+
+	var lookupIds []string
+	var oaRequestIds []string
+	for _, oareq := range oaRequestDB {
+
+		if oareq.Oastatus != nil {
+			if _, ok := lib.Find(lookupIds, strconv.FormatUint(*oareq.Oastatus, 10)); !ok {
+				lookupIds = append(lookupIds, strconv.FormatUint(*oareq.Oastatus, 10))
+			}
+		}
+
+		if _, ok := lib.Find(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10)); !ok {
+			oaRequestIds = append(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10))
+		}
+	}
+
+	//mapping lookup
+	var genLookup []models.GenLookup
+	if len(lookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&genLookup, lookupIds, "lookup_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range genLookup {
+		gData[gen.LookupKey] = gen
+	}
+
+	//mapping personal data
+	var oaPersonalData []models.OaPersonalData
+	if len(oaRequestIds) > 0 {
+		status, err = models.GetOaPersonalDataIn(&oaPersonalData, oaRequestIds, "oa_request_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	pdData := make(map[uint64]models.OaPersonalData)
+	for _, oaPD := range oaPersonalData {
+		pdData[oaPD.OaRequestKey] = oaPD
+	}
+
+	var responseData []models.OaRequestListResponse
+	for _, oareq := range oaRequestDB {
+		var data models.OaRequestListResponse
+
+		if oareq.Oastatus != nil {
+			if n, ok := gData[*oareq.Oastatus]; ok {
+				data.Oastatus = *n.LkpName
+			}
+		}
+
+		data.OaRequestKey = oareq.OaRequestKey
+
+		layout := "2006-01-02 15:04:05"
+		newLayout := "02 Jan 2006"
+		date, _ := time.Parse(layout, oareq.OaEntryStart)
+		data.OaEntryStart = date.Format(newLayout)
+		date, _ = time.Parse(layout, oareq.OaEntryEnd)
+		data.OaEntryEnd = date.Format(newLayout)
+
+		if n, ok := pdData[oareq.OaRequestKey]; ok {
+			data.EmailAddress = n.EmailAddress
+			data.PhoneNumber = n.PhoneMobile
+			date, _ = time.Parse(layout, n.DateBirth)
+			data.DateBirth = date.Format(newLayout)
+			data.FullName = n.FullName
+			data.IDCardNo = n.IDcardNo
+		}
+
+		responseData = append(responseData, data)
+	}
+
+	var countData models.OaRequestCountData
+	var pagination int
+	if limit > 0 {
+		status, err = models.GetCountOaRequestDoTransaction(&countData, params)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) < int(limit) {
+			pagination = 1
+		} else {
+			calc := math.Ceil(float64(countData.CountData) / float64(limit))
+			pagination = int(calc)
+		}
+	} else {
+		pagination = 1
+	}
+
+	var response lib.ResponseWithPagination
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Pagination = pagination
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
