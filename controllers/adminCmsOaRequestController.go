@@ -463,9 +463,6 @@ func GetOaRequestData(c echo.Context) error {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Religion, 10))
 			}
 		}
-		if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(oapersonal.Nationality, 10)); !ok {
-			personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(oapersonal.Nationality, 10))
-		}
 		if oapersonal.Education != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Education, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Education, 10))
@@ -504,11 +501,6 @@ func GetOaRequestData(c echo.Context) error {
 		if oapersonal.BeneficialRelation != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.BeneficialRelation, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.BeneficialRelation, 10))
-			}
-		}
-		if oapersonal.Correspondence != nil {
-			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Correspondence, 10)); !ok {
-				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Correspondence, 10))
 			}
 		}
 		if oapersonal.EmergencyRelation != nil {
@@ -568,9 +560,20 @@ func GetOaRequestData(c echo.Context) error {
 				responseData.Religion = n.LkpName
 			}
 		}
-		if n, ok := pData[oapersonal.Nationality]; ok {
-			responseData.Nationality = n.LkpName
+
+		var country models.MsCountry
+
+		strCountry := strconv.FormatUint(oapersonal.Nationality, 10)
+		status, err = models.GetMsCountry(&country, strCountry)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error("Error Personal Data not Found")
+				return lib.CustomError(status, err.Error(), "Personal data not found")
+			}
+		} else {
+			responseData.Nationality = &country.CouName
 		}
+
 		if oapersonal.Education != nil {
 			if n, ok := pData[*oapersonal.Education]; ok {
 				responseData.Education = n.LkpName
@@ -611,11 +614,6 @@ func GetOaRequestData(c echo.Context) error {
 				responseData.BeneficialRelation = n.LkpName
 			}
 		}
-		if oapersonal.Correspondence != nil {
-			if n, ok := pData[*oapersonal.Correspondence]; ok {
-				responseData.Correspondence = n.LkpName
-			}
-		}
 		if oapersonal.OccupBusinessFields != nil {
 			if n, ok := pData[*oapersonal.OccupBusinessFields]; ok {
 				responseData.OccupBusinessFields = n.LkpName
@@ -625,20 +623,18 @@ func GetOaRequestData(c echo.Context) error {
 		//mapping idcard address &  domicile
 		var postalAddressIds []string
 		if oapersonal.IDcardAddressKey != nil {
-			if oapersonal.IDcardAddressKey != nil {
-				if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.IDcardAddressKey, 10)); !ok {
-					postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.IDcardAddressKey, 10))
-				}
+			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.IDcardAddressKey, 10)); !ok {
+				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.IDcardAddressKey, 10))
 			}
-			if oapersonal.DomicileAddressKey != nil {
-				if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10)); !ok {
-					postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10))
-				}
+		}
+		if oapersonal.DomicileAddressKey != nil {
+			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10)); !ok {
+				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10))
 			}
-			if oapersonal.OccupAddressKey != nil {
-				if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10)); !ok {
-					postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10))
-				}
+		}
+		if oapersonal.OccupAddressKey != nil {
+			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10)); !ok {
+				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10))
 			}
 		}
 		var oaPstalAddressList []models.OaPostalAddress
@@ -1215,8 +1211,12 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 
 	params["rec_status"] = "1"
 
+	var oaStatusIn []string
+	oaStatusIn = append(oaStatusIn, "260")
+	oaStatusIn = append(oaStatusIn, "261")
+
 	var oaRequestDB []models.OaRequest
-	status, err = models.GetAllOaRequestDoTransaction(&oaRequestDB, limit, offset, noLimit, params)
+	status, err = models.GetAllOaRequestDoTransaction(&oaRequestDB, limit, offset, noLimit, params, oaStatusIn, "oa_status")
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
@@ -1303,7 +1303,7 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 	var countData models.OaRequestCountData
 	var pagination int
 	if limit > 0 {
-		status, err = models.GetCountOaRequestDoTransaction(&countData, params)
+		status, err = models.GetCountOaRequestDoTransaction(&countData, params, oaStatusIn, "oa_status")
 		if err != nil {
 			log.Error(err.Error())
 			return lib.CustomError(status, err.Error(), "Failed get data")

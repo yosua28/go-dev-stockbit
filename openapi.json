@@ -3120,6 +3120,176 @@
           }
         }
       }
+    },
+    "/admin/downloadformatsinvest": {
+      "get": {
+        "description": "Download format CSV Sinvest (User Allowed : RoleKey 13)",
+        "tags": [
+          "Admin OA Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "oa_request_key",
+                "oa_request_type",
+                "oa_entry_start",
+                "oa_entry_end",
+                "oa_status",
+                "rec_order",
+                "rec_status"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "type": "1",
+                      "sa_code": "16",
+                      "sid": "",
+                      "first_name": "Aldy Yoga ",
+                      "middle_name": "",
+                      "last_name": "",
+                      "country_of_nationality": "ID",
+                      "id_no": "8455843169084126",
+                      "id_expiration_date": "",
+                      "npwp_no": "",
+                      "npwp_registration_date": "",
+                      "country_of_birthday": "ID",
+                      "place_of_birth": "Gunungkidul",
+                      "date_of_birth": "19800801",
+                      "gender": "1",
+                      "education_background": "4",
+                      "mother_maiden_name": "yvyvvy",
+                      "religion": "1",
+                      "occupation": "1",
+                      "income_level": "1",
+                      "marital_status": "1",
+                      "spouse_name": "",
+                      "investor_risk_profile": "1",
+                      "investment_objective": "1",
+                      "source_of_fund": "2",
+                      "asset_owner": "1",
+                      "ktp_address": "shushs",
+                      "ktp_city_code": "0001",
+                      "ktp_postal_code": "8431518",
+                      "correspondence_address": "shushs",
+                      "correspondence_City_code": "0001",
+                      "correspondence_city_name": "Kabupaten Aceh Barat",
+                      "correspondence_postal_code": "8431518",
+                      "country_of_correspondence": "ID",
+                      "domicile_address": "shushs",
+                      "domicile_city_code": "0001",
+                      "domicile_city_name": "Kabupaten Aceh Barat",
+                      "domicile_postal_code": "",
+                      "country_of_domicile": "ID",
+                      "home_phone": "08125154",
+                      "mobile_phone": "085328481220",
+                      "facsimile": "",
+                      "email": "0simo@namyn.com",
+                      "statement_type": "2",
+                      "fatca": "",
+                      "foreign_tin": "",
+                      "foreign_tin_issuance_country": "",
+                      "redm_payment_bank_bic_code1": "",
+                      "redm_payment_bank_bi_member_code1": "",
+                      "redm_payment_bank_name1": "",
+                      "redm_payment_bank_country1": "",
+                      "redm_payment_bank_branch1": "",
+                      "redm_payment_ac_ccy1": "IDR",
+                      "redm_payment_ac_no1": "",
+                      "redm_payment_ac_name1": "",
+                      "redm_payment_bank_bic_code2": "",
+                      "redm_payment_bank_bi_member_code2": "",
+                      "redm_payment_bank_name2": "",
+                      "redm_payment_bank_country2": "",
+                      "redm_payment_bank_branch2": "",
+                      "redm_payment_ac_ccy2": "IDR",
+                      "redm_payment_ac_no2": "",
+                      "redm_payment_ac_name2": "",
+                      "redm_payment_bank_bic_code3": "",
+                      "redm_payment_bank_bi_member_code3": "",
+                      "redm_payment_bank_name3": "",
+                      "redm_payment_bank_country3": "",
+                      "redm_payment_bank_branch3": "",
+                      "redm_payment_ac_ccy3": "IDR",
+                      "redm_payment_ac_no3": "",
+                      "redm_payment_ac_name3": "",
+                      "ClientCode": ""
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

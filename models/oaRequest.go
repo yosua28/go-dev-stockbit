@@ -398,7 +398,8 @@ func GetAllOaRequestApproval3(c *[]OaRequest, limit uint64, offset uint64,
 	return http.StatusOK, nil
 }
 
-func GetAllOaRequestDoTransaction(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, params map[string]string) (int, error) {
+func GetAllOaRequestDoTransaction(c *[]OaRequest, limit uint64, offset uint64, nolimit bool,
+	params map[string]string, valueIn []string, fieldIn string) (int, error) {
 	query := `SELECT oa_request.* 
 				FROM 
 				oa_request AS oa_request 
@@ -409,8 +410,7 @@ func GetAllOaRequestDoTransaction(c *[]OaRequest, limit uint64, offset uint64, n
 					FROM tr_transaction 
 					WHERE rec_status = 1 
 					GROUP BY customer_key 
-				) tr ON tr.customer_key = cus.customer_key 
-				WHERE cus.rec_status = 1 AND oa_request.oa_status IN (260, 261)`
+				) tr ON tr.customer_key = cus.customer_key `
 	var present bool
 	var whereClause []string
 	var condition string
@@ -423,11 +423,25 @@ func GetAllOaRequestDoTransaction(c *[]OaRequest, limit uint64, offset uint64, n
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " AND "
+		condition += " WHERE "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
 				condition += " AND "
+			}
+		}
+	}
+
+	if len(valueIn) > 0 {
+		if len(whereClause) < 1 {
+			if len(valueIn) > 0 {
+				inQuery := strings.Join(valueIn, ",")
+				condition += " WHERE oa_request." + fieldIn + " IN(" + inQuery + ")"
+			}
+		} else {
+			if len(valueIn) > 0 {
+				inQuery := strings.Join(valueIn, ",")
+				condition += " AND oa_request." + fieldIn + " IN(" + inQuery + ")"
 			}
 		}
 	}
@@ -462,7 +476,8 @@ func GetAllOaRequestDoTransaction(c *[]OaRequest, limit uint64, offset uint64, n
 	return http.StatusOK, nil
 }
 
-func GetCountOaRequestDoTransaction(c *OaRequestCountData, params map[string]string) (int, error) {
+func GetCountOaRequestDoTransaction(c *OaRequestCountData, params map[string]string,
+	valueIn []string, fieldIn string) (int, error) {
 	query := `SELECT count(oa_request.oa_request_key) as count_data
 				FROM 
 				oa_request AS oa_request 
@@ -473,8 +488,7 @@ func GetCountOaRequestDoTransaction(c *OaRequestCountData, params map[string]str
 					FROM tr_transaction 
 					WHERE rec_status = 1 
 					GROUP BY customer_key 
-				) tr ON tr.customer_key = cus.customer_key 
-				WHERE cus.rec_status = 1 AND oa_request.oa_status IN (260, 261)`
+				) tr ON tr.customer_key = cus.customer_key `
 
 	var whereClause []string
 	var condition string
@@ -487,11 +501,25 @@ func GetCountOaRequestDoTransaction(c *OaRequestCountData, params map[string]str
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " AND "
+		condition += " WHERE "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
 				condition += " AND "
+			}
+		}
+	}
+
+	if len(valueIn) > 0 {
+		if len(whereClause) < 1 {
+			if len(valueIn) > 0 {
+				inQuery := strings.Join(valueIn, ",")
+				condition += " WHERE oa_request." + fieldIn + " IN(" + inQuery + ")"
+			}
+		} else {
+			if len(valueIn) > 0 {
+				inQuery := strings.Join(valueIn, ",")
+				condition += " AND oa_request." + fieldIn + " IN(" + inQuery + ")"
 			}
 		}
 	}
@@ -506,5 +534,43 @@ func GetCountOaRequestDoTransaction(c *OaRequestCountData, params map[string]str
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateOaRequestByKeyIn(params map[string]string, valueIn []string, fieldIn string) (int, error) {
+	query := "UPDATE oa_request SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+
+	inQuery := strings.Join(valueIn, ",")
+	query += " WHERE oa_request." + fieldIn + " IN(" + inQuery + ")"
+
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }
