@@ -91,7 +91,7 @@ func GetMsCountryIn(c *[]MsCountry, value []string, field string) (int, error) {
 	query2 := `SELECT
 				ms_country.* FROM 
 				ms_country `
-	query := query2 + " WHERE ms_country." + field + " IN(" + inQuery + ")"
+	query := query2 + " WHERE ms_country.rec_status = 1 AND ms_country." + field + " IN(" + inQuery + ")"
 
 	// Main query
 	log.Println(query)
@@ -99,6 +99,18 @@ func GetMsCountryIn(c *[]MsCountry, value []string, field string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsCountry(c *MsCountry, key string) (int, error) {
+	query := `SELECT ms_country.* FROM ms_country WHERE ms_country.rec_status = 1 AND ms_country.country_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil
