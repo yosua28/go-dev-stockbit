@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -181,7 +182,7 @@ func GetCmsPostIn(c *[]CmsPost, value []string, field string) (int, error) {
 }
 
 func GetCmsPost(c *CmsPost, key string) (int, error) {
-	query := `SELECT cms_post.* FROM cms_post WHERE cms_post.post_key = ` + key
+	query := `SELECT cms_post.* FROM cms_post WHERE cms_post.rec_status = 1 AND cms_post.post_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -200,8 +201,6 @@ func GetAdminCmsPostListIn(c *[]CmsPost, limit uint64, offset uint64, nolimit bo
 	query := `SELECT
 				cms_post.* FROM 
 				cms_post WHERE 
-				cms_post.post_publish_start <= NOW() AND 
-				cms_post.post_publish_thru > NOW() AND 
 				cms_post.rec_status = 1 `
 
 	for field, value := range params {
@@ -262,8 +261,6 @@ func GetCountCmsPost(c *CmsPostCount, params map[string]string, ids []string) (i
 	query := `SELECT
               count(cms_post.post_key) as count_data
 			  FROM cms_post WHERE 
-			  cms_post.post_publish_start <= NOW() AND 
-			  cms_post.post_publish_thru > NOW() AND 
 			  cms_post.rec_status = 1 `
 
 	for field, value := range params {
@@ -297,5 +294,74 @@ func GetCountCmsPost(c *CmsPostCount, params map[string]string, ids []string) (i
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func CreatePost(params map[string]string) (int, error) {
+	query := "INSERT INTO cms_post"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func UpdateCmsPost(params map[string]string) (int, error) {
+	query := "UPDATE cms_post SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "post_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE post_key = " + params["post_key"]
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }

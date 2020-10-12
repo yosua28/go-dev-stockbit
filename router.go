@@ -85,6 +85,10 @@ func router() *echo.Echo {
 
 	//Admin Post
 	admin.GET("/posts", controllers.GetAdminCmsPostList).Name = "GetAdminCmsPostList"
+	admin.GET("/post/:key", controllers.GetAdminCmsPostData).Name = "GetAdminCmsPostData"
+	admin.POST("/post/create", controllers.CreateAdminCmsPost).Name = "CreateAdminCmsPost"
+	admin.POST("/post/update/:key", controllers.UpdateAdminCmsPost).Name = "UpdateAdminCmsPost"
+	admin.POST("/post/delete", controllers.DeleteAdminCmsPost).Name = "DeleteAdminCmsPost"
 
 	return e
 }

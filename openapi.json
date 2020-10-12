@@ -3290,6 +3290,429 @@
           }
         }
       }
+    },
+    "/admin/post/{key}": {
+      "get": {
+        "description": "Get One CMS Post",
+        "tags": [
+          "Admin CMS Post"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "post key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "post_key": 1,
+                    "post_subtype": {
+                      "post_subtype_key": 1,
+                      "post_subtype_code": "JUMBOTRON",
+                      "post_subtype_name": "Top Home Banner"
+                    },
+                    "post_title": "Tes Post Create",
+                    "post_sub_title": "hahaha coba gan",
+                    "post_content": "hahaha coba gan, hahaha coba gan, hahaha coba gan, hahaha coba gan mari kita lihat",
+                    "post_content_author": "DEV-YS",
+                    "post_content_sources": "iNews",
+                    "post_publish_start": "01 Jan 2020",
+                    "post_publish_thru": "31 Dec 2500",
+                    "post_page_allowed": false,
+                    "post_comment_allowed": false,
+                    "post_comment_displayed": false,
+                    "post_files_allowed": false,
+                    "post_video_allowed": false,
+                    "post_video_url": "",
+                    "post_pinned": true,
+                    "rec_image1": "https://devapi.mncasset.com/images/post/faq/7065_dLZJhDkjLCaMVOGY1nb1.jpg",
+                    "rec_image2": "https://devapi.mncasset.com/images/post/faq/7065_SLn7CWBIN5TexWlZUuG8.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/post/create": {
+      "post": {
+        "description": "Create CMS Post",
+        "tags": [
+          "Admin CMS Post"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "post_subtype_key": {
+                    "type": "integer"
+                  },
+                  "post_title": {
+                    "type": "string"
+                  },
+                  "post_sub_title": {
+                    "type": "string"
+                  },
+                  "post_content": {
+                    "type": "string"
+                  },
+                  "post_content_author": {
+                    "type": "string"
+                  },
+                  "post_content_sources": {
+                    "type": "string"
+                  },
+                  "post_publish_start": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "post_publish_thru": {
+                    "type": "string",
+                    "example": "2025-10-30"
+                  },
+                  "post_page_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_comment_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_comment_displayed": {
+                    "type": "boolean"
+                  },
+                  "post_files_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_video_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_video_url": {
+                    "type": "string"
+                  },
+                  "post_pinned": {
+                    "type": "boolean"
+                  },
+                  "rec_image1": {
+                    "type": "file"
+                  },
+                  "rec_image2": {
+                    "type": "file"
+                  }
+                },
+                "required": [
+                  "post_subtype_key",
+                  "post_title",
+                  "post_publish_start",
+                  "post_publish_thru",
+                  "post_page_allowed",
+                  "post_comment_allowed",
+                  "post_comment_displayed",
+                  "post_files_allowed",
+                  "post_video_allowed",
+                  "post_pinned"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/post/update/{key}": {
+      "post": {
+        "description": "Update CMS Post",
+        "tags": [
+          "Admin CMS Post"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "post_key": {
+                    "type": "integer"
+                  },
+                  "post_subtype_key": {
+                    "type": "integer"
+                  },
+                  "post_title": {
+                    "type": "string"
+                  },
+                  "post_sub_title": {
+                    "type": "string"
+                  },
+                  "post_content": {
+                    "type": "string"
+                  },
+                  "post_content_author": {
+                    "type": "string"
+                  },
+                  "post_content_sources": {
+                    "type": "string"
+                  },
+                  "post_publish_start": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "post_publish_thru": {
+                    "type": "string",
+                    "example": "2025-10-30"
+                  },
+                  "post_page_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_comment_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_comment_displayed": {
+                    "type": "boolean"
+                  },
+                  "post_files_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_video_allowed": {
+                    "type": "boolean"
+                  },
+                  "post_video_url": {
+                    "type": "string"
+                  },
+                  "post_pinned": {
+                    "type": "boolean"
+                  },
+                  "rec_image1": {
+                    "type": "file"
+                  },
+                  "rec_image2": {
+                    "type": "file"
+                  }
+                },
+                "required": [
+                  "post_key",
+                  "post_subtype_key",
+                  "post_title",
+                  "post_publish_start",
+                  "post_publish_thru",
+                  "post_page_allowed",
+                  "post_comment_allowed",
+                  "post_comment_displayed",
+                  "post_files_allowed",
+                  "post_video_allowed",
+                  "post_pinned"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/post/delete": {
+      "post": {
+        "description": "Delete CMS Post",
+        "tags": [
+          "Admin CMS Post"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "post_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "post_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
