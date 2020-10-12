@@ -69,7 +69,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", `Email kamu sudah terdaftar \n Silahkan masukkan email lainnya \n Atau hubungi Customer Service untuk informasi lebih lanjut`)
+		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar \n Silahkan masukkan email lainnya \n Atau hubungi Customer Service untuk informasi lebih lanjut")
 	}
 
 	// Validate password
