@@ -69,7 +69,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email "+email+" already registered")
+		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", `Email kamu sudah terdaftar \n Silahkan masukkan email lainnya \n Atau hubungi Customer Service untuk informasi lebih lanjut`)
 	}
 
 	// Validate password
@@ -258,7 +258,7 @@ func VerifyOtp(c echo.Context) error {
 	now := time.Now()
 	if now.After(expired) {
 		log.Error("OTP is expired")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"OTP is expired")
+		return lib.CustomError(http.StatusInternalServerError,"OTP is expired","OTP is expired")
 	}
 	log.Info("Success verify OTP")
 
