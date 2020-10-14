@@ -845,6 +845,103 @@ func GetOaRequestData(c echo.Context) error {
 		}
 		responseData.Emergency.EmergencyPhoneNo = oapersonal.EmergencyPhoneNo
 
+		var oaRiskProfile []models.AdminOaRiskProfile
+		status, err = models.AdminGetOaRiskProfile(&oaRiskProfile, strKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+		responseData.RiskProfile = oaRiskProfile
+
+		//mapping oa risk profile quiz
+		var oaRiskProfileQuiz []models.AdminOaRiskProfileQuiz
+		status, err = models.AdminGetOaRiskProfileQuizByOaRequestKey(&oaRiskProfileQuiz, strKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+		if len(oaRiskProfileQuiz) > 0 {
+			var questionIDs []string
+			for _, quiz := range oaRiskProfileQuiz {
+				if _, ok := lib.Find(questionIDs, strconv.FormatUint(quiz.QuizQuestionKey, 10)); !ok {
+					questionIDs = append(questionIDs, strconv.FormatUint(quiz.QuizQuestionKey, 10))
+				}
+			}
+			var optionDB []models.CmsQuizOptions
+			status, err = models.GetCmsQuizOptionsIn(&optionDB, questionIDs, "quiz_question_key")
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+
+			optionData := make(map[uint64][]models.CmsQuizOptionsInfo)
+			optionUserData := make(map[uint64]models.CmsQuizOptions)
+			if len(optionDB) > 0 {
+				for _, option := range optionDB {
+
+					optionUserData[option.QuizOptionKey] = option
+
+					var data models.CmsQuizOptionsInfo
+
+					data.QuizOptionKey = option.QuizOptionKey
+					if option.QuizOptionLabel != nil {
+						data.QuizOptionLabel = *option.QuizOptionLabel
+					}
+					if option.QuizOptionTitle != nil {
+						data.QuizOptionTitle = *option.QuizOptionTitle
+					}
+					if option.QuizOptionScore != nil {
+						data.QuizOptionScore = *option.QuizOptionScore
+					}
+					if option.QuizOptionDefault != nil {
+						data.QuizOptionDefault = *option.QuizOptionDefault
+					}
+
+					optionData[option.QuizQuestionKey] = append(optionData[option.QuizQuestionKey], data)
+				}
+			}
+
+			var riskQuiz []models.RiskProfileQuiz
+
+			for _, oaRiskQuiz := range oaRiskProfileQuiz {
+				var risk models.RiskProfileQuiz
+
+				risk.RiskProfileQuizKey = oaRiskQuiz.RiskProfileQuizKey
+				if n, ok := optionUserData[oaRiskQuiz.QuizOptionKeyUser]; ok {
+					risk.QuizOptionUser.QuizOptionKey = n.QuizOptionKey
+					if n.QuizOptionLabel != nil {
+						risk.QuizOptionUser.QuizOptionLabel = *n.QuizOptionLabel
+					}
+					if n.QuizOptionTitle != nil {
+						risk.QuizOptionUser.QuizOptionTitle = *n.QuizOptionTitle
+					}
+					if n.QuizOptionScore != nil {
+						risk.QuizOptionUser.QuizOptionScore = *n.QuizOptionScore
+					}
+					if n.QuizOptionDefault != nil {
+						risk.QuizOptionUser.QuizOptionDefault = *n.QuizOptionDefault
+					}
+				}
+				risk.QuizOptionScoreUser = oaRiskQuiz.QuizOptionScoreUser
+				risk.QuizQuestionKey = oaRiskQuiz.QuizQuestionKey
+				risk.HeaderQuizName = *oaRiskQuiz.HeaderQuizName
+				risk.QuizTitle = oaRiskQuiz.QuizTitle
+
+				if opt, ok := optionData[oaRiskQuiz.QuizQuestionKey]; ok {
+					risk.Options = opt
+				}
+
+				riskQuiz = append(riskQuiz, risk)
+			}
+			responseData.RiskProfileQuiz = riskQuiz
+		}
+
 	}
 
 	var response lib.Response
