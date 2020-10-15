@@ -549,6 +549,18 @@ func CreateAdminCmsPost(c echo.Context) error {
 	} else {
 		var file *multipart.FileHeader
 		file, err = c.FormFile("rec_image1")
+
+		items := []string{"1", "3", "5"}
+		strType := strconv.FormatUint(postSubType.PostTypeKey, 10)
+
+		_, found := lib.Find(items, strType)
+		if found {
+			if file == nil {
+				log.Error("Wrong input for parameter rec_image1")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter rec_image1", "Wrong input for parameter rec_image1")
+			}
+		}
+
 		if file != nil {
 			if err != nil {
 				return lib.CustomError(http.StatusBadRequest)
