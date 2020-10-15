@@ -106,6 +106,14 @@ type OaRequestDetailResponse struct {
 	Emergency           Emergency            `json:"emergency"`
 	RiskProfile         []AdminOaRiskProfile `json:"risk_profile"`
 	RiskProfileQuiz     []RiskProfileQuiz    `json:"risk_profile_quiz"`
+	FirstName           *string              `json:"first_name"`
+	MiddleName          *string              `json:"middle_name"`
+	LastName            *string              `json:"last_name"`
+	ClientCode          *string              `json:"client_code"`
+	TinNumber           *string              `json:"tin_number"`
+	TinIssuanceDate     *string              `json:"tin_issuance_date"`
+	TinIssuanceCountry  *string              `json:"tin_issuance_country"`
+	FatcaStatus         *string              `json:"fatca_status"`
 }
 
 type Address struct {

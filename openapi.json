@@ -2684,7 +2684,15 @@
                           }
                         ]
                       }
-                    ]
+                    ],
+                    "first_name": "Aldy",
+                    "middle_name": "Yoga",
+                    "last_name": "Putra",
+                    "client_code": null,
+                    "tin_number": null,
+                    "tin_issuance_date": null,
+                    "tin_issuance_country": null,
+                    "fatca_status": "Domestic (WNA)"
                   }
                 }
               }
@@ -3260,12 +3268,12 @@
                   "data": [
                     {
                       "type": "1",
-                      "sa_code": "16",
+                      "sa_code": "EP002",
                       "sid": "",
-                      "first_name": "Aldy Yoga ",
-                      "middle_name": "",
-                      "last_name": "",
-                      "country_of_nationality": "ID",
+                      "first_name": "Maria",
+                      "middle_name": "Dwi",
+                      "last_name": "Yani",
+                      "country_of_nationality": "1",
                       "id_no": "8455843169084126",
                       "id_expiration_date": "",
                       "npwp_no": "",
@@ -3291,7 +3299,7 @@
                       "correspondence_address": "shushs",
                       "correspondence_City_code": "0001",
                       "correspondence_city_name": "Kabupaten Aceh Barat",
-                      "correspondence_postal_code": "8431518",
+                      "correspondence_postal_code": "",
                       "country_of_correspondence": "ID",
                       "domicile_address": "shushs",
                       "domicile_city_code": "0001",
@@ -3307,19 +3315,19 @@
                       "foreign_tin": "",
                       "foreign_tin_issuance_country": "",
                       "redm_payment_bank_bic_code1": "",
-                      "redm_payment_bank_bi_member_code1": "",
-                      "redm_payment_bank_name1": "",
-                      "redm_payment_bank_country1": "",
+                      "redm_payment_bank_bi_member_code1": "MANDIRI",
+                      "redm_payment_bank_name1": "BANK MANDIRI",
+                      "redm_payment_bank_country1": "ID",
                       "redm_payment_bank_branch1": "",
                       "redm_payment_ac_ccy1": "IDR",
-                      "redm_payment_ac_no1": "",
-                      "redm_payment_ac_name1": "",
+                      "redm_payment_ac_no1": "025508",
+                      "redm_payment_ac_name1": "cgcgff",
                       "redm_payment_bank_bic_code2": "",
                       "redm_payment_bank_bi_member_code2": "",
                       "redm_payment_bank_name2": "",
                       "redm_payment_bank_country2": "",
                       "redm_payment_bank_branch2": "",
-                      "redm_payment_ac_ccy2": "IDR",
+                      "redm_payment_ac_ccy2": "",
                       "redm_payment_ac_no2": "",
                       "redm_payment_ac_name2": "",
                       "redm_payment_bank_bic_code3": "",
@@ -3327,10 +3335,10 @@
                       "redm_payment_bank_name3": "",
                       "redm_payment_bank_country3": "",
                       "redm_payment_bank_branch3": "",
-                      "redm_payment_ac_ccy3": "IDR",
+                      "redm_payment_ac_ccy3": "",
                       "redm_payment_ac_no3": "",
                       "redm_payment_ac_name3": "",
-                      "ClientCode": ""
+                      "client_code": "009997"
                     }
                   ]
                 }

@@ -35,6 +35,14 @@ type MsCustomer struct {
 	EmployeeNotes          *string `db:"employee_notes"              json:"employee_notes"`
 	ParentKey              *uint64 `db:"parent_key"                  json:"parent_key"`
 	MargingFlag            uint8   `db:"merging_flag"                json:"merging_flag"`
+	FirstName              *string `db:"first_name"                  json:"first_name"`
+	MiddleName             *string `db:"middle_name"                 json:"middle_name"`
+	LastName               *string `db:"last_name"                   json:"last_name"`
+	ClientCode             *string `db:"client_code"                 json:"client_code"`
+	TinNumber              *string `db:"tin_number"                  json:"tin_number"`
+	TinIssuanceDate        *string `db:"tin_issuance_date"           json:"tin_issuance_date"`
+	TinIssuanceCountry     *uint64 `db:"tin_issuance_country"        json:"tin_issuance_country"`
+	FatcaStatus            *uint64 `db:"fatca_status"                json:"fatca_status"`
 	RecOrder               *uint64 `db:"rec_order"                   json:"rec_order"`
 	RecStatus              uint8   `db:"rec_status"                  json:"rec_status"`
 	RecCreatedDate         *string `db:"rec_created_date"            json:"rec_created_date"`
@@ -115,4 +123,42 @@ func CreateMsCustomer(params map[string]string) (int, error, string) {
 	}
 	lastID, _ := ret.LastInsertId()
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
+}
+
+func UpdateMsCustomer(params map[string]string) (int, error) {
+	query := "UPDATE ms_customer SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "customer_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE customer_key = " + params["customer_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
 }

@@ -63,6 +63,7 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 
 	var oaRequestLookupIds []string
 	var oaRequestIds []string
+	var customerIds []string
 	for _, oareq := range oaRequestDB {
 		if _, ok := lib.Find(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10)); !ok {
 			oaRequestIds = append(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10))
@@ -71,6 +72,12 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 		if oareq.OaRiskLevel != nil {
 			if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRiskLevel, 10)); !ok {
 				oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRiskLevel, 10))
+			}
+		}
+
+		if oareq.CustomerKey != nil {
+			if _, ok := lib.Find(customerIds, strconv.FormatUint(*oareq.CustomerKey, 10)); !ok {
+				customerIds = append(customerIds, strconv.FormatUint(*oareq.CustomerKey, 10))
 			}
 		}
 	}
@@ -88,6 +95,7 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 	pdData := make(map[uint64]models.OaPersonalData)
 	var postalAddressIds []string
 	var nasionalityIds []string
+	var bankAccountIds []string
 
 	for _, oapersonal := range oaPersonalData {
 		pdData[oapersonal.OaRequestKey] = oapersonal
@@ -158,6 +166,12 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 		if oapersonal.OccupAddressKey != nil {
 			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10)); !ok {
 				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10))
+			}
+		}
+
+		if oapersonal.BankAccountKey != nil {
+			if _, ok := lib.Find(bankAccountIds, strconv.FormatUint(*oapersonal.BankAccountKey, 10)); !ok {
+				bankAccountIds = append(bankAccountIds, strconv.FormatUint(*oapersonal.BankAccountKey, 10))
 			}
 		}
 	}
@@ -239,24 +253,140 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 		countryData[country.CountryKey] = country
 	}
 
+	//customer
+	var customer []models.MsCustomer
+	if len(customerIds) > 0 {
+		status, err = models.GetMsCustomerIn(&customer, customerIds, "customer_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+	customerData := make(map[uint64]models.MsCustomer)
+	for _, cus := range customer {
+		customerData[cus.CustomerKey] = cus
+	}
+
+	//bank account
+	var bankAccount []models.MsBankAccount
+	if len(bankAccountIds) > 0 {
+		status, err = models.GetMsBankAccountIn(&bankAccount, bankAccountIds, "bank_account_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+	bankData := make(map[uint64]models.MsBankAccount)
+	var bankIds []string
+	var currencyIds []string
+	for _, b := range bankAccount {
+		bankData[b.BankAccountKey] = b
+
+		if _, ok := lib.Find(bankIds, strconv.FormatUint(b.BankKey, 10)); !ok {
+			bankIds = append(bankIds, strconv.FormatUint(b.BankKey, 10))
+		}
+
+		if _, ok := lib.Find(currencyIds, strconv.FormatUint(b.CurrencyKey, 10)); !ok {
+			currencyIds = append(currencyIds, strconv.FormatUint(b.CurrencyKey, 10))
+		}
+	}
+
+	//ms bank
+	var msBank []models.MsBank
+	if len(bankIds) > 0 {
+		status, err = models.GetMsBankIn(&msBank, bankIds, "bank_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+	msBankData := make(map[uint64]models.MsBank)
+	for _, b := range msBank {
+		msBankData[b.BankKey] = b
+	}
+
+	//ms currency
+	var msCurrency []models.MsCurrency
+	if len(currencyIds) > 0 {
+		status, err = models.GetMsCurrencyIn(&msCurrency, currencyIds, "currency_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+	currencyData := make(map[uint64]models.MsCurrency)
+	for _, c := range msCurrency {
+		currencyData[c.CurrencyKey] = c
+	}
+
 	var responseData []models.OaRequestCsvFormat
+
+	var scApp models.ScAppConfig
+	status, err = models.GetScAppConfigByCode(&scApp, "LAST_CLIENT_CODE")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data LAST_CLIENT_CODE")
+	}
+
+	log.Println("last = " + *scApp.AppConfigValue)
+
+	last, _ := strconv.ParseUint(*scApp.AppConfigValue, 10, 64)
+	if last == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var lastValue string
 
 	for _, oareq := range oaRequestDB {
 		if n, ok := pdData[oareq.OaRequestKey]; ok {
 			var data models.OaRequestCsvFormat
-			data.Type = "1"
-			strKey := strconv.FormatUint(oareq.OaRequestKey, 10)
-			data.SACode = strKey
+
+			strType := strconv.FormatUint(*oareq.OaRequestType, 10)
+			if strType == "127" {
+				data.Type = "1"
+			} else {
+				data.Type = "2"
+			}
+			data.SACode = "EP002"
 			data.SID = ""
-			data.FirstName = n.FullName
+			data.FirstName = ""
 			data.MiddleName = ""
 			data.LastName = ""
+			if oareq.CustomerKey != nil {
+				if c, ok := customerData[*oareq.CustomerKey]; ok {
+					if c.SidNo != nil {
+						data.SID = *c.SidNo
+					}
+					if c.FirstName != nil {
+						data.FirstName = *c.FirstName
+					}
+					if c.MiddleName != nil {
+						data.MiddleName = *c.MiddleName
+					}
+					if c.LastName != nil {
+						data.LastName = *c.LastName
+					}
+				}
+			}
 
 			data.CountryOfNationality = ""
 			data.CountryOfBirth = ""
-			if n, ok := countryData[n.Nationality]; ok {
-				data.CountryOfNationality = n.CouCode
-				data.CountryOfBirth = n.CouCode
+			if co, ok := countryData[n.Nationality]; ok {
+				strCountry := strconv.FormatUint(co.CountryKey, 10)
+				if strCountry == "97" { // indonesia WNI
+					data.CountryOfNationality = "1"
+				} else {
+					data.CountryOfNationality = "2"
+				}
+				data.CountryOfBirth = co.CouCode
 			}
 
 			data.IDno = n.IDcardNo
@@ -365,10 +495,6 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 			data.KTPAddress = ""
 			data.KTPCityCode = ""
 			data.KTPPostalCode = ""
-			data.CorrespondenceAddress = ""
-			data.CorrespondenceCityCode = ""
-			data.CorrespondenceCityName = ""
-			data.CountryOfCorrespondence = ""
 			if n.IDcardAddressKey != nil {
 				if a, ok := postalData[*n.IDcardAddressKey]; ok {
 					//set alamat KTP
@@ -386,52 +512,41 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 						postal := *a.PostalCode
 						data.KTPPostalCode = postal
 					}
-
-					//set Correspondence Address untuk sementara samain KTP dulu
-					if a.AddressLine1 != nil {
-						ktpAddress := *a.AddressLine1
-						data.CorrespondenceAddress = ktpAddress
-					}
-
-					if a.KabupatenKey != nil {
-						if c, ok := cityData[*a.KabupatenKey]; ok {
-							if co, ok := countryData[c.CountryKey]; ok {
-								data.CountryOfCorrespondence = co.CouCode
-							}
-							data.CorrespondenceCityCode = c.CityCode
-							data.CorrespondenceCityName = c.CityName
-						}
-					}
-					if a.PostalCode != nil {
-						postal := *a.PostalCode
-						data.CorrespondencePostalCode = postal
-					}
 				}
 			}
 
+			data.CorrespondenceAddress = ""
+			data.CorrespondenceCityCode = ""
+			data.CorrespondenceCityName = ""
+			data.CorrespondencePostalCode = ""
+			data.CountryOfCorrespondence = ""
 			if n.DomicileAddressKey != nil {
 				if a, ok := postalData[*n.DomicileAddressKey]; ok {
 					//set alamat KTP
 					if a.AddressLine1 != nil {
 						domiAddress := *a.AddressLine1
 						data.DomicileAddress = domiAddress
+						data.CorrespondenceAddress = domiAddress
 					}
 
 					if a.KabupatenKey != nil {
 						if c, ok := cityData[*a.KabupatenKey]; ok {
 							if co, ok := countryData[c.CountryKey]; ok {
 								data.CountryOfDomicile = co.CouCode
+								data.CountryOfCorrespondence = co.CouCode
 							}
 							data.DomicileCityCode = c.CityCode
 							data.DomicileCityName = c.CityName
+							data.CorrespondenceCityCode = c.CityCode
+							data.CorrespondenceCityName = c.CityName
 						}
 					}
 
 					if a.PostalCode != nil {
 						postal := *a.PostalCode
 						data.DomicilePostalCode = postal
+						data.CorrespondencePostalCode = postal
 					}
-
 				}
 			}
 
@@ -447,20 +562,36 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 			data.FATCA = ""
 			data.ForeignTIN = ""
 			data.ForeignTINIssuanceCountry = ""
+
 			data.REDMPaymentBankBICCode1 = ""
 			data.REDMPaymentBankBIMemberCode1 = ""
 			data.REDMPaymentBankName1 = ""
 			data.REDMPaymentBankCountry1 = ""
 			data.REDMPaymentBankBranch1 = ""
-			data.REDMPaymentACCcy1 = "IDR"
+			data.REDMPaymentACCcy1 = ""
 			data.REDMPaymentACNo1 = ""
 			data.REDMPaymentACName1 = ""
+
+			if bankAccount, ok := bankData[*n.BankAccountKey]; ok {
+				if msBank, ok := msBankData[bankAccount.BankKey]; ok {
+					data.REDMPaymentBankBIMemberCode1 = msBank.BankCode
+					data.REDMPaymentBankName1 = msBank.BankName
+				}
+				data.REDMPaymentBankCountry1 = "ID"
+
+				if cur, ok := currencyData[bankAccount.CurrencyKey]; ok {
+					data.REDMPaymentACCcy1 = cur.Code
+				}
+				data.REDMPaymentACNo1 = bankAccount.AccountNo
+				data.REDMPaymentACName1 = bankAccount.AccountHolderName
+			}
+
 			data.REDMPaymentBankBICCode2 = ""
 			data.REDMPaymentBankBIMemberCode2 = ""
 			data.REDMPaymentBankName2 = ""
 			data.REDMPaymentBankCountry2 = ""
 			data.REDMPaymentBankBranch2 = ""
-			data.REDMPaymentACCcy2 = "IDR"
+			data.REDMPaymentACCcy2 = ""
 			data.REDMPaymentACNo2 = ""
 			data.REDMPaymentACName2 = ""
 			data.REDMPaymentBankBICCode3 = ""
@@ -468,19 +599,60 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 			data.REDMPaymentBankName3 = ""
 			data.REDMPaymentBankCountry3 = ""
 			data.REDMPaymentBankBranch3 = ""
-			data.REDMPaymentACCcy3 = "IDR"
+			data.REDMPaymentACCcy3 = ""
 			data.REDMPaymentACNo3 = ""
 			data.REDMPaymentACName3 = ""
 			data.ClientCode = ""
+
+			//start update client_code if new customer
+			if strType == "127" { //type NEW
+				last = last + 1
+				paramsCustomer := make(map[string]string)
+				var convLast string
+				convLast = strconv.FormatUint(uint64(last), 10)
+				clientCode := lib.PadLeft(convLast, "0", 6)
+				paramsCustomer["client_code"] = clientCode
+				dateLayout := "2006-01-02 15:04:05"
+				paramsCustomer["rec_modified_date"] = time.Now().Format(dateLayout)
+				strKeyLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+				paramsCustomer["rec_modified_by"] = strKeyLogin
+				strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+				paramsCustomer["customer_key"] = strCustomerKey
+				_, err = models.UpdateMsCustomer(paramsCustomer)
+				if err != nil {
+					log.Error("Error update oa request")
+					return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+				}
+				lastValue = paramsCustomer["client_code"]
+
+				data.ClientCode = paramsCustomer["client_code"]
+			}
+			//end
 
 			responseData = append(responseData, data)
 		}
 	}
 
+	//value awal = 009995 ----------------- update app_config
+	if lastValue != "" {
+		paramsConfig := make(map[string]string)
+		paramsConfig["app_config_value"] = lastValue
+		dateLayout := "2006-01-02 15:04:05"
+		paramsConfig["rec_modified_date"] = time.Now().Format(dateLayout)
+		strKeyLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsConfig["rec_modified_by"] = strKeyLogin
+		_, err = models.UpdateMsCustomerByConfigCode(paramsConfig, "LAST_CLIENT_CODE")
+		if err != nil {
+			log.Error("Error update App Config")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		}
+	}
+	//end
+
 	if len(responseData) > 0 {
 		paramsUpdate := make(map[string]string)
 
-		strOaStatus := strconv.FormatUint(261, 10) //customer builf, proses upload data to Sinvest
+		strOaStatus := strconv.FormatUint(261, 10) //customer build, proses upload data to Sinvest
 		paramsUpdate["oa_status"] = strOaStatus
 		dateLayout := "2006-01-02 15:04:05"
 		paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)

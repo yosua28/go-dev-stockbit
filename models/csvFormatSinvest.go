@@ -74,5 +74,5 @@ type OaRequestCsvFormat struct {
 	REDMPaymentACCcy3            string `json:"redm_payment_ac_ccy3"`
 	REDMPaymentACNo3             string `json:"redm_payment_ac_no3"`
 	REDMPaymentACName3           string `json:"redm_payment_ac_name3"`
-	ClientCode                   string `json:"ClientCode"`
+	ClientCode                   string `json:"client_code"`
 }

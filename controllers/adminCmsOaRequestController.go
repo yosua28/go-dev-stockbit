@@ -9,6 +9,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -942,6 +943,70 @@ func GetOaRequestData(c echo.Context) error {
 			responseData.RiskProfileQuiz = riskQuiz
 		}
 
+		//add response field Sinvest
+		if oareq.CustomerKey != nil {
+			var customer models.MsCustomer
+			strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+			status, err = models.GetMsCustomer(&customer, strCustomerKey)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+
+			responseData.FirstName = customer.FirstName
+			responseData.MiddleName = customer.MiddleName
+			responseData.LastName = customer.LastName
+			responseData.ClientCode = customer.ClientCode
+			responseData.TinNumber = customer.TinNumber
+
+			if customer.TinIssuanceDate != nil {
+				layout := "2006-01-02 15:04:05"
+				newLayout := "02 Jan 2006"
+				date, _ := time.Parse(layout, *customer.TinIssuanceDate)
+				oke := date.Format(newLayout)
+				responseData.TinIssuanceDate = &oke
+			}
+
+			if customer.FatcaStatus != nil {
+				var fatca models.GenLookup
+				strLookKey := strconv.FormatUint(*customer.FatcaStatus, 10)
+				status, err = models.GetGenLookup(&fatca, strLookKey)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						log.Error(err.Error())
+						return lib.CustomError(status, err.Error(), "Failed get data")
+					}
+				}
+				responseData.FatcaStatus = fatca.LkpName
+			}
+
+			if customer.TinIssuanceCountry != nil {
+				var country models.MsCountry
+				strCountryKey := strconv.FormatUint(*customer.TinIssuanceCountry, 10)
+				status, err = models.GetMsCountry(&country, strCountryKey)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						log.Error(err.Error())
+						return lib.CustomError(status, err.Error(), "Failed get data")
+					}
+				}
+				responseData.TinIssuanceCountry = &country.CouName
+			}
+		} else {
+			sliceName := strings.Fields(oapersonal.FullName)
+			if len(sliceName) > 0 {
+				responseData.FirstName = &sliceName[0]
+				if len(sliceName) > 1 {
+					responseData.MiddleName = &sliceName[1]
+					if len(sliceName) > 2 {
+						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
+						responseData.LastName = &lastName
+					}
+				}
+			}
+		}
 	}
 
 	var response lib.Response
@@ -1143,6 +1208,28 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	paramsCustomer["rec_status"] = "1"
 	paramsCustomer["rec_created_date"] = time.Now().Format(dateLayout)
 	paramsCustomer["rec_created_by"] = strKey
+
+	sliceName := strings.Fields(oapersonal.FullName)
+
+	if len(sliceName) > 0 {
+		paramsCustomer["first_name"] = sliceName[0]
+		if len(sliceName) > 1 {
+			paramsCustomer["middle_name"] = sliceName[1]
+			if len(sliceName) > 2 {
+				lastName := strings.Join(sliceName[2:len(sliceName)], " ")
+				paramsCustomer["last_name"] = lastName
+			}
+		}
+	}
+
+	strNationality := strconv.FormatUint(oapersonal.Nationality, 10)
+	if strNationality == "97" {
+		paramsCustomer["fatca_status"] = "278"
+	} else if strNationality == "225" {
+		paramsCustomer["fatca_status"] = "279"
+	} else {
+		paramsCustomer["fatca_status"] = "280"
+	}
 
 	status, err, requestID := models.CreateMsCustomer(paramsCustomer)
 	if err != nil {
