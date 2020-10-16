@@ -800,22 +800,11 @@ func GetOaRequestData(c echo.Context) error {
 						return lib.CustomError(status)
 					}
 				} else {
-					responseData.BankAccount.BankKey = bank.BankFullname
+					responseData.BankAccount.BankName = bank.BankName
 				}
-				responseData.BankAccount.AccountNo = &bankaccount.AccountNo
-				responseData.BankAccount.AccountHolderName = &bankaccount.AccountHolderName
+				responseData.BankAccount.AccountNo = bankaccount.AccountNo
+				responseData.BankAccount.AccountHolderName = bankaccount.AccountHolderName
 				responseData.BankAccount.BranchName = bankaccount.BranchName
-
-				var lookup models.GenLookup
-				strlookup := strconv.FormatUint(bankaccount.BankAccountType, 10)
-				status, err = models.GetGenLookup(&lookup, strlookup)
-				if err != nil {
-					if err != sql.ErrNoRows {
-						return lib.CustomError(status)
-					}
-				} else {
-					responseData.BankAccount.BankAccountType = lookup.LkpName
-				}
 			}
 		}
 

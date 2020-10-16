@@ -124,11 +124,10 @@ type Address struct {
 }
 
 type BankAccount struct {
-	BankKey           *string `json:"bank_key"`
-	AccountNo         *string `json:"account_no"`
-	AccountHolderName *string `json:"account_holder_name"`
+	BankName          string  `json:"bank_name"`
+	AccountNo         string  `json:"account_no"`
+	AccountHolderName string  `json:"account_holder_name"`
 	BranchName        *string `json:"branch_name"`
-	BankAccountType   *string `json:"bank_account_type"`
 }
 
 type Relation struct {

@@ -2587,11 +2587,10 @@
                       "postal_code": null
                     },
                     "bank_account": {
-                      "bank_key": "BANK MANDIRI",
+                      "bank_name": "BANK MANDIRI",
                       "account_no": "1462576464",
                       "account_holder_name": "heru",
-                      "branch_name": "jogjakarta",
-                      "bank_account_type": "No"
+                      "branch_name": "jogjakarta"
                     },
                     "relation": {
                       "relation_type": null,
