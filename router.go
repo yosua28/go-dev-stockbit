@@ -93,6 +93,9 @@ func router() *echo.Echo {
 	//Admin CMS Financial Calc
 	admin.GET("/financialcalc", controllers.GetAdminCmsFinancialCalcList).Name = "GetAdminCmsFinancialCalcList"
 
+	//Admin Transaction
+	admin.GET("/transactionlist", controllers.GetTransactionApprovalList).Name = "GetTransactionApprovalList"
+
 	return e
 }
 
