@@ -3,22 +3,27 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
-type MsProductBankAccountInfo struct {
-	BankAccountName      string         `json:"bank_account_name"`
-	BankAccountPurpose   uint64         `json:"bank_account_purpose"`
-	BankAccount          BankAccount    `json:"bank_account"`
+type MsProductFeeItemInfo struct {
+	ItemSeqno             uint64    `json:"item_seqno"`
+	RowMax                uint8     `json:"row_max"`
+	PrincipleLimit        float64   `json:"principle_limit"`
+	FeeValue              float64   `json:"fee_value"`
+	ItemNotes             string    `json:"item_notes"`
 }
 
-type MsProductBankAccount struct {
-	ProdBankaccKey       uint64     `db:"prod_bankacc_key"      json:"prod_bankacc_key"`
-	ProductKey           *uint64    `db:"product_key"           json:"product_key"`
-	BankAccountKey       *uint64    `db:"bank_account_key"      json:"bank_account_key"`
-	BankAccountName      string     `db:"bank_account_name"     json:"bank_account_name"`
-	BankAccountPurpose   uint64     `db:"bank_account_purpose"  json:"bank_account_purpose"`
+type MsProductFeeItem struct {
+	ProductFeeItemKey     uint64    `db:"product_fee_item_key"  json:"product_fee_item_key"`
+	ProductFeeKey         uint64    `db:"product_fee_key"       json:"product_fee_key"`
+	ItemSeqno             uint64    `db:"item_seqno"            json:"item_seqno"`
+	RowMax                uint8     `db:"row_max"               json:"row_max"`
+	PrincipleLimit        float64   `db:"principle_limit"       json:"principle_limit"`
+	FeeValue              float64   `db:"fee_value"             json:"fee_value"`
+	ItemNotes            *string    `db:"item_notes"            json:"item_notes"`
 	RecOrder             *uint64    `db:"rec_order"             json:"rec_order"`
 	RecStatus            uint8      `db:"rec_status"            json:"rec_status"`
 	RecCreatedDate       *string    `db:"rec_created_date"      json:"rec_created_date"`
@@ -38,24 +43,23 @@ type MsProductBankAccount struct {
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
-func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]string) (int, error) {
+func GetAllMsProductFeeItem(c *[]MsProductFeeItem, params map[string]string) (int, error) {
 	query := `SELECT
-              ms_product_bank_account.* FROM 
-			  ms_product_bank_account WHERE  
-			  ms_product_bank_account.rec_status = 1`
+              ms_product_fee_item.* FROM 
+			  ms_product_fee_item `
 	var present bool
 	var whereClause []string
 	var condition string
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "ms_product_bank_account."+field+" = '"+value+"'")
+			whereClause = append(whereClause, "ms_product_fee_item."+field+" = '"+value+"'")
 		}
 	}
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " AND "
+		condition += " WHERE "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
@@ -76,6 +80,25 @@ func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]str
 
 	// Main query
 	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductFeeItemIn(c *[]MsProductFeeItem, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				ms_product_fee_item.* FROM 
+				ms_product_fee_item WHERE
+				ms_product_fee_item.rec_status = 1 `
+	query := query2 + " AND ms_product_fee_item." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
 	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)

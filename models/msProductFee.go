@@ -7,18 +7,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-type MsProductBankAccountInfo struct {
-	BankAccountName      string         `json:"bank_account_name"`
-	BankAccountPurpose   uint64         `json:"bank_account_purpose"`
-	BankAccount          BankAccount    `json:"bank_account"`
+type MsProductFeeInfo struct {
+	FeeAnnotation           string                  `json:"fee_annotation"`
+	FeeDesc                 string                  `json:"fee_desc"`
+	FeeCode                 string                  `json:"fee_code"`
+	FeeItem                 []MsProductFeeItemInfo  `json:"fee_item"`
 }
 
-type MsProductBankAccount struct {
-	ProdBankaccKey       uint64     `db:"prod_bankacc_key"      json:"prod_bankacc_key"`
-	ProductKey           *uint64    `db:"product_key"           json:"product_key"`
-	BankAccountKey       *uint64    `db:"bank_account_key"      json:"bank_account_key"`
-	BankAccountName      string     `db:"bank_account_name"     json:"bank_account_name"`
-	BankAccountPurpose   uint64     `db:"bank_account_purpose"  json:"bank_account_purpose"`
+type MsProductFee struct {
+	FeeKey               uint64     `db:"fee_key"               json:"fee_key"`
+	ProductKey           uint64     `db:"product_key"           json:"product_key"`
+	FeeType              *uint64    `db:"fee_type"              json:"fee_type"`
+	FeeCode              *string    `db:"fee_code"              json:"fee_code"`
+	FlagShowOntnc        *uint8     `db:"flag_show_ontnc"       json:"flag_show_ontnc"`
+	FeeAnnotation        *string    `db:"fee_annotation"        json:"fee_annotation"`
+	FeeDesc              *string    `db:"fee_desc"              json:"fee_desc"`
+	FeeDateStart         *string    `db:"fee_date_start"        json:"fee_date_start"`
+	FeeDateThru          *string    `db:"fee_date_thru"         json:"fee_date_thru"`
+	FeeNominalType       *uint64    `db:"fee_nominal_type"      json:"fee_nominal_type"`
+	EnabledMinAmount      uint8     `db:"enabled_min_amount"    json:"enabled_min_amount"`
+	FeeMinAmount         *float64   `db:"fee_min_amount"        json:"fee_min_amount"`
+	EnabledMaxAmount      uint8     `db:"enabled_max_amount"    json:"enabled_max_amount"`
+	FeeMaxAmount         *float64   `db:"fee_max_amount"        json:"fee_max_amount"`
+	FeeCalcMethod        *uint64    `db:"fee_calc_method"       json:"fee_calc_method"`
+	CalculationBaseon    *uint64    `db:"calculation_baseon"    json:"calculation_baseon"`
+	PeriodHold            uint64    `db:"period_hold"           json:"period_hold"`
+	DaysInyear           *uint64    `db:"days_inyear"           json:"days_inyear"`
 	RecOrder             *uint64    `db:"rec_order"             json:"rec_order"`
 	RecStatus            uint8      `db:"rec_status"            json:"rec_status"`
 	RecCreatedDate       *string    `db:"rec_created_date"      json:"rec_created_date"`
@@ -38,18 +52,20 @@ type MsProductBankAccount struct {
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
-func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]string) (int, error) {
+func GetAllMsProductFee(c *[]MsProductFee, params map[string]string) (int, error) {
 	query := `SELECT
-              ms_product_bank_account.* FROM 
-			  ms_product_bank_account WHERE  
-			  ms_product_bank_account.rec_status = 1`
+              ms_product_fee.* FROM 
+			  ms_product_fee WHERE 
+			  ms_product_fee.fee_date_start <= NOW() AND 
+			  ms_product_fee.fee_date_thru > NOW() AND 
+			  ms_product_fee.rec_status = 1`
 	var present bool
 	var whereClause []string
 	var condition string
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "ms_product_bank_account."+field+" = '"+value+"'")
+			whereClause = append(whereClause, "ms_product_fee."+field+" = '"+value+"'")
 		}
 	}
 
@@ -84,3 +100,4 @@ func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]str
 
 	return http.StatusOK, nil
 }
+

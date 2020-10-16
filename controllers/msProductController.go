@@ -267,6 +267,7 @@ func GetMsProductList(c echo.Context) error {
 func GetMsProductData(c echo.Context) error {
 	var err error
 	var status int
+	var data models.MsProductData
 
 	keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
@@ -317,7 +318,158 @@ func GetMsProductData(c echo.Context) error {
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 
-	var data models.MsProductData
+	var feeDB []models.MsProductFee
+	params := make(map[string]string)
+	params["product_key"] = strconv.FormatUint(product.ProductKey, 10)
+	status, err = models.GetAllMsProductFee(&feeDB, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(feeDB) > 0 {
+		var feeIDs []string
+		for _, fee := range feeDB {
+			feeIDs = append(feeIDs, strconv.FormatUint(fee.FeeKey, 10))
+		}
+
+		var feeItemDB []models.MsProductFeeItem
+		params = make(map[string]string)
+		status, err = models.GetMsProductFeeItemIn(&feeItemDB, feeIDs, "product_fee_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+
+		feeItemData := make(map[uint64][]models.MsProductFeeItemInfo)
+		if len(feeItemDB) > 0 {
+			for _, feeItem := range feeItemDB {
+				var data models.MsProductFeeItemInfo
+				data.ItemSeqno = feeItem.ItemSeqno
+				data.RowMax = feeItem.RowMax
+				data.PrincipleLimit = feeItem.PrincipleLimit
+				data.FeeValue = feeItem.FeeValue
+				if feeItem.ItemNotes != nil {
+					data.ItemNotes = *feeItem.ItemNotes
+				}
+
+				feeItemData[feeItem.ProductFeeKey] = append(feeItemData[feeItem.ProductFeeKey], data)
+			}
+		}
+
+		var feeData []models.MsProductFeeInfo
+		for _, fee := range feeDB {
+			var data models.MsProductFeeInfo
+			if fee.FeeAnnotation != nil {
+				data.FeeAnnotation = *fee.FeeAnnotation
+			}
+			if fee.FeeDesc != nil {
+				data.FeeDesc = *fee.FeeDesc
+			}
+			if fee.FeeCode != nil {
+				data.FeeCode = *fee.FeeCode
+			}
+			if item, ok := feeItemData[fee.FeeKey]; ok {
+				data.FeeItem = item
+			}
+
+			feeData = append(feeData, data)
+		}
+		data.ProductFee = feeData
+	}
+
+	var productBankDB []models.MsProductBankAccount
+	params = make(map[string]string)
+	params["product_key"] = strconv.FormatUint(product.ProductKey, 10)
+	status, err = models.GetAllMsProductBankAccount(&productBankDB, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(productBankDB) > 0 {
+		var accountIDs []string
+		for _, bank := range productBankDB {
+			if bank.BankAccountKey != nil {
+				accountIDs = append(accountIDs, strconv.FormatUint(*bank.BankAccountKey, 10))
+			}
+		}
+
+		var bankAccountDB []models.MsBankAccount
+		status, err = models.GetMsBankAccountIn(&bankAccountDB, accountIDs, "bank_account_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+
+		var bankIDs []string
+		for _, account := range bankAccountDB {
+			bankIDs = append(bankIDs, strconv.FormatUint(account.BankKey, 10))
+		}
+
+		var bankDB []models.MsBank
+		status, err = models.GetMsBankIn(&bankDB, bankIDs, "bank_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		bankData := make(map[uint64]models.MsBank)
+		for _, bank := range bankDB {
+			bankData[bank.BankKey] = bank
+		}
+
+		accountData := make(map[uint64]models.BankAccount)
+		for _, account := range bankAccountDB {
+			var data models.BankAccount
+			data.AccountNo = account.AccountNo
+			data.AccountHolderName = account.AccountHolderName
+			data.BranchName = account.BranchName
+			if acc, ok := bankData[account.BankKey]; ok {
+				data.BankName = acc.BankName
+			}
+
+			accountData[account.BankAccountKey] = data
+		}
+
+		var productBankData []models.MsProductBankAccountInfo
+		for _, bank := range productBankDB {
+			var data models.MsProductBankAccountInfo
+			data.BankAccountName = bank.BankAccountName
+			data.BankAccountPurpose = bank.BankAccountPurpose
+			if bank.BankAccountKey != nil {
+				if acc, ok := accountData[*bank.BankAccountKey]; ok {
+					data.BankAccount = acc
+				}
+			}
+			
+			productBankData = append(productBankData, data)
+		}
+		data.BankAcc = productBankData
+	}
+
+	params = make(map[string]string)
+	params["config_type_key"] = "6"
+	var chargesDB []models.ScAppConfig
+	status, err = models.GetAllScAppConfig(&chargesDB, params)
+	if err != nil {
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	if len(chargesDB) > 0 {
+		for _, charges := range chargesDB {
+			if charges.AppConfigValue != nil {
+				if charges.AppConfigKey == 21 { 
+					data.FeeTransfer = *charges.AppConfigValue
+				}
+				if charges.AppConfigKey == 22 {
+					data.FeeService = *charges.AppConfigValue
+				}
+			}else{
+				data.FeeTransfer = "0"
+				data.FeeService = "0"
+			}
+		}
+	}
 	
 	data.ProductKey = product.ProductKey
 	data.ProductID = product.ProductID

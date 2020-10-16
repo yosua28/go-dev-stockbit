@@ -9,17 +9,17 @@ import (
 )
 
 type MsProductList struct {
-	ProductKey             uint64                `json:"product_key"`
-	ProductID              uint64                `json:"product_id"`
-	ProductCode            string                `json:"product_code"`
-	ProductName            string                `json:"product_name"`
-	ProductNameAlt         string                `json:"product_name_alt"`
-	MinSubAmount           float32               `json:"min_sub_amount"`
-	RecImage1              string                `json:"rec_image1"`
-	FundType              *MsFundTypeInfo        `json:"fund_type,omitempty"`
-	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
-	Nav                   *TrNavInfo             `json:"nav,omitempty"`
-	RiskProfile           *MsRiskProfileInfo     `json:"risk_profile,omitempty"`
+	ProductKey             uint64                       `json:"product_key"`
+	ProductID              uint64                       `json:"product_id"`
+	ProductCode            string                       `json:"product_code"`
+	ProductName            string                       `json:"product_name"`
+	ProductNameAlt         string                       `json:"product_name_alt"`
+	MinSubAmount           float32                      `json:"min_sub_amount"`
+	RecImage1              string                       `json:"rec_image1"`
+	FundType              *MsFundTypeInfo               `json:"fund_type,omitempty"`
+	NavPerformance        *FfsNavPerformanceInfo        `json:"nav_performance,omitempty"`
+	Nav                   *TrNavInfo                    `json:"nav,omitempty"`
+	RiskProfile           *MsRiskProfileInfo            `json:"risk_profile,omitempty"`
 }
 
 type MsProductData struct {
@@ -36,6 +36,10 @@ type MsProductData struct {
 	FlagRedemption         bool                  `json:"flag_redemption"`
 	FlagSwitchOut          bool                  `json:"flag_switch_out"`
 	FlagSwitchIn           bool                  `json:"flag_switch_in"`
+	FeeService             string                       `json:"fee_service"`
+	FeeTransfer            string                       `json:"fee_transfer"`
+	BankAcc                []MsProductBankAccountInfo   `json:"bank_account"`
+	ProductFee             []MsProductFeeInfo           `json:"product_fee"`
 	NavPerformance        *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
 	Nav                   *TrNavInfo             `json:"nav,omitempty"`
 	CustodianBank         *MsCustodianBankInfo   `json:"custodian_bank,omitempty"`
