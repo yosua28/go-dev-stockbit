@@ -131,7 +131,7 @@ func GetTransactionApprovalList(c echo.Context) error {
 	}
 	if len(trTransaction) < 1 {
 		log.Error("transaction not found")
-		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Oa Request not found")
+		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
 	}
 
 	var branchIds []string
