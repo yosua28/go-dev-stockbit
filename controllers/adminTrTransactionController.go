@@ -31,7 +31,7 @@ func GetTransactionApprovalList(c echo.Context) error {
 	var err error
 	var status int
 
-	transStatusCs := "1"
+	transStatusCs := "2"
 	transStatusKyc := "4"
 	transStatusFundAdmin1 := "5"
 	transStatusFundAdmin2 := "6"
