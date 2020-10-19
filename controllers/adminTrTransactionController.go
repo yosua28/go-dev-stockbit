@@ -13,9 +13,20 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func GetTransactionApprovalList(c echo.Context) error {
+func initAuthBranchEntryHoEntry() error {
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	var roleKeyHoEntry uint64
+	roleKeyHoEntry = 10
 
-	errorAuth := initAuthCsKycFundAdmin()
+	if (lib.Profile.RoleKey != roleKeyBranchEntry) && (lib.Profile.RoleKey != roleKeyHoEntry) {
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	return nil
+}
+
+func GetTransactionApprovalList(c echo.Context) error {
+	errorAuth := initAuthCsKyc()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
@@ -25,18 +36,77 @@ func GetTransactionApprovalList(c echo.Context) error {
 	roleKeyCs = 11
 	var roleKeyKyc uint64
 	roleKeyKyc = 12
-	var roleKeyFundAdmin uint64
-	roleKeyFundAdmin = 13
+
+	var transStatusKey []string
+
+	//if user approval CS
+	if lib.Profile.RoleKey == roleKeyCs {
+		transStatusKey = append(transStatusKey, "2")
+	}
+	//if user approval KYC / Complainer
+	if lib.Profile.RoleKey == roleKeyKyc {
+		transStatusKey = append(transStatusKey, "4")
+	}
+
+	return getListAdmin(transStatusKey, c)
+}
+
+func GetTransactionCutOffList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "5")
+
+	return getListAdmin(transStatusKey, c)
+}
+
+func GetTransactionCorrectionList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "6")
+
+	return getListAdmin(transStatusKey, c)
+}
+
+func GetTransactionConfirmationList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "7")
+
+	return getListAdmin(transStatusKey, c)
+}
+
+func GetTransactionCorrectionAdminList(c echo.Context) error {
+	errorAuth := initAuthBranchEntryHoEntry()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "1")
+
+	return getListAdmin(transStatusKey, c)
+}
+
+func getListAdmin(transStatusKey []string, c echo.Context) error {
 
 	var err error
 	var status int
-
-	transStatusCs := "1"
-	transStatusKyc := "4"
-	transStatusFundAdmin1 := "5"
-	transStatusFundAdmin2 := "6"
-
-	var transStatusKey []string
 
 	//Get parameter limit
 	limitStr := c.QueryParam("limit")
@@ -108,20 +178,12 @@ func GetTransactionApprovalList(c echo.Context) error {
 		params["orderType"] = "ASC"
 	}
 
-	//if user approval CS
-	if lib.Profile.RoleKey == roleKeyCs {
-		transStatusKey = append(transStatusKey, transStatusCs)
-	}
-	//if user approval KYC / Complainer
-	if lib.Profile.RoleKey == roleKeyKyc {
-		transStatusKey = append(transStatusKey, transStatusKyc)
-	}
-	//if user approval Fund Admin
-	if lib.Profile.RoleKey == roleKeyFundAdmin {
-		transStatusKey = append(transStatusKey, transStatusFundAdmin1)
-		transStatusKey = append(transStatusKey, transStatusFundAdmin2)
-	}
 	params["rec_status"] = "1"
+
+	//if user admin role 7 beanch
+	// if lib.Profile.RoleKey == roleKeyCs {
+	// 	params["branch_key"] = "1"
+	// }
 
 	var trTransaction []models.TrTransaction
 	status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key")
@@ -211,8 +273,6 @@ func GetTransactionApprovalList(c echo.Context) error {
 	}
 
 	//mapping product
-	// var transTypeIds []string
-	// var bankIds []string
 	var msProduct []models.MsProduct
 	if len(productIds) > 0 {
 		status, err = models.GetMsProductIn(&msProduct, productIds, "product_key")
