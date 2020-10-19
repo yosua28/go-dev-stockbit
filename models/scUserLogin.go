@@ -45,6 +45,7 @@ type ScUserLogin struct {
 	LastAccess           *string `db:"last_access"               json:"last_access"`
 	AcceptLoginTnc       uint8   `db:"accept_login_tnc"          json:"accept_login_tnc"`
 	AllowedSharingLogin  uint8   `db:"allowed_sharing_login"     json:"allowed_sharing_login"`
+	RolePrivileges       *uint64 `db:"role_privileges"           json:"role_privileges"`
 	RecOrder             *uint64 `db:"rec_order"                 json:"rec_order"`
 	RecStatus            uint8   `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate       *string `db:"rec_created_date"          json:"rec_created_date"`
