@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
 	"math"
 	"net/http"
 	"strconv"
@@ -22,6 +23,17 @@ func initAuthBranchEntryHoEntry() error {
 	if (lib.Profile.RoleKey != roleKeyBranchEntry) && (lib.Profile.RoleKey != roleKeyHoEntry) {
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
+	return nil
+}
+
+func initAuthTransactionAdmin() error {
+	roles := []string{"7", "10", "11", "12", "13"}
+	strRoleLogin := strconv.FormatUint(lib.Profile.RoleKey, 10)
+	_, found := lib.Find(roles, strRoleLogin)
+	if !found {
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
 	return nil
 }
 
@@ -408,6 +420,352 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Pagination = pagination
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetTransactionDetail(c echo.Context) error {
+	var err error
+	var status int
+
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+	var roleKeyFundAdmin uint64
+	roleKeyFundAdmin = 13
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	var roleKeyHoEntry uint64
+	roleKeyHoEntry = 10
+
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+
+	if lib.Profile.RoleKey == roleKeyCs {
+		statusCs := strconv.FormatUint(uint64(2), 10)
+		if statusCs != strTransStatusKey {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+	if lib.Profile.RoleKey == roleKeyKyc {
+		statusKyc := strconv.FormatUint(uint64(4), 10)
+		if statusKyc != strTransStatusKey {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+	if lib.Profile.RoleKey == roleKeyFundAdmin {
+		status := []string{"5", "6", "7"}
+		_, found := lib.Find(status, strTransStatusKey)
+		if !found {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+	if (lib.Profile.RoleKey == roleKeyBranchEntry) || (lib.Profile.RoleKey == roleKeyHoEntry) {
+		statusCorrected := strconv.FormatUint(uint64(1), 10)
+		if statusCorrected != strTransStatusKey {
+			log.Error("User Autorizer")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+	//cek branh user role 7
+	//belum ada user login branch, nanti dulu
+
+	var responseData models.AdminTransactionDetail
+
+	var lookupIds []string
+
+	if transaction.TrxCode != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*transaction.TrxCode, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*transaction.TrxCode, 10))
+		}
+	}
+	if transaction.EntryMode != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*transaction.EntryMode, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*transaction.EntryMode, 10))
+		}
+	}
+	if transaction.PaymentMethod != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*transaction.PaymentMethod, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*transaction.PaymentMethod, 10))
+		}
+	}
+	if transaction.TrxRiskLevel != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*transaction.TrxRiskLevel, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*transaction.TrxRiskLevel, 10))
+		}
+	}
+
+	//gen lookup oa request
+	var lookupOaReq []models.GenLookup
+	if len(lookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&lookupOaReq, lookupIds, "lookup_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range lookupOaReq {
+		gData[gen.LookupKey] = gen
+	}
+
+	if transaction.TrxCode != nil {
+		if n, ok := gData[*transaction.TrxCode]; ok {
+			var trc models.LookupTrans
+
+			trc.LookupKey = n.LookupKey
+			trc.LkpGroupKey = n.LkpGroupKey
+			trc.LkpCode = n.LkpCode
+			trc.LkpName = n.LkpName
+			responseData.TrxCode = &trc
+		}
+	}
+
+	if transaction.EntryMode != nil {
+		if n, ok := gData[*transaction.EntryMode]; ok {
+			var entm models.LookupTrans
+
+			entm.LookupKey = n.LookupKey
+			entm.LkpGroupKey = n.LkpGroupKey
+			entm.LkpCode = n.LkpCode
+			entm.LkpName = n.LkpName
+			responseData.EntryMode = &entm
+		}
+	}
+
+	if transaction.PaymentMethod != nil {
+		if n, ok := gData[*transaction.PaymentMethod]; ok {
+			var pm models.LookupTrans
+			pm.LookupKey = n.LookupKey
+			pm.LkpGroupKey = n.LkpGroupKey
+			pm.LkpCode = n.LkpCode
+			pm.LkpName = n.LkpName
+			responseData.PaymentMethod = &pm
+		}
+	}
+
+	if transaction.TrxRiskLevel != nil {
+		if n, ok := gData[*transaction.TrxRiskLevel]; ok {
+			var risk models.LookupTrans
+
+			risk.LookupKey = n.LookupKey
+			risk.LkpGroupKey = n.LkpGroupKey
+			risk.LkpCode = n.LkpCode
+			risk.LkpName = n.LkpName
+			responseData.TrxRiskLevel = &risk
+		}
+	}
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+
+	responseData.TransactionKey = transaction.TransactionKey
+	date, _ := time.Parse(layout, transaction.TransDate)
+	responseData.TransDate = date.Format(newLayout)
+	date, _ = time.Parse(layout, transaction.NavDate)
+	responseData.NavDate = date.Format(newLayout)
+	responseData.TransAmount = transaction.TransAmount
+	responseData.TransUnit = transaction.TransUnit
+	responseData.TransUnitPercent = transaction.TransUnitPercent
+	if transaction.FlagRedemtAll != nil {
+		if int(*transaction.FlagRedemtAll) > 0 {
+			responseData.FlagRedemtAll = true
+		}
+	}
+	if transaction.FlagNewSub != nil {
+		if int(*transaction.FlagNewSub) > 0 {
+			responseData.FlagNewSub = true
+		}
+	}
+	responseData.TransFeePercent = transaction.TransFeePercent
+	responseData.TransFeeAmount = transaction.TransFeeAmount
+	responseData.ChargesFeeAmount = transaction.ChargesFeeAmount
+	responseData.ServicesFeeAmount = transaction.ServicesFeeAmount
+	responseData.TotalAmount = transaction.TotalAmount
+	responseData.SettlementDate = transaction.SettlementDate
+	responseData.TransBankAccNo = transaction.TransBankAccNo
+	responseData.TransBankaccName = transaction.TransBankaccName
+	responseData.TransRemarks = transaction.TransRemarks
+	responseData.TransReferences = transaction.TransReferences
+	responseData.PromoCode = transaction.PromoCode
+	responseData.SalesCode = transaction.SalesCode
+	if transaction.RiskWaiver > 0 {
+		responseData.RiskWaiver = true
+	}
+	responseData.FileUploadDate = transaction.FileUploadDate
+	responseData.ProceedDate = transaction.ProceedDate
+	responseData.ProceedAmount = transaction.ProceedAmount
+	responseData.SentDate = transaction.SentDate
+	responseData.SentReferences = transaction.SentReferences
+	responseData.ConfirmedDate = transaction.ConfirmedDate
+	responseData.PostedDate = transaction.PostedDate
+	responseData.PostedUnits = transaction.PostedUnits
+	responseData.SettledDate = transaction.SettledDate
+
+	var userData models.ScUserLogin
+	strCustomer := strconv.FormatUint(transaction.CustomerKey, 10)
+	status, err = models.GetScUserLoginByCustomerKey(&userData, strCustomer)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	}
+
+	dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(userData.UserLoginKey, 10) + "/transfer/"
+
+	if transaction.RecImage1 != nil {
+		path := dir + *transaction.RecImage1
+		responseData.RecImage1 = &path
+	}
+
+	if transaction.BranchKey != nil {
+		var branch models.MsBranch
+		strBranch := strconv.FormatUint(*transaction.BranchKey, 10)
+		status, err = models.GetMsBranch(&branch, strBranch)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var br models.BranchTrans
+			br.BranchKey = branch.BranchKey
+			br.BranchCode = branch.BranchCode
+			br.BranchName = branch.BranchName
+			responseData.Branch = &br
+		}
+	}
+
+	//check agent
+	if transaction.AgentKey != nil {
+		var agent models.MsAgent
+		strAgent := strconv.FormatUint(*transaction.AgentKey, 10)
+		status, err = models.GetMsAgent(&agent, strAgent)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var a models.AgentTrans
+			a.AgentKey = agent.AgentKey
+			a.AgentCode = agent.AgentCode
+			a.AgentName = agent.AgentName
+			responseData.Agent = &a
+		}
+	}
+
+	//check customer
+	var customer models.MsCustomer
+	strCus := strconv.FormatUint(transaction.CustomerKey, 10)
+	status, err = models.GetMsCustomer(&customer, strCus)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		responseData.Customer.CustomerKey = customer.CustomerKey
+		responseData.Customer.FullName = customer.FullName
+	}
+
+	//check product
+	var product models.MsProduct
+	strPro := strconv.FormatUint(transaction.ProductKey, 10)
+	status, err = models.GetMsProduct(&product, strPro)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		responseData.Product.ProductKey = product.ProductKey
+		responseData.Product.ProductCode = product.ProductCode
+		responseData.Product.ProductName = product.ProductName
+	}
+
+	//check trans status
+	var transStatus models.TrTransactionStatus
+	strTrSt := strconv.FormatUint(transaction.TransStatusKey, 10)
+	status, err = models.GetTrTransactionStatus(&transStatus, strTrSt)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		responseData.TransStatus.TransStatusKey = transStatus.TransStatusKey
+		responseData.TransStatus.StatusCode = transStatus.StatusCode
+		responseData.TransStatus.StatusDescription = transStatus.StatusDescription
+	}
+
+	//check trans type
+	var transType models.TrTransactionType
+	strTrTy := strconv.FormatUint(transaction.TransTypeKey, 10)
+	status, err = models.GetMsTransactionType(&transType, strTrTy)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		responseData.TransType.TransTypeKey = transType.TransTypeKey
+		responseData.TransType.TypeCode = transType.TypeCode
+		responseData.TransType.TypeDescription = transType.TypeDescription
+	}
+
+	//check bank
+	var bank models.MsBank
+	if transaction.TransBankKey != nil {
+		strBank := strconv.FormatUint(*transaction.TransBankKey, 10)
+		status, err = models.GetMsBank(&bank, strBank)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var tb models.TransBank
+			tb.BankKey = bank.BankKey
+			tb.BankCode = bank.BankCode
+			tb.BankName = bank.BankName
+			responseData.TransBank = &tb
+		}
+	}
+
+	//check aca
+	if transaction.AcaKey != nil {
+		var aca models.TrAccountAgent
+		strAca := strconv.FormatUint(*transaction.AcaKey, 10)
+		status, err = models.GetTrAccountAgent(&aca, strAca)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var ac models.AcaTrans
+			ac.AcaKey = aca.AcaKey
+			ac.AccKey = aca.AccKey
+			responseData.Aca = &ac
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)

@@ -49,3 +49,15 @@ func GetMsTransactionTypeIn(c *[]TrTransactionType, value []string, field string
 
 	return http.StatusOK, nil
 }
+
+func GetMsTransactionType(c *TrTransactionType, key string) (int, error) {
+	query := `SELECT tr_transaction_type.* FROM tr_transaction_type WHERE tr_transaction_type.rec_status = 1 AND tr_transaction_type.trans_type_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

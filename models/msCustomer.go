@@ -81,7 +81,7 @@ func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error)
 }
 
 func GetMsCustomer(c *MsCustomer, key string) (int, error) {
-	query := `SELECT ms_customer.* FROM ms_customer WHERE ms_customer.customer_key = ` + key
+	query := `SELECT ms_customer.* FROM ms_customer WHERE ms_customer.rec_status = 1 AND ms_customer.customer_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

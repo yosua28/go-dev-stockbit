@@ -57,3 +57,15 @@ func GetMsBranchIn(c *[]MsBranch, value []string, field string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetMsBranch(c *MsBranch, key string) (int, error) {
+	query := `SELECT ms_branch.* FROM ms_branch WHERE ms_branch.rec_status = 1 AND ms_branch.branch_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

@@ -103,6 +103,7 @@ func router() *echo.Echo {
 	admin.GET("/transactionlist/correction", controllers.GetTransactionCorrectionList).Name = "GetTransactionCorrectionList"
 	admin.GET("/transactionlist/confirmation", controllers.GetTransactionConfirmationList).Name = "GetTransactionConfirmationList"
 	admin.GET("/transactionlist/correctionadmin", controllers.GetTransactionCorrectionAdminList).Name = "GetTransactionCorrectionAdminList"
+	admin.GET("/transaction/:key", controllers.GetTransactionDetail).Name = "GetTransactionDetail"
 
 	return e
 }

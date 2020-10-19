@@ -2,9 +2,9 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"net/http"
 	"strconv"
-	"database/sql"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -104,6 +104,104 @@ type AdminTrTransactionList struct {
 
 type CountData struct {
 	CountData int `db:"count_data"             json:"count_data"`
+}
+
+type AdminTransactionDetail struct {
+	TransactionKey    uint64        `json:"transaction_key"`
+	Branch            *BranchTrans  `json:"branch"`
+	Agent             *AgentTrans   `json:"agent"`
+	Customer          CustomerTrans `json:"customer"`
+	Product           ProductTrans  `json:"product"`
+	TransStatus       TransStatus   `json:"trans_status"`
+	TransDate         string        `json:"trans_date"`
+	TransType         TransType     `json:"trans_type"`
+	TrxCode           *LookupTrans  `json:"trx_code"`
+	NavDate           string        `json:"nav_date"`
+	EntryMode         *LookupTrans  `json:"entry_mode"`
+	TransAmount       float32       `json:"trans_amount"`
+	TransUnit         float32       `json:"trans_unit"`
+	TransUnitPercent  *float32      `json:"trans_unit_percent"`
+	FlagRedemtAll     bool          `json:"flag_redempt_all"`
+	FlagNewSub        bool          `json:"flag_newsub"`
+	TransFeePercent   float32       `json:"trans_fee_percent"`
+	TransFeeAmount    float32       `json:"trans_fee_amount"`
+	ChargesFeeAmount  float32       `json:"charges_fee_amount"`
+	ServicesFeeAmount float32       `json:"services_fee_amount"`
+	TotalAmount       float32       `json:"total_amount"`
+	SettlementDate    *string       `json:"settlement_date"`
+	TransBankAccNo    *string       `json:"trans_bank_accno"`
+	TransBankaccName  *string       `json:"trans_bankacc_name"`
+	TransBank         *TransBank    `json:"trans_bank"`
+	TransRemarks      *string       `json:"trans_remarks"`
+	TransReferences   *string       `json:"trans_references"`
+	PromoCode         *string       `json:"promo_code"`
+	SalesCode         *string       `json:"sales_code"`
+	RiskWaiver        bool          `json:"risk_waiver"`
+	FileUploadDate    *string       `json:"file_upload_date"`
+	PaymentMethod     *LookupTrans  `json:"payment_method"`
+	TrxRiskLevel      *LookupTrans  `json:"trx_risk_level"`
+	ProceedDate       *string       `json:"proceed_date"`
+	ProceedAmount     *float32      `json:"proceed_amount"`
+	SentDate          *string       `json:"sent_date"`
+	SentReferences    *string       `json:"sent_references"`
+	ConfirmedDate     *string       `json:"confirmed_date"`
+	PostedDate        *string       `json:"posted_date"`
+	PostedUnits       *float32      `json:"posted_units"`
+	Aca               *AcaTrans     `json:"aca"`
+	SettledDate       *string       `json:"settled_date"`
+	RecImage1         *string       `json:"rec_image1"`
+}
+
+type BranchTrans struct {
+	BranchKey  uint64 `json:"branch_key"`
+	BranchCode string `json:"branch_code"`
+	BranchName string `json:"branch_name"`
+}
+
+type AgentTrans struct {
+	AgentKey  uint64 `json:"agent_key"`
+	AgentCode string `json:"agent_code"`
+	AgentName string `json:"agent_name"`
+}
+
+type CustomerTrans struct {
+	CustomerKey uint64 `json:"customer_key"`
+	FullName    string `json:"full_name"`
+}
+
+type ProductTrans struct {
+	ProductKey  uint64 `json:"product_key"`
+	ProductCode string `json:"product_code"`
+	ProductName string `json:"product_name"`
+}
+
+type TransStatus struct {
+	TransStatusKey    uint64  `json:"trans_status_key"`
+	StatusCode        *string `json:"status_code"`
+	StatusDescription *string `json:"status_description"`
+}
+
+type TransType struct {
+	TransTypeKey    uint64  `json:"trans_type_key"`
+	TypeCode        *string `json:"type_code"`
+	TypeDescription *string `json:"type_description"`
+}
+
+type TransBank struct {
+	BankKey  uint64 `json:"bank_key"`
+	BankCode string `json:"bank_code"`
+	BankName string `json:"bank_name"`
+}
+
+type LookupTrans struct {
+	LookupKey   uint64  `json:"lookup_key"`
+	LkpGroupKey uint64  `json:"lkp_group_key"`
+	LkpCode     *string `json:"lkp_code"`
+	LkpName     *string `json:"lkp_name"`
+}
+type AcaTrans struct {
+	AcaKey uint64 `json:"aca_key"`
+	AccKey uint64 `json:"acc_key"`
 }
 
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
@@ -345,5 +443,17 @@ func CreateTrTransaction(params map[string]string) (int, error) {
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetTrTransaction(c *TrTransaction, key string) (int, error) {
+	query := `SELECT tr_transaction.* FROM tr_transaction WHERE tr_transaction.rec_status = 1 AND tr_transaction.transaction_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
 	return http.StatusOK, nil
 }
