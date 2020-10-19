@@ -1,5 +1,12 @@
 package models
 
+import (
+	"api/db"
+	"net/http"
+
+	log "github.com/sirupsen/logrus"
+)
+
 type MsHoliday struct {
 	HolidayKey           uint64     `db:"holiday_key"           json:"holiday_key"`
 	StickMarketKey       uint64     `db:"stock_market_key"      json:"stock_market_key"`
@@ -22,4 +29,50 @@ type MsHoliday struct {
 	RecAttributeID1      *string    `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
 	RecAttributeID2      *string    `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
 	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+}
+
+func GetAllMsHoliday(c *[]MsHoliday, params map[string]string) (int, error) {
+	query := `SELECT
+              ms_holiday.* FROM 
+			  ms_holiday`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ms_holiday."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }

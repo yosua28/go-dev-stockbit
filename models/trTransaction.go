@@ -2,10 +2,12 @@ package models
 
 import (
 	"api/db"
-	"log"
 	"net/http"
 	"strconv"
+	"database/sql"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type TrTransaction struct {
@@ -228,5 +230,120 @@ func AdminGetCountTrTransaction(c *CountData, params map[string]string, valueIn 
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func GetAllTrTransaction(c *[]TrTransaction, params map[string]string) (int, error) {
+	query := `SELECT
+              tr_transaction.* FROM 
+			  tr_transaction`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateTrTransaction(params map[string]string) (int, error) {
+	query := "UPDATE tr_transaction SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "transaction_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE transaction_key = " + params["transaction_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func CreateTrTransaction(params map[string]string) (int, error) {
+	query := "INSERT INTO tr_transaction"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }

@@ -67,6 +67,10 @@ func router() *echo.Echo {
 	auth.GET("/investpurpose", controllers.GetCmsInvestPurpose).Name = "GetCmsInvestPurpose"
 	auth.GET("/investpartner", controllers.GetCmsInvestParter).Name = "GetCmsInvestParter"
 
+	// Transaction
+	auth.POST("/subscribe", controllers.CreateSubscribeTransaction).Name = "CreateSubscribeTransaction"
+	auth.POST("/uploadtransferpic", controllers.UploadTransferPic).Name = "UploadTransferPic"
+
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"
 	e.GET("/verifyemail", controllers.VerifyEmail).Name = "VerifyEmail"

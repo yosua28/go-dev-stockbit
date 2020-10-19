@@ -1,5 +1,11 @@
 package models
 
+import (
+	"api/db"
+	"log"
+	"net/http"
+)
+
 type MsAgentCustomer struct {
 	AgentCustomerKey     uint64    `db:"agent_customer_key"   json:"agent_customer_key"`
 	AgentKey             uint64    `db:"agent_key"            json:"agent_key"`
@@ -23,4 +29,20 @@ type MsAgentCustomer struct {
 	RecAttributeID1      *string   `db:"rec_attribute_id1"    json:"rec_attribute_id1"`
 	RecAttributeID2      *string   `db:"rec_attribute_id2"    json:"rec_attribute_id2"`
 	RecAttributeID3      *string   `db:"rec_attribute_id3"    json:"rec_attribute_id3"`
+}
+
+func GetLastAgenCunstomer(c *MsAgentCustomer, customerKey string) (int, error) {
+	query2 := `SELECT t1.agent_customer_key, t1.agent_key, t1.customer_key, t1.eff_date, t1.ref_code_used FROM
+			   ms_agent_customer t1 JOIN (SELECT MAX(agent_customer_key) agent_customer_key FROM ms_agent_customer GROUP BY customer_key) t2
+			   ON t1.agent_customer_key = t2.agent_customer_key`
+	query := query2 + " WHERE t1.customer_key =" + customerKey
+	
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }

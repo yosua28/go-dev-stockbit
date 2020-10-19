@@ -20,6 +20,7 @@ type CProfile struct {
 	RoleKey             uint64  `json:"role_key"`
 	RoleCategoryKey     uint64  `json:"role_category_key"`
 	RecImage1           string  `json:"rec_image1"`
+	CustomerKey        *uint64  `json:"customer_key"`
 }
 
 var Profile CProfile
@@ -93,6 +94,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			Profile.UserID = user.UserLoginKey
 			Profile.Email = user.UloginEmail
 			Profile.PhoneNumber = *user.UloginMobileno
+			Profile.CustomerKey = user.CustomerKey
 			if user.RecImage1 != nil && *user.RecImage1 != "" {
 				Profile.RecImage1 = config.BaseUrl + "/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
 			} else {
