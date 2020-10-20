@@ -228,3 +228,15 @@ func GetScUserLoginByKey(c *ScUserLogin, key string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetScUserLoginByCustomerKey(c *ScUserLogin, key string) (int, error) {
+	query := `SELECT sc_user_login.* FROM sc_user_login WHERE sc_user_login.rec_status = 1 AND sc_user_login.customer_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

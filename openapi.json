@@ -4936,6 +4936,173 @@
           }
         }
       }
+    },
+    "/admin/transaction/{key}": {
+      "get": {
+        "description": "Get All Transaction (User Allowed : RoleKey 7, 10, 11, 12, 13)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "transaction key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "transaction_key": 1,
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_code": "HO-1",
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_code": "303",
+                      "agent_name": "SALES MNC DUIT"
+                    },
+                    "customer": {
+                      "customer_key": 40,
+                      "full_name": "Aldy Yoga yuyu"
+                    },
+                    "product": {
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "MNC DANA LANCAR"
+                    },
+                    "trans_status": {
+                      "trans_status_key": 7,
+                      "status_code": "BATCHED",
+                      "status_description": "Transaction has been batched or sent to S-INVEST"
+                    },
+                    "trans_date": "09 Oct 2020",
+                    "trans_type": {
+                      "trans_type_key": 1,
+                      "type_code": "SUB",
+                      "type_description": "Subscription"
+                    },
+                    "trx_code": {
+                      "lookup_key": 137,
+                      "lkp_group_key": 30,
+                      "lkp_code": "BUY",
+                      "lkp_name": "BUY"
+                    },
+                    "nav_date": "09 Oct 2020",
+                    "entry_mode": {
+                      "lookup_key": 140,
+                      "lkp_group_key": 31,
+                      "lkp_code": "AMOUNT",
+                      "lkp_name": "Amount"
+                    },
+                    "trans_amount": 100000,
+                    "trans_unit": 10,
+                    "trans_unit_percent": null,
+                    "flag_redempt_all": false,
+                    "flag_newsub": true,
+                    "trans_fee_percent": 1,
+                    "trans_fee_amount": 1000,
+                    "charges_fee_amount": 0,
+                    "services_fee_amount": 0,
+                    "total_amount": 1000,
+                    "settlement_date": null,
+                    "trans_bank_accno": "Yona",
+                    "trans_bankacc_name": "Santi",
+                    "trans_bank": {
+                      "bank_key": 1,
+                      "bank_code": "ABNAIDJA",
+                      "bank_name": "ABN AMRO"
+                    },
+                    "trans_remarks": null,
+                    "trans_references": null,
+                    "promo_code": null,
+                    "sales_code": null,
+                    "risk_waiver": true,
+                    "file_upload_date": null,
+                    "payment_method": {
+                      "lookup_key": 284,
+                      "lkp_group_key": 68,
+                      "lkp_code": "0",
+                      "lkp_name": "Transfer"
+                    },
+                    "trx_risk_level": {
+                      "lookup_key": 111,
+                      "lkp_group_key": 23,
+                      "lkp_code": "1",
+                      "lkp_name": "Risiko Rendah"
+                    },
+                    "proceed_date": null,
+                    "proceed_amount": null,
+                    "sent_date": null,
+                    "sent_references": null,
+                    "confirmed_date": null,
+                    "posted_date": null,
+                    "posted_units": null,
+                    "aca": {
+                      "aca_key": 2,
+                      "acc_key": 1
+                    },
+                    "settled_date": null,
+                    "rec_image1": "https://devapi.mncasset.com/images/user/7/transfer/fffff.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

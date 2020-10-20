@@ -1,26 +1,29 @@
 package lib
 
 import (
-	"api/models"
 	"api/config"
-	"strings"
-	"strconv"
-	"net/http"
+	"api/models"
 	"fmt"
+	"net/http"
+	"strconv"
+	"strings"
 
-	log "github.com/sirupsen/logrus"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 type CProfile struct {
-	UserID              uint64  `json:"user_id"`
-	Email               string  `json:"email"`
-	PhoneNumber         string  `json:"phone_number"`
-	RoleKey             uint64  `json:"role_key"`
-	RoleCategoryKey     uint64  `json:"role_category_key"`
-	RecImage1           string  `json:"rec_image1"`
-	CustomerKey        *uint64  `json:"customer_key"`
+	UserID          uint64  `json:"user_id"`
+	Email           string  `json:"email"`
+	PhoneNumber     string  `json:"phone_number"`
+	RoleKey         uint64  `json:"role_key"`
+	RoleCategoryKey uint64  `json:"role_category_key"`
+	RecImage1       string  `json:"rec_image1"`
+	CustomerKey     *uint64 `json:"customer_key"`
+	UserCategoryKey uint64  `json:"user_category_key"`
+	RolePrivileges  *uint64 `json:"role_privileges"`
+	BranchKey       *uint64 `json:"branch_key"`
 }
 
 var Profile CProfile
@@ -61,7 +64,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 				log.Error("No matching token " + tokenString)
 				return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
 			}
-		
+
 			paramsUser := make(map[string]string)
 			paramsUser["user_login_key"] = strconv.FormatUint(loginSession[0].UserLoginKey, 10)
 			var userLogin []models.ScUserLogin
@@ -79,28 +82,41 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			if user.RoleKey != nil && *user.RoleKey > 0 {
 				Profile.RoleKey = *user.RoleKey
 				paramsRole := make(map[string]string)
-				paramsRole["role_key"] = strconv.FormatUint(*user.RoleKey,10)
+				paramsRole["role_key"] = strconv.FormatUint(*user.RoleKey, 10)
 				var role []models.ScRole
 				_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
 				if err != nil {
 					log.Error(err.Error())
-				}else if len(role) > 0 {
+				} else if len(role) > 0 {
 					if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
 						Profile.RoleCategoryKey = *role[0].RoleCategoryKey
 					}
 				}
+
+				if user.UserDeptKey != nil {
+					var dept models.ScUserDept
+					strDept := strconv.FormatUint(*user.UserDeptKey, 10)
+					_, err = models.GetScUserDept(&dept, strDept)
+					if err != nil {
+						log.Error(err.Error())
+					} else {
+						Profile.RolePrivileges = dept.RolePrivileges
+						Profile.BranchKey = dept.BranchKey
+					}
+				}
 			}
-			
+
 			Profile.UserID = user.UserLoginKey
 			Profile.Email = user.UloginEmail
 			Profile.PhoneNumber = *user.UloginMobileno
 			Profile.CustomerKey = user.CustomerKey
+			Profile.UserCategoryKey = user.UserCategoryKey
 			if user.RecImage1 != nil && *user.RecImage1 != "" {
 				Profile.RecImage1 = config.BaseUrl + "/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
 			} else {
 				Profile.RecImage1 = config.BaseUrl + "/user/default.png"
 			}
-			
+
 		} else {
 			log.Error("Invalid token")
 			return CustomError(http.StatusForbidden, "Forbidden", "You have to login first")
@@ -112,15 +128,15 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 func VerifyToken(tokenString string) (*jwt.Token, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
-	   //Make sure that the token method conform to "SigningMethodHMAC"
-	   if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-		log.Error("unexpected signing method: %v", token.Header["alg"])
-		  return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
-	   }
-	   return []byte(config.Secret), nil
+		//Make sure that the token method conform to "SigningMethodHMAC"
+		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
+			log.Error("unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
+		}
+		return []byte(config.Secret), nil
 	})
 	if err != nil {
-	   return nil, err
+		return nil, err
 	}
 	return token, nil
 }
