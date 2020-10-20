@@ -99,3 +99,15 @@ func AdminGetOaRiskProfile(c *[]AdminOaRiskProfile, oaRequestKey string) (int, e
 
 	return http.StatusOK, nil
 }
+
+func GetOaRiskProfile(c *OaRiskProfile, key string) (int, error) {
+	query := `SELECT oa_risk_profile.* FROM oa_risk_profile WHERE oa_risk_profile.oa_risk_profile_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

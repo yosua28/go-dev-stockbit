@@ -10,6 +10,16 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type UserProfile struct {
+	FullName            string              `json:"full_name"`
+	SID                 string              `json:"sid"`
+	Email               string              `json:"email"`
+	PhoneNumber         string              `json:"phone_number"`
+	RiskProfile         MsRiskProfileInfo   `json:"risk_profile"`
+	RecImage1           string              `json:"rec_image1"`
+	BankAcc             BankAccount         `json:"bank_account"`
+}
+
 type OaPersonalData struct {
 	PersonalDataKey        uint64  `db:"personal_data_key"          json:"personal_data_key"`
 	OaRequestKey           uint64  `db:"oa_request_key"             json:"oa_request_key"`
@@ -132,8 +142,8 @@ func GetAllOaPersonalData(c *[]OaPersonalData, limit uint64, offset uint64, para
 	return http.StatusOK, nil
 }
 
-func GetOaPersonalData(c *ScLoginSession, key string) (int, error) {
-	query := `SELECT oa_personal_data.* WHERE oa_personal_data.user_login_key = ` + key
+func GetOaPersonalData(c *OaPersonalData, key string, field string) (int, error) {
+	query := "SELECT oa_personal_data.* FROM oa_personal_data WHERE oa_personal_data." + field + " = " + key
 	log.Info(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

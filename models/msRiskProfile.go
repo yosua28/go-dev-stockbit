@@ -9,6 +9,7 @@ import (
 )
 
 type MsRiskProfileInfo struct {
+	RiskProfileKey       uint64     `json:"risk_profile_key"`
 	RiskCode             string     `json:"risk_code"`
 	RiskName            *string     `json:"risk_name"`
 	RiskDesc            *string     `json:"risk_desc"`

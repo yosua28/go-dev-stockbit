@@ -610,11 +610,92 @@ func ResendVerification(c echo.Context) error {
 }
 
 func GetUserLogin(c echo.Context) error {
+	var err error
+
+	var oaRequestDB []models.OaRequest
+	params := make(map[string]string)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["orderBy"] = "oa_request_key"
+	params["orderType"] = "DESC"
+	_, err = models.GetAllOaRequest(&oaRequestDB, 0, 0, true, params)
+	if err != nil {
+		log.Error(err.Error())
+	}
+	var requestKey string
+	if len(oaRequestDB) > 0 {
+		requestKey = strconv.FormatUint(oaRequestDB[0].OaRequestKey, 10)
+	}
+
+	var personalDataDB models.OaPersonalData
+	var riskProfileDB models.OaRiskProfile
+	if requestKey != "" {
+		_, err = models.GetOaPersonalData(&personalDataDB, requestKey, "oa_request_key")
+		if err != nil {
+			log.Error(err.Error())
+		}
+		_, err = models.GetOaRiskProfile(&riskProfileDB, requestKey)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	var bankAccountDB models.MsBankAccount
+	if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
+		_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	var riskDB models.MsRiskProfile
+	if riskProfileDB.RiskProfileKey > 0 {
+		_, err = models.GetMsRiskProfile(&riskDB, strconv.FormatUint(riskProfileDB.RiskProfileKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	var bankDB models.MsBank
+	if bankAccountDB.BankKey > 0 {
+		_, err = models.GetMsBank(&bankDB, strconv.FormatUint(bankAccountDB.BankKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	var customerDB models.MsCustomer
+	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
+		_, err = models.GetMsCustomer(&customerDB, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	var responseData models.UserProfile
+	responseData.FullName = personalDataDB.FullName
+	if customerDB.SidNo != nil {
+		responseData.SID = *customerDB.SidNo
+	}
+	responseData.Email = personalDataDB.EmailAddress
+	responseData.PhoneNumber = personalDataDB.PhoneMobile
+	responseData.RiskProfile.RiskProfileKey = riskDB.RiskProfileKey
+	responseData.RiskProfile.RiskCode = riskDB.RiskCode
+	responseData.RiskProfile.RiskName = riskDB.RiskName
+	responseData.RiskProfile.RiskDesc = riskDB.RiskDesc
+	if riskProfileDB.ScoreResult != nil {
+		responseData.RiskProfile.Score = *riskProfileDB.ScoreResult
+	}
+	responseData.RecImage1 = lib.Profile.RecImage1
+	responseData.BankAcc.BankName = bankDB.BankName
+	responseData.BankAcc.AccountNo = bankAccountDB.AccountNo
+	responseData.BankAcc.AccountHolderName = bankAccountDB.AccountHolderName
+	responseData.BankAcc.BranchName = bankAccountDB.BranchName
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = lib.Profile
+	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
 func verifyPassword(s string) (length, number, upper, special bool) {
