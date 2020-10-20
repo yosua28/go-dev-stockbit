@@ -192,10 +192,19 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 
 	params["rec_status"] = "1"
 
-	//if user admin role 7 beanch
-	// if lib.Profile.RoleKey == roleKeyCs {
-	// 	params["branch_key"] = "1"
-	// }
+	//if user admin role 7 branch
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	if lib.Profile.RoleKey == roleKeyBranchEntry {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
 
 	var trTransaction []models.TrTransaction
 	status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key")
@@ -482,9 +491,22 @@ func GetTransactionDetail(c echo.Context) error {
 			log.Error("User Autorizer")
 			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 		}
+
+		//if user role 7, check branch
+		if lib.Profile.RoleKey == roleKeyBranchEntry {
+			if lib.Profile.BranchKey != nil {
+				strUserBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+				strTransBranchKey := strconv.FormatUint(*transaction.BranchKey, 10)
+				if strUserBranchKey != strTransBranchKey {
+					log.Error("User Autorizer")
+					return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+				}
+			} else {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
 	}
-	//cek branh user role 7
-	//belum ada user login branch, nanti dulu
 
 	var responseData models.AdminTransactionDetail
 
