@@ -792,3 +792,125 @@ func GetTransactionDetail(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func TransactionApprovalCs(c echo.Context) error {
+	errorAuth := initAuthCs()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	transStatusKeyDefault := "2"
+	transStatusIds := []string{"1", "3", "4"}
+
+	return ProsesApproval(transStatusKeyDefault, transStatusIds, c)
+}
+
+func TransactionApprovalCompliance(c echo.Context) error {
+	errorAuth := initAuthKyc()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	transStatusKeyDefault := "4"
+	transStatusIds := []string{"1", "3", "5"}
+
+	return ProsesApproval(transStatusKeyDefault, transStatusIds, c)
+}
+
+func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c echo.Context) error {
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	transStatus := c.FormValue("trans_status_key")
+	if transStatus == "" {
+		log.Error("Missing required parameter: trans_status_key")
+		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		_, found := lib.Find(transStatusIds, transStatus)
+		if !found {
+			log.Error("Missing required parameter: trans_status_key")
+			return lib.CustomError(http.StatusBadRequest)
+		}
+	}
+
+	n, err := strconv.ParseUint(transStatus, 10, 64)
+	if err == nil && n > 0 {
+		params["trans_status_key"] = transStatus
+	} else {
+		log.Error("Wrong input for parameter: trans_status_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_status_key", "Wrong input for parameter: trans_status_key")
+	}
+
+	notes := c.FormValue("notes")
+
+	transactionkey := c.FormValue("transaction_key")
+	if transactionkey == "" {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	n, err = strconv.ParseUint(transactionkey, 10, 64)
+	if err == nil && n > 0 {
+		params["transaction_key"] = transactionkey
+	} else {
+		log.Error("Wrong input for parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, transactionkey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+
+	if transStatusKeyDefault != strTransStatusKey {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIdUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	if lib.Profile.RoleKey == roleKeyCs {
+		params["check1_notes"] = notes
+		params["check1_date"] = time.Now().Format(dateLayout)
+		params["check1_flag"] = "1"
+		params["check1_references"] = strIdUserLogin
+	}
+
+	if lib.Profile.RoleKey == roleKeyKyc {
+		params["check2_notes"] = notes
+		params["check2_date"] = time.Now().Format(dateLayout)
+		params["check2_flag"] = "1"
+		params["check2_references"] = strIdUserLogin
+	}
+
+	params["rec_modified_by"] = strIdUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	_, err = models.UpdateTrTransaction(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	log.Info("Success update transaksi")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
