@@ -216,6 +216,7 @@ func GetMsProductList(c echo.Context) error {
 
 			var risk models.MsRiskProfileInfo
 			if r, ok := rData[*product.RiskProfileKey]; ok {
+				risk.RiskProfileKey = r.RiskProfileKey
 				risk.RiskCode = r.RiskCode
 				risk.RiskName = r.RiskName
 				risk.RiskDesc = r.RiskDesc
