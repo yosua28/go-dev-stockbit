@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -1047,6 +1048,81 @@ func UpdateNavDate(c echo.Context) error {
 	}
 
 	log.Info("Success update transaksi")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
+
+func TransactionApprovalCutOff(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	//list id
+	transIds := c.FormValue("trans_ids")
+	if transIds == "" {
+		log.Error("Missing required parameter: trans_ids")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_ids", "Missing required parameter: trans_ids")
+	}
+
+	s := strings.Split(transIds, ",")
+
+	var transParamIds []string
+
+	for _, value := range s {
+		is := strings.TrimSpace(value)
+		if is != "" {
+			if _, ok := lib.Find(transParamIds, is); !ok {
+				transParamIds = append(transParamIds, is)
+			}
+		}
+	}
+
+	var transactionList []models.TrTransaction
+	if len(transParamIds) > 0 {
+		status, err := models.GetTrTransactionIn(&transactionList, transParamIds, "transaction_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if len(transParamIds) != len(transactionList) {
+			log.Error("Missing required parameter: trans_ids")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: Jumlah Data & Parameter berbeda", "Missing required parameter: Jumlah Data & Parameter berbeda")
+		}
+	} else {
+		log.Error("Missing required parameter: trans_ids")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_ids", "Missing required parameter: trans_ids")
+	}
+
+	strStatusCutOff := "5"
+
+	for _, tr := range transactionList {
+		strTransStatusKey := strconv.FormatUint(tr.TransStatusKey, 10)
+		if strTransStatusKey != strStatusCutOff {
+			log.Error("Missing required parameter: trans_ids")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_ids ", "Missing required parameter: trans_ids")
+		}
+	}
+
+	paramsUpdate := make(map[string]string)
+
+	paramsUpdate["trans_status_key"] = "6"
+	dateLayout := "2006-01-02 15:04:05"
+	paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUpdate["rec_modified_by"] = strKey
+
+	_, err := models.UpdateTrTransactionByKeyIn(paramsUpdate, transParamIds, "transaction_key")
+	if err != nil {
+		log.Error("Error update oa request")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

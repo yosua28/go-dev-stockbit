@@ -471,3 +471,59 @@ func GetTrTransaction(c *TrTransaction, key string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func UpdateTrTransactionByKeyIn(params map[string]string, valueIn []string, fieldIn string) (int, error) {
+	query := "UPDATE tr_transaction SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+
+	inQuery := strings.Join(valueIn, ",")
+	query += " WHERE tr_transaction." + fieldIn + " IN(" + inQuery + ")"
+
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func GetTrTransactionIn(c *[]TrTransaction, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				tr_transaction.* FROM 
+				tr_transaction `
+	query := query2 + " WHERE tr_transaction.rec_status = 1 AND tr_transaction." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
