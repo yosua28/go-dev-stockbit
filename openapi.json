@@ -4984,7 +4984,9 @@
                     },
                     "customer": {
                       "customer_key": 40,
-                      "full_name": "Aldy Yoga yuyu"
+                      "full_name": "Aldy Yoga yuyu",
+                      "sid_no": null,
+                      "unit_holder_idno": "202010000001"
                     },
                     "product": {
                       "product_key": 1,
@@ -4992,9 +4994,9 @@
                       "product_name": "MNC DANA LANCAR"
                     },
                     "trans_status": {
-                      "trans_status_key": 7,
-                      "status_code": "BATCHED",
-                      "status_description": "Transaction has been batched or sent to S-INVEST"
+                      "trans_status_key": 2,
+                      "status_code": "ENTRIED",
+                      "status_description": "Transaction has been successfully entry by customer or branch admin, waiting for CS Approval."
                     },
                     "trans_date": "09 Oct 2020",
                     "trans_type": {
@@ -5017,7 +5019,7 @@
                     },
                     "trans_amount": 100000,
                     "trans_unit": 10,
-                    "trans_unit_percent": null,
+                    "trans_unit_percent": 0.2,
                     "flag_redempt_all": false,
                     "flag_newsub": true,
                     "trans_fee_percent": 1,
@@ -5060,10 +5062,21 @@
                     "posted_units": null,
                     "aca": {
                       "aca_key": 2,
-                      "acc_key": 1
+                      "acc_key": 1,
+                      "agent_key": 40,
+                      "agent_code": "BNISEK",
+                      "agent_name": "SALES APERD BNI SEKURITAS"
                     },
                     "settled_date": null,
-                    "rec_image1": "https://devapi.mncasset.com/images/user/7/transfer/fffff.jpg"
+                    "rec_image1": "https://devapi.mncasset.com/images/user/7/transfer/oke.jpg",
+                    "rec_created_date": "20 Oct 2020",
+                    "rec_created_by": "12",
+                    "transaction_confirmation": {
+                      "tc_key": 1,
+                      "confirm_date": "2020-10-21 10:34:46",
+                      "confirmed_amount": 1000000,
+                      "confirmed_unit": 20
+                    }
                   }
                 }
               }

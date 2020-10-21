@@ -605,6 +605,14 @@ func GetTransactionDetail(c echo.Context) error {
 	responseData.TransDate = date.Format(newLayout)
 	date, _ = time.Parse(layout, transaction.NavDate)
 	responseData.NavDate = date.Format(newLayout)
+	if transaction.RecCreatedDate != nil {
+		date, err = time.Parse(layout, *transaction.RecCreatedDate)
+		if err == nil {
+			oke := date.Format(newLayout)
+			responseData.RecCreatedDate = &oke
+		}
+	}
+	responseData.RecCreatedBy = transaction.RecCreatedBy
 	responseData.TransAmount = transaction.TransAmount
 	responseData.TransUnit = transaction.TransUnit
 	responseData.TransUnitPercent = transaction.TransUnitPercent
@@ -705,6 +713,8 @@ func GetTransactionDetail(c echo.Context) error {
 	} else {
 		responseData.Customer.CustomerKey = customer.CustomerKey
 		responseData.Customer.FullName = customer.FullName
+		responseData.Customer.SidNo = customer.SidNo
+		responseData.Customer.UnitHolderIDno = customer.UnitHolderIDno
 	}
 
 	//check product
@@ -780,7 +790,40 @@ func GetTransactionDetail(c echo.Context) error {
 			var ac models.AcaTrans
 			ac.AcaKey = aca.AcaKey
 			ac.AccKey = aca.AccKey
+			var agent models.MsAgent
+			strAgent := strconv.FormatUint(aca.AgentKey, 10)
+			status, err = models.GetMsAgent(&agent, strAgent)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					return lib.CustomError(status)
+				}
+			} else {
+				ac.AgentKey = agent.AgentKey
+				ac.AgentCode = agent.AgentCode
+				ac.AgentName = agent.AgentName
+			}
+
 			responseData.Aca = &ac
+		}
+	}
+
+	//check transaction confirmation
+	if transaction.AcaKey != nil {
+		var tc models.TrTransactionConfirmation
+		strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+		status, err = models.GetTrTransactionConfirmation(&tc, strTrKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var transTc models.TransactionConfirmation
+			transTc.TcKey = tc.TcKey
+			transTc.ConfirmDate = tc.ConfirmDate
+			transTc.ConfirmedAmount = tc.ConfirmedAmount
+			transTc.ConfirmedUnit = tc.ConfirmedUnit
+
+			responseData.TransactionConfirmation = &transTc
 		}
 	}
 
