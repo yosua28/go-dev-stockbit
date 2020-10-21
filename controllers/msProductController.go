@@ -363,6 +363,9 @@ func GetMsProductData(c echo.Context) error {
 			if fee.FlagShowOntnc != nil && *fee.FlagShowOntnc == 1 && fee.FeeAnnotation != nil {
 				data.FeeAnnotation = *fee.FeeAnnotation
 			}
+			if fee.FeeType != nil {
+				data.FeeType = *fee.FeeType
+			}
 			if fee.FeeDesc != nil {
 				data.FeeDesc = *fee.FeeDesc
 			}

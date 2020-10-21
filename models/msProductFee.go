@@ -11,6 +11,7 @@ type MsProductFeeInfo struct {
 	FeeAnnotation           string                  `json:"fee_annotation"`
 	FeeDesc                 string                  `json:"fee_desc"`
 	FeeCode                 string                  `json:"fee_code"`
+	FeeType                 uint64                  `json:"fee_type"`
 	FeeItem                 []MsProductFeeItemInfo  `json:"fee_item"`
 }
 
