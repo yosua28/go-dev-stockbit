@@ -976,6 +976,33 @@ func UpdateNavDate(c echo.Context) error {
 		log.Error("Missing required parameter: nav_date")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
 	}
+
+	layoutISO := "2006-01-02"
+
+	t, _ := time.Parse(layoutISO, postnavdate)
+	t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+	w := lib.IsWeekend(t)
+	if w {
+		log.Error("Missing required parameter: nav_date cann't Weekend")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date cann't Weekend", "Missing required parameter: nav_date cann't Weekend")
+	}
+
+	paramHoliday := make(map[string]string)
+	paramHoliday["holiday_date"] = postnavdate
+
+	var holiday []models.MsHoliday
+	status, err = models.GetAllMsHoliday(&holiday, paramHoliday)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	if len(holiday) > 0 {
+		log.Error("nav_date is Bursa Holiday")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date is Bursa Holiday", "Missing required parameter: nav_date is Bursa Holiday")
+	}
+
 	params["nav_date"] = postnavdate
 
 	transactionkey := c.FormValue("transaction_key")
