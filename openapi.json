@@ -5285,7 +5285,7 @@
     },
     "/admin/transaction/updatenavdate": {
       "post": {
-        "description": "Update Approval Transaction by CS (User Allowed : RoleKey 13, Status Trans Allowed : 5)",
+        "description": "Update Approval Transaction by FundAdmin (User Allowed : RoleKey 13, Status Trans Allowed : 5)",
         "tags": [
           "Admin Transaction"
         ],
@@ -5311,6 +5311,78 @@
                 "required": [
                   "transaction_key",
                   "nav_date"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transactionapproval/cutoff": {
+      "post": {
+        "description": "Update Approval Transaction by FundAdmin (User Allowed : RoleKey 13, Status Trans Allowed : 5)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "trans_ids": {
+                    "type": "string",
+                    "example": "1,2,3"
+                  }
+                },
+                "required": [
+                  "trans_ids"
                 ]
               }
             }
