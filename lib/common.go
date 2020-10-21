@@ -67,3 +67,14 @@ func PadLeft(str, pad string, lenght int) string {
 		}
 	}
 }
+
+func IsWeekend(t time.Time) bool {
+	t = t.UTC()
+	switch t.Weekday() {
+	case time.Saturday:
+		return true
+	case time.Sunday:
+		return true
+	}
+	return false
+}
