@@ -13,8 +13,8 @@ type TrAccount struct {
 	AccKey                   uint64    `db:"acc_key"                    json:"acc_key"`
 	ProductKey               uint64    `db:"product_key"                json:"product_key"`
 	CustomerKey              uint64    `db:"customer_key"               json:"customer_key"`
-	AccountName              string    `db:"account_name"               json:"account_name"`
-	AccountNo                string    `db:"account_no"                 json:"account_no"`
+	AccountName              *string    `db:"account_name"               json:"account_name"`
+	AccountNo                *string    `db:"account_no"                 json:"account_no"`
 	IfuaNo                   *string   `db:"ifua_no"                    json:"ifua_no"`
 	IfuaName                 *string   `db:"ifua_name"                  json:"ifua_name"`
 	AccStatus                *uint64   `db:"acc_status"                 json:"acc_status"`
