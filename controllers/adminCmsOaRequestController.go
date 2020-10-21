@@ -1289,6 +1289,21 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
 
+	//create agent customer
+	paramsAgentCustomer := make(map[string]string)
+	paramsAgentCustomer["customer_key"] = requestID
+	paramsAgentCustomer["agent_key"] = "1"
+	paramsAgentCustomer["rec_status"] = "1"
+	paramsAgentCustomer["eff_date"] = time.Now().Format(dateLayout)
+	paramsAgentCustomer["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsAgentCustomer["rec_created_by"] = strKey
+	status, err = models.CreateMsAgentCustomer(paramsAgentCustomer)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error create agent customer")
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
 	tx.Commit()
 
 	log.Info("Success create customer")
