@@ -957,3 +957,74 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }
+
+func UpdateNavDate(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	//date
+	postnavdate := c.FormValue("nav_date")
+	if postnavdate == "" {
+		log.Error("Missing required parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+	params["nav_date"] = postnavdate
+
+	transactionkey := c.FormValue("transaction_key")
+	if transactionkey == "" {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	n, err := strconv.ParseUint(transactionkey, 10, 64)
+	if err == nil && n > 0 {
+		params["transaction_key"] = transactionkey
+	} else {
+		log.Error("Wrong input for parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, transactionkey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+
+	strStatusCutOff := "5"
+
+	if strTransStatusKey != strStatusCutOff {
+		log.Error("Data not found")
+		return lib.CustomError(http.StatusUnauthorized, "Data not found", "Data not found")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	params["rec_modified_by"] = strIDUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	_, err = models.UpdateTrTransaction(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	log.Info("Success update transaksi")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
