@@ -633,7 +633,7 @@ func GetUserLogin(c echo.Context) error {
 		if err != nil {
 			log.Error(err.Error())
 		}
-		_, err = models.GetOaRiskProfile(&riskProfileDB, requestKey)
+		_, err = models.GetOaRiskProfile(&riskProfileDB, requestKey, "oa_request_key")
 		if err != nil {
 			log.Error(err.Error())
 		}
