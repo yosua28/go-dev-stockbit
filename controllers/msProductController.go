@@ -360,7 +360,7 @@ func GetMsProductData(c echo.Context) error {
 		var feeData []models.MsProductFeeInfo
 		for _, fee := range feeDB {
 			var data models.MsProductFeeInfo
-			if fee.FeeAnnotation != nil {
+			if fee.FlagShowOntnc != nil && *fee.FlagShowOntnc == 1 && fee.FeeAnnotation != nil {
 				data.FeeAnnotation = *fee.FeeAnnotation
 			}
 			if fee.FeeDesc != nil {
@@ -537,6 +537,7 @@ func GetMsProductData(c echo.Context) error {
 	data.NavPerformance = &perform
 
 	var risk models.MsRiskProfileInfo
+	risk.RiskProfileKey = riskDB.RiskProfileKey
 	risk.RiskCode = riskDB.RiskCode
 	risk.RiskName = riskDB.RiskName
 	risk.RiskDesc = riskDB.RiskDesc
