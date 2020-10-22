@@ -746,13 +746,12 @@ func sendOTP(gateway, phone string) (string, error){
 		log.Error("Error3", err.Error())
 		return "", err
 	}
-
+	log.Info(string(body))
 	var sec map[string]interface{}
 	if err = json.Unmarshal(body, &sec); err != nil {
 		log.Error("Error4", err.Error())
 	    return "", err
 	}
-	log.Info(string(body))
 	var otp string
 	if sec["rc"].(float64) == 0 {
 		token := sec["token"].(string)
