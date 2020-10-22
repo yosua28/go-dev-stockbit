@@ -100,7 +100,7 @@ func router() *echo.Echo {
 	//Admin Transaction
 	admin.GET("/transactionlist", controllers.GetTransactionApprovalList).Name = "GetTransactionApprovalList"
 	admin.GET("/transactionlist/cutoff", controllers.GetTransactionCutOffList).Name = "GetTransactionCutOffList"
-	admin.GET("/transactionlist/correction", controllers.GetTransactionCorrectionList).Name = "GetTransactionCorrectionList"
+	admin.GET("/transactionlist/batch", controllers.GetTransactionBatchList).Name = "GetTransactionBatchList"
 	admin.GET("/transactionlist/confirmation", controllers.GetTransactionConfirmationList).Name = "GetTransactionConfirmationList"
 	admin.GET("/transactionlist/correctionadmin", controllers.GetTransactionCorrectionAdminList).Name = "GetTransactionCorrectionAdminList"
 	admin.GET("/transaction/:key", controllers.GetTransactionDetail).Name = "GetTransactionDetail"

@@ -61,7 +61,7 @@ func GetTransactionApprovalList(c echo.Context) error {
 		transStatusKey = append(transStatusKey, "4")
 	}
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
 func GetTransactionCutOffList(c echo.Context) error {
@@ -74,20 +74,27 @@ func GetTransactionCutOffList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "5")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
-func GetTransactionCorrectionList(c echo.Context) error {
+func GetTransactionBatchList(c echo.Context) error {
 	errorAuth := initAuthFundAdmin()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
 
+	//date
+	postnavdate := c.QueryParam("nav_date")
+	if postnavdate == "" {
+		log.Error("Missing required parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "6")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, &postnavdate)
 }
 
 func GetTransactionConfirmationList(c echo.Context) error {
@@ -100,7 +107,7 @@ func GetTransactionConfirmationList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "7")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
 func GetTransactionCorrectionAdminList(c echo.Context) error {
@@ -113,10 +120,10 @@ func GetTransactionCorrectionAdminList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "1")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
-func getListAdmin(transStatusKey []string, c echo.Context) error {
+func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) error {
 
 	var err error
 	var status int
@@ -192,6 +199,9 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 	}
 
 	params["rec_status"] = "1"
+	if postnavdate != nil {
+		params["nav_date"] = *postnavdate
+	}
 
 	//if user admin role 7 branch
 	var roleKeyBranchEntry uint64

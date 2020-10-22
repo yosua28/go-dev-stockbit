@@ -4460,7 +4460,7 @@
         }
       }
     },
-    "/admin/transactionlist/correction": {
+    "/admin/transactionlist/batch": {
       "get": {
         "description": "Get All Transaction (User Allowed : RoleKey 13)",
         "tags": [
@@ -4530,6 +4530,16 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Filter nav_date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2020-10-23"
           }
         ],
         "responses": {
@@ -5305,7 +5315,7 @@
                   },
                   "nav_date": {
                     "type": "string",
-                    "example": "2020-10-22"
+                    "example": "2020-10-23"
                   }
                 },
                 "required": [
