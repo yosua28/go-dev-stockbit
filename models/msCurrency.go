@@ -7,6 +7,14 @@ import (
 	"strings"
 )
 
+type MsCurrencyInfo struct {
+	CurrencyKey       uint64  `json:"currency_key"`
+	Code              string  `json:"code"`
+	Symbol            *string `json:"symbol"`
+	Name              *string `json:"name"`
+	FlagBase          uint8   `json:"flag_base"`
+}
+
 type MsCurrency struct {
 	CurrencyKey       uint64  `db:"currency_key"          json:"currency_key"`
 	Code              string  `db:"code"                  json:"code"`
@@ -45,6 +53,18 @@ func GetMsCurrencyIn(c *[]MsCurrency, value []string, field string) (int, error)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsCurrency(c *MsCurrency, key string) (int, error) {
+	query := `SELECT ms_currency.* FROM ms_currency WHERE ms_currency.currency_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

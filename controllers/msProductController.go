@@ -319,6 +319,22 @@ func GetMsProductData(c echo.Context) error {
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 
+	var currencyDB models.MsCurrency
+	status, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var currency models.MsCurrencyInfo
+	currency.CurrencyKey = currencyDB.CurrencyKey
+	currency.Code = currencyDB.Code
+	currency.Symbol = currencyDB.Symbol
+	currency.Name = currencyDB.Name
+	currency.FlagBase = currencyDB.FlagBase
+
+	data.Currency = currency
+
 	var feeDB []models.MsProductFee
 	params := make(map[string]string)
 	params["product_key"] = strconv.FormatUint(product.ProductKey, 10)
@@ -360,8 +376,11 @@ func GetMsProductData(c echo.Context) error {
 		var feeData []models.MsProductFeeInfo
 		for _, fee := range feeDB {
 			var data models.MsProductFeeInfo
-			if fee.FlagShowOntnc != nil && *fee.FlagShowOntnc == 1 && fee.FeeAnnotation != nil {
+			if fee.FeeAnnotation != nil {
 				data.FeeAnnotation = *fee.FeeAnnotation
+			}
+			if fee.FlagShowOntnc != nil {
+				data.FlagShowOntnc = *fee.FlagShowOntnc
 			}
 			if fee.FeeType != nil {
 				data.FeeType = *fee.FeeType

@@ -38,6 +38,7 @@ type MsProductData struct {
 	FlagSwitchIn     bool                       `json:"flag_switch_in"`
 	FeeService       string                     `json:"fee_service"`
 	FeeTransfer      string                     `json:"fee_transfer"`
+	Currency         MsCurrencyInfo             `json:"currency"`
 	BankAcc          []MsProductBankAccountInfo `json:"bank_account"`
 	ProductFee       []MsProductFeeInfo         `json:"product_fee"`
 	NavPerformance   *FfsNavPerformanceInfo     `json:"nav_performance,omitempty"`
