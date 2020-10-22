@@ -676,8 +676,8 @@ func GetUserLogin(c echo.Context) error {
 	if customerDB.SidNo != nil {
 		responseData.SID = *customerDB.SidNo
 	}
-	responseData.Email = personalDataDB.EmailAddress
-	responseData.PhoneNumber = personalDataDB.PhoneMobile
+	responseData.Email = lib.Profile.Email
+	responseData.PhoneNumber = lib.Profile.PhoneNumber
 	responseData.RiskProfile.RiskProfileKey = riskDB.RiskProfileKey
 	responseData.RiskProfile.RiskCode = riskDB.RiskCode
 	responseData.RiskProfile.RiskName = riskDB.RiskName
