@@ -729,6 +729,7 @@ func sendOTP(gateway, phone string) (string, error){
 	log.Info(payload)
 	req, err := http.NewRequest("POST", config.CitcallUrl, payload)
 	if err != nil {
+		log.Error("Error1", err.Error())
 		return "", err
 	}
 	req.Header.Add("content-type", "application/json")
@@ -736,16 +737,19 @@ func sendOTP(gateway, phone string) (string, error){
 		
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
+		log.Error("Error2", err.Error())
 		return "", err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
+		log.Error("Error3", err.Error())
 		return "", err
 	}
 
 	var sec map[string]interface{}
 	if err = json.Unmarshal(body, &sec); err != nil {
+		log.Error("Error4", err.Error())
 	    return "", err
 	}
 	log.Info(string(body))
