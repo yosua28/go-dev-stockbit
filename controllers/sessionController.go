@@ -725,7 +725,8 @@ func sendOTP(gateway, phone string) (string, error){
 	curlParam["msisdn"] = phone
 	jsonString, err := json.Marshal(curlParam)
 	payload := strings.NewReader(string(jsonString))
-	
+	log.Info("PLAYLOAD")
+	log.Info(payload)
 	req, err := http.NewRequest("POST", config.CitcallUrl, payload)
 	if err != nil {
 		return "", err
