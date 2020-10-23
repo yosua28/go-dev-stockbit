@@ -15,7 +15,6 @@ import (
 )
 
 func DownloadTransactionFormatSinvest(c echo.Context) error {
-	log.Println("dddddddddddddddddddddddd")
 	errorAuth := initAuthFundAdmin()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
@@ -49,13 +48,11 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 	var transSubRed []models.TrTransaction
 	status, err = models.GetAllTransactionByParamAndValueIn(&transSubRed, config.LimitQuery, offset, true, params, transTypeKeySubRed, "trans_type_key")
 	if err != nil {
-		log.Println("hahahahahahahhaaa")
 		if err != sql.ErrNoRows {
 			log.Error(err.Error())
 			return lib.CustomError(status, err.Error(), "Failed get data")
 		}
 	}
-	log.Println("wwwwwwwwwwwwwwwwwwwww")
 
 	var transSwitch []models.TrTransaction
 	status, err = models.GetAllTransactionByParamAndValueIn(&transSwitch, config.LimitQuery, offset, true, params, transTypeKeySwitch, "trans_type_key")
@@ -64,6 +61,11 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			log.Error(err.Error())
 			return lib.CustomError(status, err.Error(), "Failed get data")
 		}
+	}
+
+	if (len(transSubRed)) == 0 && (len(transSwitch)) == 0 {
+		log.Error("transaction not found")
+		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
 	}
 
 	var productIds []string
