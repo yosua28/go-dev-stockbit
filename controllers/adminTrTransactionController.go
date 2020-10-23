@@ -123,6 +123,19 @@ func GetTransactionCorrectionAdminList(c echo.Context) error {
 	return getListAdmin(transStatusKey, c, nil)
 }
 
+func GetTransactionPostingList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "8")
+
+	return getListAdmin(transStatusKey, c, nil)
+}
+
 func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) error {
 
 	var err error
@@ -489,7 +502,7 @@ func GetTransactionDetail(c echo.Context) error {
 		}
 	}
 	if lib.Profile.RoleKey == roleKeyFundAdmin {
-		status := []string{"5", "6", "7"}
+		status := []string{"5", "6", "7", "8"}
 		_, found := lib.Find(status, strTransStatusKey)
 		if !found {
 			log.Error("User Autorizer")

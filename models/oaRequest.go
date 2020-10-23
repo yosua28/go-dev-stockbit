@@ -153,6 +153,13 @@ type RiskProfileQuiz struct {
 	Options             []CmsQuizOptionsInfo `json:"options"`
 }
 
+type AdminTransactionBankInfo struct {
+	CustomerKey       uint64  `db:"customer_key"          json:"customer_key"`
+	SwiftCode         *string `db:"swift_code"            json:"swift_code"`
+	BiMemberCode      *string `db:"bi_member_code"        json:"bi_member_code"`
+	CustomerAccountNo string  `db:"customer_account_no"   json:"customer_account_no"`
+}
+
 func CreateOaRequest(params map[string]string) (int, error, string) {
 	query := "INSERT INTO oa_request"
 	// Get params
@@ -591,5 +598,30 @@ func UpdateOaRequestByKeyIn(params map[string]string, valueIn []string, fieldIn 
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetTransactionBankInfoCustomerIn(c *[]AdminTransactionBankInfo, value []string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT oa.customer_key AS customer_key, 
+				b.swift_code AS swift_code, 
+				b.bi_member_code AS bi_member_code, 
+				ba.account_no AS customer_account_no
+				FROM oa_request AS oa
+				INNER JOIN oa_personal_data AS op ON op.oa_request_key = oa.oa_request_key
+				INNER JOIN ms_bank_account AS ba ON ba.bank_account_key = op.bank_account_key
+				INNER JOIN ms_bank AS b ON b.bank_key = ba.bank_key`
+	query := query2 + " WHERE oa.rec_status = 1 AND oa.customer_key IN(" + inQuery + ")"
+
+	query += " GROUP BY oa.customer_key"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

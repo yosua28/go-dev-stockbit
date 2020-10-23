@@ -5440,6 +5440,125 @@
           }
         }
       }
+    },
+    "/admin/transaction/downloadformatsinvest": {
+      "get": {
+        "description": "Get All Transaction Format Sinvest (User Allowed : RoleKey 13, trans_status_key = 6)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Filter nav_date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2020-10-23"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": {
+                    "subscription_redeemption": [
+                      {
+                        "transaction_date": "20201023",
+                        "transaction_type": 1,
+                        "sa_code": "EP002",
+                        "investor_fund_unit": "",
+                        "fund_code": "EP002MMCDANLCR00",
+                        "amount_nominal": "100000",
+                        "amount_unit": "",
+                        "amount_all_unit": "",
+                        "fee_nominal": "1000",
+                        "fee_unit": "",
+                        "fee_percent": "1",
+                        "redm_payment_ac_sequence_code": "1",
+                        "redm_payment_bank_bic_code": "",
+                        "redm_payment_bank_bi_member_code": "",
+                        "redm_payment_ac_code": "",
+                        "payment_date": "20201023",
+                        "transfer_type": "",
+                        "sa_reference_no": 1
+                      },
+                      {
+                        "transaction_date": "20201023",
+                        "transaction_type": 2,
+                        "sa_code": "EP002",
+                        "investor_fund_unit": "",
+                        "fund_code": "EP002MMCDANLCR00",
+                        "amount_nominal": "200000",
+                        "amount_unit": "200",
+                        "amount_all_unit": "",
+                        "fee_nominal": "2000",
+                        "fee_unit": "",
+                        "fee_percent": "1",
+                        "redm_payment_ac_sequence_code": "1",
+                        "redm_payment_bank_bic_code": "BMRIIDJA",
+                        "redm_payment_bank_bi_member_code": "0008",
+                        "redm_payment_ac_code": "025508",
+                        "payment_date": "20201109",
+                        "transfer_type": "3",
+                        "sa_reference_no": 2
+                      }
+                    ],
+                    "switchout_switchin": null
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

@@ -527,3 +527,73 @@ func GetTrTransactionIn(c *[]TrTransaction, value []string, field string) (int, 
 
 	return http.StatusOK, nil
 }
+
+func GetAllTransactionByParamAndValueIn(c *[]TrTransaction, limit uint64, offset uint64,
+	nolimit bool, params map[string]string, valueIn []string, fieldIn string) (int, error) {
+	query := `SELECT
+              tr_transaction.*
+			  FROM tr_transaction`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if len(valueIn) > 0 {
+		if len(whereClause) < 1 {
+			if len(valueIn) > 0 {
+				inQuery := strings.Join(valueIn, ",")
+				condition += " WHERE tr_transaction." + fieldIn + " IN(" + inQuery + ")"
+			}
+		} else {
+			if len(valueIn) > 0 {
+				inQuery := strings.Join(valueIn, ",")
+				condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
