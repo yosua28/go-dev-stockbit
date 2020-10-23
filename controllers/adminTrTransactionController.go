@@ -1051,6 +1051,30 @@ func UpdateNavDate(c echo.Context) error {
 	params["rec_modified_by"] = strIDUserLogin
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 
+	strTransType := strconv.FormatUint(transaction.TransTypeKey, 10)
+	params["settlement_date"] = postnavdate
+
+	//set settlement_date by settlement period product
+	if strTransType == "2" { //REDM
+		//check product
+		var product models.MsProduct
+		strPro := strconv.FormatUint(transaction.ProductKey, 10)
+		status, err = models.GetMsProduct(&product, strPro)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			layoutISO := "2006-01-02"
+			t, _ := time.Parse(layoutISO, postnavdate)
+
+			if (product.SettlementPeriod != nil) && (*product.SettlementPeriod > 0) {
+				params["settlement_date"] = SettDate(t, int(*product.SettlementPeriod))
+			}
+
+		}
+	}
+
 	_, err = models.UpdateTrTransaction(params)
 	if err != nil {
 		log.Error("Error update tr transaction")
@@ -1140,4 +1164,72 @@ func TransactionApprovalCutOff(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
+}
+
+func SettDate(t time.Time, period int) string {
+	var dateNext string
+
+	layoutISO := "2006-01-02"
+	dateNext = t.Format(layoutISO)
+
+	for i := 0; i < period; i++ {
+
+		t, _ := time.Parse(layoutISO, dateNext)
+		dateAfter := t.AddDate(0, 0, 1)
+		t = time.Date(dateAfter.Year(), dateAfter.Month(), dateAfter.Day(), 0, 0, 0, 0, time.UTC)
+		dateAfter = SkipWeekend(dateAfter)
+
+		strDate := dateAfter.Format(layoutISO)
+		dateNext = CheckHolidayBursa(strDate)
+	}
+	return dateNext
+}
+
+func SkipWeekend(t time.Time) time.Time {
+	dateAfter := t
+	t = t.UTC()
+
+	switch t.Weekday() {
+	case time.Saturday:
+		dateAfter = t.AddDate(0, 0, 2)
+	case time.Sunday:
+		dateAfter = t.AddDate(0, 0, 1)
+	}
+
+	return dateAfter
+}
+
+func CheckHolidayBursa(date string) string {
+	dateStr := date
+	layoutISO := "2006-01-02"
+	paramHoliday := make(map[string]string)
+	paramHoliday["holiday_date"] = date
+
+	var holiday []models.MsHoliday
+	_, err := models.GetAllMsHoliday(&holiday, paramHoliday)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			t, _ := time.Parse(layoutISO, date)
+			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+			dateStr = date
+		}
+	}
+
+	if len(holiday) > 0 {
+		t, _ := time.Parse(layoutISO, dateStr)
+		dateAfter := t.AddDate(0, 0, 1)
+		strDate := dateAfter.Format(layoutISO)
+		dateStr = CheckHolidayBursa(strDate)
+	}
+
+	w, _ := time.Parse(layoutISO, dateStr)
+	w = time.Date(w.Year(), w.Month(), w.Day(), 0, 0, 0, 0, time.UTC)
+	cek := lib.IsWeekend(w)
+	if cek {
+		dateSkip := SkipWeekend(w)
+
+		dateStr = dateSkip.Format(layoutISO)
+		dateStr = CheckHolidayBursa(dateStr)
+	}
+	return dateStr
 }
