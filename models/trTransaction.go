@@ -101,6 +101,8 @@ type AdminTrTransactionList struct {
 	TransBankName    string  `json:"trans_bank_name"`
 	TransBankAccNo   *string `json:"trans_bank_accno"`
 	TransBankaccName *string `json:"trans_bankacc_name"`
+	ProductOut       *string `json:"product_name_out"`
+	ProductIn        *string `json:"product_name_in"`
 }
 
 type CountData struct {
@@ -223,7 +225,8 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 	params map[string]string, valueIn []string, fieldIn string) (int, error) {
 	query := `SELECT
               tr_transaction.*
-			  FROM tr_transaction`
+			  FROM tr_transaction
+			  WHERE tr_transaction.trans_type_key != 3 `
 	var present bool
 	var whereClause []string
 	var condition string
@@ -236,7 +239,7 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " WHERE "
+		condition += " AND "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
@@ -246,17 +249,8 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 	}
 
 	if len(valueIn) > 0 {
-		if len(whereClause) < 1 {
-			if len(valueIn) > 0 {
-				inQuery := strings.Join(valueIn, ",")
-				condition += " WHERE tr_transaction." + fieldIn + " IN(" + inQuery + ")"
-			}
-		} else {
-			if len(valueIn) > 0 {
-				inQuery := strings.Join(valueIn, ",")
-				condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
-			}
-		}
+		inQuery := strings.Join(valueIn, ",")
+		condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
 	}
 
 	// Check order by
@@ -292,14 +286,15 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 func AdminGetCountTrTransaction(c *CountData, params map[string]string, valueIn []string, fieldIn string) (int, error) {
 	query := `SELECT
               count(tr_transaction.transaction_key) as count_data
-			  FROM tr_transaction`
+			  FROM tr_transaction
+			  WHERE tr_transaction.trans_type_key != 3 `
 
 	var whereClause []string
 	var condition string
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " WHERE "
+		condition += " AND "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
@@ -309,28 +304,8 @@ func AdminGetCountTrTransaction(c *CountData, params map[string]string, valueIn 
 	}
 
 	if len(valueIn) > 0 {
-		if len(whereClause) < 1 {
-			if len(valueIn) > 0 {
-				inQuery := strings.Join(valueIn, ",")
-				condition += " WHERE tr_transaction." + fieldIn + " IN(" + inQuery + ")"
-			}
-		} else {
-			if len(valueIn) > 0 {
-				inQuery := strings.Join(valueIn, ",")
-				condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
-			}
-		}
-	}
-
-	// Combile where clause
-	if len(whereClause) > 0 {
-		condition += " WHERE "
-		for index, where := range whereClause {
-			condition += where
-			if (len(whereClause) - 1) > index {
-				condition += " AND "
-			}
-		}
+		inQuery := strings.Join(valueIn, ",")
+		condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
 	}
 
 	query += condition

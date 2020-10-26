@@ -4242,7 +4242,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4259,7 +4261,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4401,7 +4405,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4418,7 +4424,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4570,7 +4578,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4587,7 +4597,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4729,7 +4741,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4746,7 +4760,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4888,7 +4904,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4905,7 +4923,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -5047,7 +5067,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -5064,7 +5086,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }

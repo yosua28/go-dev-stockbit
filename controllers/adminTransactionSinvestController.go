@@ -42,7 +42,6 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 	transTypeKeySubRed = append(transTypeKeySubRed, "2")
 
 	var transTypeKeySwitch []string
-	transTypeKeySwitch = append(transTypeKeySwitch, "3")
 	transTypeKeySwitch = append(transTypeKeySwitch, "4")
 
 	var transSubRed []models.TrTransaction
@@ -83,6 +82,7 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 		}
 	}
 
+	var parentIds []string
 	for _, trSw := range transSwitch {
 		if _, ok := lib.Find(transactionIds, strconv.FormatUint(trSw.TransactionKey, 10)); !ok {
 			transactionIds = append(transactionIds, strconv.FormatUint(trSw.TransactionKey, 10))
@@ -92,6 +92,12 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 		}
 		if _, ok := lib.Find(customerIds, strconv.FormatUint(trSw.CustomerKey, 10)); !ok {
 			customerIds = append(customerIds, strconv.FormatUint(trSw.CustomerKey, 10))
+		}
+
+		if trSw.ParentKey != nil {
+			if _, ok := lib.Find(parentIds, strconv.FormatUint(*trSw.ParentKey, 10)); !ok {
+				parentIds = append(parentIds, strconv.FormatUint(*trSw.ParentKey, 10))
+			}
 		}
 	}
 
@@ -142,6 +148,22 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 	bankTransData := make(map[uint64]models.AdminTransactionBankInfo)
 	for _, bt := range bankTrans {
 		bankTransData[bt.CustomerKey] = bt
+	}
+
+	//mapping parent transaction
+	var parentTransaction []models.DataTransactionParent
+	if len(parentIds) > 0 {
+		status, err = models.GetDataParentTransactionSwitch(&parentTransaction, parentIds)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+	parentTrData := make(map[uint64]models.DataTransactionParent)
+	for _, pt := range parentTransaction {
+		parentTrData[pt.TransactionKey] = pt
 	}
 
 	var responseData models.TransactionFormatSinvest
@@ -260,17 +282,66 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 		swc.SACode = "EP002"
 
 		swc.InvestorFundUnitACNo = ""
+		if co, ok := accountData[trSwitch.CustomerKey]; ok {
+			swc.InvestorFundUnitACNo = *co.IfuaNo
+		}
+
 		swc.SwitchOutFundCode = ""
 		swc.SwitchOutAmountNominal = ""
 		swc.SwitchOutAmountUnit = ""
 		swc.SwitchOutAmountAll = ""
+		if trSwitch.ParentKey != nil {
+			if pt, ok := parentTrData[*trSwitch.ParentKey]; ok {
+				if pt.SinvestFundCode != nil {
+					swc.SwitchOutFundCode = *pt.SinvestFundCode
+				}
+
+				if pt.TransAmount > 0 {
+					strTransAmount := fmt.Sprintf("%g", pt.TransAmount)
+					swc.SwitchOutAmountNominal = strTransAmount
+				}
+				if pt.TransUnit > 0 {
+					strTransUnit := fmt.Sprintf("%g", pt.TransUnit)
+					swc.SwitchOutAmountUnit = strTransUnit
+				}
+				if pt.FlagRedemtAll != nil {
+					if int(*pt.FlagRedemtAll) > 0 {
+						swc.SwitchOutAmountAll = "Y"
+					}
+				}
+			}
+		}
+
 		swc.SwitchingFeeChargeFund = ""
+
 		swc.FeeNominal = ""
+		if trSwitch.TransFeeAmount > 0 {
+			strFeeAmount := fmt.Sprintf("%g", trSwitch.TransFeeAmount)
+			swc.FeeNominal = strFeeAmount
+		}
+
 		swc.FeeUnit = ""
+
 		swc.FeePercent = ""
+		if trSwitch.TransFeePercent > 0 {
+			strFeePercent := fmt.Sprintf("%g", trSwitch.TransFeePercent)
+			swc.FeePercent = strFeePercent
+		}
+
 		swc.SwitchInFundCode = ""
-		swc.PaymentDate = ""
-		swc.TransferType = ""
+		if pro, ok := productData[trSwitch.ProductKey]; ok {
+			swc.SwitchInFundCode = *pro.SinvestFundCode
+		}
+
+		if trSwitch.SettlementDate != nil {
+			date, _ = time.Parse(layout, *trSwitch.SettlementDate)
+			swc.PaymentDate = date.Format(newLayout)
+		} else {
+			date, _ = time.Parse(layout, trSwitch.NavDate)
+			swc.PaymentDate = date.Format(newLayout)
+		}
+
+		swc.TransferType = "3"
 		swc.SaReferenceNo = trSwitch.TransactionKey
 
 		switchTransaction = append(switchTransaction, swc)

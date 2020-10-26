@@ -1,5 +1,12 @@
 package models
 
+import (
+	"api/db"
+	"log"
+	"net/http"
+	"strings"
+)
+
 type TransactionFormatSinvest struct {
 	SubscriptionRedeemption *[]SubscriptionRedeemption `json:"subscription_redeemption"`
 	SwitchTransaction       *[]SwitchTransaction       `json:"switch"`
@@ -43,4 +50,35 @@ type SwitchTransaction struct {
 	PaymentDate            string `json:"payment_date"`
 	TransferType           string `json:"transfer_type"`
 	SaReferenceNo          uint64 `json:"sa_reference_no"`
+}
+
+type DataTransactionParent struct {
+	TransactionKey  uint64  `db:"transaction_key"           json:"transaction_key"`
+	SinvestFundCode *string `db:"sinvest_fund_code"       json:"sinvest_fund_code"`
+	TransAmount     float32 `db:"trans_amount"              json:"trans_amount"`
+	TransUnit       float32 `db:"trans_unit"                json:"trans_unit"`
+	FlagRedemtAll   *uint8  `db:"flag_redempt_all"          json:"flag_redempt_all"`
+}
+
+func GetDataParentTransactionSwitch(c *[]DataTransactionParent, value []string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT 
+			tr.transaction_key AS transaction_key,
+			mp.sinvest_fund_code AS sinvest_fund_code,
+			tr.trans_amount AS trans_amount,
+			tr.trans_unit AS trans_unit,
+			tr.flag_redempt_all AS flag_redempt_all 
+			FROM tr_transaction AS tr 
+			INNER JOIN ms_product AS mp ON tr.product_key = mp.product_key`
+	query := query2 + " WHERE tr.transaction_key IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }

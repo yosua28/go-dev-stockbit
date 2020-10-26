@@ -247,6 +247,7 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	var productIds []string
 	var transTypeIds []string
 	var bankIds []string
+	var parentTransIds []string
 	for _, tr := range trTransaction {
 
 		if tr.BranchKey != nil {
@@ -271,6 +272,15 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 		if tr.TransBankKey != nil {
 			if _, ok := lib.Find(bankIds, strconv.FormatUint(*tr.TransBankKey, 10)); !ok {
 				bankIds = append(bankIds, strconv.FormatUint(*tr.TransBankKey, 10))
+			}
+		}
+
+		strTransTypeKey := strconv.FormatUint(tr.TransTypeKey, 10)
+		if strTransTypeKey == "4" {
+			if tr.ParentKey != nil {
+				if _, ok := lib.Find(parentTransIds, strconv.FormatUint(*tr.ParentKey, 10)); !ok {
+					parentTransIds = append(parentTransIds, strconv.FormatUint(*tr.ParentKey, 10))
+				}
 			}
 		}
 	}
@@ -315,6 +325,24 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	customerData := make(map[uint64]models.MsCustomer)
 	for _, c := range msCustomer {
 		customerData[c.CustomerKey] = c
+	}
+
+	//mapping parent transaction
+	var parentTrans []models.TrTransaction
+	if len(parentTransIds) > 0 {
+		status, err = models.GetTrTransactionIn(&parentTrans, parentTransIds, "transaction_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	parentTransData := make(map[uint64]models.TrTransaction)
+	for _, pt := range parentTrans {
+		parentTransData[pt.TransactionKey] = pt
+
+		if _, ok := lib.Find(productIds, strconv.FormatUint(pt.ProductKey, 10)); !ok {
+			productIds = append(productIds, strconv.FormatUint(pt.ProductKey, 10))
+		}
 	}
 
 	//mapping product
@@ -427,6 +455,19 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 		data.TransBankAccNo = tr.TransBankAccNo
 		data.TransBankaccName = tr.TransBankaccName
 
+		strTransTypeKey := strconv.FormatUint(tr.TransTypeKey, 10)
+
+		if strTransTypeKey == "4" {
+			data.ProductIn = &data.ProductName
+			if tr.ParentKey != nil {
+				if n, ok := parentTransData[*tr.ParentKey]; ok {
+					if pd, ok := productData[n.ProductKey]; ok {
+						data.ProductOut = &pd.ProductName
+					}
+				}
+			}
+		}
+
 		responseData = append(responseData, data)
 	}
 
@@ -474,6 +515,17 @@ func GetTransactionDetail(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+	log.Println("=======================================")
+	log.Println(strTransTypeKey)
+	log.Println("=======================================")
+
+	if strTransTypeKey == "3" {
+		log.Error("Data not found")
+		return lib.CustomError(http.StatusUnauthorized, "Data not found", "Data not found")
+	}
+
 	var roleKeyCs uint64
 	roleKeyCs = 11
 	var roleKeyKyc uint64
@@ -484,8 +536,6 @@ func GetTransactionDetail(c echo.Context) error {
 	roleKeyBranchEntry = 7
 	var roleKeyHoEntry uint64
 	roleKeyHoEntry = 10
-
-	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 
 	if lib.Profile.RoleKey == roleKeyCs {
 		statusCs := strconv.FormatUint(uint64(2), 10)
