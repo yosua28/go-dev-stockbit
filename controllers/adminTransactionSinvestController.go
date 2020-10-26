@@ -247,33 +247,53 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 
 	}
 
-	var switchOutSwitchIn []models.SwitchOutSwitchIn
-	// for _, trSubRed := range transSwitch {
-	// 	var subred models.SubscriptionRedeemption
+	var switchTransaction []models.SwitchTransaction
+	for _, trSwitch := range transSwitch {
+		var swc models.SwitchTransaction
 
-	// 	subscriptionRedeemption = append(subscriptionRedeemption, subred)
+		layout := "2006-01-02 15:04:05"
+		newLayout := "20060102"
+		date, _ := time.Parse(layout, trSwitch.NavDate)
+		swc.TransactionDate = date.Format(newLayout)
 
-	// }
+		swc.TransactionType = trSwitch.TransTypeKey
+		swc.SACode = "EP002"
+
+		swc.InvestorFundUnitACNo = ""
+		swc.SwitchOutFundCode = ""
+		swc.SwitchOutAmountNominal = ""
+		swc.SwitchOutAmountUnit = ""
+		swc.SwitchOutAmountAll = ""
+		swc.SwitchingFeeChargeFund = ""
+		swc.FeeNominal = ""
+		swc.FeeUnit = ""
+		swc.FeePercent = ""
+		swc.SwitchInFundCode = ""
+		swc.PaymentDate = ""
+		swc.TransferType = ""
+		swc.SaReferenceNo = trSwitch.TransactionKey
+
+		switchTransaction = append(switchTransaction, swc)
+	}
 
 	responseData.SubscriptionRedeemption = &subscriptionRedeemption
-	responseData.SwitchOutSwitchIn = &switchOutSwitchIn
+	responseData.SwitchTransaction = &switchTransaction
 
-	// if len(responseData) > 0 {
-	// 	paramsUpdate := make(map[string]string)
+	if len(transactionIds) > 0 {
+		paramsUpdate := make(map[string]string)
 
-	// 	strOaStatus := strconv.FormatUint(261, 10) //customer build, proses upload data to Sinvest
-	// 	paramsUpdate["oa_status"] = strOaStatus
-	// 	dateLayout := "2006-01-02 15:04:05"
-	// 	paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)
-	// 	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
-	// 	paramsUpdate["rec_modified_by"] = strKey
+		paramsUpdate["trans_status_key"] = "7"
+		dateLayout := "2006-01-02 15:04:05"
+		paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)
+		strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsUpdate["rec_modified_by"] = strKey
 
-	// 	_, err = models.UpdateOaRequestByKeyIn(paramsUpdate, oaRequestIds, "oa_request_key")
-	// 	if err != nil {
-	// 		log.Error("Error update oa request")
-	// 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
-	// 	}
-	// }
+		_, err = models.UpdateTrTransactionByKeyIn(paramsUpdate, transactionIds, "transaction_key")
+		if err != nil {
+			log.Error("Error update Transaction")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		}
+	}
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

@@ -12,6 +12,7 @@ import (
 
 type TrTransaction struct {
 	TransactionKey    uint64   `db:"transaction_key"           json:"transaction_key"`
+	ParentKey         *uint64  `db:"parent_key"                json:"parent_key"`
 	IDTransaction     *uint64  `db:"id_transaction"            json:"id_transaction"`
 	BranchKey         *uint64  `db:"branch_key"                json:"branch_key"`
 	AgentKey          *uint64  `db:"agent_key"                 json:"agent_key"`

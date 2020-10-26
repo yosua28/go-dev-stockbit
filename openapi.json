@@ -5678,7 +5678,26 @@
                         "sa_reference_no": 2
                       }
                     ],
-                    "switchout_switchin": null
+                    "switch": [
+                      {
+                        "transaction_date": "20201023",
+                        "transaction_type": 3,
+                        "sa_code": "EP002",
+                        "investor_fund_unit": "",
+                        "switch_out_fund_code": "",
+                        "switch_out_amount_nominal": "",
+                        "switch_out_amount_unit": "",
+                        "switch_out_amount_all": "",
+                        "switching_fee_charge_fund": "",
+                        "fee_nominal": "",
+                        "fee_unit": "",
+                        "fee_percent": "",
+                        "switch_in_fund_code": "",
+                        "payment_date": "",
+                        "transfer_type": "",
+                        "sa_reference_no": 2
+                      }
+                    ]
                   }
                 }
               }
