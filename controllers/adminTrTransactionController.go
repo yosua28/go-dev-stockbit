@@ -61,7 +61,7 @@ func GetTransactionApprovalList(c echo.Context) error {
 		transStatusKey = append(transStatusKey, "4")
 	}
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
 func GetTransactionCutOffList(c echo.Context) error {
@@ -74,20 +74,27 @@ func GetTransactionCutOffList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "5")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
-func GetTransactionCorrectionList(c echo.Context) error {
+func GetTransactionBatchList(c echo.Context) error {
 	errorAuth := initAuthFundAdmin()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
 
+	//date
+	postnavdate := c.QueryParam("nav_date")
+	if postnavdate == "" {
+		log.Error("Missing required parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "6")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, &postnavdate)
 }
 
 func GetTransactionConfirmationList(c echo.Context) error {
@@ -100,7 +107,7 @@ func GetTransactionConfirmationList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "7")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
 func GetTransactionCorrectionAdminList(c echo.Context) error {
@@ -113,10 +120,23 @@ func GetTransactionCorrectionAdminList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "1")
 
-	return getListAdmin(transStatusKey, c)
+	return getListAdmin(transStatusKey, c, nil)
 }
 
-func getListAdmin(transStatusKey []string, c echo.Context) error {
+func GetTransactionPostingList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "8")
+
+	return getListAdmin(transStatusKey, c, nil)
+}
+
+func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) error {
 
 	var err error
 	var status int
@@ -192,6 +212,9 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 	}
 
 	params["rec_status"] = "1"
+	if postnavdate != nil {
+		params["nav_date"] = *postnavdate
+	}
 
 	//if user admin role 7 branch
 	var roleKeyBranchEntry uint64
@@ -224,6 +247,7 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 	var productIds []string
 	var transTypeIds []string
 	var bankIds []string
+	var parentTransIds []string
 	for _, tr := range trTransaction {
 
 		if tr.BranchKey != nil {
@@ -248,6 +272,15 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 		if tr.TransBankKey != nil {
 			if _, ok := lib.Find(bankIds, strconv.FormatUint(*tr.TransBankKey, 10)); !ok {
 				bankIds = append(bankIds, strconv.FormatUint(*tr.TransBankKey, 10))
+			}
+		}
+
+		strTransTypeKey := strconv.FormatUint(tr.TransTypeKey, 10)
+		if strTransTypeKey == "4" {
+			if tr.ParentKey != nil {
+				if _, ok := lib.Find(parentTransIds, strconv.FormatUint(*tr.ParentKey, 10)); !ok {
+					parentTransIds = append(parentTransIds, strconv.FormatUint(*tr.ParentKey, 10))
+				}
 			}
 		}
 	}
@@ -292,6 +325,24 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 	customerData := make(map[uint64]models.MsCustomer)
 	for _, c := range msCustomer {
 		customerData[c.CustomerKey] = c
+	}
+
+	//mapping parent transaction
+	var parentTrans []models.TrTransaction
+	if len(parentTransIds) > 0 {
+		status, err = models.GetTrTransactionIn(&parentTrans, parentTransIds, "transaction_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	parentTransData := make(map[uint64]models.TrTransaction)
+	for _, pt := range parentTrans {
+		parentTransData[pt.TransactionKey] = pt
+
+		if _, ok := lib.Find(productIds, strconv.FormatUint(pt.ProductKey, 10)); !ok {
+			productIds = append(productIds, strconv.FormatUint(pt.ProductKey, 10))
+		}
 	}
 
 	//mapping product
@@ -404,6 +455,19 @@ func getListAdmin(transStatusKey []string, c echo.Context) error {
 		data.TransBankAccNo = tr.TransBankAccNo
 		data.TransBankaccName = tr.TransBankaccName
 
+		strTransTypeKey := strconv.FormatUint(tr.TransTypeKey, 10)
+
+		if strTransTypeKey == "4" {
+			data.ProductIn = &data.ProductName
+			if tr.ParentKey != nil {
+				if n, ok := parentTransData[*tr.ParentKey]; ok {
+					if pd, ok := productData[n.ProductKey]; ok {
+						data.ProductOut = &pd.ProductName
+					}
+				}
+			}
+		}
+
 		responseData = append(responseData, data)
 	}
 
@@ -451,6 +515,17 @@ func GetTransactionDetail(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+	log.Println("=======================================")
+	log.Println(strTransTypeKey)
+	log.Println("=======================================")
+
+	if strTransTypeKey == "3" {
+		log.Error("Data not found")
+		return lib.CustomError(http.StatusUnauthorized, "Data not found", "Data not found")
+	}
+
 	var roleKeyCs uint64
 	roleKeyCs = 11
 	var roleKeyKyc uint64
@@ -461,8 +536,6 @@ func GetTransactionDetail(c echo.Context) error {
 	roleKeyBranchEntry = 7
 	var roleKeyHoEntry uint64
 	roleKeyHoEntry = 10
-
-	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 
 	if lib.Profile.RoleKey == roleKeyCs {
 		statusCs := strconv.FormatUint(uint64(2), 10)
@@ -479,7 +552,7 @@ func GetTransactionDetail(c echo.Context) error {
 		}
 	}
 	if lib.Profile.RoleKey == roleKeyFundAdmin {
-		status := []string{"5", "6", "7"}
+		status := []string{"5", "6", "7", "8"}
 		_, found := lib.Find(status, strTransStatusKey)
 		if !found {
 			log.Error("User Autorizer")
@@ -1041,6 +1114,30 @@ func UpdateNavDate(c echo.Context) error {
 	params["rec_modified_by"] = strIDUserLogin
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 
+	strTransType := strconv.FormatUint(transaction.TransTypeKey, 10)
+	params["settlement_date"] = postnavdate
+
+	//set settlement_date by settlement period product
+	if strTransType == "2" { //REDM
+		//check product
+		var product models.MsProduct
+		strPro := strconv.FormatUint(transaction.ProductKey, 10)
+		status, err = models.GetMsProduct(&product, strPro)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			layoutISO := "2006-01-02"
+			t, _ := time.Parse(layoutISO, postnavdate)
+
+			if (product.SettlementPeriod != nil) && (*product.SettlementPeriod > 0) {
+				params["settlement_date"] = SettDate(t, int(*product.SettlementPeriod))
+			}
+
+		}
+	}
+
 	_, err = models.UpdateTrTransaction(params)
 	if err != nil {
 		log.Error("Error update tr transaction")
@@ -1130,4 +1227,72 @@ func TransactionApprovalCutOff(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
+}
+
+func SettDate(t time.Time, period int) string {
+	var dateNext string
+
+	layoutISO := "2006-01-02"
+	dateNext = t.Format(layoutISO)
+
+	for i := 0; i < period; i++ {
+
+		t, _ := time.Parse(layoutISO, dateNext)
+		dateAfter := t.AddDate(0, 0, 1)
+		t = time.Date(dateAfter.Year(), dateAfter.Month(), dateAfter.Day(), 0, 0, 0, 0, time.UTC)
+		dateAfter = SkipWeekend(dateAfter)
+
+		strDate := dateAfter.Format(layoutISO)
+		dateNext = CheckHolidayBursa(strDate)
+	}
+	return dateNext
+}
+
+func SkipWeekend(t time.Time) time.Time {
+	dateAfter := t
+	t = t.UTC()
+
+	switch t.Weekday() {
+	case time.Saturday:
+		dateAfter = t.AddDate(0, 0, 2)
+	case time.Sunday:
+		dateAfter = t.AddDate(0, 0, 1)
+	}
+
+	return dateAfter
+}
+
+func CheckHolidayBursa(date string) string {
+	dateStr := date
+	layoutISO := "2006-01-02"
+	paramHoliday := make(map[string]string)
+	paramHoliday["holiday_date"] = date
+
+	var holiday []models.MsHoliday
+	_, err := models.GetAllMsHoliday(&holiday, paramHoliday)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			t, _ := time.Parse(layoutISO, date)
+			t = time.Date(t.Year(), t.Month(), t.Day(), 0, 0, 0, 0, time.UTC)
+			dateStr = date
+		}
+	}
+
+	if len(holiday) > 0 {
+		t, _ := time.Parse(layoutISO, dateStr)
+		dateAfter := t.AddDate(0, 0, 1)
+		strDate := dateAfter.Format(layoutISO)
+		dateStr = CheckHolidayBursa(strDate)
+	}
+
+	w, _ := time.Parse(layoutISO, dateStr)
+	w = time.Date(w.Year(), w.Month(), w.Day(), 0, 0, 0, 0, time.UTC)
+	cek := lib.IsWeekend(w)
+	if cek {
+		dateSkip := SkipWeekend(w)
+
+		dateStr = dateSkip.Format(layoutISO)
+		dateStr = CheckHolidayBursa(dateStr)
+	}
+	return dateStr
 }

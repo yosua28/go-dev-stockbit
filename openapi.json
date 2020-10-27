@@ -4265,7 +4265,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4282,7 +4284,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4424,7 +4428,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4441,7 +4447,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4483,7 +4491,7 @@
         }
       }
     },
-    "/admin/transactionlist/correction": {
+    "/admin/transactionlist/batch": {
       "get": {
         "description": "Get All Transaction (User Allowed : RoleKey 13)",
         "tags": [
@@ -4553,6 +4561,16 @@
             "schema": {
               "type": "boolean"
             }
+          },
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Filter nav_date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2020-10-23"
           }
         ],
         "responses": {
@@ -4583,7 +4601,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4600,7 +4620,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4742,7 +4764,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4759,7 +4783,9 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -4901,7 +4927,9 @@
                       "total_amount": 2000,
                       "trans_bank_name": "ANTAR DAERAH",
                       "trans_bank_accno": "Maria",
-                      "trans_bankacc_name": "Ranty"
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     },
                     {
                       "transaction_key": 1,
@@ -4918,7 +4946,172 @@
                       "total_amount": 1000,
                       "trans_bank_name": "ABN AMRO",
                       "trans_bank_accno": "Yona",
-                      "trans_bankacc_name": "Santi"
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transactionlist/posting": {
+      "get": {
+        "description": "Get All Transaction (User Allowed : RoleKey 13, trans_status_key = 8)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "transaction_key",
+                "branch_key",
+                "agent_key",
+                "customer_key",
+                "product_key",
+                "trans_date",
+                "trans_amount",
+                "trans_bank_key"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "transaction_key": 2,
+                      "branch_name": "",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga",
+                      "product_name": "MNC DANA SYARIAH",
+                      "trans_status": "CONFIRMED",
+                      "trans_date": "09 Oct 2020",
+                      "trans_type": "Subscription",
+                      "nav_date": "09 Oct 2020",
+                      "trans_amount": 200000,
+                      "trans_unit": 20,
+                      "total_amount": 2000,
+                      "trans_bank_name": "ANTAR DAERAH",
+                      "trans_bank_accno": "Maria",
+                      "trans_bankacc_name": "Ranty",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
+                    },
+                    {
+                      "transaction_key": 1,
+                      "branch_name": "",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "MNC DANA LANCAR",
+                      "trans_status": "CONFIRMED",
+                      "trans_date": "09 Oct 2020",
+                      "trans_type": "Subscription",
+                      "nav_date": "09 Oct 2020",
+                      "trans_amount": 100000,
+                      "trans_unit": 10,
+                      "total_amount": 1000,
+                      "trans_bank_name": "ABN AMRO",
+                      "trans_bank_accno": "Yona",
+                      "trans_bankacc_name": "Santi",
+                      "product_name_out": "MNC DANA SYARIAH",
+                      "product_name_in": "MNC DANA LANCAR"
                     }
                   ]
                 }
@@ -5328,7 +5521,7 @@
                   },
                   "nav_date": {
                     "type": "string",
-                    "example": "2020-10-22"
+                    "example": "2020-10-23"
                   }
                 },
                 "required": [
@@ -5440,6 +5633,144 @@
             "content": {
               "text/plain": {
                 "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transaction/downloadformatsinvest": {
+      "get": {
+        "description": "Get All Transaction Format Sinvest (User Allowed : RoleKey 13, trans_status_key = 6)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Filter nav_date",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "2020-10-23"
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": {
+                    "subscription_redeemption": [
+                      {
+                        "transaction_date": "20201023",
+                        "transaction_type": 1,
+                        "sa_code": "EP002",
+                        "investor_fund_unit": "",
+                        "fund_code": "EP002MMCDANLCR00",
+                        "amount_nominal": "100000",
+                        "amount_unit": "",
+                        "amount_all_unit": "",
+                        "fee_nominal": "1000",
+                        "fee_unit": "",
+                        "fee_percent": "1",
+                        "redm_payment_ac_sequence_code": "1",
+                        "redm_payment_bank_bic_code": "",
+                        "redm_payment_bank_bi_member_code": "",
+                        "redm_payment_ac_code": "",
+                        "payment_date": "20201023",
+                        "transfer_type": "",
+                        "sa_reference_no": 1
+                      },
+                      {
+                        "transaction_date": "20201023",
+                        "transaction_type": 2,
+                        "sa_code": "EP002",
+                        "investor_fund_unit": "",
+                        "fund_code": "EP002MMCDANLCR00",
+                        "amount_nominal": "200000",
+                        "amount_unit": "200",
+                        "amount_all_unit": "",
+                        "fee_nominal": "2000",
+                        "fee_unit": "",
+                        "fee_percent": "1",
+                        "redm_payment_ac_sequence_code": "1",
+                        "redm_payment_bank_bic_code": "BMRIIDJA",
+                        "redm_payment_bank_bi_member_code": "0008",
+                        "redm_payment_ac_code": "025508",
+                        "payment_date": "20201109",
+                        "transfer_type": "3",
+                        "sa_reference_no": 2
+                      }
+                    ],
+                    "switch": [
+                      {
+                        "transaction_date": "20201023",
+                        "transaction_type": 3,
+                        "sa_code": "EP002",
+                        "investor_fund_unit": "",
+                        "switch_out_fund_code": "",
+                        "switch_out_amount_nominal": "",
+                        "switch_out_amount_unit": "",
+                        "switch_out_amount_all": "",
+                        "switching_fee_charge_fund": "",
+                        "fee_nominal": "",
+                        "fee_unit": "",
+                        "fee_percent": "",
+                        "switch_in_fund_code": "",
+                        "payment_date": "",
+                        "transfer_type": "",
+                        "sa_reference_no": 2
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
               }
             }
           },
