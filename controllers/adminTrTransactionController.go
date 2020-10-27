@@ -1296,3 +1296,186 @@ func CheckHolidayBursa(date string) string {
 	}
 	return dateStr
 }
+
+func GetFormatExcelDownloadList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "7")
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	//date
+	postnavdate := c.QueryParam("nav_date")
+	if postnavdate == "" {
+		log.Error("Missing required parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+
+	params["rec_status"] = "1"
+	params["nav_date"] = postnavdate
+
+	var trTransaction []models.TrTransaction
+	status, err = models.AdminGetAllTrTransaction(&trTransaction, 0, 0, true, params, transStatusKey, "trans_status_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(trTransaction) < 1 {
+		log.Error("transaction not found")
+		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+	}
+
+	var transTypeIds []string
+	var customerIds []string
+	var productIds []string
+	for _, tr := range trTransaction {
+		if _, ok := lib.Find(customerIds, strconv.FormatUint(tr.CustomerKey, 10)); !ok {
+			customerIds = append(customerIds, strconv.FormatUint(tr.CustomerKey, 10))
+		}
+		if _, ok := lib.Find(productIds, strconv.FormatUint(tr.ProductKey, 10)); !ok {
+			productIds = append(productIds, strconv.FormatUint(tr.ProductKey, 10))
+		}
+		if _, ok := lib.Find(transTypeIds, strconv.FormatUint(tr.TransTypeKey, 10)); !ok {
+			transTypeIds = append(transTypeIds, strconv.FormatUint(tr.TransTypeKey, 10))
+		}
+	}
+
+	//mapping customer
+	var msCustomer []models.MsCustomer
+	if len(customerIds) > 0 {
+		status, err = models.GetMsCustomerIn(&msCustomer, customerIds, "customer_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	customerData := make(map[uint64]models.MsCustomer)
+	for _, c := range msCustomer {
+		customerData[c.CustomerKey] = c
+	}
+
+	//mapping product
+	var msProduct []models.MsProduct
+	if len(productIds) > 0 {
+		status, err = models.GetMsProductIn(&msProduct, productIds, "product_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	var custodianIds []string
+	productData := make(map[uint64]models.MsProduct)
+	for _, p := range msProduct {
+		productData[p.ProductKey] = p
+
+		if p.CustodianKey != nil {
+			if _, ok := lib.Find(custodianIds, strconv.FormatUint(*p.CustodianKey, 10)); !ok {
+				custodianIds = append(custodianIds, strconv.FormatUint(*p.CustodianKey, 10))
+			}
+		}
+	}
+
+	//mapping Trans type
+	var transactionType []models.TrTransactionType
+	if len(transTypeIds) > 0 {
+		status, err = models.GetMsTransactionTypeIn(&transactionType, transTypeIds, "trans_type_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	transactionTypeData := make(map[uint64]models.TrTransactionType)
+	for _, t := range transactionType {
+		transactionTypeData[t.TransTypeKey] = t
+	}
+
+	//mapping ms custodian bank
+	var custodianBank []models.MsCustodianBank
+	if len(custodianIds) > 0 {
+		status, err = models.GetMsCustodianBankIn(&custodianBank, custodianIds, "custodian_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	custodianBankData := make(map[uint64]models.MsCustodianBank)
+	for _, cb := range custodianBank {
+		custodianBankData[cb.CustodianKey] = cb
+	}
+
+	//mapping tr nav
+	var trNav []models.TrNav
+	if len(productIds) > 0 {
+		status, err = models.GetAllTrNavBetween(&trNav, postnavdate, postnavdate, productIds)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	trNavData := make(map[uint64]models.TrNav)
+	for _, tr := range trNav {
+		trNavData[tr.ProductKey] = tr
+	}
+
+	var responseData []models.DownloadFormatExcelList
+	for _, tr := range trTransaction {
+		var data models.DownloadFormatExcelList
+
+		data.IDTransaction = tr.TransactionKey
+		if n, ok := transactionTypeData[tr.TransTypeKey]; ok {
+			data.IDCategory = *n.TypeCode
+		}
+		if n, ok := productData[tr.ProductKey]; ok {
+			data.ProductName = n.ProductName
+
+			if n.CustodianKey != nil {
+				if cb, ok := custodianBankData[*n.CustodianKey]; ok {
+					data.Keterangan = cb.CustodianCode
+				}
+			}
+		}
+
+		if n, ok := customerData[tr.CustomerKey]; ok {
+			data.FullName = n.FullName
+		}
+
+		layout := "2006-01-02 15:04:05"
+		newLayout := "01/02/2006"
+		date, _ := time.Parse(layout, tr.NavDate)
+		data.NavDate = date.Format(newLayout)
+		date, _ = time.Parse(layout, tr.TransDate)
+		data.TransactionDate = date.Format(newLayout)
+
+		data.Units = tr.TransUnit
+		data.NetAmount = tr.TransAmount
+
+		data.NavValue = nil
+		if nv, ok := trNavData[tr.ProductKey]; ok {
+			data.NavValue = &nv.NavValue
+		} else {
+			data.Keterangan = "NAV VALUE NOT EXIST"
+		}
+		data.ApproveUnits = tr.TransUnit
+		data.ApproveAmount = tr.TransAmount
+		data.Result = ""
+
+		responseData = append(responseData, data)
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}

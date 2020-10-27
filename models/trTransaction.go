@@ -158,6 +158,22 @@ type AdminTransactionDetail struct {
 	TransactionConfirmation *TransactionConfirmation `json:"transaction_confirmation"`
 }
 
+type DownloadFormatExcelList struct {
+	IDTransaction   uint64   `json:"id_transaction"`
+	IDCategory      string   `json:"id_category"`
+	ProductName     string   `json:"product_name"`
+	FullName        string   `json:"full_name"`
+	NavDate         string   `json:"nav_date"`
+	TransactionDate string   `json:"transaction_date"`
+	Units           float32  `json:"units"`
+	NetAmount       float32  `json:"net_amount"`
+	NavValue        *float32 `json:"nav_value"`
+	ApproveUnits    float32  `json:"approve_units"`
+	ApproveAmount   float32  `json:"approve_amount"`
+	Keterangan      string   `json:"keterangan"`
+	Result          string   `json:"result"`
+}
+
 type BranchTrans struct {
 	BranchKey  uint64 `json:"branch_key"`
 	BranchCode string `json:"branch_code"`

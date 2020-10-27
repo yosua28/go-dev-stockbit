@@ -312,7 +312,10 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			}
 		}
 
-		swc.SwitchingFeeChargeFund = ""
+		swc.SwitchingFeeChargeFund = "1"
+		if trSwitch.ChargesFeeAmount > 0 {
+			swc.SwitchingFeeChargeFund = "2"
+		}
 
 		swc.FeeNominal = ""
 		if trSwitch.TransFeeAmount > 0 {
