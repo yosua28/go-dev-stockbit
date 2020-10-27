@@ -2320,6 +2320,29 @@
             }
           },
           {
+            "name": "transaction",
+            "in": "query",
+            "description": "transaction",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "all",
+                "sub",
+                "red"
+              ]
+            }
+          },
+          {
+            "name": "except",
+            "in": "query",
+            "description": "exception product key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
             "name": "order_by",
             "in": "query",
             "description": "Order By",
