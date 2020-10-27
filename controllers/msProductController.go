@@ -88,47 +88,48 @@ func GetMsProductList(c echo.Context) error {
 	if exceptStr != ""{
 		except, _ = strconv.ParseUint(exceptStr, 10, 64)
 	}
-	
-	paramsAcc := make(map[string]string)
-	paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
-	paramsAcc["rec_status"] = "1"
-	
-	var accDB []models.TrAccount
-	status, err = models.GetAllTrAccount(&accDB, paramsAcc)
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	var accIDs []string
-	accProduct := make(map[uint64]uint64)
-	acaProduct := make(map[uint64]uint64)
 	var userProduct []string
-	var acaDB []models.TrAccountAgent
-	if len(accDB) > 0 {
-		for _, acc := range accDB {
-			accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
-			accProduct[acc.AccKey] = acc.ProductKey
-		}
-		status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
+	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
+		paramsAcc := make(map[string]string)
+		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+		paramsAcc["rec_status"] = "1"
+		
+		var accDB []models.TrAccount
+		status, err = models.GetAllTrAccount(&accDB, paramsAcc)
 		if err != nil {
 			log.Error(err.Error())
 		}
-		if len(acaDB) > 0 {
-			var acaIDs []string
-			for _, aca := range acaDB {
-				acaIDs = append(acaIDs, strconv.FormatUint(aca.AcaKey, 10))
-				acaProduct[aca.AcaKey] = aca.AccKey
+
+		var accIDs []string
+		accProduct := make(map[uint64]uint64)
+		acaProduct := make(map[uint64]uint64)
+		var acaDB []models.TrAccountAgent
+		if len(accDB) > 0 {
+			for _, acc := range accDB {
+				accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
+				accProduct[acc.AccKey] = acc.ProductKey
 			}
-			var balanceDB []models.TrBalance
-			status, err = models.GetLastBalanceIn(&balanceDB, acaIDs)
+			status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
 			if err != nil {
 				log.Error(err.Error())
 			}
-			if len(balanceDB) > 0 {
-				for _, balance := range balanceDB {
-					if accKey, ok := acaProduct[balance.AcaKey]; ok {
-						if productKey, ok := accProduct[accKey]; ok {
-							userProduct = append(userProduct, strconv.FormatUint(productKey, 10))
+			if len(acaDB) > 0 {
+				var acaIDs []string
+				for _, aca := range acaDB {
+					acaIDs = append(acaIDs, strconv.FormatUint(aca.AcaKey, 10))
+					acaProduct[aca.AcaKey] = aca.AccKey
+				}
+				var balanceDB []models.TrBalance
+				status, err = models.GetLastBalanceIn(&balanceDB, acaIDs)
+				if err != nil {
+					log.Error(err.Error())
+				}
+				if len(balanceDB) > 0 {
+					for _, balance := range balanceDB {
+						if accKey, ok := acaProduct[balance.AcaKey]; ok {
+							if productKey, ok := accProduct[accKey]; ok {
+								userProduct = append(userProduct, strconv.FormatUint(productKey, 10))
+							}
 						}
 					}
 				}
