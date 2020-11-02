@@ -2713,128 +2713,23 @@
                   },
                   "data": [
                     {
-                      "product_key": 1,
-                      "product_id": 5,
-                      "product_code": "BDLC",
+                      "transaction_key": 5,
                       "product_name": "MNC DANA LANCAR",
-                      "product_name_alt": "DANA LANCAR",
-                      "min_sub_amount": 0,
-                      "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
-                      },
-                      "nav_performance": {
-                        "nav_date": "21 Oct 2004",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
-                      },
-                      "nav": {
-                        "nav_date": "30 Dec 2010",
-                        "nav_value": 1000
-                      }
-                    },
-                    {
-                      "product_key": 18,
-                      "product_id": 204,
-                      "product_code": "MNCSBAR",
-                      "product_name": "REKSA DANA SYARIAH MNC DANA SYARIAH BAROKAH",
-                      "product_name_alt": "DANA SYARIAH BAROKAH",
-                      "min_sub_amount": 0,
-                      "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
-                      },
-                      "nav_performance": {
-                        "nav_date": "21 Mar 2016",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
-                      },
-                      "nav": {
-                        "nav_date": "21 Mar 2016",
-                        "nav_value": 1000
-                      }
-                    },
-                    {
-                      "product_key": 32,
-                      "product_id": 221,
-                      "product_code": "MNCDPUII",
-                      "product_name": "REKSA DANA MNC DANA PASAR UANG II",
-                      "product_name_alt": "DANA PASAR UANG II",
-                      "min_sub_amount": 0,
-                      "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
-                      },
-                      "nav_performance": {
-                        "nav_date": "22 Aug 2017",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
-                      },
-                      "nav": {
-                        "nav_date": "22 Aug 2017",
-                        "nav_value": 1000
-                      }
-                    },
-                    {
-                      "product_key": 35,
-                      "product_id": 225,
-                      "product_code": "MNCDPU",
-                      "product_name": "REKSA DANA MNC DANA PASAR UANG",
-                      "product_name_alt": "DANA PASAR UANG",
-                      "min_sub_amount": 0,
-                      "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
-                      },
-                      "nav_performance": {
-                        "nav_date": "27 Oct 2017",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
-                      },
-                      "nav": {
-                        "nav_date": "27 Oct 2017",
-                        "nav_value": 1000
-                      }
+                      "trans_status": "POSTED",
+                      "trans_date": "2020-10-19 16:49:39.000000",
+                      "trans_type": "SUB",
+                      "nav_date": "2020-04-07 00:00:00",
+                      "nav_value": 1058.49,
+                      "trans_amount": 1000000,
+                      "trans_unit": 500,
+                      "total_amount": 1012500,
+                      "uploaded": true,
+                      "date_uploaded": "2020-10-19 16:51:13",
+                      "bank_name": null,
+                      "bank_accno": null,
+                      "bankacc_name": null,
+                      "product_name_out": null,
+                      "product_name_in": null
                     }
                   ]
                 }
