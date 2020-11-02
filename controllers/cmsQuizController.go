@@ -15,24 +15,32 @@ func GetCmsQuiz(c echo.Context) error {
 	var err error
 	var status int
 
-	params := make(map[string]string)
-
-	headerKeyStr := c.QueryParam("header_key")
-	headerKey, _ := strconv.ParseUint(headerKeyStr, 10, 64)
-	if headerKey == 0 {
-		log.Error("Header key should be number")
-		return lib.CustomError(http.StatusNotFound,"Header key should be number","Header key should be number")
+	typeKeyStr := c.QueryParam("type_key")
+	typeKey, _ := strconv.ParseUint(typeKeyStr, 10, 64)
+	if typeKey == 0 {
+		log.Error("Type should be number")
+		return lib.CustomError(http.StatusBadRequest,"Type should be number","Type should be number")
 	}
+	params := make(map[string]string)
+	params["rec_status"] = "1"
+	params["quiz_type_key"] = typeKeyStr
+	params["orderBy"] = "quiz_header_key"
+	params["orderType"] = "DESC"
 
-	var headerDB models.CmsQuizHeader
-	status, err = models.GetCmsQuizHeader(&headerDB, headerKeyStr)
+	var headerDB []models.CmsQuizHeader
+	status, err = models.GetAllCmsQuizHeader(&headerDB, params)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
-
-	params["orderBy"] = "rec_status"
-	params["quiz_header_key"] = headerKeyStr
+	if len(headerDB) < 1 {
+		log.Error("Quiz not found")
+		return lib.CustomError(http.StatusNotFound, "Quiz not found", "Quiz not found")
+	}
+	header := headerDB[0]
+	params = make(map[string]string)
+	params["orderBy"] = "rec_order"
+	params["quiz_header_key"] = strconv.FormatUint(header.QuizHeaderKey, 10)
 	params["orderType"] = "ASC"
 	params["rec_status"] = "1"
 	var questionDB []models.CmsQuizQuestion
@@ -109,12 +117,12 @@ func GetCmsQuiz(c echo.Context) error {
 
 	var responseData models.CmsQuizHeaderData
 	
-	responseData.QuizHeaderKey = headerDB.QuizHeaderKey
-	if headerDB.QuizName != nil {
-		responseData.QuizName = *headerDB.QuizName
+	responseData.QuizHeaderKey = header.QuizHeaderKey
+	if header.QuizName != nil {
+		responseData.QuizName = *header.QuizName
 	}
-	if headerDB.QuizDesc != nil {
-		responseData.QuizDesc = *headerDB.QuizDesc
+	if header.QuizDesc != nil {
+		responseData.QuizDesc = *header.QuizDesc
 	}
 	
 	responseData.Questions = &questionData

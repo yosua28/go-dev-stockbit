@@ -1781,9 +1781,9 @@
         ],
         "parameters": [
           {
-            "name": "header_key",
+            "name": "type_key",
             "in": "query",
-            "description": "header_key",
+            "description": "type_key",
             "required": true,
             "schema": {
               "type": "integer"
