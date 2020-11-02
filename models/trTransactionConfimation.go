@@ -2,8 +2,10 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"log"
 	"net/http"
+	"strconv"
 )
 
 type TrTransactionConfirmation struct {
@@ -47,4 +49,50 @@ func GetTrTransactionConfirmation(c *TrTransactionConfirmation, key string) (int
 	}
 
 	return http.StatusOK, nil
+}
+
+func GetTrTransactionConfirmationByTransactionKey(c *TrTransactionConfirmation, transactionKey string) (int, error) {
+	query := `SELECT tr_transaction_confirmation.* FROM tr_transaction_confirmation 
+	          WHERE tr_transaction_confirmation.rec_status = 1 AND tr_transaction_confirmation.transaction_key = ` + transactionKey
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CreateTrTransactionConfirmation(params map[string]string) (int, error, string) {
+	query := "INSERT INTO tr_transaction_confirmation"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err, "0"
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err, "0"
+	}
+	lastID, _ := ret.LastInsertId()
+	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
