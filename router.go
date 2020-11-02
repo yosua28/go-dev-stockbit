@@ -78,6 +78,7 @@ func router() *echo.Echo {
 	e.POST("/login", controllers.Login).Name = "Login"
 	e.POST("/resendverification", controllers.ResendVerification).Name = "ResendVerification"
 	auth.GET("/user", controllers.GetUserLogin).Name = "GetUserLogin"
+	auth.POST("/uploadprofilepic", controllers.UploadProfilePic).Name = "UploadProfilePic"
 
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"

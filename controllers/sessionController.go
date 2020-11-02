@@ -15,6 +15,9 @@ import (
 	"strconv"
 	"strings"
 	"io/ioutil"
+	"os"
+	"mime/multipart"
+	"path/filepath"
 
 	"github.com/labstack/echo"
 	"github.com/badoux/checkmail"
@@ -698,6 +701,67 @@ func GetUserLogin(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
+
+func UploadProfilePic(c echo.Context) error {
+	var err error
+	var status int
+	params := make(map[string]string)
+	filePath := config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/profile"
+	err = os.MkdirAll(filePath, 0755)
+	if err != nil {
+		log.Error(err.Error())
+	} else {
+		
+		var file *multipart.FileHeader
+		file, err = c.FormFile("pic")
+		if file != nil {
+			if err != nil {
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: pic")
+			}
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			// Generate filename
+			var filename string
+			for {
+				filename = lib.RandStringBytesMaskImprSrc(20)
+				log.Println("Generate filename:", filename)
+				var trans []models.TrTransaction
+				getParams := make(map[string]string)
+				getParams["rec_image1"] = filename + extension
+				_, err = os.Stat(filePath+"/"+filename+extension)
+				if err != nil {
+					if os.IsNotExist(err) {
+						_, err = models.GetAllTrTransaction(&trans, getParams)
+						if (err == nil && len(trans) < 1) || err != nil {
+							break
+						}
+					}
+				}
+			}
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, filePath+"/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+			params["rec_image1"] = filename + extension
+		}
+	}
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	status, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error)
+		return lib.CustomError(status, err.Error(), "Failed update data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
 func verifyPassword(s string) (length, number, upper, special bool) {
 	var letter bool
 	for _, c := range s {
