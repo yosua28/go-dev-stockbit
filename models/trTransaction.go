@@ -614,7 +614,7 @@ func GetTrTransactionDateRange(c *[]TrTransaction, params map[string]string, sta
 	query := `SELECT
               tr_transaction.* FROM 
 			  tr_transaction`
-	query += "WHERE tr_transaction.tras_date >= " + start + " AND tr_transaction.tras_date <= " + end
+	query += " WHERE tr_transaction.trans_date >= " + start + " AND tr_transaction.trans_date <= " + end
 	var present bool
 	var whereClause []string
 	var condition string

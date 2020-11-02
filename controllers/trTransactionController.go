@@ -404,7 +404,7 @@ func GetTransactionList(c echo.Context) error {
 		endDate := c.FormValue("end_date")
 		endDate += " 23:59:59"
 		params["trans_status_key"] = "9"
-		status, err = models.GetTrTransactionDateRange(&transactionDB, params, startDate, endDate)
+		status, err = models.GetTrTransactionDateRange(&transactionDB, params, "'"+startDate+"'","'"+ endDate + "'")
 		if err != nil {
 			log.Error(err.Error())
 			return lib.CustomError(status, err.Error(), "Failed get transaction data")
