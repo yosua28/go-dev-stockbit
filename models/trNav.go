@@ -142,3 +142,21 @@ func GetAllTrNavBetween(c *[]TrNav, start string, end string, productKey []strin
 
 	return http.StatusOK, nil
 }
+
+func GetTrNavIn(c *[]TrNav, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				tr_nav.* FROM 
+				tr_nav `
+	query := query2 + " WHERE tr_nav." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

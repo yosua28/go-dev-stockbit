@@ -85,6 +85,26 @@ type TrTransaction struct {
 	RecAttributeID3   *string  `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
+type TrTransactionList struct {
+	TransactionKey   uint64  `json:"transaction_key"`
+	ProductName      string  `json:"product_name"`
+	TransStatus      string  `json:"trans_status"`
+	TransDate        string  `json:"trans_date"`
+	TransType        string  `json:"trans_type"`
+	NavDate          string  `json:"nav_date"`
+	NavValue         float32 `json:"nav_value"`
+	TransAmount      float32 `json:"trans_amount,omitemtpy"`
+	TransUnit        float32 `json:"trans_unit,omitemtpy"`
+	TotalAmount      float32 `json:"total_amount"`
+	Uploaded         bool    `json:"uploaded"`
+	DateUploaded     *string `json:"date_uploaded"`
+	BankName         *string `json:"bank_name"`
+	BankAccNo        *string `json:"bank_accno"`
+	BankAccName      *string `json:"bankacc_name"`
+	ProductOut       *string `json:"product_name_out"`
+	ProductIn        *string `json:"product_name_in"`
+}
+
 type AdminTrTransactionList struct {
 	TransactionKey   uint64  `json:"transaction_key"`
 	BranchName       string  `json:"branch_name"`
@@ -581,6 +601,99 @@ func GetAllTransactionByParamAndValueIn(c *[]TrTransaction, limit uint64, offset
 
 	// Main query
 	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrTransactionDateRange(c *[]TrTransaction, params map[string]string, start string, end string) (int, error) {
+	query := `SELECT
+              tr_transaction.* FROM 
+			  tr_transaction`
+	query += "WHERE tr_transaction.tras_date >= " + start + " AND tr_transaction.tras_date <= " + end
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrTransactionOnProcess(c *[]TrTransaction, params map[string]string) (int, error) {
+	query := `SELECT
+              tr_transaction.* FROM 
+			  tr_transaction WHERE tr_transaction.trans_status_key < 9`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
 	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)

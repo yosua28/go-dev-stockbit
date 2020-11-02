@@ -70,6 +70,7 @@ func router() *echo.Echo {
 	// Transaction
 	auth.POST("/subscribe", controllers.CreateSubscribeTransaction).Name = "CreateSubscribeTransaction"
 	auth.POST("/uploadtransferpic", controllers.UploadTransferPic).Name = "UploadTransferPic"
+	auth.GET("/transaction", controllers.GetTransactionList).Name = "GetTransactionList"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"
