@@ -5632,6 +5632,13 @@
                       "5"
                     ]
                   },
+                  "trx_risk_level": {
+                    "type": "integer",
+                    "enum": [
+                      "114",
+                      "115"
+                    ]
+                  },
                   "transaction_key": {
                     "type": "integer"
                   },
@@ -6081,7 +6088,177 @@
           }
         }
       }
-    }
+    },
+    "/admin/transaction/uploadexcelconfirmation": {
+      "post": {
+        "description": "TEST",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "excel": {
+                    "type": "file"
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "id_transaction": 12,
+                      "id_category": "SUB",
+                      "product_name": "qqq",
+                      "full_name": "aaaa",
+                      "nav_date": "19-04-2018",
+                      "transaction_date": "02-11-2020",
+                      "units": 30,
+                      "net_amount": 12345,
+                      "nav_value": 4254.45,
+                      "approve_units": 29,
+                      "approve_amount": 12345,
+                      "keterangan": "",
+                      "result": "SUCCESS"
+                    },
+                    {
+                      "id_transaction": 13,
+                      "id_category": "SUB",
+                      "product_name": "www",
+                      "full_name": "qqqq",
+                      "nav_date": "19-04-2018",
+                      "transaction_date": "02-11-2020",
+                      "units": 30,
+                      "net_amount": 50000,
+                      "nav_value": 4254.45,
+                      "approve_units": 30,
+                      "approve_amount": 50000,
+                      "keterangan": "",
+                      "result": "SUCCESS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transactionapproval/posting": {
+      "post": {
+        "description": "Posting Transaction by FundAdmin (User Allowed : RoleKey 13)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "transaction_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "transaction_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
   },
   "components": {
     "securitySchemes": {

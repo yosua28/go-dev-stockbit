@@ -5,12 +5,17 @@ import (
 	"api/lib"
 	"api/models"
 	"database/sql"
+	"fmt"
 	"math"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
 
+	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 )
@@ -517,9 +522,6 @@ func GetTransactionDetail(c echo.Context) error {
 
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
-	log.Println("=======================================")
-	log.Println(strTransTypeKey)
-	log.Println("=======================================")
 
 	if strTransTypeKey == "3" {
 		log.Error("Data not found")
@@ -940,6 +942,11 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 	var err error
 	var status int
 
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+
 	params := make(map[string]string)
 
 	transStatus := c.FormValue("trans_status_key")
@@ -963,6 +970,30 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 	}
 
 	notes := c.FormValue("notes")
+
+	if lib.Profile.RoleKey == roleKeyKyc {
+		trxrisklevel := c.FormValue("trx_risk_level")
+		if trxrisklevel == "" {
+			log.Error("Missing required parameter: trx_risk_level")
+			return lib.CustomError(http.StatusBadRequest, "trx_risk_level can not be blank", "trx_risk_level can not be blank")
+		} else {
+
+			listLevelOption := []string{"114", "115"} //lookup group key 24
+			_, found := lib.Find(listLevelOption, trxrisklevel)
+			if !found {
+				log.Error("Missing required parameter: trx_risk_level")
+				return lib.CustomError(http.StatusBadRequest)
+			}
+		}
+
+		n, err := strconv.ParseUint(trxrisklevel, 10, 64)
+		if err == nil && n > 0 {
+			params["trx_risk_level"] = trxrisklevel
+		} else {
+			log.Error("Wrong input for parameter: trx_risk_level")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trx_risk_level", "Wrong input for parameter: trx_risk_level")
+		}
+	}
 
 	transactionkey := c.FormValue("transaction_key")
 	if transactionkey == "" {
@@ -990,11 +1021,6 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
-
-	var roleKeyCs uint64
-	roleKeyCs = 11
-	var roleKeyKyc uint64
-	roleKeyKyc = 12
 
 	dateLayout := "2006-01-02 15:04:05"
 	strIdUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
@@ -1477,5 +1503,450 @@ func GetFormatExcelDownloadList(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func UploadExcelConfirmation(c echo.Context) error {
+	var err error
+
+	var responseData []models.DownloadFormatExcelList
+
+	err = os.MkdirAll(config.BasePath+"/transaksi_upload/confirmation/", 0755)
+	if err != nil {
+		log.Error(err.Error())
+	} else {
+		var file *multipart.FileHeader
+		file, err = c.FormFile("excel")
+
+		if file != nil {
+			if err != nil {
+				return lib.CustomError(http.StatusBadRequest)
+			}
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			log.Println(extension)
+			roles := []string{".xlsx", ".XLSX", ".xls", ".XLS"}
+			_, found := lib.Find(roles, extension)
+			if !found {
+				return lib.CustomError(http.StatusUnauthorized, "Format file must xlsx/xls", "Format file must xlsx/xls")
+			}
+
+			// Generate filename
+			var filename string
+			filename = lib.RandStringBytesMaskImprSrc(20)
+			log.Println("Generate filename:", filename)
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/transaksi_upload/confirmation/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+
+			xlsx, err := excelize.OpenFile(config.BasePath + "/transaksi_upload/confirmation/" + filename + extension)
+			if err != nil {
+				log.Fatal("ERROR", err.Error())
+			}
+
+			sheet1Name := xlsx.GetSheetName(1)
+
+			for i := 2; i < 1000; i++ {
+				var data models.DownloadFormatExcelList
+
+				iDTransaction := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("A%d", i))
+				iDCategory := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("B%d", i))
+				productName := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("C%d", i))
+				fullName := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("D%d", i))
+				navDate := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("E%d", i))
+				transactionDate := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("F%d", i))
+				units := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("G%d", i))
+				netAmount := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("H%d", i))
+				navValue := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("I%d", i))
+				approveUnits := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("J%d", i))
+				approveAmount := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("K%d", i))
+				keterangan := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("L%d", i))
+				result := xlsx.GetCellValue(sheet1Name, fmt.Sprintf("M%d", i))
+
+				log.Println(navDate)
+				log.Println(transactionDate)
+
+				if iDTransaction == "" {
+					break
+				}
+
+				key, _ := strconv.ParseUint(iDTransaction, 10, 64)
+				if key == 0 {
+					return lib.CustomError(http.StatusNotFound)
+				}
+
+				data.IDTransaction = key
+				data.IDCategory = iDCategory
+				data.ProductName = productName
+				data.FullName = fullName
+				data.NavDate = navDate
+				data.TransactionDate = transactionDate
+
+				if units != "" {
+					if unitsFloat, err := strconv.ParseFloat(units, 64); err == nil {
+						data.Units = float32(unitsFloat)
+					}
+				}
+
+				if netAmount != "" {
+					if netAmountFloat, err := strconv.ParseFloat(netAmount, 64); err == nil {
+						data.NetAmount = float32(netAmountFloat)
+					}
+				}
+
+				if navValue != "" {
+					if navValueFloat, err := strconv.ParseFloat(navValue, 64); err == nil {
+						nav := float32(navValueFloat)
+						data.NavValue = &nav
+					}
+				}
+
+				var transUnitFifo float32
+
+				if approveUnits != "" {
+					if approveUnitsFloat, err := strconv.ParseFloat(approveUnits, 64); err == nil {
+						data.ApproveUnits = float32(approveUnitsFloat)
+						transUnitFifo = data.ApproveUnits
+					}
+				}
+
+				if approveAmount != "" {
+					if approveAmountFloat, err := strconv.ParseFloat(approveAmount, 64); err == nil {
+						data.ApproveAmount = float32(approveAmountFloat)
+					}
+				}
+
+				data.Keterangan = keterangan
+				data.Result = result
+
+				//cek transaction
+				var transaction models.TrTransaction
+				_, err := models.GetTrTransaction(&transaction, iDTransaction)
+				if err != nil {
+					if err == sql.ErrNoRows {
+						data.Result = "Data Transaction Not Found"
+					} else {
+						data.Result = err.Error()
+					}
+					fmt.Printf("%v \n", data)
+					responseData = append(responseData, data)
+					continue
+				}
+
+				//cek trans status
+				strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+				if strTransStatusKey != "7" {
+					data.Result = "Status Transaction Not in CONFIRMED"
+					fmt.Printf("%v \n", data)
+					responseData = append(responseData, data)
+					continue
+				}
+
+				//cek transaction confirmation
+				var transactionConf models.TrTransactionConfirmation
+				_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, iDTransaction)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						data.Result = err.Error()
+						fmt.Printf("%v \n", data)
+						responseData = append(responseData, data)
+						continue
+					}
+				} else {
+					data.Result = "TC already exists"
+					fmt.Printf("%v \n", data)
+					responseData = append(responseData, data)
+					continue
+				}
+
+				strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+
+				var trNav []models.TrNav
+				_, err = models.GetTrNavByProductKeyAndNavDate(&trNav, strProductKey, transaction.NavDate)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						data.Result = "NAV VALUE NOT EXIST"
+						fmt.Printf("%v \n", data)
+						responseData = append(responseData, data)
+						continue
+					} else {
+						data.Result = err.Error()
+						fmt.Printf("%v \n", data)
+						responseData = append(responseData, data)
+						continue
+					}
+				}
+
+				//data valid 1. create tr_transaction_confirmation, 2. update trans status, 3. create tr_transaction_fifo
+				//1. create tr_transaction_confirmation
+				dateLayout := "2006-01-02 15:04:05"
+				params := make(map[string]string)
+				params["confirm_date"] = time.Now().Format(dateLayout)
+				params["transaction_key"] = iDTransaction
+				params["confirmed_amount"] = approveAmount
+				params["confirmed_unit"] = approveUnits
+				params["confirm_result"] = "208"
+
+				var approveUnitsFloat float32
+				approveUnitsFloat = 0
+				if approveUnits != "" {
+					if appUnits, err := strconv.ParseFloat(approveUnits, 64); err == nil {
+						approveUnitsFloat = float32(appUnits)
+					}
+				}
+				if transaction.TransUnit > approveUnitsFloat {
+					strTransUnit := fmt.Sprintf("%g", transaction.TransUnit-approveUnitsFloat)
+					params["confirmed_unit_diff"] = strTransUnit
+				} else if transaction.TransUnit < approveUnitsFloat {
+					strTransUnit := fmt.Sprintf("%g", approveUnitsFloat-transaction.TransUnit)
+					params["confirmed_unit_diff"] = strTransUnit
+				} else {
+					params["confirmed_unit_diff"] = "0"
+				}
+
+				var approveAmountFloat float32
+				approveAmountFloat = 0
+				if approveUnits != "" {
+					if appAmount, err := strconv.ParseFloat(approveAmount, 64); err == nil {
+						approveAmountFloat = float32(appAmount)
+					}
+				}
+				if transaction.TransAmount > approveAmountFloat {
+					strTransAmount := fmt.Sprintf("%g", transaction.TransAmount-approveAmountFloat)
+					params["confirmed_amount_diff"] = strTransAmount
+				} else if transaction.TransAmount < approveAmountFloat {
+					strTransAmount := fmt.Sprintf("%g", approveAmountFloat-transaction.TransAmount)
+					params["confirmed_amount_diff"] = strTransAmount
+				} else {
+					params["confirmed_amount_diff"] = "0"
+				}
+
+				params["rec_status"] = "1"
+				params["rec_created_date"] = time.Now().Format(dateLayout)
+				params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+				status, err, trConfirmationID := models.CreateTrTransactionConfirmation(params)
+				if err != nil {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed input data")
+				}
+
+				// 2. update trans status
+				paramsTrans := make(map[string]string)
+				paramsTrans["trans_status_key"] = "8"
+				paramsTrans["confirmed_date"] = time.Now().Format(dateLayout)
+				paramsTrans["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+				paramsTrans["rec_modified_date"] = time.Now().Format(dateLayout)
+				paramsTrans["transaction_key"] = iDTransaction
+				_, err = models.UpdateTrTransaction(paramsTrans)
+				if err != nil {
+					log.Error("Error update tr transaction")
+					return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+				}
+
+				//3. create tr_transaction_fifo
+				strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+				if strTransTypeKey == "1" { // SUB
+					paramsFifo := make(map[string]string)
+					paramsFifo["trans_conf_sub_key"] = trConfirmationID
+					if transaction.AcaKey != nil {
+						strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+						paramsFifo["sub_aca_key"] = strAcaKey
+					}
+					paramsFifo["holding_days"] = "0"
+					paramsFifo["trans_unit"] = approveUnits
+					paramsFifo["fee_nav_mode"] = "207"
+
+					var transAmountFifo float32
+					transAmountFifo = transUnitFifo * trNav[0].NavValue
+					strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
+					paramsFifo["trans_amount"] = strTransAmountFifo
+
+					// paramsFifo["trans_fee_amount"] = ""
+					paramsFifo["trans_fee_tax"] = "0"
+					// paramsFifo["trans_nett_amount"] = ""
+					paramsFifo["rec_status"] = "1"
+					paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+					paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
+					_, err = models.CreateTrTransactionFifo(paramsFifo)
+					if err != nil {
+						log.Error("Error update tr transaction")
+						return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed insert data")
+					}
+				}
+
+				if strTransTypeKey == "2" { // REDM
+					data.Result = "REDM is on progress development"
+				}
+
+				if strTransTypeKey == "4" { // SWITCH
+					data.Result = "SWITCH is on progress development"
+				}
+
+				data.Keterangan = ""
+				data.Result = "SUCCESS"
+
+				responseData = append(responseData, data)
+			}
+		} else {
+			log.Error("File cann't be blank")
+			return lib.CustomError(http.StatusNotFound, "File can not be blank", "File can not be blank")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+
+}
+
+func ProsesPosting(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	transactionkey := c.FormValue("transaction_key")
+	if transactionkey == "" {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	n, err := strconv.ParseUint(transactionkey, 10, 64)
+	if err == nil && n > 0 {
+		params["transaction_key"] = transactionkey
+	} else {
+		log.Error("Wrong input for parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, transactionkey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+
+	if strTransStatusKey != "8" {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+	var transactionConf models.TrTransactionConfirmation
+	strTransactionKey := strconv.FormatUint(transaction.TransactionKey, 10)
+	_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTransactionKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	strTransUnit := fmt.Sprintf("%g", transactionConf.ConfirmedUnit)
+
+	//create tr_balance
+	if strTransTypeKey == "1" { // SUB
+		paramsBalance := make(map[string]string)
+		strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+		paramsBalance["aca_key"] = strAcaKey
+		strTransactionConf := strconv.FormatUint(transactionConf.TcKey, 10)
+		paramsBalance["tc_key"] = strTransactionConf
+
+		newlayout := "2006-01-02"
+		t, _ := time.Parse(dateLayout, transactionConf.ConfirmDate)
+		balanceDate := t.Format(newlayout)
+
+		paramsBalance["balance_date"] = balanceDate + " 00:00:00"
+		paramsBalance["balance_unit"] = strTransUnit
+		paramsBalance["rec_order"] = "0"
+		paramsBalance["rec_status"] = "1"
+		paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsBalance["rec_created_by"] = strIDUserLogin
+		status, err := models.CreateTrBalance(paramsBalance)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed input data")
+		}
+	}
+
+	if strTransTypeKey == "2" { // REDM
+	}
+
+	if strTransTypeKey == "4" { // SWITCH
+	}
+
+	//update tr_transaction
+	params["posted_units"] = strTransUnit
+	params["trans_status_key"] = "9"
+	params["posted_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strIDUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	_, err = models.UpdateTrTransaction(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//create user message
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+
+	var userLogin models.ScUserLogin
+	strCustomerKey := strconv.FormatUint(transaction.CustomerKey, 10)
+	_, err = models.GetScUserLoginByCustomerKey(&userLogin, strCustomerKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	strUserLoginKey := strconv.FormatUint(userLogin.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strIDUserLogin
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	if strTransTypeKey == "1" { // SUBS
+		paramsUserMessage["umessage_subject"] = "Subscribe Produk"
+	}
+	if strTransTypeKey == "2" { // REDM
+		paramsUserMessage["umessage_subject"] = "Redm Produk"
+	}
+	if strTransTypeKey == "4" { // SWITCH
+		paramsUserMessage["umessage_subject"] = "Switch Produk"
+	}
+	paramsUserMessage["umessage_body"] = "Selamat !!! Transaksi anda sudah di approv."
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	log.Info("Success update transaksi")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }
