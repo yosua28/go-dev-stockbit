@@ -945,6 +945,11 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 	var err error
 	var status int
 
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+
 	params := make(map[string]string)
 
 	transStatus := c.FormValue("trans_status_key")
@@ -968,6 +973,30 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 	}
 
 	notes := c.FormValue("notes")
+
+	if lib.Profile.RoleKey == roleKeyKyc {
+		trxrisklevel := c.FormValue("trx_risk_level")
+		if trxrisklevel == "" {
+			log.Error("Missing required parameter: trx_risk_level")
+			return lib.CustomError(http.StatusBadRequest, "trx_risk_level can not be blank", "trx_risk_level can not be blank")
+		} else {
+
+			listLevelOption := []string{"114", "115"} //lookup group key 24
+			_, found := lib.Find(listLevelOption, trxrisklevel)
+			if !found {
+				log.Error("Missing required parameter: trx_risk_level")
+				return lib.CustomError(http.StatusBadRequest)
+			}
+		}
+
+		n, err := strconv.ParseUint(trxrisklevel, 10, 64)
+		if err == nil && n > 0 {
+			params["trx_risk_level"] = trxrisklevel
+		} else {
+			log.Error("Wrong input for parameter: trx_risk_level")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trx_risk_level", "Wrong input for parameter: trx_risk_level")
+		}
+	}
 
 	transactionkey := c.FormValue("transaction_key")
 	if transactionkey == "" {
@@ -995,11 +1024,6 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
-
-	var roleKeyCs uint64
-	roleKeyCs = 11
-	var roleKeyKyc uint64
-	roleKeyKyc = 12
 
 	dateLayout := "2006-01-02 15:04:05"
 	strIdUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)

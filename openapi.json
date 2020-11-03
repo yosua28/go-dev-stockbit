@@ -5632,6 +5632,13 @@
                       "5"
                     ]
                   },
+                  "trx_risk_level": {
+                    "type": "integer",
+                    "enum": [
+                      "114",
+                      "115"
+                    ]
+                  },
                   "transaction_key": {
                     "type": "integer"
                   },
