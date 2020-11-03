@@ -1870,6 +1870,7 @@ func ProsesPosting(c echo.Context) error {
 		paramsBalance["tc_key"] = strTransactionConf
 		paramsBalance["balance_date"] = transactionConf.ConfirmDate
 		paramsBalance["balance_unit"] = strTransUnit
+		paramsBalance["rec_order"] = "0"
 		paramsBalance["rec_status"] = "1"
 		paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
 		paramsBalance["rec_created_by"] = strIDUserLogin
