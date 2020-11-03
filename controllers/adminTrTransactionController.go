@@ -1868,7 +1868,12 @@ func ProsesPosting(c echo.Context) error {
 		paramsBalance["aca_key"] = strAcaKey
 		strTransactionConf := strconv.FormatUint(transactionConf.TcKey, 10)
 		paramsBalance["tc_key"] = strTransactionConf
-		paramsBalance["balance_date"] = transactionConf.ConfirmDate
+
+		newlayout := "2006-01-02"
+		t, _ := time.Parse(dateLayout, transactionConf.ConfirmDate)
+		balanceDate := t.Format(newlayout)
+
+		paramsBalance["balance_date"] = balanceDate + " 00:00:00"
 		paramsBalance["balance_unit"] = strTransUnit
 		paramsBalance["rec_order"] = "0"
 		paramsBalance["rec_status"] = "1"
