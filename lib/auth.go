@@ -112,7 +112,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			Profile.CustomerKey = user.CustomerKey
 			Profile.UserCategoryKey = user.UserCategoryKey
 			if user.RecImage1 != nil && *user.RecImage1 != "" {
-				Profile.RecImage1 = config.BaseUrl + "/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
+				Profile.RecImage1 = config.BaseUrl + "/images/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
 			} else {
 				Profile.RecImage1 = config.BaseUrl + "/user/default.png"
 			}
