@@ -29,6 +29,9 @@ type MsProductData struct {
 	ProductName      string                     `json:"product_name"`
 	ProductNameAlt   string                     `json:"product_name_alt"`
 	MinSubAmount     float32                    `json:"min_sub_amount"`
+	MinRedAmount     float32                    `json:"min_red_amount"`
+	MinRedUnit       float32                    `json:"min_red_unit"`
+	MinUnitAfterRed  float32                    `json:"min_unit_after_red"`
 	ProspectusLink   string                     `json:"prospectus_link"`
 	FundFactSheet    string                     `json:"ffs_link"`
 	RecImage1        string                     `json:"rec_image1"`
@@ -38,6 +41,8 @@ type MsProductData struct {
 	FlagSwitchIn     bool                       `json:"flag_switch_in"`
 	FeeService       string                     `json:"fee_service"`
 	FeeTransfer      string                     `json:"fee_transfer"`
+	InvestValue      string                     `json:"invest_value"`
+	BalanceUnit      float32                    `json:"balance_unit"`
 	Currency         MsCurrencyInfo             `json:"currency"`
 	BankAcc          []MsProductBankAccountInfo `json:"bank_account"`
 	ProductFee       []MsProductFeeInfo         `json:"product_fee"`

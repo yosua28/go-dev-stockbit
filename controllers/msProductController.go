@@ -345,7 +345,7 @@ func GetMsProductData(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
-	productIDs := []string{strconv.FormatUint(product.ProductKey, 10)}
+	productIDs := []string{strconv.FormatUint(product.ProductKey, 10)} 
 
 	var navDB []models.TrNav
 	status, err = models.GetLastNavIn(&navDB, productIDs)
@@ -563,6 +563,9 @@ func GetMsProductData(c echo.Context) error {
 	data.ProductName = product.ProductName
 	data.ProductNameAlt = product.ProductNameAlt
 	data.MinSubAmount = product.MinSubAmount
+	data.MinRedAmount = product.MinRedAmount
+	data.MinRedUnit = product.MinRedUnit
+	data.MinUnitAfterRed = product.MinUnitAfterRed
 	if ffsDB[0].FfsLink != nil && *ffsDB[0].FfsLink != ""{
 		data.FundFactSheet = *ffsDB[0].FfsLink
 	}else{
@@ -603,6 +606,54 @@ func GetMsProductData(c echo.Context) error {
 	nav.NavDate = date.Format(newLayout)
 	nav.NavValue = navDB[0].NavValue
 	
+	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
+		paramsAcc := make(map[string]string)
+		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+		paramsAcc["product_key"] = strconv.FormatUint(product.ProductKey, 10)
+		paramsAcc["rec_status"] = "1"
+		
+		var accDB []models.TrAccount
+		status, err = models.GetAllTrAccount(&accDB, paramsAcc)
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		var accIDs []string
+		accProduct := make(map[uint64]uint64)
+		acaProduct := make(map[uint64]uint64)
+		var acaDB []models.TrAccountAgent
+		if len(accDB) > 0 {
+			for _, acc := range accDB {
+				accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
+				accProduct[acc.AccKey] = acc.ProductKey
+			}
+			status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
+			if err != nil {
+				log.Error(err.Error())
+			}
+			if len(acaDB) > 0 {
+				var acaIDs []string
+				for _, aca := range acaDB {
+					acaIDs = append(acaIDs, strconv.FormatUint(aca.AcaKey, 10))
+					acaProduct[aca.AcaKey] = aca.AccKey
+				}
+				var balanceDB []models.TrBalance
+				status, err = models.GetLastBalanceIn(&balanceDB, acaIDs)
+				if err != nil {
+					log.Error(err.Error())
+				}
+				if len(balanceDB) > 0 {
+					for _, balance := range balanceDB {
+						data.BalanceUnit += balance.BalanceUnit
+					}
+					var invest float32
+					invest = nav.NavValue * data.BalanceUnit
+					data.InvestValue = fmt.Sprintf("%.6f", invest)
+				}
+			}
+		}
+	}
+
 	data.Nav = &nav
 
 	var perform models.FfsNavPerformanceInfo
