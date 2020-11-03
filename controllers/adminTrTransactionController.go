@@ -522,9 +522,6 @@ func GetTransactionDetail(c echo.Context) error {
 
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
-	log.Println("=======================================")
-	log.Println(strTransTypeKey)
-	log.Println("=======================================")
 
 	if strTransTypeKey == "3" {
 		log.Error("Data not found")
@@ -1808,4 +1805,142 @@ func UploadExcelConfirmation(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 
+}
+
+func ProsesPosting(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	transactionkey := c.FormValue("transaction_key")
+	if transactionkey == "" {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	n, err := strconv.ParseUint(transactionkey, 10, 64)
+	if err == nil && n > 0 {
+		params["transaction_key"] = transactionkey
+	} else {
+		log.Error("Wrong input for parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, transactionkey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+
+	if strTransStatusKey != "8" {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+	var transactionConf models.TrTransactionConfirmation
+	strTransactionKey := strconv.FormatUint(transaction.TransactionKey, 10)
+	_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTransactionKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	strTransUnit := fmt.Sprintf("%g", transactionConf.ConfirmedUnit)
+
+	//create tr_balance
+	if strTransTypeKey == "1" { // SUB
+		paramsBalance := make(map[string]string)
+		strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+		paramsBalance["aca_key"] = strAcaKey
+		strTransactionConf := strconv.FormatUint(transactionConf.TcKey, 10)
+		paramsBalance["tc_key"] = strTransactionConf
+		paramsBalance["balance_date"] = transactionConf.ConfirmDate
+		paramsBalance["balance_unit"] = strTransUnit
+		paramsBalance["rec_status"] = "1"
+		paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsBalance["rec_created_by"] = strIDUserLogin
+		status, err := models.CreateTrBalance(paramsBalance)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed input data")
+		}
+	}
+
+	if strTransTypeKey == "2" { // REDM
+	}
+
+	if strTransTypeKey == "4" { // SWITCH
+	}
+
+	//update tr_transaction
+	params["posted_units"] = strTransUnit
+	params["trans_status_key"] = "9"
+	params["posted_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strIDUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	_, err = models.UpdateTrTransaction(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//create user message
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+
+	var userLogin models.ScUserLogin
+	strCustomerKey := strconv.FormatUint(transaction.CustomerKey, 10)
+	_, err = models.GetScUserLoginByCustomerKey(&userLogin, strCustomerKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	strUserLoginKey := strconv.FormatUint(userLogin.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strIDUserLogin
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	if strTransTypeKey == "1" { // SUBS
+		paramsUserMessage["umessage_subject"] = "Subscribe Produk"
+	}
+	if strTransTypeKey == "2" { // REDM
+		paramsUserMessage["umessage_subject"] = "Redm Produk"
+	}
+	if strTransTypeKey == "4" { // SWITCH
+		paramsUserMessage["umessage_subject"] = "Switch Produk"
+	}
+	paramsUserMessage["umessage_body"] = "Selamat !!! Transaksi anda sudah di approv."
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	log.Info("Success update transaksi")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
 }
