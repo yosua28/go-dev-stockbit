@@ -15,7 +15,7 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
-func CreateSubscribeTransaction(c echo.Context) error {
+func CreateTransaction(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
@@ -41,7 +41,67 @@ func CreateSubscribeTransaction(c echo.Context) error {
 		log.Error("Missing required parameter: product_key")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
 	}
-	
+
+	typeKeyStr := c.FormValue("type_key")
+	if typeKeyStr != "" {
+		typeKey, err := strconv.ParseUint(typeKeyStr, 10, 64)
+		if err != nil || !(typeKey == 1 || typeKey == 2 || typeKey == 3 || typeKey == 4) {
+			log.Error("Wrong input for parameter: type_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: type_key", "Wrong input for parameter: type_key")
+		}
+	} else {
+		log.Error("Missing required parameter: type_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: type_key", "Missing required parameter: type_key")
+	}
+
+	redemAllStr := c.FormValue("redem_all")
+	flagRedemAll := false
+	if redemAllStr != "" {
+		redemAll, err := strconv.ParseUint(redemAllStr, 10, 64)
+		if err == nil && (redemAll == 1 || redemAll == 0) {
+			flagRedemAll = true
+		} else {
+			log.Error("Wrong input for parameter: redem_all")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: redem_all", "Wrong input for parameter: redem_all")
+		}
+	}
+	parentKeyStr := "NULL" 
+	if typeKeyStr == "4" {
+		parentKeyStr = c.FormValue("parent_key")
+		if parentKeyStr != "" {
+			parentKey, err := strconv.ParseUint(parentKeyStr, 10, 64)
+			if err != nil || parentKey < 1{
+				log.Error("Wrong input for parameter: parent_key")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: parent_key", "Wrong input for parameter: parent_key")
+			}
+			var transaction models.TrTransaction
+			status, err = models.GetTrTransaction(&transaction, parentKeyStr)
+			if err != nil {
+				log.Error("Parent transaction not found")
+				return lib.CustomError(http.StatusBadRequest, "Parent transaction not found", "Parent transaction not found")
+			}
+			if transaction.TransTypeKey != 3{
+				log.Error("Parent transaction not found")
+				return lib.CustomError(http.StatusBadRequest, "Parent transaction not found", "Parent transaction not found")
+			}
+		}else {
+			log.Error("Missing required parameter: parent_key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: parent_key", "Missing required parameter: parent_key")
+		}
+	}
+
+	transUnitStr := c.FormValue("trans_unit")
+	if transUnitStr != "" {
+		_, err := strconv.ParseFloat(transUnitStr, 64)
+		if err != nil {
+			log.Error("Wrong input for parameter: trans_unit")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_unit", "Wrong input for parameter: trans_unit")
+		}
+	} else {
+		log.Error("Missing required parameter: trans_unit")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_unit", "Missing required parameter: trans_unit")
+	}
+
 	transAmountStr := c.FormValue("trans_amount")
 	if transAmountStr != "" {
 		_, err := strconv.ParseFloat(transAmountStr, 64)
@@ -198,7 +258,7 @@ func CreateSubscribeTransaction(c echo.Context) error {
 		var holiday []models.MsHoliday
 		getParams := make(map[string]string)
 		getParams["holiday_date"] = now.Format(layout) + " 00:00:00"
-		_, err = models.GetAllMsHoliday(&holiday,params)
+		_, err = models.GetAllMsHoliday(&holiday,getParams)
 		if (err == nil && len(holiday) < 1) || err != nil {
 			params["nav_date"] = now.Format(layout) + " 00:00:00"
 			break
@@ -208,7 +268,12 @@ func CreateSubscribeTransaction(c echo.Context) error {
 	}
 	params["entry_mode"] = "140"
 	params["trans_amount"] = transAmountStr
-	params["trans_unit"] = "0"
+	params["trans_unit"] = transUnitStr
+	params["trans_type_key"] = typeKeyStr
+	if flagRedemAll {
+		params["flag_redem_all"] = redemAllStr
+	}
+	params["parent_key"] = parentKeyStr
 	params["flag_newsub"] = "0"
 
 	paramsTr := make(map[string]string)
@@ -236,53 +301,56 @@ func CreateSubscribeTransaction(c echo.Context) error {
 	params["aca_key"] = acaKey
 	params["rec_status"] = "1"
 
-	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transfer", 0755)
-	if err != nil {
-		log.Error(err.Error())
-	} else {
-		var file *multipart.FileHeader
-		file, err = c.FormFile("transfer_pic")
-		if file != nil {
-			if err == nil {
-				// Get file extension
-				extension := filepath.Ext(file.Filename)
-				// Generate filename
-				var filename string
-				for {
-					filename = lib.RandStringBytesMaskImprSrc(20)
-					log.Println("Generate filename:", filename)
-					var trans []models.TrTransaction
-					getParams := make(map[string]string)
-					getParams["rec_image1"] = filename + extension
-					_, err := models.GetAllTrTransaction(&trans, getParams)
-					if (err == nil && len(trans) < 1) || err != nil {
-						break
+	if typeKeyStr == "1" {
+		err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transfer", 0755)
+		if err != nil {
+			log.Error(err.Error())
+		} else {
+			var file *multipart.FileHeader
+			file, err = c.FormFile("transfer_pic")
+			if file != nil {
+				if err == nil {
+					// Get file extension
+					extension := filepath.Ext(file.Filename)
+					// Generate filename
+					var filename string
+					for {
+						filename = lib.RandStringBytesMaskImprSrc(20)
+						log.Println("Generate filename:", filename)
+						var trans []models.TrTransaction
+						getParams := make(map[string]string)
+						getParams["rec_image1"] = filename + extension
+						_, err := models.GetAllTrTransaction(&trans, getParams)
+						if (err == nil && len(trans) < 1) || err != nil {
+							break
+						}
 					}
+					// Upload image and move to proper directory
+					err = lib.UploadImage(file, config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transfer/"+filename+extension)
+					if err != nil {
+						log.Println(err)
+						return lib.CustomError(http.StatusInternalServerError)
+					}
+					params["rec_image1"] = filename + extension
+					dateLayout := "2006-01-02 15:04:05"
+					params["file_upload_date"] = time.Now().Format(dateLayout)
 				}
-				// Upload image and move to proper directory
-				err = lib.UploadImage(file, config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transfer/"+filename+extension)
-				if err != nil {
-					log.Println(err)
-					return lib.CustomError(http.StatusInternalServerError)
-				}
-				params["rec_image1"] = filename + extension
-				dateLayout := "2006-01-02 15:04:05"
-				params["file_upload_date"] = time.Now().Format(dateLayout)
 			}
 		}
 	}
 
-	status, err = models.CreateTrTransaction(params)
+	status, err , transactionID := models.CreateTrTransaction(params)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed input data")
 	}
-		
+	responseData := make(map[string]string)
+	responseData["transaction_key"] = transactionID	
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = nil
+	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -360,7 +428,7 @@ func UploadTransferPic(c echo.Context) error {
 
 	status, err = models.UpdateTrTransaction(params)
 	if err != nil {
-		log.Error(err.Error)
+		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed update data")
 	}
 
@@ -579,3 +647,4 @@ func GetTransactionList(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
+

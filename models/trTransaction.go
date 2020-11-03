@@ -441,7 +441,7 @@ func UpdateTrTransaction(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CreateTrTransaction(params map[string]string) (int, error) {
+func CreateTrTransaction(params map[string]string) (int, error, string) {
 	query := "INSERT INTO tr_transaction"
 	// Get params
 	var fields, values string
@@ -449,7 +449,13 @@ func CreateTrTransaction(params map[string]string) (int, error) {
 	for key, value := range params {
 		fields += key + ", "
 		values += "?, "
-		bindvars = append(bindvars, value)
+		if value == "NULL"{
+			var s *string
+			bindvars = append(bindvars, s)
+		}else{
+			bindvars = append(bindvars, value)
+		}
+		
 	}
 	fields = fields[:(len(fields) - 2)]
 	values = values[:(len(values) - 2)]
@@ -461,19 +467,21 @@ func CreateTrTransaction(params map[string]string) (int, error) {
 	tx, err := db.Db.Begin()
 	if err != nil {
 		log.Error(err)
-		return http.StatusBadGateway, err
+		return http.StatusBadGateway, err, "0"
 	}
-	_, err = tx.Exec(query, bindvars...)
+	var ret sql.Result
+	ret, err = tx.Exec(query, bindvars...)
 	tx.Commit()
 	if err != nil {
 		log.Error(err)
-		return http.StatusBadRequest, err
+		return http.StatusBadRequest, err, "0"
 	}
-	return http.StatusOK, nil
+	lastID, _ := ret.LastInsertId()
+	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
 
 func GetTrTransaction(c *TrTransaction, key string) (int, error) {
-	query := `SELECT tr_transaction.* FROM tr_transaction WHERE tr_transaction.rec_status = 1 AND tr_transaction.transaction_key = ` + key
+	query := `SELECT tr_transaction.* FROM tr_transaction WHERE tr_transaction.transaction_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

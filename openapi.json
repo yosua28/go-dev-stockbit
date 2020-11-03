@@ -877,9 +877,9 @@
         }
       }
     },
-    "/auth/subscribe": {
+    "/auth/createtransaction": {
       "post": {
-        "description": "Subscribe",
+        "description": "Create Transaction",
         "tags": [
           "Transaction"
         ],
@@ -896,6 +896,28 @@
                 "properties": {
                   "product_key": {
                     "type": "integer"
+                  },
+                  "type_key": {
+                    "type": "integer",
+                    "enum": [
+                      "1",
+                      "2",
+                      "3",
+                      "4"
+                    ]
+                  },
+                  "redem_all": {
+                    "type": "integer",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "parent_key": {
+                    "type": "integer"
+                  },
+                  "trans_unit": {
+                    "type": "number"
                   },
                   "trans_amount": {
                     "type": "number"
@@ -941,7 +963,8 @@
                   "services_fee_amount",
                   "total_amount",
                   "trans_source",
-                  "risk_waiver"
+                  "risk_waiver",
+                  "type_key"
                 ]
               }
             }
