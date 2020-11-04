@@ -33,6 +33,15 @@ type TrBalance struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
+type TrBalanceCustomerProduk struct {
+	BalanceKey     uint64  `db:"balance_key"               json:"balance_key"`
+	AcaKey         uint64  `db:"aca_key"                   json:"aca_key"`
+	BalanceUnit    float32 `db:"balance_unit"              json:"balance_unit"`
+	TcKey          uint64  `db:"tc_key"                    json:"tc_key"`
+	TransactionKey uint64  `db:"transaction_key"           json:"transaction_key"`
+	NavDate        string  `db:"nav_date"                  json:"nav_date"`
+}
+
 func GetLastBalanceIn(c *[]TrBalance, acaKey []string) (int, error) {
 	inQuery := strings.Join(acaKey, ",")
 	query2 := `SELECT 
@@ -85,5 +94,44 @@ func CreateTrBalance(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetLastBalanceCustomerByProductKey(c *[]TrBalanceCustomerProduk, customerKey string, productKey string) (int, error) {
+	query := `SELECT 
+				tb.balance_key as balance_key, 
+				tb.aca_key as aca_key, 
+				tb.balance_unit as balance_unit, 
+				tc.tc_key as tc_key, 
+				tr.transaction_key as transaction_key, 
+				tr.nav_date as nav_date 
+				FROM tr_balance AS tb
+				JOIN (SELECT MAX(balance_key) balance_key FROM tr_balance GROUP BY tc_key) AS t2 ON tb.balance_key = t2.balance_key 
+				INNER JOIN tr_transaction_confirmation AS tc ON tb.tc_key = tc.tc_key
+				INNER JOIN tr_transaction AS tr ON tc.transaction_key = tr.transaction_key
+				WHERE tr.customer_key = ` + customerKey +
+		` AND tr.product_key = ` + productKey +
+		` AND tr.trans_status_key = 9 AND tr.rec_status = 1 AND tr.trans_type_key = 1 AND tb.balance_unit > 0 
+				GROUP BY tb.tc_key  ORDER BY tc.tc_key ASC`
+
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetLastTrBalanceByTcRed(c *TrBalance, tcKeyRed string) (int, error) {
+	query := `SELECT * FROM tr_balance WHERE tc_key_red = ` + tcKeyRed + ` ORDER BY rec_order DESC LIMIT 1`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
 	return http.StatusOK, nil
 }

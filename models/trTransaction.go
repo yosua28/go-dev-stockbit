@@ -86,23 +86,23 @@ type TrTransaction struct {
 }
 
 type TrTransactionList struct {
-	TransactionKey   uint64  `json:"transaction_key"`
-	ProductName      string  `json:"product_name"`
-	TransStatus      string  `json:"trans_status"`
-	TransDate        string  `json:"trans_date"`
-	TransType        string  `json:"trans_type"`
-	NavDate          string  `json:"nav_date"`
-	NavValue         float32 `json:"nav_value"`
-	TransAmount      float32 `json:"trans_amount,omitemtpy"`
-	TransUnit        float32 `json:"trans_unit,omitemtpy"`
-	TotalAmount      float32 `json:"total_amount"`
-	Uploaded         bool    `json:"uploaded"`
-	DateUploaded     *string `json:"date_uploaded"`
-	BankName         *string `json:"bank_name"`
-	BankAccNo        *string `json:"bank_accno"`
-	BankAccName      *string `json:"bankacc_name"`
-	ProductOut       *string `json:"product_name_out"`
-	ProductIn        *string `json:"product_name_in"`
+	TransactionKey uint64  `json:"transaction_key"`
+	ProductName    string  `json:"product_name"`
+	TransStatus    string  `json:"trans_status"`
+	TransDate      string  `json:"trans_date"`
+	TransType      string  `json:"trans_type"`
+	NavDate        string  `json:"nav_date"`
+	NavValue       float32 `json:"nav_value"`
+	TransAmount    float32 `json:"trans_amount,omitemtpy"`
+	TransUnit      float32 `json:"trans_unit,omitemtpy"`
+	TotalAmount    float32 `json:"total_amount"`
+	Uploaded       bool    `json:"uploaded"`
+	DateUploaded   *string `json:"date_uploaded"`
+	BankName       *string `json:"bank_name"`
+	BankAccNo      *string `json:"bank_accno"`
+	BankAccName    *string `json:"bankacc_name"`
+	ProductOut     *string `json:"product_name_out"`
+	ProductIn      *string `json:"product_name_in"`
 }
 
 type AdminTrTransactionList struct {
@@ -258,11 +258,15 @@ type TransactionConfirmation struct {
 }
 
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
-	params map[string]string, valueIn []string, fieldIn string) (int, error) {
+	params map[string]string, valueIn []string, fieldIn string, isAll bool) (int, error) {
 	query := `SELECT
               tr_transaction.*
 			  FROM tr_transaction
-			  WHERE tr_transaction.trans_type_key != 3 `
+			  WHERE tr_transaction.rec_status = 1`
+
+	if isAll == false {
+		query += " AND tr_transaction.trans_type_key != 3"
+	}
 	var present bool
 	var whereClause []string
 	var condition string
@@ -449,13 +453,13 @@ func CreateTrTransaction(params map[string]string) (int, error, string) {
 	for key, value := range params {
 		fields += key + ", "
 		values += "?, "
-		if value == "NULL"{
+		if value == "NULL" {
 			var s *string
 			bindvars = append(bindvars, s)
-		}else{
+		} else {
 			bindvars = append(bindvars, value)
 		}
-		
+
 	}
 	fields = fields[:(len(fields) - 2)]
 	values = values[:(len(values) - 2)]

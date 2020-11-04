@@ -87,6 +87,14 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 		if _, ok := lib.Find(transactionIds, strconv.FormatUint(trSw.TransactionKey, 10)); !ok {
 			transactionIds = append(transactionIds, strconv.FormatUint(trSw.TransactionKey, 10))
 		}
+		strTransType := strconv.FormatUint(trSw.TransTypeKey, 10)
+		if strTransType == "4" {
+			if trSw.ParentKey != nil {
+				if _, ok := lib.Find(transactionIds, strconv.FormatUint(*trSw.ParentKey, 10)); !ok {
+					transactionIds = append(transactionIds, strconv.FormatUint(*trSw.ParentKey, 10))
+				}
+			}
+		}
 		if _, ok := lib.Find(productIds, strconv.FormatUint(trSw.ProductKey, 10)); !ok {
 			productIds = append(productIds, strconv.FormatUint(trSw.ProductKey, 10))
 		}
