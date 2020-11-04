@@ -258,11 +258,15 @@ type TransactionConfirmation struct {
 }
 
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
-	params map[string]string, valueIn []string, fieldIn string) (int, error) {
+	params map[string]string, valueIn []string, fieldIn string, isAll bool) (int, error) {
 	query := `SELECT
               tr_transaction.*
 			  FROM tr_transaction
-			  WHERE tr_transaction.trans_type_key != 3 `
+			  WHERE tr_transaction.rec_status = 1`
+
+	if isAll == false {
+		query += " AND tr_transaction.trans_type_key != 3"
+	}
 	var present bool
 	var whereClause []string
 	var condition string

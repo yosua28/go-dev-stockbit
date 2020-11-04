@@ -236,7 +236,7 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	}
 
 	var trTransaction []models.TrTransaction
-	status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key")
+	status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
@@ -1393,11 +1393,24 @@ func GetFormatExcelDownloadList(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
 	}
 
+	transactiontype := c.QueryParam("transaction_type")
+	if transactiontype == "" {
+		log.Error("Missing required parameter: transaction_type")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: transaction_type", "Missing required parameter: transaction_type")
+	}
+
+	rolestransactiontype := []string{"1", "2", "3", "4"}
+	_, found := lib.Find(rolestransactiontype, transactiontype)
+	if !found {
+		return lib.CustomError(http.StatusUnauthorized, "Missing parameter: transaction_type", "Missing parameter: transaction_type")
+	}
+
 	params["rec_status"] = "1"
 	params["nav_date"] = postnavdate
+	params["trans_type_key"] = transactiontype
 
 	var trTransaction []models.TrTransaction
-	status, err = models.AdminGetAllTrTransaction(&trTransaction, 0, 0, true, params, transStatusKey, "trans_status_key")
+	status, err = models.AdminGetAllTrTransaction(&trTransaction, 0, 0, true, params, transStatusKey, "trans_status_key", true)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
@@ -1733,7 +1746,7 @@ func UploadExcelConfirmation(c echo.Context) error {
 				var trBalanceCustomer []models.TrBalanceCustomerProduk
 
 				//redm cek balance / saldo aktif
-				if strTransTypeKey == "2" { // REDM
+				if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM
 					_, err = models.GetLastBalanceCustomerByProductKey(&trBalanceCustomer, strCustomerKey, strProductKey)
 					if err != nil {
 						if err != sql.ErrNoRows {
@@ -1753,7 +1766,7 @@ func UploadExcelConfirmation(c echo.Context) error {
 				//redm cek balance / saldo aktif di parent jika switch
 				var transactionParent models.TrTransaction
 				var trParentBalanceCustomer []models.TrBalanceCustomerProduk
-				if strTransTypeKey == "4" { // SWITCH
+				if strTransTypeKey == "4" { // SWITCH IN
 					if transaction.ParentKey == nil {
 						data.Result = "Parent Transaction is empty"
 						fmt.Printf("%v \n", data)
@@ -1870,7 +1883,7 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 				//3. create tr_transaction_fifo
 
-				if strTransTypeKey == "1" { // SUB
+				if (strTransTypeKey == "1") || (strTransTypeKey == "4") { // SUB / switchin
 					paramsFifo := make(map[string]string)
 					paramsFifo["trans_conf_sub_key"] = trConfirmationID
 					if transaction.AcaKey != nil {
@@ -1899,7 +1912,7 @@ func UploadExcelConfirmation(c echo.Context) error {
 					}
 				}
 
-				if strTransTypeKey == "2" { // REDM
+				if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM / switchout
 					sisaFifo := transUnitFifo
 					for _, trBalance := range trBalanceCustomer {
 						if sisaFifo > 0 {
@@ -1961,109 +1974,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 							break
 						}
 					}
-				}
-
-				if strTransTypeKey == "4" { // SWITCH
-
-					// var transactionConf models.TrTransactionConfirmation
-					// strParentTransactionKey := strconv.FormatUint(transactionParent.TransactionKey, 10)
-					// _, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strParentTransactionKey)
-					// if err != nil {
-					// 	log.Error(err.Error())
-					// 	return lib.CustomError(http.StatusBadRequest)
-					// }
-
-					// //redm parent transaction
-					// sisaFifo := transUnitFifo
-					// for _, trBalance := range trParentBalanceCustomer {
-					// 	if sisaFifo > 0 {
-					// 		var balanceUsed float32
-
-					// 		if trBalance.BalanceUnit > sisaFifo {
-					// 			balanceUsed = sisaFifo
-					// 			sisaFifo = 0
-					// 		}
-
-					// 		if trBalance.BalanceUnit < sisaFifo {
-					// 			balanceUsed = trBalance.BalanceUnit
-					// 			sisaFifo = sisaFifo - trBalance.BalanceUnit
-					// 		}
-
-					// 		if trBalance.BalanceUnit == sisaFifo {
-					// 			balanceUsed = trBalance.BalanceUnit
-					// 			sisaFifo = 0
-					// 		}
-
-					// 		paramsFifo := make(map[string]string)
-					// 		strParentConfRed := strconv.FormatUint(transactionConf.TcKey, 10)
-					// 		paramsFifo["trans_conf_red_key"] = strParentConfRed
-					// 		strTcKeySub := strconv.FormatUint(trBalance.TcKey, 10)
-					// 		paramsFifo["trans_conf_sub_key"] = strTcKeySub
-					// 		if transaction.AcaKey != nil {
-					// 			strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
-					// 			paramsFifo["sub_aca_key"] = strAcaKey
-					// 		}
-
-					// 		day1, _ := time.Parse(dateLayout, transaction.NavDate)
-					// 		day2, _ := time.Parse(dateLayout, trBalance.NavDate)
-
-					// 		days := day1.Sub(day2).Hours() / 24
-					// 		strDays := fmt.Sprintf("%g", days)
-
-					// 		paramsFifo["holding_days"] = strDays
-
-					// 		strUnitUsed := fmt.Sprintf("%g", balanceUsed)
-					// 		paramsFifo["trans_unit"] = strUnitUsed
-					// 		paramsFifo["fee_nav_mode"] = "207"
-
-					// 		var transAmountFifo float32
-					// 		transAmountFifo = transUnitFifo * trNav[0].NavValue
-					// 		strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
-					// 		paramsFifo["trans_amount"] = strTransAmountFifo
-
-					// 		// paramsFifo["trans_fee_amount"] = ""
-					// 		paramsFifo["trans_fee_tax"] = "0"
-					// 		// paramsFifo["trans_nett_amount"] = ""
-					// 		paramsFifo["rec_status"] = "1"
-					// 		paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
-					// 		paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
-					// 		_, err = models.CreateTrTransactionFifo(paramsFifo)
-					// 		if err != nil {
-					// 			log.Error("Error update tr transaction")
-					// 			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed insert data")
-					// 		}
-					// 	} else {
-					// 		break
-					// 	}
-					// }
-
-					// //subs transaction switchin
-					// paramsFifo := make(map[string]string)
-					// paramsFifo["trans_conf_sub_key"] = trConfirmationID
-					// if transaction.AcaKey != nil {
-					// 	strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
-					// 	paramsFifo["sub_aca_key"] = strAcaKey
-					// }
-					// paramsFifo["holding_days"] = "0"
-					// paramsFifo["trans_unit"] = approveUnits
-					// paramsFifo["fee_nav_mode"] = "207"
-
-					// var transAmountFifo float32
-					// transAmountFifo = transUnitFifo * trNav[0].NavValue
-					// strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
-					// paramsFifo["trans_amount"] = strTransAmountFifo
-
-					// // paramsFifo["trans_fee_amount"] = ""
-					// paramsFifo["trans_fee_tax"] = "0"
-					// // paramsFifo["trans_nett_amount"] = ""
-					// paramsFifo["rec_status"] = "1"
-					// paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
-					// paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
-					// _, err = models.CreateTrTransactionFifo(paramsFifo)
-					// if err != nil {
-					// 	log.Error("Error update tr transaction")
-					// 	return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed insert data")
-					// }
 				}
 
 				data.Keterangan = ""
