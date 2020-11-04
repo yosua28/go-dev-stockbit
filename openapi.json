@@ -6007,8 +6007,8 @@
       }
     },
     "/admin/transaction/downloadformatexcel": {
-      "get": {
-        "description": "Get Download format excel (User Allowed : RoleKey 13)",
+      "post": {
+        "description": "Download format excel (User Allowed : RoleKey 13)",
         "tags": [
           "Admin Transaction"
         ],

@@ -1387,13 +1387,13 @@ func GetFormatExcelDownloadList(c echo.Context) error {
 	params := make(map[string]string)
 
 	//date
-	postnavdate := c.QueryParam("nav_date")
+	postnavdate := c.FormValue("nav_date")
 	if postnavdate == "" {
 		log.Error("Missing required parameter: nav_date")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
 	}
 
-	transactiontype := c.QueryParam("transaction_type")
+	transactiontype := c.FormValue("transaction_type")
 	if transactiontype == "" {
 		log.Error("Missing required parameter: transaction_type")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: transaction_type", "Missing required parameter: transaction_type")
