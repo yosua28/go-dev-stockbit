@@ -129,7 +129,7 @@ func Register(c echo.Context) error {
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
-	mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/api/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
+	mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
 
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
@@ -162,7 +162,7 @@ func VerifyEmail(c echo.Context) error {
 	// Get parameter key
 	token := c.QueryParam("token")
 	if token == ""{
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Token tidak ditemukan")
 	}
 	params := make(map[string]string)
 	params["string_token"] = token
@@ -170,11 +170,11 @@ func VerifyEmail(c echo.Context) error {
 	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get email")
-		return lib.CustomError(http.StatusBadRequest,"Error get email","Error get email")
+		return lib.CustomError(http.StatusBadRequest,"Error get email","Gagal mendapatkan data email")
 	}
 	if len(userLogin) < 1 {
 		log.Error("No matching token " + token)
-		return lib.CustomError(http.StatusBadRequest,"Token not found","Token not found")
+		return lib.CustomError(http.StatusBadRequest,"Token not found","Token tidak ditemukan")
 	}
 
 	accountData := userLogin[0]
@@ -190,7 +190,7 @@ func VerifyEmail(c echo.Context) error {
 	now := time.Now()
 	if now.After(expired) {
 		log.Error("Token is expired")
-		return lib.CustomError(http.StatusInternalServerError, "Token is expired", "Token is expired")
+		return lib.CustomError(http.StatusInternalServerError, "Token is expired", "Token anda sudah kadaluarsa. Silahkan kirim ulang email verifikasi.")
 	}
 	log.Info("Success verify email")
 	// Set expired for otp
@@ -201,11 +201,13 @@ func VerifyEmail(c echo.Context) error {
 	otp, err := sendOTP("0", *accountData.UloginMobileno)
 	if err != nil {
 		log.Error(err.Error())
-		return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
-	}
+		//return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+	} 
 	if otp == "" {
 		log.Error("Failed send otp")
-		return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+		//return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+	} else {
+		log.Info("Success send otp")
 	}
 
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
@@ -213,15 +215,13 @@ func VerifyEmail(c echo.Context) error {
 	params["otp_number_expired"] = expiredOTP
 	params["verified_email"] = "1"
 	params["last_verified_email"] = time.Now().Format(dateLayout)
-	//params["string_token"] = ""
+	params["string_token"] = ""
 
 	_ ,err = models.UpdateScUserLogin(params)
 	if err != nil {
 		log.Error("Error update user data")
 		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
 	}
-	
-	log.Info("Success send otp")
 	
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -470,12 +470,12 @@ func Login(c echo.Context) error {
 	var loginSession []models.ScLoginSession
 	paramsSession := make(map[string]string)
 	paramsSession["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
-	status, err = models.GetAllScLoginSession(&loginSession, 0, 0, params, true)
+	status, err = models.GetAllScLoginSession(&loginSession, 0, 0, paramsSession, true)
 	paramsSession["session_id"] = uuidString
 	paramsSession["login_date"] = time.Now().Format(dateLayout)
 	paramsSession["rec_status"] = "1"
 	if err == nil && len(loginSession) > 0 {
-		log.Info("Active session for previous login, overwrite whit new session")
+		log.Info("Active session for previous login, overwrite with new session")
 		if len(loginSession) > 1 {
 
 		}
@@ -586,7 +586,7 @@ func ResendVerification(c echo.Context) error {
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", email)
 		mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
-		mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/api/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
+		mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
 
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
