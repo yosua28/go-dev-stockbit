@@ -6297,6 +6297,90 @@
         }
       }
     },
+    "/admin/transactiontypelist": {
+      "get": {
+        "description": "Get All Transaction Type",
+        "tags": [
+          "Admin Transaction Type"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "trans_type_key": 1,
+                      "type_code": "SUB",
+                      "type_description": "Subscription"
+                    },
+                    {
+                      "trans_type_key": 2,
+                      "type_code": "RED",
+                      "type_description": "Redeemption"
+                    },
+                    {
+                      "trans_type_key": 3,
+                      "type_code": "SWTOT",
+                      "type_description": "Switch Out"
+                    },
+                    {
+                      "trans_type_key": 4,
+                      "type_code": "SWTIN",
+                      "type_description": "Switch In"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    }
   },
   "components": {
     "securitySchemes": {

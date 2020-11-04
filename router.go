@@ -116,6 +116,9 @@ func router() *echo.Echo {
 	admin.POST("/transaction/uploadexcelconfirmation", controllers.UploadExcelConfirmation).Name = "UploadExcelConfirmation"
 	admin.POST("/transactionapproval/posting", controllers.ProsesPosting).Name = "ProsesPosting"
 
+	//Admin Transaction type
+	admin.GET("/transactiontypelist", controllers.GetTransactionType).Name = "GetTransactionType"
+
 	return e
 }
 
