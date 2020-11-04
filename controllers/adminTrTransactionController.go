@@ -1017,35 +1017,55 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 
+	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+	if strTransTypeKey == "3" {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
 	if transStatusKeyDefault != strTransStatusKey {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
 
 	dateLayout := "2006-01-02 15:04:05"
-	strIdUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
 
 	if lib.Profile.RoleKey == roleKeyCs {
 		params["check1_notes"] = notes
 		params["check1_date"] = time.Now().Format(dateLayout)
 		params["check1_flag"] = "1"
-		params["check1_references"] = strIdUserLogin
+		params["check1_references"] = strIDUserLogin
 	}
 
 	if lib.Profile.RoleKey == roleKeyKyc {
 		params["check2_notes"] = notes
 		params["check2_date"] = time.Now().Format(dateLayout)
 		params["check2_flag"] = "1"
-		params["check2_references"] = strIdUserLogin
+		params["check2_references"] = strIDUserLogin
 	}
 
-	params["rec_modified_by"] = strIdUserLogin
+	params["rec_modified_by"] = strIDUserLogin
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 
 	_, err = models.UpdateTrTransaction(params)
 	if err != nil {
 		log.Error("Error update tr transaction")
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	if strTransTypeKey == "4" {
+		if transaction.ParentKey != nil {
+			strParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
+			params["transaction_key"] = strParentKey
+			log.Println(params)
+			_, err = models.UpdateTrTransaction(params)
+			if err != nil {
+				log.Error("Error update tr transaction parent")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
+		}
 	}
 
 	log.Info("Success update transaksi")
@@ -1125,6 +1145,13 @@ func UpdateNavDate(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
+	strTransType := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+	if strTransType == "3" {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 
 	strStatusCutOff := "5"
@@ -1140,7 +1167,6 @@ func UpdateNavDate(c echo.Context) error {
 	params["rec_modified_by"] = strIDUserLogin
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 
-	strTransType := strconv.FormatUint(transaction.TransTypeKey, 10)
 	params["settlement_date"] = postnavdate
 
 	//set settlement_date by settlement period product
@@ -1168,6 +1194,19 @@ func UpdateNavDate(c echo.Context) error {
 	if err != nil {
 		log.Error("Error update tr transaction")
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	if strTransType == "4" {
+		if transaction.ParentKey != nil {
+			strParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
+			params["transaction_key"] = strParentKey
+			log.Println(params)
+			_, err = models.UpdateTrTransaction(params)
+			if err != nil {
+				log.Error("Error update tr transaction parent")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
+		}
 	}
 
 	log.Info("Success update transaksi")
@@ -1230,6 +1269,15 @@ func TransactionApprovalCutOff(c echo.Context) error {
 		if strTransStatusKey != strStatusCutOff {
 			log.Error("Missing required parameter: trans_ids")
 			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_ids ", "Missing required parameter: trans_ids")
+		}
+
+		strTransType := strconv.FormatUint(tr.TransTypeKey, 10)
+		if strTransType == "4" {
+			if tr.ParentKey != nil {
+				if _, ok := lib.Find(transParamIds, strconv.FormatUint(*tr.ParentKey, 10)); !ok {
+					transParamIds = append(transParamIds, strconv.FormatUint(*tr.ParentKey, 10))
+				}
+			}
 		}
 	}
 
@@ -1702,6 +1750,57 @@ func UploadExcelConfirmation(c echo.Context) error {
 					}
 				}
 
+				//redm cek balance / saldo aktif di parent jika switch
+				var transactionParent models.TrTransaction
+				var trParentBalanceCustomer []models.TrBalanceCustomerProduk
+				if strTransTypeKey == "4" { // SWITCH
+					if transaction.ParentKey == nil {
+						data.Result = "Parent Transaction is empty"
+						fmt.Printf("%v \n", data)
+						responseData = append(responseData, data)
+						continue
+					}
+
+					strTrParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
+					_, err := models.GetTrTransaction(&transactionParent, strTrParentKey)
+					if err != nil {
+						if err == sql.ErrNoRows {
+							data.Result = "Data Parent Transaction Not Found"
+						} else {
+							data.Result = err.Error()
+						}
+						fmt.Printf("%v \n", data)
+						responseData = append(responseData, data)
+						continue
+					}
+
+					//cek parent transaksi apakah sudah di posting
+					strParentTransStatusKey := strconv.FormatUint(transactionParent.TransStatusKey, 10)
+					if strParentTransStatusKey != "9" {
+						data.Result = "Data Parent Transaction has not been posting"
+						fmt.Printf("%v \n", data)
+						responseData = append(responseData, data)
+						continue
+					}
+
+					strParentProductKey := strconv.FormatUint(transactionParent.ProductKey, 10)
+					strParentCustomerKey := strconv.FormatUint(transactionParent.CustomerKey, 10)
+					_, err = models.GetLastBalanceCustomerByProductKey(&trParentBalanceCustomer, strParentCustomerKey, strParentProductKey)
+					if err != nil {
+						if err != sql.ErrNoRows {
+							data.Result = "Parent Balance is empty"
+							fmt.Printf("%v \n", data)
+							responseData = append(responseData, data)
+							continue
+						} else {
+							data.Result = err.Error()
+							fmt.Printf("%v \n", data)
+							responseData = append(responseData, data)
+							continue
+						}
+					}
+				}
+
 				//data valid 1. create tr_transaction_confirmation, 2. update trans status, 3. create tr_transaction_fifo
 				//1. create tr_transaction_confirmation
 				dateLayout := "2006-01-02 15:04:05"
@@ -1865,7 +1964,106 @@ func UploadExcelConfirmation(c echo.Context) error {
 				}
 
 				if strTransTypeKey == "4" { // SWITCH
-					data.Result = "SWITCH is on progress development"
+
+					// var transactionConf models.TrTransactionConfirmation
+					// strParentTransactionKey := strconv.FormatUint(transactionParent.TransactionKey, 10)
+					// _, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strParentTransactionKey)
+					// if err != nil {
+					// 	log.Error(err.Error())
+					// 	return lib.CustomError(http.StatusBadRequest)
+					// }
+
+					// //redm parent transaction
+					// sisaFifo := transUnitFifo
+					// for _, trBalance := range trParentBalanceCustomer {
+					// 	if sisaFifo > 0 {
+					// 		var balanceUsed float32
+
+					// 		if trBalance.BalanceUnit > sisaFifo {
+					// 			balanceUsed = sisaFifo
+					// 			sisaFifo = 0
+					// 		}
+
+					// 		if trBalance.BalanceUnit < sisaFifo {
+					// 			balanceUsed = trBalance.BalanceUnit
+					// 			sisaFifo = sisaFifo - trBalance.BalanceUnit
+					// 		}
+
+					// 		if trBalance.BalanceUnit == sisaFifo {
+					// 			balanceUsed = trBalance.BalanceUnit
+					// 			sisaFifo = 0
+					// 		}
+
+					// 		paramsFifo := make(map[string]string)
+					// 		strParentConfRed := strconv.FormatUint(transactionConf.TcKey, 10)
+					// 		paramsFifo["trans_conf_red_key"] = strParentConfRed
+					// 		strTcKeySub := strconv.FormatUint(trBalance.TcKey, 10)
+					// 		paramsFifo["trans_conf_sub_key"] = strTcKeySub
+					// 		if transaction.AcaKey != nil {
+					// 			strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+					// 			paramsFifo["sub_aca_key"] = strAcaKey
+					// 		}
+
+					// 		day1, _ := time.Parse(dateLayout, transaction.NavDate)
+					// 		day2, _ := time.Parse(dateLayout, trBalance.NavDate)
+
+					// 		days := day1.Sub(day2).Hours() / 24
+					// 		strDays := fmt.Sprintf("%g", days)
+
+					// 		paramsFifo["holding_days"] = strDays
+
+					// 		strUnitUsed := fmt.Sprintf("%g", balanceUsed)
+					// 		paramsFifo["trans_unit"] = strUnitUsed
+					// 		paramsFifo["fee_nav_mode"] = "207"
+
+					// 		var transAmountFifo float32
+					// 		transAmountFifo = transUnitFifo * trNav[0].NavValue
+					// 		strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
+					// 		paramsFifo["trans_amount"] = strTransAmountFifo
+
+					// 		// paramsFifo["trans_fee_amount"] = ""
+					// 		paramsFifo["trans_fee_tax"] = "0"
+					// 		// paramsFifo["trans_nett_amount"] = ""
+					// 		paramsFifo["rec_status"] = "1"
+					// 		paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+					// 		paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
+					// 		_, err = models.CreateTrTransactionFifo(paramsFifo)
+					// 		if err != nil {
+					// 			log.Error("Error update tr transaction")
+					// 			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed insert data")
+					// 		}
+					// 	} else {
+					// 		break
+					// 	}
+					// }
+
+					// //subs transaction switchin
+					// paramsFifo := make(map[string]string)
+					// paramsFifo["trans_conf_sub_key"] = trConfirmationID
+					// if transaction.AcaKey != nil {
+					// 	strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+					// 	paramsFifo["sub_aca_key"] = strAcaKey
+					// }
+					// paramsFifo["holding_days"] = "0"
+					// paramsFifo["trans_unit"] = approveUnits
+					// paramsFifo["fee_nav_mode"] = "207"
+
+					// var transAmountFifo float32
+					// transAmountFifo = transUnitFifo * trNav[0].NavValue
+					// strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
+					// paramsFifo["trans_amount"] = strTransAmountFifo
+
+					// // paramsFifo["trans_fee_amount"] = ""
+					// paramsFifo["trans_fee_tax"] = "0"
+					// // paramsFifo["trans_nett_amount"] = ""
+					// paramsFifo["rec_status"] = "1"
+					// paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+					// paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
+					// _, err = models.CreateTrTransactionFifo(paramsFifo)
+					// if err != nil {
+					// 	log.Error("Error update tr transaction")
+					// 	return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed insert data")
+					// }
 				}
 
 				data.Keterangan = ""
