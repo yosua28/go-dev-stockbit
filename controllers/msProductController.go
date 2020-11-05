@@ -127,8 +127,10 @@ func GetMsProductList(c echo.Context) error {
 				if len(balanceDB) > 0 {
 					for _, balance := range balanceDB {
 						if accKey, ok := acaProduct[balance.AcaKey]; ok {
-							if productKey, ok := accProduct[accKey]; ok {
-								userProduct = append(userProduct, strconv.FormatUint(productKey, 10))
+							if balance.BalanceUnit > 0 {
+								if productKey, ok := accProduct[accKey]; ok {
+									userProduct = append(userProduct, strconv.FormatUint(productKey, 10))
+								}
 							}
 						}
 					}

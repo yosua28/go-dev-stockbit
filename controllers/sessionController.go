@@ -289,7 +289,7 @@ func VerifyOtp(c echo.Context) error {
 	var request []models.OaRequest
 	status, err = models.GetAllOaRequest(&request, config.LimitQuery, 0, true, paramsRequest)
 	if err != nil {
-		log.Error(err.Error)
+		log.Error(err.Error())
 	} else if len(request) > 0 {
 		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
 			var lookup models.GenLookup
@@ -425,7 +425,7 @@ func Login(c echo.Context) error {
 	var request []models.OaRequest
 	status, err = models.GetAllOaRequest(&request, config.LimitQuery, 0, true, paramsRequest)
 	if err != nil {
-		log.Error(err.Error)
+		log.Error(err.Error())
 	} else if len(request) > 0 {
 		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
 			var lookup models.GenLookup
@@ -750,7 +750,7 @@ func UploadProfilePic(c echo.Context) error {
 	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	status, err = models.UpdateScUserLogin(params)
 	if err != nil {
-		log.Error(err.Error)
+		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed update data")
 	}
 
