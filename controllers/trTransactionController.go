@@ -452,6 +452,8 @@ func GetTransactionList(c echo.Context) error {
 	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params["customer_key"] = customerKey
 	params["rec_status"] = "1"
+	params["orderBy"] = "transaction_key"
+	params["orderType"] = "DESC"
 	productKeyStr := c.FormValue("product_key")
 	if productKeyStr != "" {
 		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
