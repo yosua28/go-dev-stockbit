@@ -236,7 +236,14 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	}
 
 	var trTransaction []models.TrTransaction
-	status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
+
+	_, found := lib.Find(transStatusKey, "7")
+	if !found {
+		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
+	} else {
+		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
+	}
+
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
