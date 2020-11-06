@@ -363,3 +363,307 @@ func GetListProductAdmin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetProductDetailAdmin(c echo.Context) error {
+	var err error
+	var status int
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var product models.MsProduct
+	status, err = models.GetMsProduct(&product, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var responseData models.AdminMsProductDetail
+
+	var lookupIds []string
+
+	if product.RiskProfileKey != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*product.RiskProfileKey, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*product.RiskProfileKey, 10))
+		}
+	}
+	if product.ProductPhase != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*product.ProductPhase, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*product.ProductPhase, 10))
+		}
+	}
+	if product.NavValuationType != nil {
+		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*product.NavValuationType, 10)); !ok {
+			lookupIds = append(lookupIds, strconv.FormatUint(*product.NavValuationType, 10))
+		}
+	}
+
+	//gen lookup oa request
+	var lookupProduct []models.GenLookup
+	if len(lookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&lookupProduct, lookupIds, "lookup_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range lookupProduct {
+		gData[gen.LookupKey] = gen
+	}
+
+	responseData.ProductKey = product.ProductKey
+	responseData.ProductID = product.ProductID
+	responseData.ProductCode = product.ProductCode
+	responseData.ProductName = product.ProductName
+	responseData.ProductNameAlt = product.ProductNameAlt
+	if product.CurrencyKey != nil {
+		var currency models.MsCurrency
+		strCurrency := strconv.FormatUint(*product.CurrencyKey, 10)
+		status, err = models.GetMsCurrency(&currency, strCurrency)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var cr models.MsCurrencyInfo
+			cr.CurrencyKey = currency.CurrencyKey
+			cr.Code = currency.Code
+			cr.Symbol = currency.Symbol
+			cr.Name = currency.Name
+			cr.FlagBase = currency.FlagBase
+			responseData.Currency = &cr
+		}
+	}
+
+	if product.ProductCategoryKey != nil {
+		var msProductCategory models.MsProductCategory
+		strProCatKey := strconv.FormatUint(*product.ProductCategoryKey, 10)
+		status, err = models.GetMsProductCategory(&msProductCategory, strProCatKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var cr models.MsProductCategoryInfo
+			cr.ProductCategoryKey = msProductCategory.ProductCategoryKey
+			cr.CategoryCode = msProductCategory.CategoryCode
+			cr.CategoryName = msProductCategory.CategoryName
+			cr.CategoryDesc = msProductCategory.CategoryDesc
+			responseData.ProductCategory = &cr
+		}
+	}
+
+	if product.ProductTypeKey != nil {
+		var msProductType models.MsProductType
+		strProTypeKey := strconv.FormatUint(*product.ProductTypeKey, 10)
+		status, err = models.GetMsProductType(&msProductType, strProTypeKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var cr models.MsProductTypeInfo
+			cr.ProductTypeKey = msProductType.ProductTypeKey
+			cr.ProductTypeCode = msProductType.ProductTypeCode
+			cr.ProductTypeName = msProductType.ProductTypeName
+			cr.ProductTypeDesc = msProductType.ProductTypeDesc
+			responseData.ProductType = &cr
+		}
+	}
+
+	if product.FundTypeKey != nil {
+		var fundType models.MsFundType
+		strFundTypeKey := strconv.FormatUint(*product.FundTypeKey, 10)
+		status, err = models.GetMsFundType(&fundType, strFundTypeKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var cr models.MsFundTypeInfo
+			cr.FundTypeKey = fundType.FundTypeKey
+			cr.FundTypeCode = fundType.FundTypeCode
+			cr.FundTypeName = fundType.FundTypeName
+			responseData.FundType = &cr
+		}
+	}
+
+	if product.FundStructureKey != nil {
+		var msFundStructure models.MsFundStructure
+		strKeyFk := strconv.FormatUint(*product.FundStructureKey, 10)
+		status, err = models.GetMsFundStructure(&msFundStructure, strKeyFk)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var cr models.MsFundStructureInfo
+			cr.FundStructureKey = msFundStructure.FundStructureKey
+			cr.FundStructureCode = msFundStructure.FundStructureCode
+			cr.FundStructureName = msFundStructure.FundStructureName
+			cr.FundStructureDesc = msFundStructure.FundStructureDesc
+			responseData.FundStructure = &cr
+		}
+	}
+
+	if product.RiskProfileKey != nil {
+		if n, ok := gData[*product.RiskProfileKey]; ok {
+			var trc models.LookupTrans
+
+			trc.LookupKey = n.LookupKey
+			trc.LkpGroupKey = n.LkpGroupKey
+			trc.LkpCode = n.LkpCode
+			trc.LkpName = n.LkpName
+			responseData.RiskProfile = &trc
+		}
+	}
+
+	responseData.ProductProfile = product.ProductProfile
+	responseData.InvestmentObjectives = product.InvestmentObjectives
+
+	if product.ProductPhase != nil {
+		if n, ok := gData[*product.ProductPhase]; ok {
+			var trc models.LookupTrans
+
+			trc.LookupKey = n.LookupKey
+			trc.LkpGroupKey = n.LkpGroupKey
+			trc.LkpCode = n.LkpCode
+			trc.LkpName = n.LkpName
+			responseData.ProductPhase = &trc
+		}
+	}
+
+	if product.NavValuationType != nil {
+		if n, ok := gData[*product.NavValuationType]; ok {
+			var trc models.LookupTrans
+
+			trc.LookupKey = n.LookupKey
+			trc.LkpGroupKey = n.LkpGroupKey
+			trc.LkpCode = n.LkpCode
+			trc.LkpName = n.LkpName
+			responseData.NavValuationType = &trc
+		}
+	}
+
+	responseData.ProspectusLink = product.ProspectusLink
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	if product.LaunchDate != nil {
+		date, err := time.Parse(layout, *product.LaunchDate)
+		if err == nil {
+			oke := date.Format(newLayout)
+			responseData.LaunchDate = &oke
+		}
+	}
+	if product.InceptionDate != nil {
+		date, _ := time.Parse(layout, *product.InceptionDate)
+		if err == nil {
+			oke := date.Format(newLayout)
+			responseData.InceptionDate = &oke
+		}
+	}
+
+	responseData.IsinCode = product.IsinCode
+
+	if product.FlagSyariah == 1 {
+		responseData.FlagSyariah = true
+	} else {
+		responseData.FlagSyariah = false
+	}
+
+	responseData.MaxSubFee = product.MaxSubFee
+	responseData.MaxRedFee = product.MaxRedFee
+	responseData.MaxSwiFee = product.MaxSwiFee
+	responseData.MinSubAmount = product.MinSubAmount
+	responseData.MinRedAmount = product.MinRedAmount
+	responseData.MinRedUnit = product.MinRedUnit
+	responseData.MinUnitAfterRed = product.MinUnitAfterRed
+	responseData.ManagementFee = product.ManagementFee
+	responseData.CustodianFee = product.CustodianFee
+
+	if product.CustodianKey != nil {
+		var msCustodianBank models.MsCustodianBank
+		strKeyFk := strconv.FormatUint(*product.CustodianKey, 10)
+		status, err = models.GetMsCustodianBank(&msCustodianBank, strKeyFk)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var cr models.MsCustodianBankInfo
+			cr.CustodianCode = msCustodianBank.CustodianCode
+			cr.CustodianShortName = msCustodianBank.CustodianShortName
+			cr.CustodianFullName = msCustodianBank.CustodianFullName
+			responseData.Custodian = &cr
+		}
+	}
+
+	responseData.OjkFee = product.OjkFee
+	responseData.ProductFeeAmount = product.ProductFeeAmount
+
+	if product.OverwriteTransactFlag == 1 {
+		responseData.OverwriteTransactFlag = true
+	} else {
+		responseData.OverwriteTransactFlag = false
+	}
+
+	if product.OverwriteFeeFlag == 1 {
+		responseData.OverwriteFeeFlag = true
+	} else {
+		responseData.OverwriteFeeFlag = false
+	}
+	responseData.OtherFeeAmount = product.OtherFeeAmount
+	responseData.SettlementPeriod = product.SettlementPeriod
+	responseData.SinvestFundCode = product.SinvestFundCode
+
+	if product.FlagEnabled == 1 {
+		responseData.FlagEnabled = true
+	} else {
+		responseData.FlagEnabled = false
+	}
+
+	if product.FlagSubscription == 1 {
+		responseData.FlagSubscription = true
+	} else {
+		responseData.FlagSubscription = false
+	}
+
+	if product.FlagRedemption == 1 {
+		responseData.FlagRedemption = true
+	} else {
+		responseData.FlagRedemption = false
+	}
+
+	if product.FlagSwitchOut == 1 {
+		responseData.FlagSwitchOut = true
+	} else {
+		responseData.FlagSwitchOut = false
+	}
+
+	if product.FlagSwitchIn == 1 {
+		responseData.FlagSwitchIn = true
+	} else {
+		responseData.FlagSwitchIn = false
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}

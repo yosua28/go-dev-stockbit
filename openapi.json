@@ -6577,6 +6577,156 @@
           }
         }
       }
+    },
+    "/admin/product/{key}": {
+      "get": {
+        "description": "Get Detail Product Transaction (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "product key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "product_key": 1,
+                    "product_id": 5,
+                    "product_code": "BDLC",
+                    "product_name": "DANA LANCAR",
+                    "product_name_alt": "DANA LANCAR",
+                    "currency": {
+                      "currency_key": 1,
+                      "code": "IDR",
+                      "symbol": "Rp",
+                      "name": "Indonesia Rupiah",
+                      "flag_base": 1
+                    },
+                    "product_category": {
+                      "product_category_key": 1,
+                      "category_code": "MF",
+                      "category_name": "Mutual Fund",
+                      "category_desc": "Reksadana"
+                    },
+                    "product_type": {
+                      "product_type_key": 1,
+                      "product_type_code": "PUBLIC",
+                      "product_type_name": "Public Fund",
+                      "product_type_desc": "Reksa dana yang dijual untuk public"
+                    },
+                    "fund_type": {
+                      "fund_type_key": 1,
+                      "fund_type_code": "MM",
+                      "fund_type_name": "Pasar Uang"
+                    },
+                    "fund_structure": {
+                      "fund_structure_key": 1,
+                      "fund_structure_code": "OpendEnd",
+                      "fund_structure_name": "Opend_End",
+                      "fund_structure_desc": "Opend_End"
+                    },
+                    "risk_profile": {
+                      "lookup_key": 2,
+                      "lkp_group_key": 1,
+                      "lkp_code": "1",
+                      "lkp_name": "Yes"
+                    },
+                    "product_profile": "<p><strong>MNC Dana Lancar</strong> adalah produk reksa dana pasar uang milik MNC Asset Management yang memberikan tingkat pengembalian menarik dengan risiko serendah mungkin, serta tetap mempertahankan nilai modal investasi dan menjaga kestabilan likuiditas. Produk ini termasuk kategori reksa dana pasar uang dengan alokasi investasi 100% pada efek hutang atau instrumen pasar uang yang jatuh tempo kurang dari 1 tahun.</p>",
+                    "investment_objectives": "MNC DANA LANCAR akan melakukan investasi dengan komposisi portofolio investasi 100% (seratus persen) pada Efek Bersifat Utang dan/atau instrumen pasar uang yang mempunyai jatuh tempo tidak lebih dari 1 (satu) tahun, sesuai peraturan perundang-undangan yang berlaku di Indonesia.",
+                    "product_phase": null,
+                    "nav_valuation_type": null,
+                    "prospectus_link": "https://www.mncasset.com/downloads/621-Prospektus-MNC-Dana-Lancar.pdf",
+                    "launch_date": "21 Sep 2004",
+                    "inception_date": "21 Sep 2004",
+                    "isin_code": "IDN000005907",
+                    "flag_syariah": false,
+                    "max_sub_fee": 0,
+                    "max_red_fee": 0,
+                    "max_swi_fee": 0,
+                    "min_sub_amount": 0,
+                    "min_red_amount": 0,
+                    "min_red_unit": 0,
+                    "min_unit_after_red": 0,
+                    "management_fee": 2.5,
+                    "custodian_fee": 0.15,
+                    "custodian": {
+                      "custodian_code": "ABNAMRO",
+                      "custodian_short_name": "Bank ABN Amro",
+                      "custodian_full_name": "Bank ABN Amro"
+                    },
+                    "ojk_fee": 0.045,
+                    "product_fee_amount": 0,
+                    "overwrite_transact_flag": false,
+                    "overwrite_fee_flag": false,
+                    "other_fee_amount": 0,
+                    "settlement_period": 1,
+                    "sinvest_fund_code": "EP002MMCDANLCR00",
+                    "flag_enabled": true,
+                    "flag_subscription": true,
+                    "flag_redemption": true,
+                    "flag_switch_out": true,
+                    "flag_switch_in": true
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

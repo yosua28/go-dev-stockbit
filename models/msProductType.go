@@ -31,6 +31,13 @@ type MsProductType struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
+type MsProductTypeInfo struct {
+	ProductTypeKey  uint64  `json:"product_type_key"`
+	ProductTypeCode *string `json:"product_type_code"`
+	ProductTypeName *string `json:"product_type_name"`
+	ProductTypeDesc *string `json:"product_type_desc"`
+}
+
 func GetMsProductTypeIn(c *[]MsProductType, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -44,6 +51,19 @@ func GetMsProductTypeIn(c *[]MsProductType, value []string, field string) (int, 
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductType(c *MsProductType, key string) (int, error) {
+	query := `SELECT ms_product_type.* FROM ms_product_type 
+				WHERE ms_product_type.rec_status = 1 AND ms_product_type.product_type_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

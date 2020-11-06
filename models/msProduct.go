@@ -137,6 +137,51 @@ type AdminMsProductList struct {
 	SwitchIn            string  `json:"switch_in"`
 }
 
+type AdminMsProductDetail struct {
+	ProductKey            uint64                 `json:"product_key"`
+	ProductID             uint64                 `json:"product_id"`
+	ProductCode           string                 `json:"product_code"`
+	ProductName           string                 `json:"product_name"`
+	ProductNameAlt        string                 `json:"product_name_alt"`
+	Currency              *MsCurrencyInfo        `json:"currency"`
+	ProductCategory       *MsProductCategoryInfo `json:"product_category"`
+	ProductType           *MsProductTypeInfo     `json:"product_type"`
+	FundType              *MsFundTypeInfo        `json:"fund_type"`
+	FundStructure         *MsFundStructureInfo   `json:"fund_structure"`
+	RiskProfile           *LookupTrans           `json:"risk_profile"`
+	ProductProfile        *string                `json:"product_profile"`
+	InvestmentObjectives  *string                `json:"investment_objectives"`
+	ProductPhase          *LookupTrans           `json:"product_phase"`
+	NavValuationType      *LookupTrans           `json:"nav_valuation_type"`
+	ProspectusLink        *string                `json:"prospectus_link"`
+	LaunchDate            *string                `json:"launch_date"`
+	InceptionDate         *string                `json:"inception_date"`
+	IsinCode              *string                `json:"isin_code"`
+	FlagSyariah           bool                   `json:"flag_syariah"`
+	MaxSubFee             float32                `json:"max_sub_fee"`
+	MaxRedFee             float32                `json:"max_red_fee"`
+	MaxSwiFee             float32                `json:"max_swi_fee"`
+	MinSubAmount          float32                `json:"min_sub_amount"`
+	MinRedAmount          float32                `json:"min_red_amount"`
+	MinRedUnit            float32                `json:"min_red_unit"`
+	MinUnitAfterRed       float32                `json:"min_unit_after_red"`
+	ManagementFee         float32                `json:"management_fee"`
+	CustodianFee          float32                `json:"custodian_fee"`
+	Custodian             *MsCustodianBankInfo   `json:"custodian"`
+	OjkFee                float32                `json:"ojk_fee"`
+	ProductFeeAmount      float32                `json:"product_fee_amount"`
+	OverwriteTransactFlag bool                   `json:"overwrite_transact_flag"`
+	OverwriteFeeFlag      bool                   `json:"overwrite_fee_flag"`
+	OtherFeeAmount        float32                `json:"other_fee_amount"`
+	SettlementPeriod      *uint64                `json:"settlement_period"`
+	SinvestFundCode       *string                `json:"sinvest_fund_code"`
+	FlagEnabled           bool                   `json:"flag_enabled"`
+	FlagSubscription      bool                   `json:"flag_subscription"`
+	FlagRedemption        bool                   `json:"flag_redemption"`
+	FlagSwitchOut         bool                   `json:"flag_switch_out"`
+	FlagSwitchIn          bool                   `json:"flag_switch_in"`
+}
+
 func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               ms_product.* FROM 
