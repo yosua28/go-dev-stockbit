@@ -119,6 +119,9 @@ func router() *echo.Echo {
 	//Admin Transaction type
 	admin.GET("/transactiontypelist", controllers.GetTransactionType).Name = "GetTransactionType"
 
+	//Admin Product
+	admin.GET("/productlist", controllers.GetListProductAdmin).Name = "GetListProductAdmin"
+
 	return e
 }
 
