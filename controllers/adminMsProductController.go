@@ -667,3 +667,65 @@ func GetProductDetailAdmin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func DeleteProductAdmin(c echo.Context) error {
+	var err error
+	params := make(map[string]string)
+
+	productKey := c.FormValue("product_key")
+	if productKey == "" {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	productKeyCek, err := strconv.ParseUint(productKey, 10, 64)
+	if err == nil && productKeyCek > 0 {
+		params["product_key"] = productKey
+	} else {
+		log.Error("Wrong input for parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	var product models.MsProduct
+	status, err := models.GetMsProduct(&product, productKey)
+	if err != nil {
+		log.Error("Product not found")
+		return lib.CustomError(status)
+	}
+
+	var trTransaction []models.TrTransaction
+
+	paramTrans := make(map[string]string)
+	paramTrans["rec_status"] = "1"
+	paramTrans["product_key"] = productKey
+	status, err = models.GetAllTrTransaction(&trTransaction, paramTrans)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	if len(trTransaction) > 0 {
+		log.Error("Product cann't delete because already used in transaction")
+		return lib.CustomError(http.StatusNotFound, "Product cann't delete because already used in transaction", "Product cann't delete because already used in transaction")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err = models.UpdateMsProduct(params)
+	if err != nil {
+		log.Error("Failed create request data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}

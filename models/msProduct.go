@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -363,5 +364,43 @@ func AdminGetCountMsProductWithLike(c *CountData, params map[string]string, para
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateMsProduct(params map[string]string) (int, error) {
+	query := "UPDATE ms_product SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "product_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE product_key = " + params["product_key"]
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }
