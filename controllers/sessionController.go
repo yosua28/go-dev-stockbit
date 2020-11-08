@@ -762,6 +762,98 @@ func UploadProfilePic(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func ChangePassword(c echo.Context) error {
+	
+	var err error
+	var status int
+	// Check parameters
+	recentPassword := c.FormValue("recent_password")
+	if recentPassword == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+	}
+	newPassword1 := c.FormValue("new_password1")
+	if newPassword1 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+	}
+	newPassword2 := c.FormValue("new_password2")
+	if newPassword2 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+	}
+
+	// Check valid email
+	params := make(map[string]string)
+	params["ulogin_email"] = lib.Profile.Email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status,"Error get email","Error get email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("Email not registered")
+		return lib.CustomError(http.StatusUnauthorized,"Email not registered","Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info(accountData)
+
+	// Check valid password
+	encryptedPasswordByte := sha256.Sum256([]byte(recentPassword))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	if encryptedPassword != accountData.UloginPassword {
+		log.Error("Wrong password")
+		return lib.CustomError(http.StatusUnauthorized,"Wrong password","Wrong password")
+	}
+
+	if newPassword1 != newPassword2 {
+		log.Error("Password doesnt match")
+		return lib.CustomError(http.StatusBadRequest,"Password doesnt match","Password doesnt match")
+	}
+	// Validate password
+	length, number, upper, special := verifyPassword(newPassword1)
+	if length == false || number == false || upper == false || special == false {
+		log.Error("Password does meet the criteria")
+		return lib.CustomError(http.StatusBadRequest, "Password does meet the criteria", "Your password need at least 8 character length, has lower and upper case letter, has numeric letter, and has special character")
+	}
+
+	// Encrypt password
+	encryptedPasswordByte = sha256.Sum256([]byte(newPassword1))
+	encryptedPassword = hex.EncodeToString(encryptedPasswordByte[:])
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["ulogin_password"] = encryptedPassword 
+	params["last_password_changed"] = time.Now().Format(dateLayout) 
+
+	_ ,err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func CurrentTime(c echo.Context) error {
+
+	dateLayout := "2006-01-02 15:04:05"
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = time.Now().Format(dateLayout)
+	return c.JSON(http.StatusOK, response)
+}
+
 func verifyPassword(s string) (length, number, upper, special bool) {
 	var letter bool
 	for _, c := range s {

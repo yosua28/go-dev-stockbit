@@ -437,13 +437,218 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "user_id": 7,
-                    "email": "yogasutrisna902@gmail.com",
-                    "phone_number": "08388644363",
-                    "role_key": 1,
-                    "role_category_key": 1,
-                    "rec_image1": "https://devapi.mncasset.com/user/default.png"
+                    "imba": "83.056%",
+                    "net_sub": 950000,
+                    "product": [
+                      {
+                        "invest_value": 789036.3,
+                        "percent": "100.000%",
+                        "product_code": "BDLC",
+                        "product_id": 5,
+                        "product_key": 1,
+                        "product_name": "DANA LANCAR",
+                        "product_name_alt": "DANA LANCAR",
+                        "rec_image1": "https://devapi.mncasset.com/images/product/bdlc.jpg"
+                      }
+                    ],
+                    "total_invest": 789036.3
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/productlist": {
+      "get": {
+        "description": "Get product list for transaction history",
+        "tags": [
+          "Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "status": {
+              "code": 200,
+              "message_server": "OK",
+              "message_client": "OK"
+            },
+            "data": [
+              {
+                "product_code": "BDLC",
+                "product_id": 5,
+                "product_key": 1,
+                "product_name": "DANA LANCAR",
+                "product_name_alt": "DANA LANCAR"
+              }
+            ]
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/changepassword": {
+      "put": {
+        "description": "Change password",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recent_password": {
+                    "type": "string"
+                  },
+                  "new_password1": {
+                    "type": "string"
+                  },
+                  "new_password2": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recent_password",
+                  "new_password1",
+                  "new_password2"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/servertime": {
+      "get": {
+        "description": "Curent server time",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": "2020-11-09 05:30:54"
                 }
               }
             }

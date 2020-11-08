@@ -885,3 +885,64 @@ func Portofolio(c echo.Context) error {
 	
 	return c.JSON(http.StatusOK, response)
 }
+
+
+func ProductListMutasi(c echo.Context) error {
+	var err error
+	var status int
+	params := make(map[string]string)
+	
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	} 
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	params["customer_key"] = customerKey
+	params["trans_status_key"] = "9"
+	var transactionDB []models.TrTransaction
+	status, err = models.GetAllTrTransaction(&transactionDB, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get transaction data")
+	}
+	if len(transactionDB) < 1 {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+	}
+
+	var productIDs []string
+	for _, transaction := range transactionDB {
+		productIDs = append(productIDs, strconv.FormatUint(transaction.ProductKey, 10))
+	}
+
+	var productDB []models.MsProduct
+	status, err = models.GetMsProductIn(&productDB, productIDs, "product_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(productDB) < 1 {
+		log.Error("product not found")
+		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
+	}
+
+	var products []interface{}
+	for _, product := range productDB {
+		data := make(map[string]interface{})
+	
+		data["product_key"] = product.ProductKey
+		data["product_id"] = product.ProductID
+		data["product_code"] = product.ProductCode
+		data["product_name"] = product.ProductName
+		data["product_name_alt"] = product.ProductNameAlt
+	
+		products = append(products, data)
+	}
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = products
+	
+	return c.JSON(http.StatusOK, response)
+}

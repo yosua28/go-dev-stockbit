@@ -40,6 +40,7 @@ func router() *echo.Echo {
 	// Product
 	auth.GET("/product", controllers.GetMsProductList).Name = "GetMsProductList"
 	auth.GET("/product/:key", controllers.GetMsProductData).Name = "GetMsProductData"
+	auth.GET("/productlist", controllers.ProductListMutasi).Name = "ProductListMutasi"
 
 	// Nav
 	auth.GET("/nav/:duration/:product_key", controllers.GetTrNavProduct).Name = "GetTrNavProduct"
@@ -81,6 +82,8 @@ func router() *echo.Echo {
 	e.POST("/resendverification", controllers.ResendVerification).Name = "ResendVerification"
 	auth.GET("/user", controllers.GetUserLogin).Name = "GetUserLogin"
 	auth.POST("/uploadprofilepic", controllers.UploadProfilePic).Name = "UploadProfilePic"
+	auth.PUT("/changepassword", controllers.ChangePassword).Name = "ChangePassword"
+	auth.GET("/servertime", controllers.CurrentTime).Name = "CurrentTime"
 
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"
