@@ -414,6 +414,75 @@
         }
       }
     },
+    "/auth/portofolio": {
+      "get": {
+        "description": "Get portofolio",
+        "tags": [
+          "Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "user_id": 7,
+                    "email": "yogasutrisna902@gmail.com",
+                    "phone_number": "08388644363",
+                    "role_key": 1,
+                    "role_category_key": 1,
+                    "rec_image1": "https://devapi.mncasset.com/user/default.png"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/city/{field}/{key}": {
       "get": {
         "description": "Get City",

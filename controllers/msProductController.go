@@ -697,3 +697,191 @@ func GetMsProductData(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func Portofolio(c echo.Context) error {
+	var err error
+	var status int
+
+	responseData := make(map[string]interface{})
+	params := make(map[string]string)
+	
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	} 
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	params["customer_key"] = customerKey
+	params["trans_status_key"] = "9"
+	var transactionDB []models.TrTransaction
+	status, err = models.GetAllTrTransaction(&transactionDB, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get transaction data")
+	}
+	if len(transactionDB) < 1 {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+	}
+
+	var sub, red float32
+	var navDates []string
+	for _, transaction := range transactionDB {
+		navDates = append(navDates, "'"+transaction.NavDate+"'")
+	}
+	var navDB []models.TrNav
+	status, err = models.GetTrNavIn(&navDB, navDates, "nav_date")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get nav data")
+	}
+	if len(navDB) < 1 {
+		log.Error("Nav data not found")
+		return lib.CustomError(http.StatusNotFound, "Nav data not found", "Nav data not found")
+	}
+	nData := make(map[string]models.TrNav)
+	for _, nav := range navDB {
+		nData[nav.NavDate] = nav
+	}
+
+	for _, transaction := range transactionDB {
+		if transaction.TransAmount > 0 {
+			if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 { 
+				sub += transaction.TransAmount
+			}else if transaction.TransTypeKey == 2 || transaction.TransTypeKey == 3 {
+				red += transaction.TransAmount
+			}
+		}else if transaction.TransUnit > 0 {
+			if nav, ok := nData[transaction.NavDate]; ok {
+				if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 { 
+					sub += (transaction.TransUnit * nav.NavValue)	
+				}else if transaction.TransTypeKey == 2 || transaction.TransTypeKey == 3 {
+					red += (transaction.TransUnit * nav.NavValue)
+				}
+			}
+		}
+	}
+
+	netSub := sub - red
+	responseData["net_sub"] = netSub
+
+	params = make(map[string]string)
+	var userProduct []string
+	balanceUnit := make(map[uint64]float32)
+	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
+		paramsAcc := make(map[string]string)
+		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+		paramsAcc["rec_status"] = "1"
+		
+		var accDB []models.TrAccount
+		status, err = models.GetAllTrAccount(&accDB, paramsAcc)
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		var accIDs []string
+		accProduct := make(map[uint64]uint64)
+		acaProduct := make(map[uint64]uint64)
+		var acaDB []models.TrAccountAgent
+		if len(accDB) > 0 {
+			for _, acc := range accDB {
+				accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
+				accProduct[acc.AccKey] = acc.ProductKey
+			}
+			status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
+			if err != nil {
+				log.Error(err.Error())
+			}
+			if len(acaDB) > 0 {
+				var acaIDs []string
+				for _, aca := range acaDB {
+					acaIDs = append(acaIDs, strconv.FormatUint(aca.AcaKey, 10))
+					acaProduct[aca.AcaKey] = aca.AccKey
+				}
+				var balanceDB []models.TrBalance
+				status, err = models.GetLastBalanceIn(&balanceDB, acaIDs)
+				if err != nil {
+					log.Error(err.Error())
+				}
+				if len(balanceDB) > 0 {
+					for _, balance := range balanceDB {
+						log.Info(balance.BalanceKey, balance.AcaKey)
+						if accKey, ok := acaProduct[balance.AcaKey]; ok {
+							if balance.BalanceUnit > 0 {
+								if productKey, ok := accProduct[accKey]; ok {
+									if _, ok := balanceUnit[productKey]; ok {
+										balanceUnit[productKey] += balance.BalanceUnit
+									}else{
+										balanceUnit[productKey] = balance.BalanceUnit
+									}
+									userProduct = append(userProduct, strconv.FormatUint(productKey, 10))
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	var productDB []models.MsProduct
+	status, err = models.GetMsProductIn(&productDB, userProduct, "product_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(productDB) < 1 {
+		log.Error("product not found")
+		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
+	}
+	var navDB2 []models.TrNav
+	status, err = models.GetLastNavIn(&navDB2, userProduct)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	navData := make(map[uint64]models.TrNav)
+	var total float32
+	for _, nav := range navDB2 {
+		navData[nav.ProductKey] = nav
+		if b, ok := balanceUnit[nav.ProductKey]; ok {
+			total += (b * nav.NavValue)
+		}
+	}
+	responseData["total_invest"] = total
+	imba := (total/netSub)*100
+	responseData["imba"] = fmt.Sprintf("%.3f", imba) + `%`
+	var products []interface{}
+	for _, product := range productDB {
+		data := make(map[string]interface{})
+	
+		data["product_key"] = product.ProductKey
+		data["product_id"] = product.ProductID
+		data["product_code"] = product.ProductCode
+		data["product_name"] = product.ProductName
+		data["product_name_alt"] = product.ProductNameAlt
+
+		if product.RecImage1 != nil && *product.RecImage1 != ""{
+			data["rec_image1"] = config.BaseUrl + "/images/product/" + *product.RecImage1
+		}else{
+			data["rec_image1"] = config.BaseUrl + "/images/product/default.png"
+		}
+		if n, ok := navData[product.ProductKey]; ok {
+			if b, ok := balanceUnit[product.ProductKey]; ok {
+				data["invest_value"] =  b * n.NavValue
+				percent := ((b * n.NavValue)/total) * 100
+				data["percent"] =  fmt.Sprintf("%.3f", percent) + `%`
+			}
+		}
+	
+		products = append(products, data)
+	}
+	responseData["product"] = products
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	
+	return c.JSON(http.StatusOK, response)
+}
