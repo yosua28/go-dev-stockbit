@@ -1593,10 +1593,10 @@ func UploadExcelConfirmation(c echo.Context) error {
 			// Get file extension
 			extension := filepath.Ext(file.Filename)
 			log.Println(extension)
-			roles := []string{".xlsx", ".XLSX", ".xls", ".XLS"}
+			roles := []string{".xlsx", ".XLSX"}
 			_, found := lib.Find(roles, extension)
 			if !found {
-				return lib.CustomError(http.StatusUnauthorized, "Format file must xlsx/xls", "Format file must xlsx/xls")
+				return lib.CustomError(http.StatusUnauthorized, "Format file must .xlsx", "Format file must .xlsx")
 			}
 
 			// Generate filename
@@ -1612,7 +1612,9 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 			xlsx, err := excelize.OpenFile(config.BasePath + "/transaksi_upload/confirmation/" + filename + extension)
 			if err != nil {
-				log.Fatal("ERROR", err.Error())
+				log.Println(config.BasePath + "/transaksi_upload/confirmation/" + filename + extension)
+				// log.Fatal("ERROR", err.Error())
+				return lib.CustomError(http.StatusInternalServerError)
 			}
 
 			sheet1Name := xlsx.GetSheetName(1)
