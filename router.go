@@ -42,6 +42,10 @@ func router() *echo.Echo {
 	auth.GET("/product/:key", controllers.GetMsProductData).Name = "GetMsProductData"
 	auth.GET("/productlist", controllers.ProductListMutasi).Name = "ProductListMutasi"
 
+	// Message
+	auth.GET("/message", controllers.GetMessageList).Name = "GetMessageList"
+	auth.GET("/message/:key", controllers.GetMessageData).Name = "GetMessageData"
+
 	// Nav
 	auth.GET("/nav/:duration/:product_key", controllers.GetTrNavProduct).Name = "GetTrNavProduct"
 
