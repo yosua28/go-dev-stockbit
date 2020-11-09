@@ -4,15 +4,16 @@ import (
 	"api/db"
 	"log"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 type MsCurrencyInfo struct {
-	CurrencyKey       uint64  `json:"currency_key"`
-	Code              string  `json:"code"`
-	Symbol            *string `json:"symbol"`
-	Name              *string `json:"name"`
-	FlagBase          uint8   `json:"flag_base"`
+	CurrencyKey uint64  `json:"currency_key"`
+	Code        string  `json:"code"`
+	Symbol      *string `json:"symbol"`
+	Name        *string `json:"name"`
+	FlagBase    uint8   `json:"flag_base"`
 }
 
 type MsCurrency struct {
@@ -65,6 +66,62 @@ func GetMsCurrency(c *MsCurrency, key string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetListMsCurrency(c *[]MsCurrency, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	query2 := `SELECT
+				ms_currency.* FROM 
+				ms_currency `
+	query := query2 + " WHERE ms_currency.rec_status = 1 "
+
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ms_currency."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

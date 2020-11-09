@@ -3,12 +3,20 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type MsCustodianBankInfo struct {
+	CustodianCode      string  `json:"custodian_code"`
+	CustodianShortName string  `json:"custodian_short_name"`
+	CustodianFullName  *string `json:"custodian_full_name"`
+}
+
+type MsCustodianBankInfoList struct {
+	CustodianKey       uint64  `json:"custodian_key"`
 	CustodianCode      string  `json:"custodian_code"`
 	CustodianShortName string  `json:"custodian_short_name"`
 	CustodianFullName  *string `json:"custodian_full_name"`
@@ -64,6 +72,62 @@ func GetMsCustodianBankIn(c *[]MsCustodianBank, value []string, field string) (i
 				ms_custodian_bank WHERE 
 				ms_custodian_bank.rec_status = 1 `
 	query := query2 + " AND ms_custodian_bank." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetListMsCustodianBank(c *[]MsCustodianBank, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	query2 := `SELECT
+				ms_custodian_bank.* FROM 
+				ms_custodian_bank `
+	query := query2 + " WHERE ms_custodian_bank.rec_status = 1 "
+
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ms_custodian_bank."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
 
 	// Main query
 	log.Println(query)

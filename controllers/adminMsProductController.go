@@ -603,7 +603,8 @@ func GetProductDetailAdmin(c echo.Context) error {
 				return lib.CustomError(status)
 			}
 		} else {
-			var cr models.MsCustodianBankInfo
+			var cr models.MsCustodianBankInfoList
+			cr.CustodianKey = msCustodianBank.CustodianKey
 			cr.CustodianCode = msCustodianBank.CustodianCode
 			cr.CustodianShortName = msCustodianBank.CustodianShortName
 			cr.CustodianFullName = msCustodianBank.CustodianFullName
