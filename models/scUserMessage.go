@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"database/sql"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -148,5 +149,43 @@ func GetScUserMessage(c *ScUserMessage, key string) (int, error) {
 		return http.StatusNotFound, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateScUserMessage(params map[string]string) (int, error) {
+	query := "UPDATE sc_user_message SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "umessage_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE umessage_key = " + params["umessage_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }

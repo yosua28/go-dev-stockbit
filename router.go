@@ -45,6 +45,7 @@ func router() *echo.Echo {
 	// Message
 	auth.GET("/message", controllers.GetMessageList).Name = "GetMessageList"
 	auth.GET("/message/:key", controllers.GetMessageData).Name = "GetMessageData"
+	auth.PATCH("/patchmessage", controllers.PatchMessage).Name = "PatchMessage"
 
 	// Nav
 	auth.GET("/nav/:duration/:product_key", controllers.GetTrNavProduct).Name = "GetTrNavProduct"
