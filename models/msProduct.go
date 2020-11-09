@@ -138,6 +138,37 @@ type AdminMsProductList struct {
 	SwitchIn            string  `json:"switch_in"`
 }
 
+func CreateMsProduct(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_product"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
 type AdminMsProductDetail struct {
 	ProductKey            uint64                 `json:"product_key"`
 	ProductID             uint64                 `json:"product_id"`
@@ -402,5 +433,75 @@ func UpdateMsProduct(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func AdminGetValidateUniqueDataInsertUpdate(c *CountData, paramsOr map[string]string, paramsAnd map[string]string, updateKey *string) (int, error) {
+	query := `SELECT
+			  count(ms_product.product_key) as count_data 
+			  FROM ms_product `
+	var orWhereClause []string
+	var andWhereClause []string
+	var condition string
+
+	for fieldOr, valueOr := range paramsOr {
+		orWhereClause = append(orWhereClause, "ms_product."+fieldOr+" = '"+valueOr+"'")
+	}
+
+	for fieldAnd, valueAnd := range paramsAnd {
+		andWhereClause = append(andWhereClause, "ms_product."+fieldAnd+" like '"+valueAnd+"'")
+	}
+
+	// Combile where Or clause
+	if len(orWhereClause) > 0 {
+		condition += " WHERE ("
+		for index, where := range orWhereClause {
+			condition += where
+			if (len(orWhereClause) - 1) > index {
+				condition += " OR "
+			} else {
+				condition += ") "
+			}
+		}
+	}
+
+	// Combile where And clause
+	if len(andWhereClause) > 0 {
+		if len(orWhereClause) > 0 {
+			condition += " AND "
+		} else {
+			condition += " WHERE "
+		}
+
+		for index, where := range andWhereClause {
+			condition += where
+			if (len(andWhereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if updateKey != nil {
+		if len(orWhereClause) > 0 {
+			condition += " AND "
+		} else if len(andWhereClause) > 0 {
+			condition += " AND "
+		} else {
+			condition += " WHERE "
+		}
+
+		condition += " ms_product.product_key != '" + *updateKey + "'"
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

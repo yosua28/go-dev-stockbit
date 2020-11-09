@@ -3157,7 +3157,10 @@
                   },
                   "read": {
                     "type": "integer",
-                    "enum": [0, 1]
+                    "enum": [
+                      0,
+                      1
+                    ]
                   }
                 },
                 "required": [
@@ -7302,6 +7305,442 @@
                 },
                 "required": [
                   "product_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product/create": {
+      "post": {
+        "description": "Create Product : role 15",
+        "tags": [
+          "Admin Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_code": {
+                    "type": "string"
+                  },
+                  "product_id": {
+                    "type": "integer"
+                  },
+                  "product_name": {
+                    "type": "string"
+                  },
+                  "product_name_alt": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "product_category_key": {
+                    "type": "integer"
+                  },
+                  "product_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_structure_key": {
+                    "type": "integer"
+                  },
+                  "risk_profile_key": {
+                    "type": "integer"
+                  },
+                  "product_profile": {
+                    "type": "string"
+                  },
+                  "investment_objectives": {
+                    "type": "string"
+                  },
+                  "product_phase": {
+                    "type": "integer"
+                  },
+                  "nav_valuation_type": {
+                    "type": "integer"
+                  },
+                  "prospectus_link": {
+                    "type": "string"
+                  },
+                  "launch_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "inception_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "isin_code": {
+                    "type": "string"
+                  },
+                  "flag_syariah": {
+                    "type": "boolean"
+                  },
+                  "max_sub_fee": {
+                    "type": "number"
+                  },
+                  "max_red_fee": {
+                    "type": "number"
+                  },
+                  "max_swi_fee": {
+                    "type": "number"
+                  },
+                  "min_sub_amount": {
+                    "type": "number"
+                  },
+                  "min_red_amount": {
+                    "type": "number"
+                  },
+                  "min_red_unit": {
+                    "type": "number"
+                  },
+                  "min_unit_after_red": {
+                    "type": "number"
+                  },
+                  "management_fee": {
+                    "type": "number"
+                  },
+                  "custodian_fee": {
+                    "type": "number"
+                  },
+                  "custodian_key": {
+                    "type": "integer"
+                  },
+                  "ojk_fee": {
+                    "type": "number"
+                  },
+                  "product_fee_amount": {
+                    "type": "number"
+                  },
+                  "overwrite_transact_flag": {
+                    "type": "boolean"
+                  },
+                  "overwrite_fee_flag": {
+                    "type": "boolean"
+                  },
+                  "other_fee_amount": {
+                    "type": "number"
+                  },
+                  "settlement_period": {
+                    "type": "integer"
+                  },
+                  "sinvest_fund_code": {
+                    "type": "string"
+                  },
+                  "flag_enabled": {
+                    "type": "boolean"
+                  },
+                  "flag_subscription": {
+                    "type": "boolean"
+                  },
+                  "flag_redemption": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_out": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_in": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "product_code",
+                  "product_id",
+                  "product_name",
+                  "product_name_alt",
+                  "flag_syariah",
+                  "max_sub_fee",
+                  "max_red_fee",
+                  "max_swi_fee",
+                  "min_sub_amount",
+                  "min_red_amount",
+                  "min_red_unit",
+                  "min_unit_after_red",
+                  "management_fee",
+                  "custodian_fee",
+                  "ojk_fee",
+                  "product_fee_amount",
+                  "overwrite_transact_flag",
+                  "overwrite_fee_flag",
+                  "other_fee_amount",
+                  "flag_enabled",
+                  "flag_subscription",
+                  "flag_redemption",
+                  "flag_switch_out",
+                  "flag_switch_in"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product/update": {
+      "post": {
+        "description": "Update Product : role 15",
+        "tags": [
+          "Admin Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "product_code": {
+                    "type": "string"
+                  },
+                  "product_id": {
+                    "type": "integer"
+                  },
+                  "product_name": {
+                    "type": "string"
+                  },
+                  "product_name_alt": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "product_category_key": {
+                    "type": "integer"
+                  },
+                  "product_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_structure_key": {
+                    "type": "integer"
+                  },
+                  "risk_profile_key": {
+                    "type": "integer"
+                  },
+                  "product_profile": {
+                    "type": "string"
+                  },
+                  "investment_objectives": {
+                    "type": "string"
+                  },
+                  "product_phase": {
+                    "type": "integer"
+                  },
+                  "nav_valuation_type": {
+                    "type": "integer"
+                  },
+                  "prospectus_link": {
+                    "type": "string"
+                  },
+                  "launch_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "inception_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "isin_code": {
+                    "type": "string"
+                  },
+                  "flag_syariah": {
+                    "type": "boolean"
+                  },
+                  "max_sub_fee": {
+                    "type": "number"
+                  },
+                  "max_red_fee": {
+                    "type": "number"
+                  },
+                  "max_swi_fee": {
+                    "type": "number"
+                  },
+                  "min_sub_amount": {
+                    "type": "number"
+                  },
+                  "min_red_amount": {
+                    "type": "number"
+                  },
+                  "min_red_unit": {
+                    "type": "number"
+                  },
+                  "min_unit_after_red": {
+                    "type": "number"
+                  },
+                  "management_fee": {
+                    "type": "number"
+                  },
+                  "custodian_fee": {
+                    "type": "number"
+                  },
+                  "custodian_key": {
+                    "type": "integer"
+                  },
+                  "ojk_fee": {
+                    "type": "number"
+                  },
+                  "product_fee_amount": {
+                    "type": "number"
+                  },
+                  "overwrite_transact_flag": {
+                    "type": "boolean"
+                  },
+                  "overwrite_fee_flag": {
+                    "type": "boolean"
+                  },
+                  "other_fee_amount": {
+                    "type": "number"
+                  },
+                  "settlement_period": {
+                    "type": "integer"
+                  },
+                  "sinvest_fund_code": {
+                    "type": "string"
+                  },
+                  "flag_enabled": {
+                    "type": "boolean"
+                  },
+                  "flag_subscription": {
+                    "type": "boolean"
+                  },
+                  "flag_redemption": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_out": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_in": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "product_key",
+                  "product_code",
+                  "product_id",
+                  "product_name",
+                  "product_name_alt",
+                  "flag_syariah",
+                  "max_sub_fee",
+                  "max_red_fee",
+                  "max_swi_fee",
+                  "min_sub_amount",
+                  "min_red_amount",
+                  "min_red_unit",
+                  "min_unit_after_red",
+                  "management_fee",
+                  "custodian_fee",
+                  "ojk_fee",
+                  "product_fee_amount",
+                  "overwrite_transact_flag",
+                  "overwrite_fee_flag",
+                  "other_fee_amount",
+                  "flag_enabled",
+                  "flag_subscription",
+                  "flag_redemption",
+                  "flag_switch_out",
+                  "flag_switch_in"
                 ]
               }
             }
