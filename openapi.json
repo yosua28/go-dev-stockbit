@@ -7202,10 +7202,10 @@
                       "fund_structure_desc": "Opend_End"
                     },
                     "risk_profile": {
-                      "lookup_key": 2,
-                      "lkp_group_key": 1,
-                      "lkp_code": "1",
-                      "lkp_name": "Yes"
+                      "risk_profile_key": 2,
+                      "risk_code": "RendahMenengah",
+                      "risk_name": "Konservatif Moderate",
+                      "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
                     },
                     "product_profile": "<p><strong>MNC Dana Lancar</strong> adalah produk reksa dana pasar uang milik MNC Asset Management yang memberikan tingkat pengembalian menarik dengan risiko serendah mungkin, serta tetap mempertahankan nilai modal investasi dan menjaga kestabilan likuiditas. Produk ini termasuk kategori reksa dana pasar uang dengan alokasi investasi 100% pada efek hutang atau instrumen pasar uang yang jatuh tempo kurang dari 1 tahun.</p>",
                     "investment_objectives": "MNC DANA LANCAR akan melakukan investasi dengan komposisi portofolio investasi 100% (seratus persen) pada Efek Bersifat Utang dan/atau instrumen pasar uang yang mempunyai jatuh tempo tidak lebih dari 1 (satu) tahun, sesuai peraturan perundang-undangan yang berlaku di Indonesia.",

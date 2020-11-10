@@ -180,7 +180,7 @@ type AdminMsProductDetail struct {
 	ProductType           *MsProductTypeInfo       `json:"product_type"`
 	FundType              *MsFundTypeInfo          `json:"fund_type"`
 	FundStructure         *MsFundStructureInfo     `json:"fund_structure"`
-	RiskProfile           *LookupTrans             `json:"risk_profile"`
+	RiskProfile           *MsRiskProfileInfoAdmin  `json:"risk_profile"`
 	ProductProfile        *string                  `json:"product_profile"`
 	InvestmentObjectives  *string                  `json:"investment_objectives"`
 	ProductPhase          *LookupTrans             `json:"product_phase"`

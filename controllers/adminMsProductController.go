@@ -390,11 +390,6 @@ func GetProductDetailAdmin(c echo.Context) error {
 
 	var lookupIds []string
 
-	if product.RiskProfileKey != nil {
-		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*product.RiskProfileKey, 10)); !ok {
-			lookupIds = append(lookupIds, strconv.FormatUint(*product.RiskProfileKey, 10))
-		}
-	}
 	if product.ProductPhase != nil {
 		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*product.ProductPhase, 10)); !ok {
 			lookupIds = append(lookupIds, strconv.FormatUint(*product.ProductPhase, 10))
@@ -519,14 +514,20 @@ func GetProductDetailAdmin(c echo.Context) error {
 	}
 
 	if product.RiskProfileKey != nil {
-		if n, ok := gData[*product.RiskProfileKey]; ok {
-			var trc models.LookupTrans
-
-			trc.LookupKey = n.LookupKey
-			trc.LkpGroupKey = n.LkpGroupKey
-			trc.LkpCode = n.LkpCode
-			trc.LkpName = n.LkpName
-			responseData.RiskProfile = &trc
+		var riskProfile models.MsRiskProfile
+		strRiskProfileKey := strconv.FormatUint(*product.RiskProfileKey, 10)
+		status, err = models.GetMsRiskProfile(&riskProfile, strRiskProfileKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var rs models.MsRiskProfileInfoAdmin
+			rs.RiskProfileKey = riskProfile.RiskProfileKey
+			rs.RiskCode = riskProfile.RiskCode
+			rs.RiskName = riskProfile.RiskName
+			rs.RiskDesc = riskProfile.RiskDesc
+			responseData.RiskProfile = &rs
 		}
 	}
 
