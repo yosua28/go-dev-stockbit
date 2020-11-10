@@ -23,6 +23,12 @@ type MsProductList struct {
 	RiskProfile    *MsRiskProfileInfo     `json:"risk_profile,omitempty"`
 }
 
+type MsProductListDropdown struct {
+	ProductKey  uint64 `json:"product_key"`
+	ProductCode string `json:"product_code"`
+	ProductName string `json:"product_name"`
+}
+
 type MsProductData struct {
 	ProductKey       uint64                     `json:"product_key"`
 	ProductID        uint64                     `json:"product_id"`
