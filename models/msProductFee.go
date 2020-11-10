@@ -55,6 +55,28 @@ type MsProductFee struct {
 	RecAttributeID3   *string  `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
+type MsProductFeeDetailAdmin struct {
+	FeeKey            uint64                        `json:"fee_key"`
+	Product           MsProductListDropdown         `json:"product"`
+	FeeType           *LookupTrans                  `json:"fee_type"`
+	FeeCode           *string                       `json:"fee_code"`
+	FlagShowOntnc     bool                          `json:"flag_show_ontnc"`
+	FeeAnnotation     *string                       `json:"fee_annotation"`
+	FeeDesc           *string                       `json:"fee_desc"`
+	FeeDateStart      *string                       `json:"fee_date_start"`
+	FeeDateThru       *string                       `json:"fee_date_thru"`
+	FeeNominalType    *LookupTrans                  `json:"fee_nominal_type"`
+	EnabledMinAmount  bool                          `json:"enabled_min_amount"`
+	FeeMinAmount      *float64                      `json:"fee_min_amount"`
+	EnabledMaxAmount  bool                          `json:"enabled_max_amount"`
+	FeeMaxAmount      *float64                      `json:"fee_max_amount"`
+	FeeCalcMethod     *LookupTrans                  `json:"fee_calc_method"`
+	CalculationBaseon *LookupTrans                  `json:"calculation_baseon"`
+	PeriodHold        uint64                        `json:"period_hold"`
+	DaysInyear        *LookupTrans                  `json:"days_inyear"`
+	ProductFeeItems   *[]MsProductFeeItemDetailList `json:"product_fee_items"`
+}
+
 type AdminListMsProductFee struct {
 	FeeKey       uint64  `db:"fee_key"               json:"fee_key"`
 	FeeCode      *string `db:"fee_code"              json:"fee_code"`
@@ -243,6 +265,18 @@ func AdminCountDataGetAllMsProductFee(c *CountData, params map[string]string, se
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductFee(c *MsProductFee, key string) (int, error) {
+	query := `SELECT ms_product_fee.* FROM ms_product_fee WHERE ms_product_fee.rec_status = 1 AND ms_product_fee.fee_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

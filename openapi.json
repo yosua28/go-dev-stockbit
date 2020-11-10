@@ -9035,6 +9035,147 @@
           }
         }
       }
+    },
+    "/admin/productfee/{key}": {
+      "get": {
+        "description": "Get Detail Product Fee (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "product fee key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "fee_key": 1,
+                    "product": {
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR"
+                    },
+                    "fee_type": {
+                      "lookup_key": 183,
+                      "lkp_group_key": 38,
+                      "lkp_code": "1",
+                      "lkp_name": "SUB"
+                    },
+                    "fee_code": "TNC_SUB",
+                    "flag_show_ontnc": true,
+                    "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya Subscription</li><li>Minimal Investasi awal Rp. 100.000</li><li>Minimal Top Up Rp. 100.000</li><li>Batas waktu transaksi paling lambat pukul 13.00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses untuk hari bursa berikutnya.</li></ul><br/><p>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya Redemption 0.5%</li><li>&gt; 3 bulan, biaya Redemption 0%</li><li>Minimal Redemption Rp. 100.000</li><li>Transfer antar Bank akan dikenakan Biaya</li></ul>",
+                    "fee_desc": "Ketentuan Fee yang akan tampil di Transaksi SUBSCRIPTION ",
+                    "fee_date_start": "01 Feb 2020",
+                    "fee_date_thru": "31 Dec 2200",
+                    "fee_nominal_type": {
+                      "lookup_key": 191,
+                      "lkp_group_key": 39,
+                      "lkp_code": "1",
+                      "lkp_name": "AMOUNT"
+                    },
+                    "enabled_min_amount": false,
+                    "fee_min_amount": 0,
+                    "enabled_max_amount": false,
+                    "fee_max_amount": 0,
+                    "fee_calc_method": {
+                      "lookup_key": 193,
+                      "lkp_group_key": 40,
+                      "lkp_code": "1",
+                      "lkp_name": "FLAT"
+                    },
+                    "calculation_baseon": {
+                      "lookup_key": 196,
+                      "lkp_group_key": 41,
+                      "lkp_code": "1",
+                      "lkp_name": "TRANSACT_COUNT"
+                    },
+                    "period_hold": 30,
+                    "days_inyear": {
+                      "lookup_key": 201,
+                      "lkp_group_key": 42,
+                      "lkp_code": "356",
+                      "lkp_name": "366 Hari"
+                    },
+                    "product_fee_items": [
+                      {
+                        "product_fee_item_key": 1,
+                        "principle_limit": 0,
+                        "fee_value": 0,
+                        "item_notes": "Tidak dikenakan biaya Subscription"
+                      },
+                      {
+                        "product_fee_item_key": 2,
+                        "principle_limit": 0,
+                        "fee_value": 0,
+                        "item_notes": "Tidak dikenakan biaya Subscription"
+                      },
+                      {
+                        "product_fee_item_key": 3,
+                        "principle_limit": 0,
+                        "fee_value": 0,
+                        "item_notes": "Tidak dikenakan biaya Subscription"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

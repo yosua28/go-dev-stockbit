@@ -9,38 +9,45 @@ import (
 )
 
 type MsProductFeeItemInfo struct {
-	ItemSeqno             uint64    `json:"item_seqno"`
-	RowMax                uint8     `json:"row_max"`
-	PrincipleLimit        float64   `json:"principle_limit"`
-	FeeValue              float64   `json:"fee_value"`
-	ItemNotes             string    `json:"item_notes"`
+	ItemSeqno      uint64  `json:"item_seqno"`
+	RowMax         uint8   `json:"row_max"`
+	PrincipleLimit float64 `json:"principle_limit"`
+	FeeValue       float64 `json:"fee_value"`
+	ItemNotes      string  `json:"item_notes"`
 }
 
 type MsProductFeeItem struct {
-	ProductFeeItemKey     uint64    `db:"product_fee_item_key"  json:"product_fee_item_key"`
-	ProductFeeKey         uint64    `db:"product_fee_key"       json:"product_fee_key"`
-	ItemSeqno             uint64    `db:"item_seqno"            json:"item_seqno"`
-	RowMax                uint8     `db:"row_max"               json:"row_max"`
-	PrincipleLimit        float64   `db:"principle_limit"       json:"principle_limit"`
-	FeeValue              float64   `db:"fee_value"             json:"fee_value"`
-	ItemNotes            *string    `db:"item_notes"            json:"item_notes"`
-	RecOrder             *uint64    `db:"rec_order"             json:"rec_order"`
-	RecStatus            uint8      `db:"rec_status"            json:"rec_status"`
-	RecCreatedDate       *string    `db:"rec_created_date"      json:"rec_created_date"`
-	RecCreatedBy         *string    `db:"rec_created_by"        json:"rec_created_by"`
-	RecModifiedDate      *string    `db:"rec_modified_date"     json:"rec_modified_date"`
-	RecModifiedBy        *string    `db:"rec_modified_by"       json:"rec_modified_by"`
-	RecImage1            *string    `db:"rec_image1"            json:"rec_image1"`
-	RecImage2            *string    `db:"rec_image2"            json:"rec_image2"`
-	RecApprovalStatus    *uint8     `db:"rec_approval_status"   json:"rec_approval_status"`
-	RecApprovalStage     *uint64    `db:"rec_approval_stage"    json:"rec_approval_stage"`
-	RecApprovedDate      *string    `db:"rec_approved_date"     json:"rec_approved_date"`
-	RecApprovedBy        *string    `db:"rec_approved_by"       json:"rec_approved_by"`
-	RecDeletedDate       *string    `db:"rec_deleted_date"      json:"rec_deleted_date"`
-	RecDeletedBy         *string    `db:"rec_deleted_by"        json:"rec_deleted_by"`
-	RecAttributeID1      *string    `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
-	RecAttributeID2      *string    `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
-	RecAttributeID3      *string    `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+	ProductFeeItemKey uint64  `db:"product_fee_item_key"  json:"product_fee_item_key"`
+	ProductFeeKey     uint64  `db:"product_fee_key"       json:"product_fee_key"`
+	ItemSeqno         uint64  `db:"item_seqno"            json:"item_seqno"`
+	RowMax            uint8   `db:"row_max"               json:"row_max"`
+	PrincipleLimit    float64 `db:"principle_limit"       json:"principle_limit"`
+	FeeValue          float64 `db:"fee_value"             json:"fee_value"`
+	ItemNotes         *string `db:"item_notes"            json:"item_notes"`
+	RecOrder          *uint64 `db:"rec_order"             json:"rec_order"`
+	RecStatus         uint8   `db:"rec_status"            json:"rec_status"`
+	RecCreatedDate    *string `db:"rec_created_date"      json:"rec_created_date"`
+	RecCreatedBy      *string `db:"rec_created_by"        json:"rec_created_by"`
+	RecModifiedDate   *string `db:"rec_modified_date"     json:"rec_modified_date"`
+	RecModifiedBy     *string `db:"rec_modified_by"       json:"rec_modified_by"`
+	RecImage1         *string `db:"rec_image1"            json:"rec_image1"`
+	RecImage2         *string `db:"rec_image2"            json:"rec_image2"`
+	RecApprovalStatus *uint8  `db:"rec_approval_status"   json:"rec_approval_status"`
+	RecApprovalStage  *uint64 `db:"rec_approval_stage"    json:"rec_approval_stage"`
+	RecApprovedDate   *string `db:"rec_approved_date"     json:"rec_approved_date"`
+	RecApprovedBy     *string `db:"rec_approved_by"       json:"rec_approved_by"`
+	RecDeletedDate    *string `db:"rec_deleted_date"      json:"rec_deleted_date"`
+	RecDeletedBy      *string `db:"rec_deleted_by"        json:"rec_deleted_by"`
+	RecAttributeID1   *string `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
+	RecAttributeID2   *string `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
+	RecAttributeID3   *string `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+}
+
+type MsProductFeeItemDetailList struct {
+	ProductFeeItemKey uint64  `json:"product_fee_item_key"`
+	PrincipleLimit    float64 `json:"principle_limit"`
+	FeeValue          float64 `json:"fee_value"`
+	ItemNotes         *string `json:"item_notes"`
 }
 
 func GetAllMsProductFeeItem(c *[]MsProductFeeItem, params map[string]string) (int, error) {

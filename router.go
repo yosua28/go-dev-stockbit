@@ -159,6 +159,7 @@ func router() *echo.Echo {
 
 	//Admin Product
 	admin.GET("/productfeelist", controllers.GetListProductFeeAdmin).Name = "GetListProductFeeAdmin"
+	admin.GET("/productfee/:key", controllers.GetProductFeeDetailAdmin).Name = "GetProductFeeDetailAdmin"
 
 	return e
 }
