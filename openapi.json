@@ -6956,7 +6956,6 @@
               "type": "string",
               "enum": [
                 "product_key",
-                "product_id",
                 "product_code",
                 "product_name",
                 "launch_date",
@@ -7050,7 +7049,6 @@
                   "data": [
                     {
                       "product_key": 1,
-                      "product_id": 5,
                       "product_code": "BDLC",
                       "product_name": "DANA LANCAR",
                       "product_name_alt": "DANA LANCAR",
@@ -7072,7 +7070,6 @@
                     },
                     {
                       "product_key": 2,
-                      "product_id": 11,
                       "product_code": "BDM",
                       "product_name": "MNC DANA SYARIAH",
                       "product_name_alt": "DANA SYARIAH",
@@ -7167,7 +7164,6 @@
                   },
                   "data": {
                     "product_key": 52,
-                    "product_id": 111111,
                     "product_code": "MNCDT8888",
                     "product_name": "REKSADANA TERPROTEKSI MNC 99889",
                     "product_name_alt": "REKSADANA TERPROTEKSI MNC 99889",
@@ -7384,9 +7380,6 @@
                   "product_code": {
                     "type": "string"
                   },
-                  "product_id": {
-                    "type": "integer"
-                  },
                   "product_name": {
                     "type": "string"
                   },
@@ -7509,7 +7502,6 @@
                 },
                 "required": [
                   "product_code",
-                  "product_id",
                   "product_name",
                   "product_name_alt",
                   "flag_syariah",
@@ -7602,9 +7594,6 @@
                   },
                   "product_code": {
                     "type": "string"
-                  },
-                  "product_id": {
-                    "type": "integer"
                   },
                   "product_name": {
                     "type": "string"
@@ -7729,7 +7718,6 @@
                 "required": [
                   "product_key",
                   "product_code",
-                  "product_id",
                   "product_name",
                   "product_name_alt",
                   "flag_syariah",
@@ -7802,9 +7790,9 @@
     },
     "/admin/productlist/dropdown": {
       "get": {
-        "description": "Get All Product Dropdown",
+        "description": "Get All Product Dropdown in Product Fee",
         "tags": [
-          "Admin Product"
+          "Admin Product Fee"
         ],
         "security": [
           {
@@ -7821,7 +7809,6 @@
               "type": "string",
               "enum": [
                 "product_key",
-                "product_id",
                 "product_code",
                 "product_name",
                 "launch_date",

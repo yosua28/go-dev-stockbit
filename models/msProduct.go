@@ -123,7 +123,6 @@ type MsProduct struct {
 
 type AdminMsProductList struct {
 	ProductKey          uint64  `json:"product_key"`
-	ProductID           uint64  `json:"product_id"`
 	ProductCode         string  `json:"product_code"`
 	ProductName         string  `json:"product_name"`
 	ProductNameAlt      string  `json:"product_name_alt"`
@@ -177,7 +176,6 @@ func CreateMsProduct(params map[string]string) (int, error) {
 
 type AdminMsProductDetail struct {
 	ProductKey            uint64                   `json:"product_key"`
-	ProductID             uint64                   `json:"product_id"`
 	ProductCode           string                   `json:"product_code"`
 	ProductName           string                   `json:"product_name"`
 	ProductNameAlt        string                   `json:"product_name_alt"`

@@ -85,7 +85,7 @@ func GetListProductAdmin(c echo.Context) error {
 		noLimit = false
 	}
 
-	items := []string{"product_key", "product_id", "product_code", "product_name", "launch_date", "inception_date", "isin_code", "flag_syariah", "sinvest_fund_code"}
+	items := []string{"product_key", "product_code", "product_name", "launch_date", "inception_date", "isin_code", "flag_syariah", "sinvest_fund_code"}
 
 	params := make(map[string]string)
 	orderBy := c.QueryParam("order_by")
@@ -246,7 +246,6 @@ func GetListProductAdmin(c echo.Context) error {
 		var data models.AdminMsProductList
 
 		data.ProductKey = pro.ProductKey
-		data.ProductID = pro.ProductID
 		data.ProductCode = pro.ProductCode
 		data.ProductName = pro.ProductName
 		data.ProductNameAlt = pro.ProductNameAlt
@@ -419,7 +418,6 @@ func GetProductDetailAdmin(c echo.Context) error {
 	}
 
 	responseData.ProductKey = product.ProductKey
-	responseData.ProductID = product.ProductID
 	responseData.ProductCode = product.ProductCode
 	responseData.ProductName = product.ProductName
 	responseData.ProductNameAlt = product.ProductNameAlt
@@ -760,32 +758,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	}
 
 	//product_id
-	productid := c.FormValue("product_id")
-	if productid == "" {
-		log.Error("Missing required parameter: product_id cann't be blank")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_id cann't be blank", "Missing required parameter: product_id cann't be blank")
-	}
-	sub, err := strconv.ParseUint(productid, 10, 64)
-	if err == nil && sub > 0 {
-		params["product_id"] = productid
-	} else {
-		log.Error("Wrong input for parameter: product_id number")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_id must number", "Missing required parameter: product_id number")
-	}
-
-	//check unique product_id
-	paramsProductID := make(map[string]string)
-	paramsProductID["product_id"] = productid
-
-	status, err = models.AdminGetValidateUniqueDataInsertUpdate(&countDataExisting, paramsProductID, paramsCheckValidateAnd, nil)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
-	if int(countDataExisting.CountData) > 0 {
-		log.Error("Missing required parameter: product_id already existing, use other product_id")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_id already existing, use other product_id", "Missing required parameter: product_id already existing, use other product_id")
-	}
+	params["product_id"] = "0"
 
 	//product_name
 	productname := c.FormValue("product_name")
@@ -820,7 +793,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//currency_key
 	currencykey := c.FormValue("currency_key")
 	if currencykey != "" {
-		sub, err = strconv.ParseUint(currencykey, 10, 64)
+		sub, err := strconv.ParseUint(currencykey, 10, 64)
 		if err == nil && sub > 0 {
 			params["currency_key"] = currencykey
 		} else {
@@ -832,7 +805,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//product_category_key
 	productcategorykey := c.FormValue("product_category_key")
 	if productcategorykey != "" {
-		sub, err = strconv.ParseUint(productcategorykey, 10, 64)
+		sub, err := strconv.ParseUint(productcategorykey, 10, 64)
 		if err == nil && sub > 0 {
 			params["product_category_key"] = productcategorykey
 		} else {
@@ -844,7 +817,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//product_type_key
 	producttypekey := c.FormValue("product_type_key")
 	if producttypekey != "" {
-		sub, err = strconv.ParseUint(producttypekey, 10, 64)
+		sub, err := strconv.ParseUint(producttypekey, 10, 64)
 		if err == nil && sub > 0 {
 			params["product_type_key"] = producttypekey
 		} else {
@@ -856,7 +829,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//fund_type_key
 	fundtypekey := c.FormValue("fund_type_key")
 	if fundtypekey != "" {
-		sub, err = strconv.ParseUint(fundtypekey, 10, 64)
+		sub, err := strconv.ParseUint(fundtypekey, 10, 64)
 		if err == nil && sub > 0 {
 			params["fund_type_key"] = fundtypekey
 		} else {
@@ -868,7 +841,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//fund_structure_key
 	fundstructurekey := c.FormValue("fund_structure_key")
 	if fundstructurekey != "" {
-		sub, err = strconv.ParseUint(fundstructurekey, 10, 64)
+		sub, err := strconv.ParseUint(fundstructurekey, 10, 64)
 		if err == nil && sub > 0 {
 			params["fund_structure_key"] = fundstructurekey
 		} else {
@@ -880,7 +853,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//risk_profile_key
 	riskprofilekey := c.FormValue("risk_profile_key")
 	if riskprofilekey != "" {
-		sub, err = strconv.ParseUint(riskprofilekey, 10, 64)
+		sub, err := strconv.ParseUint(riskprofilekey, 10, 64)
 		if err == nil && sub > 0 {
 			params["risk_profile_key"] = riskprofilekey
 		} else {
@@ -904,7 +877,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//product_phase
 	productphase := c.FormValue("product_phase")
 	if productphase != "" {
-		sub, err = strconv.ParseUint(productphase, 10, 64)
+		sub, err := strconv.ParseUint(productphase, 10, 64)
 		if err == nil && sub > 0 {
 			params["product_phase"] = productphase
 		} else {
@@ -916,7 +889,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//nav_valuation_type
 	navvaluationtype := c.FormValue("nav_valuation_type")
 	if navvaluationtype != "" {
-		sub, err = strconv.ParseUint(navvaluationtype, 10, 64)
+		sub, err := strconv.ParseUint(navvaluationtype, 10, 64)
 		if err == nil && sub > 0 {
 			params["nav_valuation_type"] = navvaluationtype
 		} else {
@@ -1152,7 +1125,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//custodian_key
 	custodiankey := c.FormValue("custodian_key")
 	if custodiankey != "" {
-		sub, err = strconv.ParseUint(custodiankey, 10, 64)
+		sub, err := strconv.ParseUint(custodiankey, 10, 64)
 		if err == nil && sub > 0 {
 			params["custodian_key"] = custodiankey
 		} else {
@@ -1256,7 +1229,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 	//settlement_period
 	settlementperiod := c.FormValue("settlement_period")
 	if settlementperiod != "" {
-		sub, err = strconv.ParseUint(settlementperiod, 10, 64)
+		_, err = strconv.ParseUint(settlementperiod, 10, 64)
 		if err == nil {
 			params["settlement_period"] = settlementperiod
 		} else {
@@ -1463,33 +1436,7 @@ func UpdateAdminMsProduct(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_code already existing, use other product_code", "Missing required parameter: product_code already existing, use other product_code")
 	}
 
-	//product_id
-	productid := c.FormValue("product_id")
-	if productid == "" {
-		log.Error("Missing required parameter: product_id cann't be blank")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_id cann't be blank", "Missing required parameter: product_id cann't be blank")
-	}
-	sub, err := strconv.ParseUint(productid, 10, 64)
-	if err == nil && sub > 0 {
-		params["product_id"] = productid
-	} else {
-		log.Error("Wrong input for parameter: product_id number")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_id must number", "Missing required parameter: product_id number")
-	}
-
-	//check unique product_id
-	paramsProductID := make(map[string]string)
-	paramsProductID["product_id"] = productid
-
-	status, err = models.AdminGetValidateUniqueDataInsertUpdate(&countDataExisting, paramsProductID, paramsCheckValidateAnd, &productkey)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
-	if int(countDataExisting.CountData) > 0 {
-		log.Error("Missing required parameter: product_id already existing, use other product_id")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_id already existing, use other product_id", "Missing required parameter: product_id already existing, use other product_id")
-	}
+	var sub uint64
 
 	//product_name
 	productname := c.FormValue("product_name")
@@ -2159,7 +2106,7 @@ func GetListProductAdminDropdown(c echo.Context) error {
 		noLimit = false
 	}
 
-	items := []string{"product_key", "product_id", "product_code", "product_name", "launch_date", "inception_date", "isin_code", "flag_syariah", "sinvest_fund_code"}
+	items := []string{"product_key", "product_code", "product_name", "launch_date", "inception_date", "isin_code", "flag_syariah", "sinvest_fund_code"}
 
 	params := make(map[string]string)
 	orderBy := c.QueryParam("order_by")
