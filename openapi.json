@@ -7166,11 +7166,11 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "product_key": 1,
-                    "product_id": 5,
-                    "product_code": "BDLC",
-                    "product_name": "DANA LANCAR",
-                    "product_name_alt": "DANA LANCAR",
+                    "product_key": 52,
+                    "product_id": 111111,
+                    "product_code": "MNCDT8888",
+                    "product_name": "REKSADANA TERPROTEKSI MNC 99889",
+                    "product_name_alt": "REKSADANA TERPROTEKSI MNC 99889",
                     "currency": {
                       "currency_key": 1,
                       "code": "IDR",
@@ -7185,21 +7185,21 @@
                       "category_desc": "Reksadana"
                     },
                     "product_type": {
-                      "product_type_key": 1,
-                      "product_type_code": "PUBLIC",
-                      "product_type_name": "Public Fund",
-                      "product_type_desc": "Reksa dana yang dijual untuk public"
+                      "product_type_key": 2,
+                      "product_type_code": "PRIVATE",
+                      "product_type_name": "Private Fund",
+                      "product_type_desc": "Reksadana terbatas atau tidak dijual umum"
                     },
                     "fund_type": {
-                      "fund_type_key": 1,
-                      "fund_type_code": "MM",
-                      "fund_type_name": "Pasar Uang"
+                      "fund_type_key": 3,
+                      "fund_type_code": "BF",
+                      "fund_type_name": "Campuran"
                     },
                     "fund_structure": {
-                      "fund_structure_key": 1,
-                      "fund_structure_code": "OpendEnd",
-                      "fund_structure_name": "Opend_End",
-                      "fund_structure_desc": "Opend_End"
+                      "fund_structure_key": 2,
+                      "fund_structure_code": "CloseEnd",
+                      "fund_structure_name": "Close_End",
+                      "fund_structure_desc": "Close_End"
                     },
                     "risk_profile": {
                       "risk_profile_key": 2,
@@ -7207,37 +7207,47 @@
                       "risk_name": "Konservatif Moderate",
                       "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
                     },
-                    "product_profile": "<p><strong>MNC Dana Lancar</strong> adalah produk reksa dana pasar uang milik MNC Asset Management yang memberikan tingkat pengembalian menarik dengan risiko serendah mungkin, serta tetap mempertahankan nilai modal investasi dan menjaga kestabilan likuiditas. Produk ini termasuk kategori reksa dana pasar uang dengan alokasi investasi 100% pada efek hutang atau instrumen pasar uang yang jatuh tempo kurang dari 1 tahun.</p>",
-                    "investment_objectives": "MNC DANA LANCAR akan melakukan investasi dengan komposisi portofolio investasi 100% (seratus persen) pada Efek Bersifat Utang dan/atau instrumen pasar uang yang mempunyai jatuh tempo tidak lebih dari 1 (satu) tahun, sesuai peraturan perundang-undangan yang berlaku di Indonesia.",
-                    "product_phase": null,
-                    "nav_valuation_type": null,
-                    "prospectus_link": "https://www.mncasset.com/downloads/621-Prospektus-MNC-Dana-Lancar.pdf",
-                    "launch_date": "21 Sep 2004",
-                    "inception_date": "21 Sep 2004",
-                    "isin_code": "IDN000005907",
-                    "flag_syariah": false,
-                    "max_sub_fee": 0,
-                    "max_red_fee": 0,
-                    "max_swi_fee": 0,
-                    "min_sub_amount": 0,
-                    "min_red_amount": 0,
-                    "min_red_unit": 0,
-                    "min_unit_after_red": 0,
-                    "management_fee": 2.5,
-                    "custodian_fee": 0.15,
+                    "product_profile": "<p><strong>MNC Dana Terproteksi Seri 32</strong>&nbsp;adalah produk reksa dana milik MNC Asset Management yang memberikan proteksi 100% terhadap pokok investasi atas Unit Penyertaan yang akan dicapai secara keseluruhan pada Tanggal Pelunasan Akhir, melalui mekanisme investasi sesuai dengan kebijakan investasi serta memberikan Investor potensi pembagian hasil investasi. Produk ini termasuk kategori reksa dana terproteksi dengan alokasi investasi pada obligasi berkisar antara 80%-100% dan instrumen pasar uang berkisar antara 0%-20%.</p>",
+                    "investment_objectives": "MNC DANA TERPROTEKSI SERI 32 akan berinvestasi sampai dengan Tanggal Pelunasan Akhir dengan melakukan investasi minimum 70% (tujuh puluh persen) dan maksimum 100% (seratus persen) dari Nilai Aktiva Bersih pada Efek Bersifat Utang yang diterbitkan dan/atau dijamin oleh Pemerintah Republik Indonesia dan/atau Efek Bersifat Utang yang diterbitkan oleh korporasi dan/atau lembaga internasional dimana Pemerintah Republik Indonesia menjadi salah satu anggotanya dan/atau Efek Beragun Aset dan/atau Efek Bersifat Utang lainnya yang ditetapkan oleh OJK dikemudian hari, yang telah diperingkat oleh Perusahaan Pemeringkat Efek yang telah terdaftar di OJK dan masuk dalam kategori layak investasi (investment grade) dan yang diperdagangkan di Indonesia;minimum 0% (nol persen) dan maksimum 30% (tiga puluh persen) dari Nilai Aktiva Bersih pada instrumen pasar uang dalam negeri yang diterbitkan dengan jangka waktu tidak lebih dari 1 (satu) tahun dan/atau deposito dan/atau Efek bersifat ekuitas yang diperdagangkan di Indonesia, dalam mata uang Rupiah; sesuai dengan peraturan perundang-undangan yang berlaku di Indonesia.",
+                    "product_phase": {
+                      "lookup_key": 176,
+                      "lkp_group_key": 36,
+                      "lkp_code": "1",
+                      "lkp_name": "IPO"
+                    },
+                    "nav_valuation_type": {
+                      "lookup_key": 180,
+                      "lkp_group_key": 37,
+                      "lkp_code": "2",
+                      "lkp_name": "MONTHLY"
+                    },
+                    "prospectus_link": "#",
+                    "launch_date": "17 Oct 2020",
+                    "inception_date": "18 Oct 2020",
+                    "isin_code": "EP002PFCDANPRO9999",
+                    "flag_syariah": true,
+                    "max_sub_fee": 1,
+                    "max_red_fee": 1,
+                    "max_swi_fee": 1,
+                    "min_sub_amount": 1,
+                    "min_red_amount": 1,
+                    "min_red_unit": 1,
+                    "min_unit_after_red": 1,
+                    "management_fee": 1,
+                    "custodian_fee": 1,
                     "custodian": {
                       "custodian_key": 1,
                       "custodian_code": "ABNAMRO",
                       "custodian_short_name": "Bank ABN Amro",
                       "custodian_full_name": "Bank ABN Amro"
                     },
-                    "ojk_fee": 0.045,
-                    "product_fee_amount": 0,
-                    "overwrite_transact_flag": false,
-                    "overwrite_fee_flag": false,
-                    "other_fee_amount": 0,
-                    "settlement_period": 1,
-                    "sinvest_fund_code": "EP002MMCDANLCR00",
+                    "ojk_fee": 0,
+                    "product_fee_amount": 1,
+                    "overwrite_transact_flag": true,
+                    "overwrite_fee_flag": true,
+                    "other_fee_amount": 1,
+                    "settlement_period": 22,
+                    "sinvest_fund_code": "657AASSDD",
                     "flag_enabled": true,
                     "flag_subscription": true,
                     "flag_redemption": true,

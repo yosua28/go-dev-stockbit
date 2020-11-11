@@ -84,8 +84,10 @@ func AdminGetListMsFundType(c echo.Context) error {
 		}
 	}
 
+	params["rec_status"] = "1"
+
 	var fundType []models.MsFundType
-	status, err = models.GetAllMsFundType(&fundType, limit, offset, params, noLimit)
+	status, err = models.AdminGetAllMsFundType(&fundType, limit, offset, params, noLimit)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
