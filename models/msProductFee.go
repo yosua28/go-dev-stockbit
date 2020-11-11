@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -159,7 +160,7 @@ func AdminGetAllMsProductFee(c *[]AdminListMsProductFee, limit uint64, offset ui
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "pf."+field+" = '"+value+"'")
+			whereClause = append(whereClause, field+" = '"+value+"'")
 		}
 	}
 
@@ -229,7 +230,7 @@ func AdminCountDataGetAllMsProductFee(c *CountData, params map[string]string, se
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "pf."+field+" = '"+value+"'")
+			whereClause = append(whereClause, field+" = '"+value+"'")
 		}
 	}
 
@@ -279,5 +280,43 @@ func GetMsProductFee(c *MsProductFee, key string) (int, error) {
 		return http.StatusNotFound, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateMsProductFee(params map[string]string) (int, error) {
+	query := "UPDATE ms_product_fee SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "fee_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE fee_key = " + params["fee_key"]
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }

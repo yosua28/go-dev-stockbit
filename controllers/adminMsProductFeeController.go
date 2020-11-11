@@ -102,6 +102,17 @@ func GetListProductFeeAdmin(c echo.Context) error {
 		searchData = &search
 	}
 
+	productkey := c.QueryParam("product_key")
+	if productkey != "" {
+		productkeyCek, err := strconv.ParseUint(productkey, 10, 64)
+		if err == nil && productkeyCek > 0 {
+			params["pf.product_key"] = productkey
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+		}
+	}
+
 	//mapping parent custodian
 	var msProductFee []models.AdminListMsProductFee
 	status, err = models.AdminGetAllMsProductFee(&msProductFee, limit, offset, params, noLimit, searchData)
@@ -372,4 +383,67 @@ func GetProductFeeDetailAdmin(c echo.Context) error {
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func DeleteProductFeeAdmin(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	feekey := c.FormValue("fee_key")
+	if feekey == "" {
+		log.Error("Missing required parameter: fee_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: fee_key", "Missing required parameter: fee_key")
+	}
+
+	feekeyCek, err := strconv.ParseUint(feekey, 10, 64)
+	if err == nil && feekeyCek > 0 {
+		params["fee_key"] = feekey
+	} else {
+		log.Error("Wrong input for parameter: fee_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: fee_key", "Missing required parameter: fee_key")
+	}
+
+	var productFee models.MsProductFee
+	status, err := models.GetMsProductFee(&productFee, feekey)
+	if err != nil {
+		log.Error("Product Fee not found hahahah")
+		return lib.CustomError(status)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err = models.UpdateMsProductFee(params)
+	if err != nil {
+		log.Error("Failed update request data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed update data")
+	}
+
+	paramsFeeItems := make(map[string]string)
+	paramsFeeItems["rec_status"] = "0"
+	paramsFeeItems["rec_deleted_date"] = time.Now().Format(dateLayout)
+	paramsFeeItems["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err = models.UpdateMsProductFeeItemByField(paramsFeeItems, feekey, "product_fee_key")
+	if err != nil {
+		log.Error("Failed delete request data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed delete data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
 }

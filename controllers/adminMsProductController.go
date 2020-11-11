@@ -672,6 +672,13 @@ func GetProductDetailAdmin(c echo.Context) error {
 
 func DeleteProductAdmin(c echo.Context) error {
 	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
 	params := make(map[string]string)
 
 	productKey := c.FormValue("product_key")
@@ -693,23 +700,6 @@ func DeleteProductAdmin(c echo.Context) error {
 	if err != nil {
 		log.Error("Product not found")
 		return lib.CustomError(status)
-	}
-
-	var trTransaction []models.TrTransaction
-
-	paramTrans := make(map[string]string)
-	paramTrans["rec_status"] = "1"
-	paramTrans["product_key"] = productKey
-	status, err = models.GetAllTrTransaction(&trTransaction, paramTrans)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Error(err.Error())
-			return lib.CustomError(status, err.Error(), "Failed get data")
-		}
-	}
-	if len(trTransaction) > 0 {
-		log.Error("Product cann't delete because already used in transaction")
-		return lib.CustomError(http.StatusNotFound, "Product cann't delete because already used in transaction", "Product cann't delete because already used in transaction")
 	}
 
 	dateLayout := "2006-01-02 15:04:05"

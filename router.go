@@ -134,7 +134,6 @@ func router() *echo.Echo {
 	admin.POST("/product/delete", controllers.DeleteProductAdmin).Name = "DeleteProductAdmin"
 	admin.POST("/product/create", controllers.CreateAdminMsProduct).Name = "CreateAdminMsProduct"
 	admin.POST("/product/update", controllers.UpdateAdminMsProduct).Name = "UpdateAdminMsProduct"
-	admin.GET("/productlist/dropdown", controllers.GetListProductAdminDropdown).Name = "GetListProductAdminDropdown"
 
 	//Admin Product
 	admin.GET("/currencylist", controllers.GetListMsCurrency).Name = "GetListMsCurrency"
@@ -160,6 +159,8 @@ func router() *echo.Echo {
 	//Admin Product
 	admin.GET("/productfeelist", controllers.GetListProductFeeAdmin).Name = "GetListProductFeeAdmin"
 	admin.GET("/productfee/:key", controllers.GetProductFeeDetailAdmin).Name = "GetProductFeeDetailAdmin"
+	admin.GET("/productlist/dropdown", controllers.GetListProductAdminDropdown).Name = "GetListProductAdminDropdown"
+	admin.POST("/productfee/delete", controllers.DeleteProductFeeAdmin).Name = "DeleteProductFeeAdmin"
 
 	return e
 }
