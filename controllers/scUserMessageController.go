@@ -40,10 +40,10 @@ func GetMessageList(c echo.Context) error {
 			lookupData[lookup.LookupKey] = lookup
 		}
 	}
-	var responseData []models.ScUserMessageList
+	var responseData []models.ScUserMessageData
 	
 	for _, message := range messageDB {
-		var data models.ScUserMessageList
+		var data models.ScUserMessageData
 
 		data.UmessageKey = message.UmessageKey
 		if message.UmessageType != nil {
@@ -55,7 +55,10 @@ func GetMessageList(c echo.Context) error {
 		
 		data.UmessageReceiptDate = message.UmessageReceiptDate
 		data.FlagRead = message.FlagRead
+		data.UmessageBody = message.UmessageBody
 		data.UmessageSubject = message.UmessageSubject
+		data.UmessageBody = message.UmessageBody
+		data.UparentKey = message.UparentKey
 		if message.UmessageCategory != nil {
 			if l, ok := lookupData[*message.UmessageCategory]; ok {
 				data.UmessageCategory.Value = l.LookupKey

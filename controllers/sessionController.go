@@ -18,6 +18,8 @@ import (
 	"os"
 	"mime/multipart"
 	"path/filepath"
+	"html/template"
+	"bytes"
 
 	"github.com/labstack/echo"
 	"github.com/badoux/checkmail"
@@ -125,12 +127,25 @@ func Register(c echo.Context) error {
 	}
 
 	// Send email
+	t := template.New("index-email-activation.html")
+	
+	t, err = t.ParseFiles(config.BasePath+"/mail/index-email-activation.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct{Url string}{Url:config.BaseUrl+"/verifyemail?token="+verifyKey}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
-	mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
-
+	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
 		int(config.EmailSMTPPort),
@@ -542,8 +557,12 @@ func ResendVerification(c echo.Context) error {
 	
 		// Send otp
 		otp, err := sendOTP("0", *accountData.UloginMobileno)
-		if err != nil || otp == "" {
+		if err != nil  {
 			log.Error(err.Error())
+			return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
+		}
+		if  otp == ""  {
+			log.Error("Failed send otp")
 			return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
 		}
 	
@@ -582,11 +601,26 @@ func ResendVerification(c echo.Context) error {
 		}
 
 		// Send email
+		t := template.New("index-email-activation.html")
+		
+		var err error
+		t, err = t.ParseFiles(config.BasePath+"/mail/index-email-activation.html")
+		if err != nil {
+			log.Println(err)
+		}
+	
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, struct{Url string}{Url:config.BaseUrl+"/verifyemail?token="+verifyKey}); err != nil {
+			log.Println(err)
+		}
+	
+		result := tpl.String()
+
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", email)
 		mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
-		mailer.SetBody("text/html", "Hi,<br><br>To complete register MNCduit account, please verify your email:<br><br>https://devapi.mncasset.com/verifyemail?token="+verifyKey+"<br><br>Thank you,<br>MNCduit Team")
+		mailer.SetBody("text/html", result)
 
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
@@ -877,7 +911,7 @@ func verifyPassword(s string) (length, number, upper, special bool) {
 
 func sendOTP(gateway, phone string) (string, error){
 	curlParam := make(map[string]string)
-	curlParam["gateway"] = gateway
+	curlParam["retry"] = gateway
 	curlParam["msisdn"] = phone
 	jsonString, err := json.Marshal(curlParam)
 	payload := strings.NewReader(string(jsonString))

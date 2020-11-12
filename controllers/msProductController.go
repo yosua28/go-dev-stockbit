@@ -723,45 +723,69 @@ func Portofolio(c echo.Context) error {
 		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
 	}
 
-	var sub, red float32
-	var navDates []string
+	var transactionIDs []string
+	var productIDs []string
 	for _, transaction := range transactionDB {
-		navDates = append(navDates, "'"+transaction.NavDate+"'")
+		transactionIDs = append(transactionIDs, strconv.FormatUint(transaction.TransactionKey, 10))
+		productIDs = append(productIDs, strconv.FormatUint(transaction.ProductKey, 10))
 	}
-	var navDB []models.TrNav
-	status, err = models.GetTrNavIn(&navDB, navDates, "nav_date")
+	var productDB []models.MsProduct
+	status, err = models.GetMsProductIn(&productDB, productIDs, "product_key")
 	if err != nil {
 		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get nav data")
+		return lib.CustomError(status, err.Error(), "Failed get product data")
 	}
-	if len(navDB) < 1 {
-		log.Error("Nav data not found")
-		return lib.CustomError(http.StatusNotFound, "Nav data not found", "Nav data not found")
-	}
-	nData := make(map[string]models.TrNav)
-	for _, nav := range navDB {
-		nData[nav.NavDate] = nav
+	if len(productDB) < 1 {
+		log.Error("Product data not found")
+		return lib.CustomError(http.StatusNotFound, "Product data not found", "Product data not found")
 	}
 
+	var currencyIDs []string
+	productData := make(map[uint64]uint64)
+	for _, product := range productDB {
+		currencyIDs = append(currencyIDs, strconv.FormatUint(*product.CurrencyKey, 10))
+		productData[product.ProductKey] = *product.CurrencyKey
+	}
+
+	var rateDB []models.TrCurrencyRate
+	status, err = models.GetLastCurrencyIn(&rateDB, currencyIDs)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get currency rate data")
+	}
+
+	rateData := make(map[uint64]float32)
+	rateData[1] = 1
+	for _, rate := range rateDB {
+		rateData[rate.CurrencyKey] = rate.RateValue
+	}
+
+	var tcDB []models.TrTransactionConfirmation
+	status, err = models.GetTrTransactionConfirmationIn(&tcDB, transactionIDs, "transaction_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get TC data")
+	}
+	if len(tcDB) < 1 {
+		log.Error("TC data not found")
+		return lib.CustomError(http.StatusNotFound, "TC data not found", "TC data not found")
+	}
+
+	tcData := make(map[uint64]models.TrTransactionConfirmation)
+	for _, tc := range tcDB {
+		tcData[tc.TransactionKey] = tc
+	}
+	var netSub float32 = 0
 	for _, transaction := range transactionDB {
-		if transaction.TransAmount > 0 {
-			if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 { 
-				sub += transaction.TransAmount
-			}else if transaction.TransTypeKey == 2 || transaction.TransTypeKey == 3 {
-				red += transaction.TransAmount
-			}
-		}else if transaction.TransUnit > 0 {
-			if nav, ok := nData[transaction.NavDate]; ok {
-				if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 { 
-					sub += (transaction.TransUnit * nav.NavValue)	
-				}else if transaction.TransTypeKey == 2 || transaction.TransTypeKey == 3 {
-					red += (transaction.TransUnit * nav.NavValue)
-				}
+		if tc, ok:= tcData[transaction.TransactionKey]; ok {
+			if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 {
+				netSub += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
+			} else {
+				netSub -= (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])
 			}
 		}
 	}
 
-	netSub := sub - red
 	responseData["net_sub"] = netSub
 
 	params = make(map[string]string)
@@ -823,7 +847,7 @@ func Portofolio(c echo.Context) error {
 		}
 	}
 
-	var productDB []models.MsProduct
+	productDB = nil
 	status, err = models.GetMsProductIn(&productDB, userProduct, "product_key")
 	if err != nil {
 		log.Error(err.Error())
@@ -833,6 +857,11 @@ func Portofolio(c echo.Context) error {
 		log.Error("product not found")
 		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
 	}
+	productData = make(map[uint64]uint64)
+	for _, product := range productDB {	
+		productData[product.ProductKey] = *product.CurrencyKey
+	}
+
 	var navDB2 []models.TrNav
 	status, err = models.GetLastNavIn(&navDB2, userProduct)
 	if err != nil {
@@ -845,7 +874,10 @@ func Portofolio(c echo.Context) error {
 	for _, nav := range navDB2 {
 		navData[nav.ProductKey] = nav
 		if b, ok := balanceUnit[nav.ProductKey]; ok {
-			total += (b * nav.NavValue)
+			log.Info(rateData[productData[nav.ProductKey]])
+			log.Info(nav.NavValue)
+			log.Info(b)
+			total += ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])
 		}
 	}
 	responseData["total_invest"] = total
@@ -868,8 +900,8 @@ func Portofolio(c echo.Context) error {
 		}
 		if n, ok := navData[product.ProductKey]; ok {
 			if b, ok := balanceUnit[product.ProductKey]; ok {
-				data["invest_value"] =  b * n.NavValue
-				percent := ((b * n.NavValue)/total) * 100
+				data["invest_value"] =  (b * n.NavValue) * rateData[*product.CurrencyKey]
+				percent := (((b * n.NavValue)*rateData[*product.CurrencyKey])/total) * 100
 				data["percent"] =  fmt.Sprintf("%.3f", percent) + `%`
 			}
 		}

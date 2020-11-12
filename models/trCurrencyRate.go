@@ -1,5 +1,12 @@
 package models
 
+import (
+	"api/db"
+	"log"
+	"net/http"
+	"strings"
+)
+
 type TrCurrencyRate struct {
 	CurrRateKey               uint64    `db:"curr_rate_key"             json:"curr_rate_key"`
 	RateDate                  string    `db:"rate_date"                 json:"rate_date"`
@@ -23,4 +30,21 @@ type TrCurrencyRate struct {
 	RecAttributeID1           *string   `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
 	RecAttributeID2           *string   `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
 	RecAttributeID3           *string   `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+}
+
+func GetLastCurrencyIn(c *[]TrCurrencyRate, key []string) (int, error) {
+	inQuery := strings.Join(key, ",")
+	query2 := `SELECT t1.curr_rate_key, t1.rate_value, t1.currency_key FROM
+			   tr_currency_rate t1 JOIN (SELECT MAX(curr_rate_key) curr_rate_key FROM tr_currency_rate GROUP BY currency_key) t2
+			   ON t1.curr_rate_key = t2.curr_rate_key`
+	query := query2 + " WHERE t1.currency_key IN(" + inQuery + ") GROUP BY currency_key"
+
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }

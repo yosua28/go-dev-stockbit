@@ -6,6 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"strings"
 )
 
 type TrTransactionConfirmation struct {
@@ -95,4 +96,22 @@ func CreateTrTransactionConfirmation(params map[string]string) (int, error, stri
 	}
 	lastID, _ := ret.LastInsertId()
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
+}
+
+func GetTrTransactionConfirmationIn(c *[]TrTransactionConfirmation, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+			tr_transaction_confirmation.* FROM 
+			tr_transaction_confirmation `
+	query := query2 + " WHERE tr_transaction_confirmation." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }
