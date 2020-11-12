@@ -132,6 +132,35 @@ func router() *echo.Echo {
 	admin.GET("/productlist", controllers.GetListProductAdmin).Name = "GetListProductAdmin"
 	admin.GET("/product/:key", controllers.GetProductDetailAdmin).Name = "GetProductDetailAdmin"
 	admin.POST("/product/delete", controllers.DeleteProductAdmin).Name = "DeleteProductAdmin"
+	admin.POST("/product/create", controllers.CreateAdminMsProduct).Name = "CreateAdminMsProduct"
+	admin.POST("/product/update", controllers.UpdateAdminMsProduct).Name = "UpdateAdminMsProduct"
+
+	//Admin Product
+	admin.GET("/currencylist", controllers.GetListMsCurrency).Name = "GetListMsCurrency"
+
+	//Admin Custodian Bank
+	admin.GET("/custodianbanklist", controllers.GetListMsCustodianBank).Name = "GetListMsCustodianBank"
+
+	//Admin Fund Structure
+	admin.GET("/fundstructurelist", controllers.GetListMsFundStructure).Name = "GetListMsFundStructure"
+
+	//Admin Fund Type
+	admin.GET("/fundtypelist", controllers.AdminGetListMsFundType).Name = "AdminGetListMsFundType"
+
+	//Admin Product Category
+	admin.GET("/productcategorylist", controllers.AdminGetListMsProductCategory).Name = "AdminGetListMsProductCategory"
+
+	//Admin Product Type
+	admin.GET("/producttypelist", controllers.AdminGetListMsProductType).Name = "AdminGetListMsProductType"
+
+	//Admin Product Type
+	admin.GET("/riskprofilelist", controllers.AdminGetListMsRiskProfile).Name = "AdminGetListMsRiskProfile"
+
+	//Admin Product
+	admin.GET("/productfeelist", controllers.GetListProductFeeAdmin).Name = "GetListProductFeeAdmin"
+	admin.GET("/productfee/:key", controllers.GetProductFeeDetailAdmin).Name = "GetProductFeeDetailAdmin"
+	admin.GET("/productlist/dropdown", controllers.GetListProductAdminDropdown).Name = "GetListProductAdminDropdown"
+	admin.POST("/productfee/delete", controllers.DeleteProductFeeAdmin).Name = "DeleteProductFeeAdmin"
 
 	return e
 }

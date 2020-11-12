@@ -3157,7 +3157,10 @@
                   },
                   "read": {
                     "type": "integer",
-                    "enum": [0, 1]
+                    "enum": [
+                      0,
+                      1
+                    ]
                   }
                 },
                 "required": [
@@ -6953,7 +6956,6 @@
               "type": "string",
               "enum": [
                 "product_key",
-                "product_id",
                 "product_code",
                 "product_name",
                 "launch_date",
@@ -7047,7 +7049,6 @@
                   "data": [
                     {
                       "product_key": 1,
-                      "product_id": 5,
                       "product_code": "BDLC",
                       "product_name": "DANA LANCAR",
                       "product_name_alt": "DANA LANCAR",
@@ -7069,7 +7070,6 @@
                     },
                     {
                       "product_key": 2,
-                      "product_id": 11,
                       "product_code": "BDM",
                       "product_name": "MNC DANA SYARIAH",
                       "product_name_alt": "DANA SYARIAH",
@@ -7163,11 +7163,10 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "product_key": 1,
-                    "product_id": 5,
-                    "product_code": "BDLC",
-                    "product_name": "DANA LANCAR",
-                    "product_name_alt": "DANA LANCAR",
+                    "product_key": 52,
+                    "product_code": "MNCDT8888",
+                    "product_name": "REKSADANA TERPROTEKSI MNC 99889",
+                    "product_name_alt": "REKSADANA TERPROTEKSI MNC 99889",
                     "currency": {
                       "currency_key": 1,
                       "code": "IDR",
@@ -7182,58 +7181,69 @@
                       "category_desc": "Reksadana"
                     },
                     "product_type": {
-                      "product_type_key": 1,
-                      "product_type_code": "PUBLIC",
-                      "product_type_name": "Public Fund",
-                      "product_type_desc": "Reksa dana yang dijual untuk public"
+                      "product_type_key": 2,
+                      "product_type_code": "PRIVATE",
+                      "product_type_name": "Private Fund",
+                      "product_type_desc": "Reksadana terbatas atau tidak dijual umum"
                     },
                     "fund_type": {
-                      "fund_type_key": 1,
-                      "fund_type_code": "MM",
-                      "fund_type_name": "Pasar Uang"
+                      "fund_type_key": 3,
+                      "fund_type_code": "BF",
+                      "fund_type_name": "Campuran"
                     },
                     "fund_structure": {
-                      "fund_structure_key": 1,
-                      "fund_structure_code": "OpendEnd",
-                      "fund_structure_name": "Opend_End",
-                      "fund_structure_desc": "Opend_End"
+                      "fund_structure_key": 2,
+                      "fund_structure_code": "CloseEnd",
+                      "fund_structure_name": "Close_End",
+                      "fund_structure_desc": "Close_End"
                     },
                     "risk_profile": {
-                      "lookup_key": 2,
-                      "lkp_group_key": 1,
-                      "lkp_code": "1",
-                      "lkp_name": "Yes"
+                      "risk_profile_key": 2,
+                      "risk_code": "RendahMenengah",
+                      "risk_name": "Konservatif Moderate",
+                      "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
                     },
-                    "product_profile": "<p><strong>MNC Dana Lancar</strong> adalah produk reksa dana pasar uang milik MNC Asset Management yang memberikan tingkat pengembalian menarik dengan risiko serendah mungkin, serta tetap mempertahankan nilai modal investasi dan menjaga kestabilan likuiditas. Produk ini termasuk kategori reksa dana pasar uang dengan alokasi investasi 100% pada efek hutang atau instrumen pasar uang yang jatuh tempo kurang dari 1 tahun.</p>",
-                    "investment_objectives": "MNC DANA LANCAR akan melakukan investasi dengan komposisi portofolio investasi 100% (seratus persen) pada Efek Bersifat Utang dan/atau instrumen pasar uang yang mempunyai jatuh tempo tidak lebih dari 1 (satu) tahun, sesuai peraturan perundang-undangan yang berlaku di Indonesia.",
-                    "product_phase": null,
-                    "nav_valuation_type": null,
-                    "prospectus_link": "https://www.mncasset.com/downloads/621-Prospektus-MNC-Dana-Lancar.pdf",
-                    "launch_date": "21 Sep 2004",
-                    "inception_date": "21 Sep 2004",
-                    "isin_code": "IDN000005907",
-                    "flag_syariah": false,
-                    "max_sub_fee": 0,
-                    "max_red_fee": 0,
-                    "max_swi_fee": 0,
-                    "min_sub_amount": 0,
-                    "min_red_amount": 0,
-                    "min_red_unit": 0,
-                    "min_unit_after_red": 0,
-                    "management_fee": 2.5,
-                    "custodian_fee": 0.15,
+                    "product_profile": "<p><strong>MNC Dana Terproteksi Seri 32</strong>&nbsp;adalah produk reksa dana milik MNC Asset Management yang memberikan proteksi 100% terhadap pokok investasi atas Unit Penyertaan yang akan dicapai secara keseluruhan pada Tanggal Pelunasan Akhir, melalui mekanisme investasi sesuai dengan kebijakan investasi serta memberikan Investor potensi pembagian hasil investasi. Produk ini termasuk kategori reksa dana terproteksi dengan alokasi investasi pada obligasi berkisar antara 80%-100% dan instrumen pasar uang berkisar antara 0%-20%.</p>",
+                    "investment_objectives": "MNC DANA TERPROTEKSI SERI 32 akan berinvestasi sampai dengan Tanggal Pelunasan Akhir dengan melakukan investasi minimum 70% (tujuh puluh persen) dan maksimum 100% (seratus persen) dari Nilai Aktiva Bersih pada Efek Bersifat Utang yang diterbitkan dan/atau dijamin oleh Pemerintah Republik Indonesia dan/atau Efek Bersifat Utang yang diterbitkan oleh korporasi dan/atau lembaga internasional dimana Pemerintah Republik Indonesia menjadi salah satu anggotanya dan/atau Efek Beragun Aset dan/atau Efek Bersifat Utang lainnya yang ditetapkan oleh OJK dikemudian hari, yang telah diperingkat oleh Perusahaan Pemeringkat Efek yang telah terdaftar di OJK dan masuk dalam kategori layak investasi (investment grade) dan yang diperdagangkan di Indonesia;minimum 0% (nol persen) dan maksimum 30% (tiga puluh persen) dari Nilai Aktiva Bersih pada instrumen pasar uang dalam negeri yang diterbitkan dengan jangka waktu tidak lebih dari 1 (satu) tahun dan/atau deposito dan/atau Efek bersifat ekuitas yang diperdagangkan di Indonesia, dalam mata uang Rupiah; sesuai dengan peraturan perundang-undangan yang berlaku di Indonesia.",
+                    "product_phase": {
+                      "lookup_key": 176,
+                      "lkp_group_key": 36,
+                      "lkp_code": "1",
+                      "lkp_name": "IPO"
+                    },
+                    "nav_valuation_type": {
+                      "lookup_key": 180,
+                      "lkp_group_key": 37,
+                      "lkp_code": "2",
+                      "lkp_name": "MONTHLY"
+                    },
+                    "prospectus_link": "#",
+                    "launch_date": "17 Oct 2020",
+                    "inception_date": "18 Oct 2020",
+                    "isin_code": "EP002PFCDANPRO9999",
+                    "flag_syariah": true,
+                    "max_sub_fee": 1,
+                    "max_red_fee": 1,
+                    "max_swi_fee": 1,
+                    "min_sub_amount": 1,
+                    "min_red_amount": 1,
+                    "min_red_unit": 1,
+                    "min_unit_after_red": 1,
+                    "management_fee": 1,
+                    "custodian_fee": 1,
                     "custodian": {
+                      "custodian_key": 1,
                       "custodian_code": "ABNAMRO",
                       "custodian_short_name": "Bank ABN Amro",
                       "custodian_full_name": "Bank ABN Amro"
                     },
-                    "ojk_fee": 0.045,
-                    "product_fee_amount": 0,
-                    "overwrite_transact_flag": false,
-                    "overwrite_fee_flag": false,
-                    "other_fee_amount": 0,
-                    "settlement_period": 1,
-                    "sinvest_fund_code": "EP002MMCDANLCR00",
+                    "ojk_fee": 0,
+                    "product_fee_amount": 1,
+                    "overwrite_transact_flag": true,
+                    "overwrite_fee_flag": true,
+                    "other_fee_amount": 1,
+                    "settlement_period": 22,
+                    "sinvest_fund_code": "657AASSDD",
                     "flag_enabled": true,
                     "flag_subscription": true,
                     "flag_redemption": true,
@@ -7302,6 +7312,1900 @@
                 },
                 "required": [
                   "product_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product/create": {
+      "post": {
+        "description": "Create Product : role 15",
+        "tags": [
+          "Admin Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_code": {
+                    "type": "string"
+                  },
+                  "product_name": {
+                    "type": "string"
+                  },
+                  "product_name_alt": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "product_category_key": {
+                    "type": "integer"
+                  },
+                  "product_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_structure_key": {
+                    "type": "integer"
+                  },
+                  "risk_profile_key": {
+                    "type": "integer"
+                  },
+                  "product_profile": {
+                    "type": "string"
+                  },
+                  "investment_objectives": {
+                    "type": "string"
+                  },
+                  "product_phase": {
+                    "type": "integer"
+                  },
+                  "nav_valuation_type": {
+                    "type": "integer"
+                  },
+                  "prospectus_link": {
+                    "type": "string"
+                  },
+                  "launch_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "inception_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "isin_code": {
+                    "type": "string"
+                  },
+                  "flag_syariah": {
+                    "type": "boolean"
+                  },
+                  "max_sub_fee": {
+                    "type": "number"
+                  },
+                  "max_red_fee": {
+                    "type": "number"
+                  },
+                  "max_swi_fee": {
+                    "type": "number"
+                  },
+                  "min_sub_amount": {
+                    "type": "number"
+                  },
+                  "min_red_amount": {
+                    "type": "number"
+                  },
+                  "min_red_unit": {
+                    "type": "number"
+                  },
+                  "min_unit_after_red": {
+                    "type": "number"
+                  },
+                  "management_fee": {
+                    "type": "number"
+                  },
+                  "custodian_fee": {
+                    "type": "number"
+                  },
+                  "custodian_key": {
+                    "type": "integer"
+                  },
+                  "ojk_fee": {
+                    "type": "number"
+                  },
+                  "product_fee_amount": {
+                    "type": "number"
+                  },
+                  "overwrite_transact_flag": {
+                    "type": "boolean"
+                  },
+                  "overwrite_fee_flag": {
+                    "type": "boolean"
+                  },
+                  "other_fee_amount": {
+                    "type": "number"
+                  },
+                  "settlement_period": {
+                    "type": "integer"
+                  },
+                  "sinvest_fund_code": {
+                    "type": "string"
+                  },
+                  "flag_enabled": {
+                    "type": "boolean"
+                  },
+                  "flag_subscription": {
+                    "type": "boolean"
+                  },
+                  "flag_redemption": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_out": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_in": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "product_code",
+                  "product_name",
+                  "product_name_alt",
+                  "flag_syariah",
+                  "max_sub_fee",
+                  "max_red_fee",
+                  "max_swi_fee",
+                  "min_sub_amount",
+                  "min_red_amount",
+                  "min_red_unit",
+                  "min_unit_after_red",
+                  "management_fee",
+                  "custodian_fee",
+                  "ojk_fee",
+                  "product_fee_amount",
+                  "overwrite_transact_flag",
+                  "overwrite_fee_flag",
+                  "other_fee_amount",
+                  "flag_enabled",
+                  "flag_subscription",
+                  "flag_redemption",
+                  "flag_switch_out",
+                  "flag_switch_in"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product/update": {
+      "post": {
+        "description": "Update Product : role 15",
+        "tags": [
+          "Admin Product"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "product_code": {
+                    "type": "string"
+                  },
+                  "product_name": {
+                    "type": "string"
+                  },
+                  "product_name_alt": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "product_category_key": {
+                    "type": "integer"
+                  },
+                  "product_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_type_key": {
+                    "type": "integer"
+                  },
+                  "fund_structure_key": {
+                    "type": "integer"
+                  },
+                  "risk_profile_key": {
+                    "type": "integer"
+                  },
+                  "product_profile": {
+                    "type": "string"
+                  },
+                  "investment_objectives": {
+                    "type": "string"
+                  },
+                  "product_phase": {
+                    "type": "integer"
+                  },
+                  "nav_valuation_type": {
+                    "type": "integer"
+                  },
+                  "prospectus_link": {
+                    "type": "string"
+                  },
+                  "launch_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "inception_date": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "isin_code": {
+                    "type": "string"
+                  },
+                  "flag_syariah": {
+                    "type": "boolean"
+                  },
+                  "max_sub_fee": {
+                    "type": "number"
+                  },
+                  "max_red_fee": {
+                    "type": "number"
+                  },
+                  "max_swi_fee": {
+                    "type": "number"
+                  },
+                  "min_sub_amount": {
+                    "type": "number"
+                  },
+                  "min_red_amount": {
+                    "type": "number"
+                  },
+                  "min_red_unit": {
+                    "type": "number"
+                  },
+                  "min_unit_after_red": {
+                    "type": "number"
+                  },
+                  "management_fee": {
+                    "type": "number"
+                  },
+                  "custodian_fee": {
+                    "type": "number"
+                  },
+                  "custodian_key": {
+                    "type": "integer"
+                  },
+                  "ojk_fee": {
+                    "type": "number"
+                  },
+                  "product_fee_amount": {
+                    "type": "number"
+                  },
+                  "overwrite_transact_flag": {
+                    "type": "boolean"
+                  },
+                  "overwrite_fee_flag": {
+                    "type": "boolean"
+                  },
+                  "other_fee_amount": {
+                    "type": "number"
+                  },
+                  "settlement_period": {
+                    "type": "integer"
+                  },
+                  "sinvest_fund_code": {
+                    "type": "string"
+                  },
+                  "flag_enabled": {
+                    "type": "boolean"
+                  },
+                  "flag_subscription": {
+                    "type": "boolean"
+                  },
+                  "flag_redemption": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_out": {
+                    "type": "boolean"
+                  },
+                  "flag_switch_in": {
+                    "type": "boolean"
+                  }
+                },
+                "required": [
+                  "product_key",
+                  "product_code",
+                  "product_name",
+                  "product_name_alt",
+                  "flag_syariah",
+                  "max_sub_fee",
+                  "max_red_fee",
+                  "max_swi_fee",
+                  "min_sub_amount",
+                  "min_red_amount",
+                  "min_red_unit",
+                  "min_unit_after_red",
+                  "management_fee",
+                  "custodian_fee",
+                  "ojk_fee",
+                  "product_fee_amount",
+                  "overwrite_transact_flag",
+                  "overwrite_fee_flag",
+                  "other_fee_amount",
+                  "flag_enabled",
+                  "flag_subscription",
+                  "flag_redemption",
+                  "flag_switch_out",
+                  "flag_switch_in"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productlist/dropdown": {
+      "get": {
+        "description": "Get All Product Dropdown in Product Fee",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "product_key",
+                "product_code",
+                "product_name",
+                "launch_date",
+                "inception_date",
+                "isin_code",
+                "flag_syariah",
+                "sinvest_fund_code"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR"
+                    },
+                    {
+                      "product_key": 2,
+                      "product_code": "BDM",
+                      "product_name": "MNC DANA SYARIAH"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/currencylist": {
+      "get": {
+        "description": "Get List Currency",
+        "tags": [
+          "Admin Currency"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "currency_key",
+                "code",
+                "symbol",
+                "flag_base"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "currency_key": 1,
+                      "code": "IDR",
+                      "symbol": "Rp",
+                      "name": "Indonesia Rupiah",
+                      "flag_base": 1
+                    },
+                    {
+                      "currency_key": 2,
+                      "code": "USD",
+                      "symbol": "$",
+                      "name": "US Dollar",
+                      "flag_base": 0
+                    },
+                    {
+                      "currency_key": 3,
+                      "code": "EUR",
+                      "symbol": "E",
+                      "name": "EURO",
+                      "flag_base": 0
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/custodianbanklist": {
+      "get": {
+        "description": "Get List Custodian Bank",
+        "tags": [
+          "Admin Custodian Bank"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "custodian_key",
+                "custodian_code",
+                "custodian_short_name",
+                "custodian_full_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "custodian_key": 1,
+                      "custodian_code": "ABNAMRO",
+                      "custodian_short_name": "Bank ABN Amro",
+                      "custodian_full_name": "Bank ABN Amro"
+                    },
+                    {
+                      "custodian_key": 2,
+                      "custodian_code": "MAYBANK",
+                      "custodian_short_name": "Bank Maybank",
+                      "custodian_full_name": "Bank Maybank"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/fundstructurelist": {
+      "get": {
+        "description": "Get List Fund Structure",
+        "tags": [
+          "Admin Fund Structure"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fund_structure_key",
+                "fund_structure_code",
+                "fund_structure_name",
+                "fund_structure_desc"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "fund_structure_key": 1,
+                      "fund_structure_code": "OpendEnd",
+                      "fund_structure_name": "Opend_End",
+                      "fund_structure_desc": "Opend_End"
+                    },
+                    {
+                      "fund_structure_key": 2,
+                      "fund_structure_code": "CloseEnd",
+                      "fund_structure_name": "Close_End",
+                      "fund_structure_desc": "Close_End"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/fundtypelist": {
+      "get": {
+        "description": "Get List Fund Type",
+        "tags": [
+          "Admin Fund Type"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fund_type_key",
+                "fund_type_code",
+                "fund_type_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "fund_type_key": 1,
+                      "fund_type_code": "MM",
+                      "fund_type_name": "Pasar Uang"
+                    },
+                    {
+                      "fund_type_key": 2,
+                      "fund_type_code": "FI",
+                      "fund_type_name": "Pendapatan Tetap"
+                    },
+                    {
+                      "fund_type_key": 3,
+                      "fund_type_code": "BF",
+                      "fund_type_name": "Campuran"
+                    },
+                    {
+                      "fund_type_key": 4,
+                      "fund_type_code": "EQ",
+                      "fund_type_name": "Saham"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productcategorylist": {
+      "get": {
+        "description": "Get List Product Category",
+        "tags": [
+          "Admin Product Category"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "product_category_key",
+                "category_code",
+                "category_name",
+                "category_desc"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "product_category_key": 1,
+                      "category_code": "MF",
+                      "category_name": "Mutual Fund",
+                      "category_desc": "Reksadana"
+                    },
+                    {
+                      "product_category_key": 2,
+                      "category_code": "KPD",
+                      "category_name": "KPD_Discrey",
+                      "category_desc": "KPD_Discrey"
+                    },
+                    {
+                      "product_category_key": 3,
+                      "category_code": "ETF",
+                      "category_name": "ETF",
+                      "category_desc": "ETF"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/producttypelist": {
+      "get": {
+        "description": "Get List Product Type",
+        "tags": [
+          "Admin Product Type"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "product_type_key",
+                "product_type_code",
+                "product_type_name",
+                "product_type_desc"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "product_type_key": 1,
+                      "product_type_code": "PUBLIC",
+                      "product_type_name": "Public Fund",
+                      "product_type_desc": "Reksa dana yang dijual untuk public"
+                    },
+                    {
+                      "product_type_key": 2,
+                      "product_type_code": "PRIVATE",
+                      "product_type_name": "Private Fund",
+                      "product_type_desc": "Reksadana terbatas atau tidak dijual umum"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/riskprofilelist": {
+      "get": {
+        "description": "Get List Risk Profile",
+        "tags": [
+          "Admin Risk Profile"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "risk_profile_key",
+                "risk_code",
+                "risk_name",
+                "risk_desc"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "risk_profile_key": 1,
+                      "risk_code": "Rendah",
+                      "risk_name": "Konservatif",
+                      "risk_desc": "Investor mengutamakan tingkat keutuhan nilai pokok investasi dengan risiko fluktuasi investasi yang relatif rendah untuk memenuhi kebutuhan aliran kas bulanan."
+                    },
+                    {
+                      "risk_profile_key": 2,
+                      "risk_code": "RendahMenengah",
+                      "risk_name": "Konservatif Moderate",
+                      "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfeelist": {
+      "get": {
+        "description": "Get List Product Fee : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fee_key",
+                "fee_code",
+                "product_key",
+                "product_code",
+                "product_name",
+                "feetypename",
+                "fee_date_start",
+                "fee_date_thru",
+                "period_hold"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search list by LIKE",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "Search list by product_key =",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "fee_key": 1,
+                      "fee_code": "TNC_SUB",
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR",
+                      "FeeTypeName": "SUB",
+                      "fee_date_start": "01 February 2020",
+                      "fee_date_thru": "31 December 2200",
+                      "period_hold": 30
+                    },
+                    {
+                      "fee_key": 21,
+                      "fee_code": "TNC_RED",
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR",
+                      "FeeTypeName": "RED",
+                      "fee_date_start": "01 January 2020",
+                      "fee_date_thru": "31 December 2200",
+                      "period_hold": 30
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/{key}": {
+      "get": {
+        "description": "Get Detail Product Fee (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "product fee key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "fee_key": 1,
+                    "product": {
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR"
+                    },
+                    "fee_type": {
+                      "lookup_key": 183,
+                      "lkp_group_key": 38,
+                      "lkp_code": "1",
+                      "lkp_name": "SUB"
+                    },
+                    "fee_code": "TNC_SUB",
+                    "flag_show_ontnc": true,
+                    "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya Subscription</li><li>Minimal Investasi awal Rp. 100.000</li><li>Minimal Top Up Rp. 100.000</li><li>Batas waktu transaksi paling lambat pukul 13.00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses untuk hari bursa berikutnya.</li></ul><br/><p>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya Redemption 0.5%</li><li>&gt; 3 bulan, biaya Redemption 0%</li><li>Minimal Redemption Rp. 100.000</li><li>Transfer antar Bank akan dikenakan Biaya</li></ul>",
+                    "fee_desc": "Ketentuan Fee yang akan tampil di Transaksi SUBSCRIPTION ",
+                    "fee_date_start": "01 Feb 2020",
+                    "fee_date_thru": "31 Dec 2200",
+                    "fee_nominal_type": {
+                      "lookup_key": 191,
+                      "lkp_group_key": 39,
+                      "lkp_code": "1",
+                      "lkp_name": "AMOUNT"
+                    },
+                    "enabled_min_amount": false,
+                    "fee_min_amount": 0,
+                    "enabled_max_amount": false,
+                    "fee_max_amount": 0,
+                    "fee_calc_method": {
+                      "lookup_key": 193,
+                      "lkp_group_key": 40,
+                      "lkp_code": "1",
+                      "lkp_name": "FLAT"
+                    },
+                    "calculation_baseon": {
+                      "lookup_key": 196,
+                      "lkp_group_key": 41,
+                      "lkp_code": "1",
+                      "lkp_name": "TRANSACT_COUNT"
+                    },
+                    "period_hold": 30,
+                    "days_inyear": {
+                      "lookup_key": 201,
+                      "lkp_group_key": 42,
+                      "lkp_code": "356",
+                      "lkp_name": "366 Hari"
+                    },
+                    "product_fee_items": [
+                      {
+                        "product_fee_item_key": 1,
+                        "principle_limit": 0,
+                        "fee_value": 0,
+                        "item_notes": "Tidak dikenakan biaya Subscription"
+                      },
+                      {
+                        "product_fee_item_key": 2,
+                        "principle_limit": 0,
+                        "fee_value": 0,
+                        "item_notes": "Tidak dikenakan biaya Subscription"
+                      },
+                      {
+                        "product_fee_item_key": 3,
+                        "principle_limit": 0,
+                        "fee_value": 0,
+                        "item_notes": "Tidak dikenakan biaya Subscription"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/delete": {
+      "post": {
+        "description": "Delete Product Fee Admin : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fee_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "fee_key"
                 ]
               }
             }

@@ -23,6 +23,12 @@ type MsProductList struct {
 	RiskProfile    *MsRiskProfileInfo     `json:"risk_profile,omitempty"`
 }
 
+type MsProductListDropdown struct {
+	ProductKey  uint64 `json:"product_key"`
+	ProductCode string `json:"product_code"`
+	ProductName string `json:"product_name"`
+}
+
 type MsProductData struct {
 	ProductKey       uint64                     `json:"product_key"`
 	ProductID        uint64                     `json:"product_id"`
@@ -117,7 +123,6 @@ type MsProduct struct {
 
 type AdminMsProductList struct {
 	ProductKey          uint64  `json:"product_key"`
-	ProductID           uint64  `json:"product_id"`
 	ProductCode         string  `json:"product_code"`
 	ProductName         string  `json:"product_name"`
 	ProductNameAlt      string  `json:"product_name_alt"`
@@ -138,49 +143,79 @@ type AdminMsProductList struct {
 	SwitchIn            string  `json:"switch_in"`
 }
 
+func CreateMsProduct(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_product"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
 type AdminMsProductDetail struct {
-	ProductKey            uint64                 `json:"product_key"`
-	ProductID             uint64                 `json:"product_id"`
-	ProductCode           string                 `json:"product_code"`
-	ProductName           string                 `json:"product_name"`
-	ProductNameAlt        string                 `json:"product_name_alt"`
-	Currency              *MsCurrencyInfo        `json:"currency"`
-	ProductCategory       *MsProductCategoryInfo `json:"product_category"`
-	ProductType           *MsProductTypeInfo     `json:"product_type"`
-	FundType              *MsFundTypeInfo        `json:"fund_type"`
-	FundStructure         *MsFundStructureInfo   `json:"fund_structure"`
-	RiskProfile           *LookupTrans           `json:"risk_profile"`
-	ProductProfile        *string                `json:"product_profile"`
-	InvestmentObjectives  *string                `json:"investment_objectives"`
-	ProductPhase          *LookupTrans           `json:"product_phase"`
-	NavValuationType      *LookupTrans           `json:"nav_valuation_type"`
-	ProspectusLink        *string                `json:"prospectus_link"`
-	LaunchDate            *string                `json:"launch_date"`
-	InceptionDate         *string                `json:"inception_date"`
-	IsinCode              *string                `json:"isin_code"`
-	FlagSyariah           bool                   `json:"flag_syariah"`
-	MaxSubFee             float32                `json:"max_sub_fee"`
-	MaxRedFee             float32                `json:"max_red_fee"`
-	MaxSwiFee             float32                `json:"max_swi_fee"`
-	MinSubAmount          float32                `json:"min_sub_amount"`
-	MinRedAmount          float32                `json:"min_red_amount"`
-	MinRedUnit            float32                `json:"min_red_unit"`
-	MinUnitAfterRed       float32                `json:"min_unit_after_red"`
-	ManagementFee         float32                `json:"management_fee"`
-	CustodianFee          float32                `json:"custodian_fee"`
-	Custodian             *MsCustodianBankInfo   `json:"custodian"`
-	OjkFee                float32                `json:"ojk_fee"`
-	ProductFeeAmount      float32                `json:"product_fee_amount"`
-	OverwriteTransactFlag bool                   `json:"overwrite_transact_flag"`
-	OverwriteFeeFlag      bool                   `json:"overwrite_fee_flag"`
-	OtherFeeAmount        float32                `json:"other_fee_amount"`
-	SettlementPeriod      *uint64                `json:"settlement_period"`
-	SinvestFundCode       *string                `json:"sinvest_fund_code"`
-	FlagEnabled           bool                   `json:"flag_enabled"`
-	FlagSubscription      bool                   `json:"flag_subscription"`
-	FlagRedemption        bool                   `json:"flag_redemption"`
-	FlagSwitchOut         bool                   `json:"flag_switch_out"`
-	FlagSwitchIn          bool                   `json:"flag_switch_in"`
+	ProductKey            uint64                   `json:"product_key"`
+	ProductCode           string                   `json:"product_code"`
+	ProductName           string                   `json:"product_name"`
+	ProductNameAlt        string                   `json:"product_name_alt"`
+	Currency              *MsCurrencyInfo          `json:"currency"`
+	ProductCategory       *MsProductCategoryInfo   `json:"product_category"`
+	ProductType           *MsProductTypeInfo       `json:"product_type"`
+	FundType              *MsFundTypeInfo          `json:"fund_type"`
+	FundStructure         *MsFundStructureInfo     `json:"fund_structure"`
+	RiskProfile           *MsRiskProfileInfoAdmin  `json:"risk_profile"`
+	ProductProfile        *string                  `json:"product_profile"`
+	InvestmentObjectives  *string                  `json:"investment_objectives"`
+	ProductPhase          *LookupTrans             `json:"product_phase"`
+	NavValuationType      *LookupTrans             `json:"nav_valuation_type"`
+	ProspectusLink        *string                  `json:"prospectus_link"`
+	LaunchDate            *string                  `json:"launch_date"`
+	InceptionDate         *string                  `json:"inception_date"`
+	IsinCode              *string                  `json:"isin_code"`
+	FlagSyariah           bool                     `json:"flag_syariah"`
+	MaxSubFee             float32                  `json:"max_sub_fee"`
+	MaxRedFee             float32                  `json:"max_red_fee"`
+	MaxSwiFee             float32                  `json:"max_swi_fee"`
+	MinSubAmount          float32                  `json:"min_sub_amount"`
+	MinRedAmount          float32                  `json:"min_red_amount"`
+	MinRedUnit            float32                  `json:"min_red_unit"`
+	MinUnitAfterRed       float32                  `json:"min_unit_after_red"`
+	ManagementFee         float32                  `json:"management_fee"`
+	CustodianFee          float32                  `json:"custodian_fee"`
+	Custodian             *MsCustodianBankInfoList `json:"custodian"`
+	OjkFee                float32                  `json:"ojk_fee"`
+	ProductFeeAmount      float32                  `json:"product_fee_amount"`
+	OverwriteTransactFlag bool                     `json:"overwrite_transact_flag"`
+	OverwriteFeeFlag      bool                     `json:"overwrite_fee_flag"`
+	OtherFeeAmount        float32                  `json:"other_fee_amount"`
+	SettlementPeriod      *uint64                  `json:"settlement_period"`
+	SinvestFundCode       *string                  `json:"sinvest_fund_code"`
+	FlagEnabled           bool                     `json:"flag_enabled"`
+	FlagSubscription      bool                     `json:"flag_subscription"`
+	FlagRedemption        bool                     `json:"flag_redemption"`
+	FlagSwitchOut         bool                     `json:"flag_switch_out"`
+	FlagSwitchIn          bool                     `json:"flag_switch_in"`
 }
 
 func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -402,5 +437,75 @@ func UpdateMsProduct(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func AdminGetValidateUniqueDataInsertUpdate(c *CountData, paramsOr map[string]string, paramsAnd map[string]string, updateKey *string) (int, error) {
+	query := `SELECT
+			  count(ms_product.product_key) as count_data 
+			  FROM ms_product `
+	var orWhereClause []string
+	var andWhereClause []string
+	var condition string
+
+	for fieldOr, valueOr := range paramsOr {
+		orWhereClause = append(orWhereClause, "ms_product."+fieldOr+" = '"+valueOr+"'")
+	}
+
+	for fieldAnd, valueAnd := range paramsAnd {
+		andWhereClause = append(andWhereClause, "ms_product."+fieldAnd+" like '"+valueAnd+"'")
+	}
+
+	// Combile where Or clause
+	if len(orWhereClause) > 0 {
+		condition += " WHERE ("
+		for index, where := range orWhereClause {
+			condition += where
+			if (len(orWhereClause) - 1) > index {
+				condition += " OR "
+			} else {
+				condition += ") "
+			}
+		}
+	}
+
+	// Combile where And clause
+	if len(andWhereClause) > 0 {
+		if len(orWhereClause) > 0 {
+			condition += " AND "
+		} else {
+			condition += " WHERE "
+		}
+
+		for index, where := range andWhereClause {
+			condition += where
+			if (len(andWhereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if updateKey != nil {
+		if len(orWhereClause) > 0 {
+			condition += " AND "
+		} else if len(andWhereClause) > 0 {
+			condition += " AND "
+		} else {
+			condition += " WHERE "
+		}
+
+		condition += " ms_product.product_key != '" + *updateKey + "'"
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }
