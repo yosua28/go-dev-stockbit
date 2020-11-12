@@ -9752,6 +9752,193 @@
           }
         }
       }
+    },
+    "/admin/productbankaccount": {
+      "get": {
+        "description": "Get List Product Bank Account : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prod_bankacc_key",
+                "product_code",
+                "product_name_alt",
+                "bank_account_name",
+                "bank_account_purpose",
+                "bank_fullname",
+                "account_no",
+                "account_holder_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search list by LIKE",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "Search list by product_key =",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 31,
+                  "data": [
+                    {
+                      "prod_bankacc_key": 1,
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name_alt": "DANA LANCAR",
+                      "bank_account_name": "SUB_ACCOUNT - MNC DANA LANCAR",
+                      "bank_account_purpose": "SUB_ACCOUNT",
+                      "bank_fullname": "BANK MANDIRI",
+                      "account_no": "103-0006243311",
+                      "account_holder_name": "REKSA DANA MNC DANA LANCAR"
+                    },
+                    {
+                      "prod_bankacc_key": 2,
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name_alt": "DANA LANCAR",
+                      "bank_account_name": "SUB_ACCOUNT - MNC DANA LANCAR",
+                      "bank_account_purpose": "SUB_ACCOUNT",
+                      "bank_fullname": "BCA",
+                      "account_no": "4583008732",
+                      "account_holder_name": "REKSA DANA MNC DANA LANCAR"
+                    },
+                    {
+                      "prod_bankacc_key": 3,
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name_alt": "DANA LANCAR",
+                      "bank_account_name": "AUTOINVEST_ACC - MNC DANA LANCAR",
+                      "bank_account_purpose": "AUTOINVEST_ACC",
+                      "bank_fullname": "BCA",
+                      "account_no": "458-3008732",
+                      "account_holder_name": "REKSA DANA MNC DANA LANCAR"
+                    },
+                    {
+                      "prod_bankacc_key": 4,
+                      "product_key": 2,
+                      "product_code": "BDM",
+                      "product_name_alt": "DANA SYARIAH",
+                      "bank_account_name": "SUB_ACCOUNT - MNC DANA SYARIAH",
+                      "bank_account_purpose": "SUB_ACCOUNT",
+                      "bank_fullname": "BCA",
+                      "account_no": "458-2369368",
+                      "account_holder_name": "REKSA DANA MNC DANA SYARIAH"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
