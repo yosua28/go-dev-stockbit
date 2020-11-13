@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
 	"math"
 	"net/http"
 	"strconv"
@@ -170,6 +171,155 @@ func GetListProductBankAccountAdmin(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Pagination = pagination
 	response.Data = productBankAccountList
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetProductBankAccountDetailAdmin(c echo.Context) error {
+
+	var err error
+	var status int
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	//cek product bank account
+	var productBankAccount models.MsProductBankAccount
+	status, err = models.GetMsProductBankAccount(&productBankAccount, keyStr)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	//cek bank account
+	strBankAccountKey := strconv.FormatUint(*productBankAccount.BankAccountKey, 10)
+	var bankAccount models.MsBankAccount
+	status, err = models.GetBankAccount(&bankAccount, strBankAccountKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	//cek product
+	strProductKey := strconv.FormatUint(*productBankAccount.ProductKey, 10)
+	var product models.MsProduct
+	status, err = models.GetMsProduct(&product, strProductKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var responseData models.MsProductBankAccountDetailAdmin
+
+	var lookupIds []string
+
+	if _, ok := lib.Find(lookupIds, strconv.FormatUint(productBankAccount.BankAccountPurpose, 10)); !ok {
+		lookupIds = append(lookupIds, strconv.FormatUint(productBankAccount.BankAccountPurpose, 10))
+	}
+
+	if _, ok := lib.Find(lookupIds, strconv.FormatUint(bankAccount.BankAccountType, 10)); !ok {
+		lookupIds = append(lookupIds, strconv.FormatUint(bankAccount.BankAccountType, 10))
+	}
+
+	//gen lookup
+	var lookupProductBank []models.GenLookup
+	if len(lookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&lookupProductBank, lookupIds, "lookup_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range lookupProductBank {
+		gData[gen.LookupKey] = gen
+	}
+
+	responseData.ProdBankaccKey = productBankAccount.ProdBankaccKey
+
+	//set product
+	var pro models.MsProductInfo
+	pro.ProductKey = product.ProductKey
+	pro.ProductCode = product.ProductCode
+	pro.ProductName = product.ProductName
+	pro.ProductNameAlt = product.ProductNameAlt
+	responseData.Product = &pro
+
+	//set bank
+	strBankKey := strconv.FormatUint(bankAccount.BankKey, 10)
+	var bank models.MsBank
+	status, err = models.GetMsBank(&bank, strBankKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	} else {
+		log.Println("hahahah")
+		var b models.MsBankList
+		b.BankKey = bank.BankKey
+		b.BankCode = bank.BankCode
+		b.BankName = bank.BankName
+		if bank.BankFullname != nil {
+			b.BankFullname = *bank.BankFullname
+		}
+		responseData.Bank = &b
+	}
+
+	responseData.AccountNo = bankAccount.AccountNo
+	responseData.AccountHolderName = bankAccount.AccountHolderName
+	responseData.BranchName = bankAccount.BranchName
+
+	//set currency
+	strCurrencyKey := strconv.FormatUint(bankAccount.CurrencyKey, 10)
+	var curr models.MsCurrency
+	status, err = models.GetMsCurrency(&curr, strCurrencyKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	} else {
+		log.Println("hahahah")
+		var c models.MsCurrencyInfo
+		c.CurrencyKey = curr.CurrencyKey
+		c.Code = curr.Code
+		c.Symbol = curr.Symbol
+		c.Name = curr.Name
+		c.FlagBase = curr.FlagBase
+		responseData.Currency = &c
+	}
+
+	if n, ok := gData[bankAccount.BankAccountType]; ok {
+		var trc models.LookupTrans
+
+		trc.LookupKey = n.LookupKey
+		trc.LkpGroupKey = n.LkpGroupKey
+		trc.LkpCode = n.LkpCode
+		trc.LkpName = n.LkpName
+		responseData.BankAccountType = trc
+	}
+
+	responseData.SwiftCode = bankAccount.SwiftCode
+	responseData.BankAccountName = productBankAccount.BankAccountName
+
+	if n, ok := gData[productBankAccount.BankAccountPurpose]; ok {
+		var trc models.LookupTrans
+
+		trc.LookupKey = n.LookupKey
+		trc.LkpGroupKey = n.LkpGroupKey
+		trc.LkpCode = n.LkpCode
+		trc.LkpName = n.LkpName
+		responseData.BankAccountPurpose = trc
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 }

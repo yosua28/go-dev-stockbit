@@ -29,6 +29,13 @@ type MsProductListDropdown struct {
 	ProductName string `json:"product_name"`
 }
 
+type MsProductInfo struct {
+	ProductKey     uint64 `json:"product_key"`
+	ProductCode    string `json:"product_code"`
+	ProductName    string `json:"product_name"`
+	ProductNameAlt string `json:"product_name_alt"`
+}
+
 type MsProductData struct {
 	ProductKey       uint64                     `json:"product_key"`
 	ProductID        uint64                     `json:"product_id"`

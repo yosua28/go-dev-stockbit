@@ -51,6 +51,20 @@ type AdminMsProductBankAccountList struct {
 	AccountHolderName  string  `db:"account_holder_name"   json:"account_holder_name"`
 }
 
+type MsProductBankAccountDetailAdmin struct {
+	ProdBankaccKey     uint64          `json:"prod_bankacc_key"`
+	Product            *MsProductInfo  `json:"product"`
+	Bank               *MsBankList     `json:"bank"`
+	AccountNo          string          `json:"account_no"`
+	AccountHolderName  string          `json:"account_holder_name"`
+	BranchName         *string         `json:"branch_name"`
+	Currency           *MsCurrencyInfo `json:"currency"`
+	BankAccountType    LookupTrans     `json:"bank_account_type"`
+	SwiftCode          *string         `son:"swift_code"`
+	BankAccountName    string          `json:"bank_account_name"`
+	BankAccountPurpose LookupTrans     `json:"bank_account_purpose"`
+}
+
 func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]string) (int, error) {
 	query := `SELECT
               ms_product_bank_account.* FROM 
@@ -239,6 +253,18 @@ func AdminCountDataGetAllMsProductBankAccount(c *CountData, params map[string]st
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductBankAccount(c *MsProductBankAccount, key string) (int, error) {
+	query := `SELECT ms_product_bank_account.* FROM ms_product_bank_account WHERE ms_product_bank_account.rec_status = 1 AND ms_product_bank_account.prod_bankacc_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil
