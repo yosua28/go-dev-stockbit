@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"net/http"
 	"strconv"
 
@@ -267,5 +268,74 @@ func GetMsProductBankAccount(c *MsProductBankAccount, key string) (int, error) {
 		return http.StatusNotFound, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateMsProductBankAccount(params map[string]string) (int, error) {
+	query := "UPDATE ms_product_bank_account SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "prod_bankacc_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE prod_bankacc_key = " + params["prod_bankacc_key"]
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func CreateMsProductBankAccount(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_product_bank_account"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }

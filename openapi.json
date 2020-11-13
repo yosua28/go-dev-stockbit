@@ -10050,6 +10050,291 @@
           }
         }
       }
+    },
+    "/admin/productbankaccount/delete": {
+      "post": {
+        "description": "Delete Product Bank Account Admin : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccount/create": {
+      "post": {
+        "description": "Create Product Bank Account : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_holder_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "bank_account_type": {
+                    "type": "integer"
+                  },
+                  "swift_code": {
+                    "type": "string"
+                  },
+                  "bank_account_name": {
+                    "type": "string"
+                  },
+                  "bank_account_purpose": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "product_key",
+                  "bank_key",
+                  "account_no",
+                  "account_holder_name",
+                  "currency_key",
+                  "bank_account_type",
+                  "bank_account_name",
+                  "bank_account_purpose"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccount/update": {
+      "post": {
+        "description": "Update Product Bank Account : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_holder_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "bank_account_type": {
+                    "type": "integer"
+                  },
+                  "swift_code": {
+                    "type": "string"
+                  },
+                  "bank_account_name": {
+                    "type": "string"
+                  },
+                  "bank_account_purpose": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "product_key",
+                  "bank_key",
+                  "account_no",
+                  "account_holder_name",
+                  "currency_key",
+                  "bank_account_type",
+                  "bank_account_name",
+                  "bank_account_purpose"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

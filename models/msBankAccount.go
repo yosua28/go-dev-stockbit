@@ -101,3 +101,41 @@ func GetBankAccount(c *MsBankAccount, key string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func UpdateMsBankAccount(params map[string]string) (int, error) {
+	query := "UPDATE ms_bank_account SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "bank_account_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE bank_account_key = " + params["bank_account_key"]
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
