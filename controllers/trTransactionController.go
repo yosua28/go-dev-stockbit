@@ -10,9 +10,13 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"crypto/tls"
+	"html/template"
+	"bytes"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func CreateTransaction(c echo.Context) error {
@@ -647,6 +651,96 @@ func GetTransactionList(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+}
+
+func SendEmailPortofolio(c echo.Context) error {
+
+	t := template.New("index-portofolio.html")
+	
+	var err error
+	t, err = t.ParseFiles(config.BasePath+"/mail/index-portofolio.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, ""); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MNCduit] Laporan Akun Statement")
+	mailer.SetBody("text/html", result)
+
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	log.Info("Email sent")
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func SendEmailTransaction(c echo.Context) error {
+
+	t := template.New("index-transaction.html")
+	
+	var err error
+	t, err = t.ParseFiles(config.BasePath+"/mail/index-transaction.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, ""); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MNCduit] Transaction History")
+	mailer.SetBody("text/html", result)
+
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	log.Info("Email sent")
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 }
 
