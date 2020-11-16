@@ -166,6 +166,7 @@ func router() *echo.Echo {
 	admin.POST("/productfee/feeitem/create", controllers.CreateAdminMsProductFeeItem).Name = "CreateAdminMsProductFeeItem"
 	admin.POST("/productfee/feeitem/update", controllers.UpdateAdminMsProductFeeItem).Name = "UpdateAdminMsProductFeeItem"
 	admin.POST("/productfee/feeitem/delete", controllers.DeleteAdminMsProductFeeItem).Name = "DeleteAdminMsProductFeeItem"
+	admin.GET("/productfee/feeitem/:key", controllers.DetailAdminMsProductFeeItem).Name = "DetailAdminMsProductFeeItem"
 
 	//Admin Product Bank Account
 	admin.GET("/productbankaccountlist", controllers.GetListProductBankAccountAdmin).Name = "GetListProductBankAccountAdmin"

@@ -195,3 +195,16 @@ func GetLastMsProductFeeItemByFeeKey(c *MsProductFeeItem, feeKey string, fieldOr
 
 	return http.StatusOK, nil
 }
+
+func GetMsProductFeeItem(c *MsProductFeeItem, key string) (int, error) {
+	query := `SELECT ms_product_fee_item.* FROM ms_product_fee_item 
+				WHERE ms_product_fee_item.rec_status = 1 AND ms_product_fee_item.product_fee_item_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

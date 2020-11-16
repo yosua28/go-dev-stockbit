@@ -1382,3 +1382,43 @@ func DeleteAdminMsProductFeeItem(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 
 }
+
+func DetailAdminMsProductFeeItem(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	//product_fee_item_key
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	//cek data
+	var productFeeItem models.MsProductFeeItem
+	_, err = models.GetMsProductFeeItem(&productFeeItem, keyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	var responseData models.MsProductFeeItemDetailList
+
+	responseData.ProductFeeItemKey = productFeeItem.ProductFeeItemKey
+	responseData.PrincipleLimit = productFeeItem.PrincipleLimit
+	responseData.FeeValue = productFeeItem.FeeValue
+	responseData.ItemNotes = productFeeItem.ItemNotes
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+
+}
