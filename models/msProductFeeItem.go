@@ -149,3 +149,62 @@ func UpdateMsProductFeeItemByField(params map[string]string, value string, field
 	}
 	return http.StatusOK, nil
 }
+
+func CreateMsProductFeeItem(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_product_fee_item"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func GetLastMsProductFeeItemByFeeKey(c *MsProductFeeItem, feeKey string, fieldOrder string, orderByType string) (int, error) {
+	query := `SELECT ms_product_fee_item.* 
+			FROM ms_product_fee_item 
+			WHERE ms_product_fee_item.rec_status = 1 AND 
+			ms_product_fee_item.product_fee_key = ` + feeKey + ` ORDER BY ` + fieldOrder + ` ` + orderByType + ` LIMIT 1`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductFeeItem(c *MsProductFeeItem, key string) (int, error) {
+	query := `SELECT ms_product_fee_item.* FROM ms_product_fee_item 
+				WHERE ms_product_fee_item.rec_status = 1 AND ms_product_fee_item.product_fee_item_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

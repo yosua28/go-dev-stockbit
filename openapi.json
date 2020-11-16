@@ -9361,6 +9361,1166 @@
           }
         }
       }
+    },
+    "/admin/productfee/create": {
+      "post": {
+        "description": "Create Product : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "fee_type": {
+                    "type": "integer"
+                  },
+                  "fee_code": {
+                    "type": "string"
+                  },
+                  "flag_show_ontnc": {
+                    "type": "boolean"
+                  },
+                  "fee_annotation": {
+                    "type": "string"
+                  },
+                  "fee_desc": {
+                    "type": "string"
+                  },
+                  "fee_date_start": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "fee_date_thru": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "fee_nominal_type": {
+                    "type": "integer"
+                  },
+                  "enabled_min_amount": {
+                    "type": "boolean"
+                  },
+                  "fee_min_amount": {
+                    "type": "number"
+                  },
+                  "enabled_max_amount": {
+                    "type": "boolean"
+                  },
+                  "fee_max_amount": {
+                    "type": "number"
+                  },
+                  "fee_calc_method": {
+                    "type": "integer"
+                  },
+                  "calculation_baseon": {
+                    "type": "integer"
+                  },
+                  "period_hold": {
+                    "type": "integer"
+                  },
+                  "days_inyear": {
+                    "type": "integer"
+                  },
+                  "json_fee_items": {
+                    "type": "string",
+                    "example": "[{\"principle_limit\":98.1,\"fee_value\":0.5,\"item_notes\":\"notes1\"},{\"principle_limit\":100000,\"fee_value\":1.3,\"item_notes\":\"notes2\"}]"
+                  }
+                },
+                "required": [
+                  "product_key",
+                  "enabled_min_amount",
+                  "enabled_max_amount",
+                  "period_hold"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/update": {
+      "post": {
+        "description": "Create Product : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "fee_key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "fee_type": {
+                    "type": "integer"
+                  },
+                  "fee_code": {
+                    "type": "string"
+                  },
+                  "flag_show_ontnc": {
+                    "type": "boolean"
+                  },
+                  "fee_annotation": {
+                    "type": "string"
+                  },
+                  "fee_desc": {
+                    "type": "string"
+                  },
+                  "fee_date_start": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "fee_date_thru": {
+                    "type": "string",
+                    "example": "2020-10-14"
+                  },
+                  "fee_nominal_type": {
+                    "type": "integer"
+                  },
+                  "enabled_min_amount": {
+                    "type": "boolean"
+                  },
+                  "fee_min_amount": {
+                    "type": "number"
+                  },
+                  "enabled_max_amount": {
+                    "type": "boolean"
+                  },
+                  "fee_max_amount": {
+                    "type": "number"
+                  },
+                  "fee_calc_method": {
+                    "type": "integer"
+                  },
+                  "calculation_baseon": {
+                    "type": "integer"
+                  },
+                  "period_hold": {
+                    "type": "integer"
+                  },
+                  "days_inyear": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "fee_key",
+                  "product_key",
+                  "enabled_min_amount",
+                  "enabled_max_amount",
+                  "period_hold"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/feeitem/create": {
+      "post": {
+        "description": "Create Product Fee Item in form Update Product Fee : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_fee_key": {
+                    "type": "integer"
+                  },
+                  "principle_limit": {
+                    "type": "number"
+                  },
+                  "fee_value": {
+                    "type": "number"
+                  },
+                  "item_notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "product_fee_key",
+                  "principle_limit",
+                  "fee_value"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/feeitem/update": {
+      "post": {
+        "description": "Update Product Fee Item in form Update Product Fee : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_fee_item_key": {
+                    "type": "integer"
+                  },
+                  "product_fee_key": {
+                    "type": "integer"
+                  },
+                  "principle_limit": {
+                    "type": "number"
+                  },
+                  "fee_value": {
+                    "type": "number"
+                  },
+                  "item_notes": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "product_fee_item_key",
+                  "product_fee_key",
+                  "principle_limit",
+                  "fee_value"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/feeitem/delete": {
+      "post": {
+        "description": "Delete Product Fee Item in form Update Product Fee : role 15",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_fee_item_key": {
+                    "type": "integer"
+                  },
+                  "product_fee_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "product_fee_item_key",
+                  "product_fee_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccountlist": {
+      "get": {
+        "description": "Get List Product Bank Account : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "prod_bankacc_key",
+                "product_code",
+                "product_name_alt",
+                "bank_account_name",
+                "bank_account_purpose",
+                "bank_fullname",
+                "account_no",
+                "account_holder_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search list by LIKE",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "Search list by product_key =",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 31,
+                  "data": [
+                    {
+                      "prod_bankacc_key": 1,
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name_alt": "DANA LANCAR",
+                      "bank_account_name": "SUB_ACCOUNT - MNC DANA LANCAR",
+                      "bank_account_purpose": "SUB_ACCOUNT",
+                      "bank_fullname": "BANK MANDIRI",
+                      "account_no": "103-0006243311",
+                      "account_holder_name": "REKSA DANA MNC DANA LANCAR"
+                    },
+                    {
+                      "prod_bankacc_key": 2,
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name_alt": "DANA LANCAR",
+                      "bank_account_name": "SUB_ACCOUNT - MNC DANA LANCAR",
+                      "bank_account_purpose": "SUB_ACCOUNT",
+                      "bank_fullname": "BCA",
+                      "account_no": "4583008732",
+                      "account_holder_name": "REKSA DANA MNC DANA LANCAR"
+                    },
+                    {
+                      "prod_bankacc_key": 3,
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name_alt": "DANA LANCAR",
+                      "bank_account_name": "AUTOINVEST_ACC - MNC DANA LANCAR",
+                      "bank_account_purpose": "AUTOINVEST_ACC",
+                      "bank_fullname": "BCA",
+                      "account_no": "458-3008732",
+                      "account_holder_name": "REKSA DANA MNC DANA LANCAR"
+                    },
+                    {
+                      "prod_bankacc_key": 4,
+                      "product_key": 2,
+                      "product_code": "BDM",
+                      "product_name_alt": "DANA SYARIAH",
+                      "bank_account_name": "SUB_ACCOUNT - MNC DANA SYARIAH",
+                      "bank_account_purpose": "SUB_ACCOUNT",
+                      "bank_fullname": "BCA",
+                      "account_no": "458-2369368",
+                      "account_holder_name": "REKSA DANA MNC DANA SYARIAH"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccount/{key}": {
+      "get": {
+        "description": "Get Detail Admin Product Bank Account (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "product bank account key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "prod_bankacc_key": 1,
+                    "product": {
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR",
+                      "product_name_alt": "DANA LANCAR"
+                    },
+                    "bank": {
+                      "bank_key": 31,
+                      "bank_code": "MANDIRI",
+                      "bank_name": "BANK MANDIRI",
+                      "bank_fullname": "BANK MANDIRI"
+                    },
+                    "account_no": "103-0006243311",
+                    "account_holder_name": "REKSA DANA MNC DANA LANCAR",
+                    "branch_name": "CABANG JAKARTA GEDUNG BIMANTARA",
+                    "currency": {
+                      "currency_key": 1,
+                      "code": "IDR",
+                      "symbol": "Rp",
+                      "name": "Indonesia Rupiah",
+                      "flag_base": 1
+                    },
+                    "bank_account_type": {
+                      "lookup_key": 129,
+                      "lkp_group_key": 27,
+                      "lkp_code": "0",
+                      "lkp_name": "Saving"
+                    },
+                    "SwiftCode": "111qqq",
+                    "bank_account_name": "SUB_ACCOUNT - MNC DANA LANCAR",
+                    "bank_account_purpose": {
+                      "lookup_key": 269,
+                      "lkp_group_key": 63,
+                      "lkp_code": "1",
+                      "lkp_name": "SUB_ACCOUNT"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccount/delete": {
+      "post": {
+        "description": "Delete Product Bank Account Admin : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccount/create": {
+      "post": {
+        "description": "Create Product Bank Account : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_holder_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "bank_account_type": {
+                    "type": "integer"
+                  },
+                  "swift_code": {
+                    "type": "string"
+                  },
+                  "bank_account_name": {
+                    "type": "string"
+                  },
+                  "bank_account_purpose": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "product_key",
+                  "bank_key",
+                  "account_no",
+                  "account_holder_name",
+                  "currency_key",
+                  "bank_account_type",
+                  "bank_account_name",
+                  "bank_account_purpose"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productbankaccount/update": {
+      "post": {
+        "description": "Update Product Bank Account : role 15",
+        "tags": [
+          "Admin Product Bank Account"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_holder_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  },
+                  "currency_key": {
+                    "type": "integer"
+                  },
+                  "bank_account_type": {
+                    "type": "integer"
+                  },
+                  "swift_code": {
+                    "type": "string"
+                  },
+                  "bank_account_name": {
+                    "type": "string"
+                  },
+                  "bank_account_purpose": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "key",
+                  "product_key",
+                  "bank_key",
+                  "account_no",
+                  "account_holder_name",
+                  "currency_key",
+                  "bank_account_type",
+                  "bank_account_name",
+                  "bank_account_purpose"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/productfee/feeitem/{key}": {
+      "get": {
+        "description": "Get Detail Product Fee Ite, (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin Product Fee"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "product fee item key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "product_fee_item_key": 1,
+                    "principle_limit": 0,
+                    "fee_value": 0,
+                    "item_notes": "Tidak dikenakan biaya Subscription"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
