@@ -2274,6 +2274,12 @@ func ProsesPosting(c echo.Context) error {
 	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["rec_created_by"] = strIDUserLogin
 
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+		return lib.CustomError(status, err.Error(), "failed input data user message")
+	}
+
 	log.Info("Success update transaksi")
 
 	var response lib.Response
