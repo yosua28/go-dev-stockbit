@@ -625,3 +625,39 @@ func GetTransactionBankInfoCustomerIn(c *[]AdminTransactionBankInfo, value []str
 
 	return http.StatusOK, nil
 }
+
+func UpdateOaRequestByFieldIn(params map[string]string, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query := "UPDATE oa_request SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " IN(" + inQuery + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}

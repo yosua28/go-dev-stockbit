@@ -4,9 +4,14 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"bufio"
 	"database/sql"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -673,4 +678,136 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func UploadOaRequestFormatSinvest(c echo.Context) error {
+
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	var err error
+
+	err = os.MkdirAll(config.BasePath+"/oa_upload/sinvest/", 0755)
+	if err != nil {
+		log.Error(err.Error())
+	} else {
+		var file *multipart.FileHeader
+		file, err = c.FormFile("file")
+		if file != nil {
+			if err != nil {
+				return lib.CustomError(http.StatusBadRequest)
+			}
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			log.Println(extension)
+			roles := []string{".txt", ".TXT"}
+			_, found := lib.Find(roles, extension)
+			if !found {
+				return lib.CustomError(http.StatusUnauthorized, "Format file must .txt", "Format file must .txt")
+			}
+			// Generate filename
+			var filename string
+			filename = lib.RandStringBytesMaskImprSrc(20)
+			log.Println("Generate filename:", filename+extension)
+			// Upload txt and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/oa_upload/sinvest/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+
+			fileTxt, err := os.Open(config.BasePath + "/oa_upload/sinvest/" + filename + extension)
+
+			if err != nil {
+				log.Println("failed to open txt")
+				log.Println(err)
+				// log.Fatalf("failed to open")
+			}
+
+			scanner := bufio.NewScanner(fileTxt)
+
+			scanner.Split(bufio.ScanLines)
+			var text []string
+
+			for scanner.Scan() {
+				text = append(text, scanner.Text())
+			}
+
+			fileTxt.Close()
+
+			dateLayout := "2006-01-02 15:04:05"
+
+			var customerIds []string
+			for idx, ea := range text {
+				if idx > 0 {
+
+					s := strings.Split(ea, "|")
+
+					sidNo := strings.TrimSpace(s[2])
+					ifuaNo := strings.TrimSpace(s[3])
+					ifuaName := strings.TrimSpace(s[4])
+					clientCode := strings.TrimSpace(s[5])
+
+					//get ms_customer by clientCode
+					var customer models.MsCustomer
+					_, err := models.GetMsCustomerByClientCode(&customer, clientCode)
+					if err != nil {
+						log.Error("get customer error : client_code = " + clientCode + ". Error : " + err.Error())
+						continue
+					}
+
+					strCusKey := strconv.FormatUint(customer.CustomerKey, 10)
+					if _, ok := lib.Find(customerIds, strCusKey); !ok {
+						customerIds = append(customerIds, strCusKey)
+					}
+
+					//update ms_customer
+					params := make(map[string]string)
+					params["sid_no"] = sidNo
+					params["customer_key"] = strCusKey
+					params["rec_modified_date"] = time.Now().Format(dateLayout)
+					params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+					_, err = models.UpdateMsCustomer(params)
+					if err != nil {
+						log.Error("Error update sid_no ms_customer")
+						continue
+					}
+
+					//update tr_account_all
+					paramsTrAccount := make(map[string]string)
+					paramsTrAccount["ifua_no"] = ifuaNo
+					paramsTrAccount["ifua_name"] = ifuaName
+					paramsTrAccount["rec_modified_date"] = time.Now().Format(dateLayout)
+					paramsTrAccount["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+					_, err = models.UpdateTrAccountUploadSinvest(paramsTrAccount, "customer_key", strCusKey)
+					if err != nil {
+						log.Error("Error update ifua_no, ifua_name tr_account")
+						continue
+					}
+				}
+			}
+
+			//update oa_status di oa_request by customer_key
+			if len(customerIds) > 0 {
+				paramsOa := make(map[string]string)
+				paramsOa["oa_status"] = "262"
+				paramsOa["rec_modified_date"] = time.Now().Format(dateLayout)
+				paramsOa["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+				_, err := models.UpdateOaRequestByFieldIn(paramsOa, customerIds, "customer_key")
+				if err != nil {
+					log.Error("Error update oa_status in oa_request : " + err.Error())
+				}
+			}
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
 }
