@@ -8,12 +8,10 @@ import (
 	"strconv"
 	"time"
 	"fmt"
-	"os/exec"
 	"html/template"
 	"os"
 
 	log "github.com/sirupsen/logrus"
-	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
 )
 
