@@ -332,7 +332,7 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 		currencyData[c.CurrencyKey] = c
 	}
 
-	var responseData []models.OaRequestCsvFormat
+	var responseData []models.OaRequestCsvFormatFiksTxt
 
 	var scApp models.ScAppConfig
 	status, err = models.GetScAppConfigByCode(&scApp, "LAST_CLIENT_CODE")
@@ -349,6 +349,11 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 	}
 
 	var lastValue string
+
+	txtHeader := "Type|SA Code|SID|First Name|Middle Name| Last Name|Country of Nationality|ID no |ID Expiration Date| NPWP no|NPWP Registration Date|Country of Birth|Place of Birth|Date of Birth |Gender|Educational Background|Mother's Maiden Name|Religion|Occupation|Income Level (IDR)|Marital Status|Spouse's Name|Investor's Risk Profile|Investment Objective|Source of Fund|Asset Owner|KTP Address|KTP City Code|KTP Postal Code|Correspondence Address|Correspondence City Code|Correspondence City Name|Correspondence Postal Code|Country of Correspondence|Domicile Address|Domicile City Code|Domicile City Name|Domicile Postal Code|Country of Domicile|Home Phone|Mobile Phone|Facsimile|Email|Statement Type|FATCA (Status)|TIN / Foreign TIN|TIN / Foreign TIN Issuance Country|REDM Payment Bank BIC Code 1|REDM Payment Bank BI Member Code 1|REDM Payment Bank Name 1| REDM Payment Bank Country 1| REDM Payment Bank Branch 1|REDM Payment A/C CCY 1|REDM Payment A/C No. 1|REDM Payment A/C Name 1|REDM Payment Bank BIC Code 2|REDM Payment Bank BI Member Code 2|REDM Payment Bank Name 2|REDM Payment Bank Country 2|REDM Payment Bank Branch 2|REDM Payment A/C CCY 2|REDM Payment A/C No. 2|REDM Payment A/C Name 2|REDM Payment Bank BIC Code 3|REDM Payment Bank BI Member Code 3| REDM Payment Bank Name 3|REDM Payment Bank Country 3|REDM Payment Bank Branch 3|REDM Payment A/C CCY 3|REDM Payment A/C No. 3|REDM Payment A/C Name 3|Client Code"
+	var dataRow models.OaRequestCsvFormatFiksTxt
+	dataRow.DataRow = txtHeader
+	responseData = append(responseData, dataRow)
 
 	for _, oareq := range oaRequestDB {
 		if n, ok := pdData[oareq.OaRequestKey]; ok {
@@ -634,7 +639,83 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 			}
 			//end
 
-			responseData = append(responseData, data)
+			txtData := data.Type + "|" +
+				data.SACode + "|" +
+				data.SID + "|" +
+				data.FirstName + "|" +
+				data.MiddleName + "|" +
+				data.LastName + "|" +
+				data.CountryOfNationality + "|" +
+				data.IDno + "|" +
+				data.IDExpirationDate + "|" +
+				data.NpwpNo + "|" +
+				data.NpwpRegistrationDate + "|" +
+				data.CountryOfBirth + "|" +
+				data.PlaceOfBirth + "|" +
+				data.DateOfBirth + "|" +
+				data.Gender + "|" +
+				data.EducationalBackground + "|" +
+				data.MotherMaidenName + "|" +
+				data.Religion + "|" +
+				data.Occupation + "|" +
+				data.IncomeLevel + "|" +
+				data.MaritalStatus + "|" +
+				data.SpouseName + "|" +
+				data.InvestorRiskProfile + "|" +
+				data.InvestmentObjective + "|" +
+				data.SourceOfFund + "|" +
+				data.AssetOwner + "|" +
+				data.KTPAddress + "|" +
+				data.KTPCityCode + "|" +
+				data.KTPPostalCode + "|" +
+				data.CorrespondenceAddress + "|" +
+				data.CorrespondenceCityCode + "|" +
+				data.CorrespondenceCityName + "|" +
+				data.CorrespondencePostalCode + "|" +
+				data.CountryOfCorrespondence + "|" +
+				data.DomicileAddress + "|" +
+				data.DomicileCityCode + "|" +
+				data.DomicileCityName + "|" +
+				data.DomicilePostalCode + "|" +
+				data.CountryOfDomicile + "|" +
+				data.HomePhone + "|" +
+				data.MobilePhone + "|" +
+				data.Facsimile + "|" +
+				data.Email + "|" +
+				data.StatementType + "|" +
+				data.FATCA + "|" +
+				data.ForeignTIN + "|" +
+				data.ForeignTINIssuanceCountry + "|" +
+				data.REDMPaymentBankBICCode1 + "|" +
+				data.REDMPaymentBankBIMemberCode1 + "|" +
+				data.REDMPaymentBankName1 + "|" +
+				data.REDMPaymentBankCountry1 + "|" +
+				data.REDMPaymentBankBranch1 + "|" +
+				data.REDMPaymentACCcy1 + "|" +
+				data.REDMPaymentACNo1 + "|" +
+				data.REDMPaymentACName1 + "|" +
+				data.REDMPaymentBankBICCode2 + "|" +
+				data.REDMPaymentBankBIMemberCode2 + "|" +
+				data.REDMPaymentBankName2 + "|" +
+				data.REDMPaymentBankCountry2 + "|" +
+				data.REDMPaymentBankBranch2 + "|" +
+				data.REDMPaymentACCcy2 + "|" +
+				data.REDMPaymentACNo2 + "|" +
+				data.REDMPaymentACName2 + "|" +
+				data.REDMPaymentBankBICCode3 + "|" +
+				data.REDMPaymentBankBIMemberCode3 + "|" +
+				data.REDMPaymentBankName3 + "|" +
+				data.REDMPaymentBankCountry3 + "|" +
+				data.REDMPaymentBankBranch3 + "|" +
+				data.REDMPaymentACCcy3 + "|" +
+				data.REDMPaymentACNo3 + "|" +
+				data.REDMPaymentACName3 + "|" +
+				data.ClientCode
+
+			var txt models.OaRequestCsvFormatFiksTxt
+			txt.DataRow = txtData
+
+			responseData = append(responseData, txt)
 		}
 	}
 
