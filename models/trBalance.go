@@ -51,11 +51,12 @@ func GetLastBalanceIn(c *[]TrBalance, acaKey []string) (int, error) {
 				t1.tc_key, 
 				t1.balance_date, 
 				t1.balance_unit, 
+				t1.avg_nav, 
 				t1.tc_key_red FROM
 				   tr_balance t1 JOIN 
 				   (SELECT MAX(balance_key) balance_key FROM tr_balance GROUP BY tc_key) t2
 			   ON t1.balance_key = t2.balance_key`
-	query := query2 + " WHERE t1.aca_key IN(" + inQuery + ") GROUP BY tc_key"
+	query := query2 + " WHERE t1.aca_key IN(" + inQuery + ") GROUP BY tc_key ORDER BY t1.balance_key DESC"
 
 	log.Println(query)
 	err := db.Db.Select(c, query)

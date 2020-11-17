@@ -107,3 +107,15 @@ func GetMsCityIn(c *[]MsCity, value []string, field string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetMsCity(c *MsCity, key string) (int, error) {
+	query := `SELECT ms_city.* FROM ms_city WHERE ms_city.city_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

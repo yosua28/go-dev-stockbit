@@ -8,8 +8,12 @@ import (
 	"strconv"
 	"time"
 	"fmt"
+	"os/exec"
+	"html/template"
+	"os"
 
 	log "github.com/sirupsen/logrus"
+	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
 )
 
@@ -747,6 +751,18 @@ func Portofolio(c echo.Context) error {
 		productData[product.ProductKey] = *product.CurrencyKey
 	}
 
+	var currencyDB []models.MsCurrency
+	status, err = models.GetMsCurrencyIn(&currencyDB, currencyIDs, "currency_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get currency data")
+	}
+
+	ccy := make(map[uint64]string)
+	for _, currency := range currencyDB {
+		ccy[currency.CurrencyKey] = currency.Code
+	}
+
 	var rateDB []models.TrCurrencyRate
 	status, err = models.GetLastCurrencyIn(&rateDB, currencyIDs)
 	if err != nil {
@@ -791,6 +807,7 @@ func Portofolio(c echo.Context) error {
 	params = make(map[string]string)
 	var userProduct []string
 	balanceUnit := make(map[uint64]float32)
+	avgNav := make(map[uint64]float32)
 	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
 		paramsAcc := make(map[string]string)
 		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
@@ -837,6 +854,7 @@ func Portofolio(c echo.Context) error {
 									}else{
 										balanceUnit[productKey] = balance.BalanceUnit
 									}
+									avgNav[productKey] = *balance.AvgNav
 									userProduct = append(userProduct, strconv.FormatUint(productKey, 10))
 								}
 							}
@@ -881,17 +899,27 @@ func Portofolio(c echo.Context) error {
 		}
 	}
 	responseData["total_invest"] = total
+	
 	imba := (total/netSub)*100
 	responseData["imba"] = fmt.Sprintf("%.3f", imba) + `%`
 	var products []interface{}
+	var portofolio models.Portofolio
+	portofolio.Total = fmt.Sprintf("%.3f", total)
+	var portofolioDatas []models.ProductPortofolio
+	var totalGainLoss float32
 	for _, product := range productDB {
 		data := make(map[string]interface{})
+		var portofolioData models.ProductPortofolio
 	
 		data["product_key"] = product.ProductKey
 		data["product_id"] = product.ProductID
 		data["product_code"] = product.ProductCode
 		data["product_name"] = product.ProductName
 		data["product_name_alt"] = product.ProductNameAlt
+		portofolioData.ProductName = product.ProductNameAlt
+		portofolioData.CCY = ccy[*product.CurrencyKey]
+		portofolioData.AvgNav = fmt.Sprintf("%.3f", avgNav[product.ProductKey])
+		portofolioData.Kurs = fmt.Sprintf("%.3f", rateData[*product.CurrencyKey])
 
 		if product.RecImage1 != nil && *product.RecImage1 != ""{
 			data["rec_image1"] = config.BaseUrl + "/images/product/" + *product.RecImage1
@@ -899,15 +927,109 @@ func Portofolio(c echo.Context) error {
 			data["rec_image1"] = config.BaseUrl + "/images/product/default.png"
 		}
 		if n, ok := navData[product.ProductKey]; ok {
+			portofolioData.Nav = fmt.Sprintf("%.3f", n.NavValue)
 			if b, ok := balanceUnit[product.ProductKey]; ok {
 				data["invest_value"] =  (b * n.NavValue) * rateData[*product.CurrencyKey]
+				portofolioData.Amount = fmt.Sprintf("%.3f", (b * n.NavValue))
+				portofolioData.AmountIDR = fmt.Sprintf("%.3f", data["invest_value"].(float32))
+				portofolioData.Unit = fmt.Sprintf("%.3f", b)
+				gainLoss := (avgNav[product.ProductKey] - n.NavValue) * b
+				portofolioData.GainLoss = fmt.Sprintf("%.3f", gainLoss)
+				totalGainLoss += (gainLoss*rateData[*product.CurrencyKey])
+				portofolioData.GainLossIDR = fmt.Sprintf("%.3f", (gainLoss*rateData[*product.CurrencyKey]))
 				percent := (((b * n.NavValue)*rateData[*product.CurrencyKey])/total) * 100
 				data["percent"] =  fmt.Sprintf("%.3f", percent) + `%`
 			}
 		}
-	
+		portofolioDatas = append(portofolioDatas, portofolioData)
 		products = append(products, data)
 	}
+
+	// PDF Template
+	portofolio.TotalGainLoss = fmt.Sprintf("%.3f", totalGainLoss)
+	portofolio.Datas = portofolioDatas
+	var customer models.MsCustomer
+	status, err = models.GetMsCustomer(&customer, customerKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, "Failed get customer", "Customer not found")
+	}
+	dateLayout := "2006-01-02 15:04:05"
+	portofolio.Date = time.Now().Format(dateLayout)
+	portofolio.Cif = customer.UnitHolderIDno
+	sid := ""
+	if customer.SidNo != nil {
+		sid = *customer.SidNo
+	}
+	portofolio.Sid = sid
+	portofolio.Name = customer.FullName
+
+	params = make(map[string]string)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["orderBy"] = "oa_request_key"
+	params["orderType"] = "DESC"
+	var requestDB []models.OaRequest
+	status, err = models.GetAllOaRequest(&requestDB, 100, 0, true, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, "Failed get request", "Failed get request")
+	}
+
+	request := requestDB[0]
+
+	var personalData models.OaPersonalData
+	status, err = models.GetOaPersonalData(&personalData, strconv.FormatUint(request.OaRequestKey,10), "oa_request_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, "Failed get personal data", "Failed get personal data")
+	}
+
+	var country models.MsCountry
+	status, err = models.GetMsCountry(&country, strconv.FormatUint(personalData.Nationality, 10))
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	portofolio.Country = country.CouName
+
+	var address models.OaPostalAddress
+	status, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalData.IDcardAddressKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	portofolio.Address = *address.AddressLine1
+
+	var city models.MsCity
+	status, err = models.GetMsCity(&city, strconv.FormatUint(*address.KabupatenKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	postalcode := ""
+	if address.PostalCode != nil {
+		postalcode = *address.PostalCode
+	}
+
+	portofolio.City = city.CityName + " " + postalcode
+
+	t := template.New("account-statement-template.html")
+	
+	t, err = t.ParseFiles(config.BasePath+"/mail/account-statement-template.html")
+	if err != nil {
+		log.Println(err)
+	}
+	f, err := os.Create(config.BasePath+"/mail/account-statement-"+strconv.FormatUint(lib.Profile.UserID, 10)+".html")
+	if err != nil {
+		log.Println("create file: ", err)
+	}
+	if err := t.Execute(f, portofolio); err != nil {
+		log.Println(err)
+	}
+
+	f.Close()
+	// End PDF Template
+
 	responseData["product"] = products
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -970,6 +1092,7 @@ func ProductListMutasi(c echo.Context) error {
 	
 		products = append(products, data)
 	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"

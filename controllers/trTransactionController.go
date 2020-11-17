@@ -17,6 +17,7 @@ import (
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
+	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 )
 
 func CreateTransaction(c echo.Context) error {
@@ -656,9 +657,46 @@ func GetTransactionList(c echo.Context) error {
 
 func SendEmailPortofolio(c echo.Context) error {
 
+	// Create new PDF generator
+	pdfg, err := wkhtml.NewPDFGenerator()
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+
+	// Set global options
+	pdfg.Dpi.Set(300)
+	pdfg.Orientation.Set(wkhtml.OrientationLandscape)
+	pdfg.Grayscale.Set(false)
+
+	// Create a new input page from an URL
+	page := wkhtml.NewPage(config.BasePath+"/mail/account-statement-"+strconv.FormatUint(lib.Profile.UserID, 10)+".html")
+
+	// Set options for this page
+	page.FooterRight.Set("[page]")
+	page.FooterFontSize.Set(10)
+	page.Zoom.Set(0.95)
+	page.Allow.Set(config.BasePath+"/mail/images")
+
+	// Add to document
+	pdfg.AddPage(page)
+
+	// Create PDF document in internal buffer
+	err = pdfg.Create()
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	err = os.MkdirAll(config.BasePath + "/files/"+strconv.FormatUint(lib.Profile.UserID, 10), 0755)
+	// Write buffer contents to file on disk
+	err = pdfg.WriteFile(config.BasePath + "/files/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/account-statement.pdf")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	log.Info("Success create file")
 	t := template.New("index-portofolio.html")
 	
-	var err error
 	t, err = t.ParseFiles(config.BasePath+"/mail/index-portofolio.html")
 	if err != nil {
 		log.Println(err)
@@ -676,6 +714,7 @@ func SendEmailPortofolio(c echo.Context) error {
 	mailer.SetHeader("To", lib.Profile.Email)
 	mailer.SetHeader("Subject", "[MNCduit] Laporan Akun Statement")
 	mailer.SetBody("text/html", result)
+	mailer.Attach(config.BasePath+"/files/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/account-statement.pdf")
 
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,

@@ -10,6 +10,32 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type Portofolio struct {
+	Date              string
+	Cif               string
+	Sid               string
+	Name              string
+	Address           string
+	City              string
+	Country           string
+	Datas             []ProductPortofolio
+	Total             string
+	TotalGainLoss     string
+}
+
+type ProductPortofolio struct {
+	ProductName            string
+	AvgNav                 string
+	Nav                    string
+	Unit                   string
+	CCY                    string
+	Amount                 string
+	GainLoss               string
+	Kurs                   string
+	AmountIDR              string
+	GainLossIDR            string
+}
+
 type TrTransaction struct {
 	TransactionKey    uint64   `db:"transaction_key"           json:"transaction_key"`
 	ParentKey         *uint64  `db:"parent_key"                json:"parent_key"`
