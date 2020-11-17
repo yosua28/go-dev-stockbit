@@ -237,8 +237,9 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 
 	var trTransaction []models.TrTransaction
 
-	_, found := lib.Find(transStatusKey, "7")
-	if !found {
+	_, cekConfirm := lib.Find(transStatusKey, "7")
+	_, cekPosting := lib.Find(transStatusKey, "8")
+	if !cekConfirm && !cekPosting {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	} else {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
@@ -1774,7 +1775,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 				//redm cek balance / saldo aktif di parent jika switch
 				var transactionParent models.TrTransaction
-				var trParentBalanceCustomer []models.TrBalanceCustomerProduk
 				if strTransTypeKey == "4" { // SWITCH IN
 					if transaction.ParentKey == nil {
 						data.Result = "Parent Transaction is empty"
@@ -1794,32 +1794,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 						fmt.Printf("%v \n", data)
 						responseData = append(responseData, data)
 						continue
-					}
-
-					//cek parent transaksi apakah sudah di posting
-					strParentTransStatusKey := strconv.FormatUint(transactionParent.TransStatusKey, 10)
-					if strParentTransStatusKey != "9" {
-						data.Result = "Data Parent Transaction has not been posting"
-						fmt.Printf("%v \n", data)
-						responseData = append(responseData, data)
-						continue
-					}
-
-					strParentProductKey := strconv.FormatUint(transactionParent.ProductKey, 10)
-					strParentCustomerKey := strconv.FormatUint(transactionParent.CustomerKey, 10)
-					_, err = models.GetLastBalanceCustomerByProductKey(&trParentBalanceCustomer, strParentCustomerKey, strParentProductKey)
-					if err != nil {
-						if err != sql.ErrNoRows {
-							data.Result = "Parent Balance is empty"
-							fmt.Printf("%v \n", data)
-							responseData = append(responseData, data)
-							continue
-						} else {
-							data.Result = err.Error()
-							fmt.Printf("%v \n", data)
-							responseData = append(responseData, data)
-							continue
-						}
 					}
 				}
 
@@ -1908,9 +1882,50 @@ func UploadExcelConfirmation(c echo.Context) error {
 					strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
 					paramsFifo["trans_amount"] = strTransAmountFifo
 
-					// paramsFifo["trans_fee_amount"] = ""
+					var feeTypeStr string
+
+					if strTransTypeKey == "1" {
+						feeTypeStr = "183"
+					}
+					if strTransTypeKey == "4" {
+						feeTypeStr = "185"
+					}
+
+					var feeItem models.MsProductFeeItem
+
+					_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+					if err != nil {
+						if err == sql.ErrNoRows {
+							_, err = models.GetMsProductFeeItemLastCalculateFifo(&feeItem, strProductKey, feeTypeStr)
+							if err != nil {
+								log.Error(err.Error())
+								paramsFifo["trans_fee_amount"] = "0"
+								paramsFifo["trans_nett_amount"] = "0"
+							} else {
+								transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+								paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+								transnett := transAmountFifo + transfeeamount
+								strTransnett := fmt.Sprintf("%g", transnett)
+								paramsFifo["trans_nett_amount"] = strTransnett
+							}
+						} else {
+							log.Error(err.Error())
+							paramsFifo["trans_fee_amount"] = "0"
+							paramsFifo["trans_nett_amount"] = "0"
+						}
+					} else {
+						transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+						strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+						paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+						transnett := transAmountFifo + transfeeamount
+						strTransnett := fmt.Sprintf("%g", transnett)
+						paramsFifo["trans_nett_amount"] = strTransnett
+					}
+
 					paramsFifo["trans_fee_tax"] = "0"
-					// paramsFifo["trans_nett_amount"] = ""
 					paramsFifo["rec_status"] = "1"
 					paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 					paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
@@ -1968,9 +1983,50 @@ func UploadExcelConfirmation(c echo.Context) error {
 							strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
 							paramsFifo["trans_amount"] = strTransAmountFifo
 
-							// paramsFifo["trans_fee_amount"] = ""
+							var feeTypeStr string
+
+							if strTransTypeKey == "2" {
+								feeTypeStr = "184"
+							}
+							if strTransTypeKey == "3" {
+								feeTypeStr = "185"
+							}
+
+							var feeItem models.MsProductFeeItem
+
+							_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+							if err != nil {
+								if err == sql.ErrNoRows {
+									_, err = models.GetMsProductFeeItemLastCalculateFifo(&feeItem, strProductKey, feeTypeStr)
+									if err != nil {
+										log.Error(err.Error())
+										paramsFifo["trans_fee_amount"] = "0"
+										paramsFifo["trans_nett_amount"] = "0"
+									} else {
+										transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+										strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+										paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+										transnett := transAmountFifo + transfeeamount
+										strTransnett := fmt.Sprintf("%g", transnett)
+										paramsFifo["trans_nett_amount"] = strTransnett
+									}
+								} else {
+									log.Error(err.Error())
+									paramsFifo["trans_fee_amount"] = "0"
+									paramsFifo["trans_nett_amount"] = "0"
+								}
+							} else {
+								transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+								paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+								transnett := transAmountFifo - transfeeamount
+								strTransnett := fmt.Sprintf("%g", transnett)
+								paramsFifo["trans_nett_amount"] = strTransnett
+							}
+
 							paramsFifo["trans_fee_tax"] = "0"
-							// paramsFifo["trans_nett_amount"] = ""
 							paramsFifo["rec_status"] = "1"
 							paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 							paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)

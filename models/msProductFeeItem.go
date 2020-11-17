@@ -208,3 +208,36 @@ func GetMsProductFeeItem(c *MsProductFeeItem, key string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetMsProductFeeItemCalculateFifoWithLimit(c *MsProductFeeItem, productKey string, pLimit string, feeType string) (int, error) {
+	query := `SELECT i.* 
+			FROM ms_product_fee_item AS i 
+			JOIN ms_product_fee AS pf ON pf.fee_key = i.product_fee_key 
+			WHERE i.rec_status = 1 AND i.principle_limit <= ` + pLimit + ` 
+			AND pf.product_key = ` + productKey + ` AND pf.fee_type = ` + feeType + ` 
+			ORDER BY i.principle_limit ASC LIMIT 1`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductFeeItemLastCalculateFifo(c *MsProductFeeItem, productKey string, feeType string) (int, error) {
+	query := `SELECT i.* 
+			FROM ms_product_fee_item AS i 
+			JOIN ms_product_fee AS pf ON pf.fee_key = i.product_fee_key 
+			WHERE i.rec_status = 1 AND pf.product_key = ` + productKey + ` AND pf.fee_type = ` + feeType + ` 
+			ORDER BY i.principle_limit ASC LIMIT 1`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
