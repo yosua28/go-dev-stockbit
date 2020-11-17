@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"math"
@@ -18,6 +19,7 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func initAuthBranchEntryHoEntry() error {
@@ -1075,6 +1077,70 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 			}
 		}
 	}
+
+	//send email to KYC / fund admin
+	if (lib.Profile.RoleKey == roleKeyCs) || (lib.Profile.RoleKey == roleKeyKyc) {
+		//check customer
+		var customer models.MsCustomer
+		strCus := strconv.FormatUint(transaction.CustomerKey, 10)
+		status, err = models.GetMsCustomer(&customer, strCus)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		}
+
+		//check product
+		var product models.MsProduct
+		strPro := strconv.FormatUint(transaction.ProductKey, 10)
+		status, err = models.GetMsProduct(&product, strPro)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		}
+
+		paramsScLogin := make(map[string]string)
+		if lib.Profile.RoleKey == roleKeyCs {
+			paramsScLogin["role_key"] = "12"
+		}
+		if lib.Profile.RoleKey == roleKeyKyc {
+			paramsScLogin["role_key"] = "13"
+		}
+		paramsScLogin["rec_status"] = "1"
+		var userLogin []models.ScUserLogin
+		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		if err != nil {
+			log.Error("Error get email")
+			log.Error(err)
+		}
+
+		for _, scLogin := range userLogin {
+			strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+			if (strUserCat == "2") || (strUserCat == "3") {
+				mailer := gomail.NewMessage()
+				mailer.SetHeader("From", config.EmailFrom)
+				// mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
+				mailer.SetHeader("To", scLogin.UloginEmail)
+				mailer.SetHeader("Subject", "[MNCduit] Verifikasi Transaksi Produk")
+				mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
+				dialer := gomail.NewDialer(
+					config.EmailSMTPHost,
+					int(config.EmailSMTPPort),
+					config.EmailFrom,
+					config.EmailFromPassword,
+				)
+				dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+				err = dialer.DialAndSend(mailer)
+				if err != nil {
+					log.Error("Error send email")
+					log.Error(err)
+				}
+			}
+		}
+	}
+	//end send email to KYC / fund admin
 
 	log.Info("Success update transaksi")
 
