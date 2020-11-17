@@ -10,7 +10,6 @@ import (
 
 type FfsNavPerformanceInfo struct {
 	NavDate string `json:"nav_date,omitempty"`
-	ALL     string `json:"All,omitempty"`
 	D1      string `json:"1d,omitempty"`
 	MTD     string `json:"mtd,omitempty"`
 	M1      string `json:"1m,omitempty"`
@@ -21,6 +20,7 @@ type FfsNavPerformanceInfo struct {
 	Y5      string `json:"5y,omitempty"`
 	YTD     string `json:"ytd,omitempty"`
 	CAGR    string `json:"cagr,omitempty"`
+	ALL     string `json:"all,omitempty"`
 }
 
 type FfsNavPerformance struct {
