@@ -10519,9 +10519,9 @@
     },
     "/admin/uploadformatsinvest": {
       "post": {
-        "description": "Get Detail Product Fee Ite, (User Allowed : RoleKey 13)",
+        "description": "Upload Oa Format Sinvest, (User Allowed : RoleKey 13)",
         "tags": [
-          "Admin Upload"
+          "Admin OA Request"
         ],
         "security": [
           {
