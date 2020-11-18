@@ -79,6 +79,20 @@ type AdminListScUserLogin struct {
 	CreatedDate    *string `db:"created_date"        json:"created_date"`
 }
 
+type AdminDetailScUserLogin struct {
+	UserLoginKey   uint64             `json:"user_login_key"`
+	UserCategory   ScUserCategoryInfo `json:"user_category"`
+	UserDept       *ScUserDeptInfo    `json:"user_dept"`
+	UloginName     string             `json:"ulogin_name"`
+	UloginFullName string             `json:"ulogin_full_name"`
+	UloginEmail    string             `json:"ulogin_email"`
+	Role           *ScRoleInfoLogin   `json:"role"`
+	Enabled        bool               `json:"enabled"`
+	Locked         bool               `json:"locked"`
+	CreatedDate    *string            `json:"created_date"`
+	RecImage       string             `json:"rec_image"`
+}
+
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               sc_user_login.* FROM 

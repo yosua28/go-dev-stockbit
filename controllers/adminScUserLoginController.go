@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
 	"math"
 	"net/http"
 	"strconv"
@@ -195,6 +196,126 @@ func GetListScUserLoginAdmin(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Pagination = pagination
 	response.Data = scUserLogin
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetDetailScUserLoginAdmin(c echo.Context) error {
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var err error
+	var status int
+
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var scUserLogin models.ScUserLogin
+	status, err = models.GetScUserLoginByKey(&scUserLogin, keyStr)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var responseData models.AdminDetailScUserLogin
+
+	responseData.UserLoginKey = scUserLogin.UserLoginKey
+
+	var scUserCategory models.ScUserCategory
+	strUCKey := strconv.FormatUint(scUserLogin.UserCategoryKey, 10)
+	status, err = models.GetScUserCategory(&scUserCategory, strUCKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		var ucat models.ScUserCategoryInfo
+		ucat.UserCategoryKey = scUserCategory.UserCategoryKey
+		ucat.UcategoryCode = scUserCategory.UcategoryCode
+		ucat.UcategoryName = scUserCategory.UcategoryName
+		ucat.UcategoryDesc = scUserCategory.UcategoryDesc
+		responseData.UserCategory = ucat
+	}
+
+	if scUserLogin.UserDeptKey != nil {
+		var scUserDept models.ScUserDept
+		strUDept := strconv.FormatUint(*scUserLogin.UserDeptKey, 10)
+		status, err = models.GetScUserDept(&scUserDept, strUDept)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var udept models.ScUserDeptInfo
+			udept.UserDeptKey = scUserDept.UserDeptKey
+			udept.UserDeptCode = scUserDept.UserDeptCode
+			udept.UserDeptName = scUserDept.UserDeptName
+			udept.UserDeptDesc = scUserDept.UserDeptDesc
+			responseData.UserDept = &udept
+		}
+	}
+
+	responseData.UloginName = scUserLogin.UloginName
+	responseData.UloginFullName = scUserLogin.UloginFullName
+	responseData.UloginEmail = scUserLogin.UloginEmail
+
+	if scUserLogin.RoleKey != nil {
+		var scRole models.ScRole
+		strRoleKey := strconv.FormatUint(*scUserLogin.RoleKey, 10)
+		status, err = models.GetScRole(&scRole, strRoleKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var role models.ScRoleInfoLogin
+			role.RoleKey = scRole.RoleKey
+			role.RoleCode = scRole.RoleCode
+			role.RoleName = scRole.RoleName
+			role.RoleDesc = scRole.RoleDesc
+			responseData.Role = &role
+		}
+	}
+
+	if scUserLogin.RecStatus == uint8(1) {
+		responseData.Enabled = true
+	} else {
+		responseData.Enabled = false
+	}
+
+	if scUserLogin.UloginLocked == uint8(1) {
+		responseData.Locked = true
+	} else {
+		responseData.Locked = false
+	}
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	if scUserLogin.RecCreatedDate != nil {
+		date, err := time.Parse(layout, *scUserLogin.RecCreatedDate)
+		if err == nil {
+			oke := date.Format(newLayout)
+			responseData.CreatedDate = &oke
+		}
+	}
+
+	if scUserLogin.RecImage1 != nil && *scUserLogin.RecImage1 != "" {
+		responseData.RecImage = config.BaseUrl + "/images/user/" + strconv.FormatUint(scUserLogin.UserLoginKey, 10) + "/profile/" + *scUserLogin.RecImage1
+	} else {
+		responseData.RecImage = config.BaseUrl + "/images/post/default.png"
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 }

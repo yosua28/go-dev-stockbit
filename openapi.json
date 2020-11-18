@@ -10785,6 +10785,106 @@
           }
         }
       }
+    },
+    "/admin/usermanagement/{key}": {
+      "get": {
+        "description": "Get Detail User Management Admin (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin User Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "user login key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "user_login_key": 7,
+                    "user_category": {
+                      "user_category_key": 1,
+                      "ucategory_code": "USR_CUSTOMER",
+                      "ucategory_name": "Customer or Visitor",
+                      "ucategory_desc": "Daftar Login seluruh customer atau visitor"
+                    },
+                    "user_dept": {
+                      "user_dept_key": 1,
+                      "user_dept_code": "PUBLIC",
+                      "user_dept_name": "Public Dept",
+                      "user_dept_desc": "Sales and Marketing"
+                    },
+                    "ulogin_name": "yogasutrisna902@gmail.com",
+                    "ulogin_full_name": "yogasutrisna902@gmail.com",
+                    "ulogin_email": "yogasutrisna902@gmail.com",
+                    "role": {
+                      "role_key": 1,
+                      "role_code": "CUSTOMER_RETAIL",
+                      "role_name": "Customer Individu",
+                      "role_desc": "Role Individu"
+                    },
+                    "enabled": true,
+                    "locked": false,
+                    "created_date": "03 Nov 2020",
+                    "rec_image": "https://devapi.mncasset.com/images/user/7/profile/pRKamVzp6DWwAaBuoiDk.jpg"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

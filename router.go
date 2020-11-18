@@ -180,7 +180,8 @@ func router() *echo.Echo {
 
 	//Admin User Management
 	admin.GET("/logout", controllers.LogoutAdmin).Name = "LogoutAdmin"
-	admin.GET("/usermanagement", controllers.GetListScUserLoginAdmin).Name = "GetListScUserLoginAdmin"
+	admin.GET("/usermanagementlist", controllers.GetListScUserLoginAdmin).Name = "GetListScUserLoginAdmin"
+	admin.GET("/usermanagement/:key", controllers.GetDetailScUserLoginAdmin).Name = "GetDetailScUserLoginAdmin"
 
 	return e
 }

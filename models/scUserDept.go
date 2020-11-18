@@ -34,6 +34,13 @@ type ScUserDept struct {
 	RecAttributeID3      *string `db:"rec_attribute_id3"              json:"rec_attribute_id3"`
 }
 
+type ScUserDeptInfo struct {
+	UserDeptKey  uint64  `json:"user_dept_key"`
+	UserDeptCode string  `json:"user_dept_code"`
+	UserDeptName string  `json:"user_dept_name"`
+	UserDeptDesc *string `json:"user_dept_desc"`
+}
+
 func GetScUserDept(c *ScUserDept, key string) (int, error) {
 	query := `SELECT sc_user_dept.* FROM sc_user_dept 
 				WHERE sc_user_dept.rec_status = 1 AND sc_user_dept.user_dept_key = ` + key
