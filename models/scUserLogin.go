@@ -276,7 +276,7 @@ func AdminGetAllScUserLogin(c *[]AdminListScUserLogin, limit uint64, offset uint
 				role.role_key AS role_key,
 				role.role_name AS role_name,
 				(CASE
-					WHEN u.ulogin_enabled = '1' THEN 'Yes'
+					WHEN u.rec_status = '1' THEN 'Yes'
 					ELSE 'No'
 				END) AS enabled,
 				(CASE
@@ -289,7 +289,7 @@ func AdminGetAllScUserLogin(c *[]AdminListScUserLogin, limit uint64, offset uint
 			  LEFT JOIN sc_user_category AS cat ON cat.user_category_key = u.user_category_key 
 			  LEFT JOIN sc_user_dept AS dept ON dept.user_dept_key = u.user_dept_key 
 			  LEFT JOIN sc_login_session AS ses ON ses.user_login_key = u.user_login_key 
-			  WHERE u.rec_status = 1`
+			  WHERE 1 = 1`
 	var present bool
 	var whereClause []string
 	var condition string
@@ -362,7 +362,7 @@ func AdminCountDataGetAllScUserlogin(c *CountData, params map[string]string, sea
 			  LEFT JOIN sc_user_category AS cat ON cat.user_category_key = u.user_category_key 
 			  LEFT JOIN sc_user_dept AS dept ON dept.user_dept_key = u.user_dept_key 
 			  LEFT JOIN sc_login_session AS ses ON ses.user_login_key = u.user_login_key 
-			  WHERE u.rec_status = 1`
+			  WHERE 1 = 1`
 	var whereClause []string
 	var condition string
 
