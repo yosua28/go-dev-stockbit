@@ -333,6 +333,7 @@ func VerifyOtp(c echo.Context) error {
 		}
 	}
 	atClaims["uuid"] = uuidString
+	atClaims["email"] = accountData.UloginEmail
 	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(config.Secret))
