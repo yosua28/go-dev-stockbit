@@ -7,10 +7,35 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 )
+
+func LogoutAdmin(c echo.Context) error {
+	var err error
+
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	dateLayout := "2006-01-02 15:04:05"
+	paramsSession := make(map[string]string)
+	paramsSession["user_login_key"] = strIDUserLogin
+	paramsSession["logout_date"] = time.Now().Format(dateLayout)
+	paramsSession["login_session_key"] = ""
+
+	_, err = models.UpdateScLoginSession(paramsSession)
+	if err != nil {
+		log.Error("Error update session in logout")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
 
 func GetListScUserLoginAdmin(c echo.Context) error {
 

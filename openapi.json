@@ -10640,28 +10640,82 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "fee_key": 1,
-                      "fee_code": "TNC_SUB",
-                      "product_key": 1,
-                      "product_code": "BDLC",
-                      "product_name": "DANA LANCAR",
-                      "FeeTypeName": "SUB",
-                      "fee_date_start": "01 February 2020",
-                      "fee_date_thru": "31 December 2200",
-                      "period_hold": 30
-                    },
-                    {
-                      "fee_key": 21,
-                      "fee_code": "TNC_RED",
-                      "product_key": 1,
-                      "product_code": "BDLC",
-                      "product_name": "DANA LANCAR",
-                      "FeeTypeName": "RED",
-                      "fee_date_start": "01 January 2020",
-                      "fee_date_thru": "31 December 2200",
-                      "period_hold": 30
+                      "user_login_key": 7105,
+                      "ucategory_name": "User BackOffice HO",
+                      "user_dept_name": "Client Admin Dept",
+                      "ulogin_name": "yosua.role.15@gmail.com",
+                      "ulogin_full_name": "yosua.role.15@gmail.com",
+                      "ulogin_email": "yosua.role.15@gmail.com",
+                      "is_login": "No",
+                      "role_key": 15,
+                      "role_name": "IT & SysAdmin",
+                      "enabled": "Yes",
+                      "locked": "No",
+                      "created_date": null
                     }
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/logout": {
+      "get": {
+        "description": "Logout",
+        "tags": [
+          "Admin User Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
                 }
               }
             }
