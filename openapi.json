@@ -10535,6 +10535,171 @@
           }
         }
       }
+    },
+    "/admin/usermanagement": {
+      "get": {
+        "description": "Get List Admin User Management : role 15",
+        "tags": [
+          "Admin User Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "user_login_key",
+                "ucategory_name",
+                "user_dept_name",
+                "ulogin_name",
+                "ulogin_full_name",
+                "ulogin_email",
+                "role_name",
+                "rec_created_date"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "search",
+            "in": "query",
+            "description": "Search list by LIKE",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "role_key",
+            "in": "query",
+            "description": "Search list by role_key =",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "fee_key": 1,
+                      "fee_code": "TNC_SUB",
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR",
+                      "FeeTypeName": "SUB",
+                      "fee_date_start": "01 February 2020",
+                      "fee_date_thru": "31 December 2200",
+                      "period_hold": 30
+                    },
+                    {
+                      "fee_key": 21,
+                      "fee_code": "TNC_RED",
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "DANA LANCAR",
+                      "FeeTypeName": "RED",
+                      "fee_date_start": "01 January 2020",
+                      "fee_date_thru": "31 December 2200",
+                      "period_hold": 30
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

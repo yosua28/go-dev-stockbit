@@ -64,6 +64,21 @@ type ScUserLogin struct {
 	RecAttributeID3      *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
+type AdminListScUserLogin struct {
+	UserLoginKey   uint64  `db:"user_login_key"      json:"user_login_key"`
+	UCategoryName  string  `db:"ucategory_name"      json:"ucategory_name"`
+	UserDeptName   *string `db:"user_dept_name"      json:"user_dept_name"`
+	UloginName     string  `db:"ulogin_name"         json:"ulogin_name"`
+	UloginFullName string  `db:"ulogin_full_name"    json:"ulogin_full_name"`
+	UloginEmail    string  `db:"ulogin_email"        json:"ulogin_email"`
+	IsLogin        string  `db:"is_login"            json:"is_login"`
+	RoleKey        *uint64 `db:"role_key"            json:"role_key"`
+	RoleName       *string `db:"role_name"           json:"role_name"`
+	Enabled        string  `db:"enabled"             json:"enabled"`
+	Locked         string  `db:"locked"              json:"locked"`
+	CreatedDate    *string `db:"created_date"        json:"created_date"`
+}
+
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               sc_user_login.* FROM 
@@ -236,6 +251,159 @@ func GetScUserLoginByCustomerKey(c *ScUserLogin, key string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllScUserLogin(c *[]AdminListScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool, searchLike *string) (int, error) {
+	query := `SELECT
+				u.user_login_key AS user_login_key, 
+				cat.ucategory_name AS ucategory_name,
+				dept.user_dept_name AS user_dept_name, 
+				u.ulogin_name AS ulogin_name, 
+				u.ulogin_full_name AS ulogin_full_name,
+				u.ulogin_email AS ulogin_email,
+				(CASE
+					WHEN ses.login_session_key IS NULL THEN "No"
+					ELSE 
+					(CASE
+					WHEN ses.logout_date IS NOT NULL THEN "No"
+					WHEN DATE_ADD(ses.login_date, INTERVAL 2 HOUR) > NOW() THEN "Yes"
+					ELSE "No"
+					END)
+				END) AS is_login,
+				role.role_key AS role_key,
+				role.role_name AS role_name,
+				(CASE
+					WHEN u.ulogin_enabled = '1' THEN 'Yes'
+					ELSE 'No'
+				END) AS enabled,
+				(CASE
+					WHEN u.ulogin_locked = '1' THEN 'Yes'
+					ELSE 'No'
+				END) AS locked,
+				DATE_FORMAT(u.rec_created_date, '%d %M %Y') AS created_date 
+			  FROM sc_user_login AS u 
+			  LEFT JOIN sc_role AS role ON u.role_key = role.role_key 
+			  LEFT JOIN sc_user_category AS cat ON cat.user_category_key = u.user_category_key 
+			  LEFT JOIN sc_user_dept AS dept ON dept.user_dept_key = u.user_dept_key 
+			  LEFT JOIN sc_login_session AS ses ON ses.user_login_key = u.user_login_key 
+			  WHERE u.rec_status = 1`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	//search like all
+	if searchLike != nil {
+		condition += " AND ("
+		condition += " u.user_login_key LIKE '%" + *searchLike + "%' OR"
+		condition += " cat.ucategory_name LIKE '%" + *searchLike + "%' OR"
+		condition += " dept.user_dept_name LIKE '%" + *searchLike + "%' OR"
+		condition += " u.ulogin_name LIKE '%" + *searchLike + "%' OR"
+		condition += " u.ulogin_full_name LIKE '%" + *searchLike + "%' OR"
+		condition += " u.ulogin_email LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_name LIKE '%" + *searchLike + "%' OR"
+		condition += " DATE_FORMAT(u.rec_created_date, '%d %M %Y') LIKE '%" + *searchLike + "%' )"
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminCountDataGetAllScUserlogin(c *CountData, params map[string]string, searchLike *string) (int, error) {
+	query := `SELECT
+	            count(u.user_login_key) AS count_data
+			  FROM sc_user_login AS u 
+			  LEFT JOIN sc_role AS role ON u.role_key = role.role_key 
+			  LEFT JOIN sc_user_category AS cat ON cat.user_category_key = u.user_category_key 
+			  LEFT JOIN sc_user_dept AS dept ON dept.user_dept_key = u.user_dept_key 
+			  LEFT JOIN sc_login_session AS ses ON ses.user_login_key = u.user_login_key 
+			  WHERE u.rec_status = 1`
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	//search like all
+	if searchLike != nil {
+		condition += " AND ("
+		condition += " u.user_login_key LIKE '%" + *searchLike + "%' OR"
+		condition += " cat.ucategory_name LIKE '%" + *searchLike + "%' OR"
+		condition += " dept.user_dept_name LIKE '%" + *searchLike + "%' OR"
+		condition += " u.ulogin_name LIKE '%" + *searchLike + "%' OR"
+		condition += " u.ulogin_full_name LIKE '%" + *searchLike + "%' OR"
+		condition += " u.ulogin_email LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_name LIKE '%" + *searchLike + "%' OR"
+		condition += " DATE_FORMAT(u.rec_created_date, '%d %M %Y') LIKE '%" + *searchLike + "%' )"
+	}
+
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

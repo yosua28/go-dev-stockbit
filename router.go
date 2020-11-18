@@ -178,6 +178,9 @@ func router() *echo.Echo {
 	admin.POST("/productbankaccount/create", controllers.CreateAdminMsProductBankAccount).Name = "CreateAdminMsProductBankAccount"
 	admin.POST("/productbankaccount/update", controllers.UpdateAdminMsProductBankAccount).Name = "UpdateAdminMsProductBankAccount"
 
+	//Admin Sc User Login
+	admin.GET("/usermanagement", controllers.GetListScUserLoginAdmin).Name = "GetListScUserLoginAdmin"
+
 	return e
 }
 
