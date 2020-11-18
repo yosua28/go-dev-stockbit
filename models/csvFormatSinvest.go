@@ -76,3 +76,7 @@ type OaRequestCsvFormat struct {
 	REDMPaymentACName3           string `json:"redm_payment_ac_name3"`
 	ClientCode                   string `json:"client_code"`
 }
+
+type OaRequestCsvFormatFiksTxt struct {
+	DataRow string `json:"data_row"`
+}

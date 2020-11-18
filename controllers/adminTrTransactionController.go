@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"crypto/tls"
 	"database/sql"
 	"fmt"
 	"math"
@@ -18,6 +19,7 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func initAuthBranchEntryHoEntry() error {
@@ -237,8 +239,9 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 
 	var trTransaction []models.TrTransaction
 
-	_, found := lib.Find(transStatusKey, "7")
-	if !found {
+	_, cekConfirm := lib.Find(transStatusKey, "7")
+	_, cekPosting := lib.Find(transStatusKey, "8")
+	if !cekConfirm && !cekPosting {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	} else {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
@@ -1075,6 +1078,73 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 		}
 	}
 
+	//send email to KYC / fund admin
+	if (lib.Profile.RoleKey == roleKeyCs) || (lib.Profile.RoleKey == roleKeyKyc) { //cek user
+		if (transStatus == "4") || (transStatus == "5") { //cek jika approve
+			//check customer
+			var customer models.MsCustomer
+			strCus := strconv.FormatUint(transaction.CustomerKey, 10)
+			status, err = models.GetMsCustomer(&customer, strCus)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					return lib.CustomError(status)
+				}
+			}
+
+			//check product
+			var product models.MsProduct
+			strPro := strconv.FormatUint(transaction.ProductKey, 10)
+			status, err = models.GetMsProduct(&product, strPro)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					return lib.CustomError(status)
+				}
+			}
+
+			paramsScLogin := make(map[string]string)
+			if lib.Profile.RoleKey == roleKeyCs {
+				paramsScLogin["role_key"] = "12"
+			}
+			if lib.Profile.RoleKey == roleKeyKyc {
+				paramsScLogin["role_key"] = "13"
+			}
+			paramsScLogin["rec_status"] = "1"
+			var userLogin []models.ScUserLogin
+			_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+			if err != nil {
+				log.Error("Error get email")
+				log.Error(err)
+			}
+
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					// mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MNCduit] Verifikasi Transaksi Produk")
+					mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
+				}
+			}
+		}
+
+	}
+	//end send email to KYC / fund admin
+
 	log.Info("Success update transaksi")
 
 	var response lib.Response
@@ -1774,7 +1844,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 				//redm cek balance / saldo aktif di parent jika switch
 				var transactionParent models.TrTransaction
-				var trParentBalanceCustomer []models.TrBalanceCustomerProduk
 				if strTransTypeKey == "4" { // SWITCH IN
 					if transaction.ParentKey == nil {
 						data.Result = "Parent Transaction is empty"
@@ -1794,32 +1863,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 						fmt.Printf("%v \n", data)
 						responseData = append(responseData, data)
 						continue
-					}
-
-					//cek parent transaksi apakah sudah di posting
-					strParentTransStatusKey := strconv.FormatUint(transactionParent.TransStatusKey, 10)
-					if strParentTransStatusKey != "9" {
-						data.Result = "Data Parent Transaction has not been posting"
-						fmt.Printf("%v \n", data)
-						responseData = append(responseData, data)
-						continue
-					}
-
-					strParentProductKey := strconv.FormatUint(transactionParent.ProductKey, 10)
-					strParentCustomerKey := strconv.FormatUint(transactionParent.CustomerKey, 10)
-					_, err = models.GetLastBalanceCustomerByProductKey(&trParentBalanceCustomer, strParentCustomerKey, strParentProductKey)
-					if err != nil {
-						if err != sql.ErrNoRows {
-							data.Result = "Parent Balance is empty"
-							fmt.Printf("%v \n", data)
-							responseData = append(responseData, data)
-							continue
-						} else {
-							data.Result = err.Error()
-							fmt.Printf("%v \n", data)
-							responseData = append(responseData, data)
-							continue
-						}
 					}
 				}
 
@@ -1908,9 +1951,50 @@ func UploadExcelConfirmation(c echo.Context) error {
 					strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
 					paramsFifo["trans_amount"] = strTransAmountFifo
 
-					// paramsFifo["trans_fee_amount"] = ""
+					var feeTypeStr string
+
+					if strTransTypeKey == "1" {
+						feeTypeStr = "183"
+					}
+					if strTransTypeKey == "4" {
+						feeTypeStr = "185"
+					}
+
+					var feeItem models.MsProductFeeItem
+
+					_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+					if err != nil {
+						if err == sql.ErrNoRows {
+							_, err = models.GetMsProductFeeItemLastCalculateFifo(&feeItem, strProductKey, feeTypeStr)
+							if err != nil {
+								log.Error(err.Error())
+								paramsFifo["trans_fee_amount"] = "0"
+								paramsFifo["trans_nett_amount"] = "0"
+							} else {
+								transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+								paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+								transnett := transAmountFifo + transfeeamount
+								strTransnett := fmt.Sprintf("%g", transnett)
+								paramsFifo["trans_nett_amount"] = strTransnett
+							}
+						} else {
+							log.Error(err.Error())
+							paramsFifo["trans_fee_amount"] = "0"
+							paramsFifo["trans_nett_amount"] = "0"
+						}
+					} else {
+						transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+						strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+						paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+						transnett := transAmountFifo + transfeeamount
+						strTransnett := fmt.Sprintf("%g", transnett)
+						paramsFifo["trans_nett_amount"] = strTransnett
+					}
+
 					paramsFifo["trans_fee_tax"] = "0"
-					// paramsFifo["trans_nett_amount"] = ""
 					paramsFifo["rec_status"] = "1"
 					paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 					paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
@@ -1968,9 +2052,50 @@ func UploadExcelConfirmation(c echo.Context) error {
 							strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
 							paramsFifo["trans_amount"] = strTransAmountFifo
 
-							// paramsFifo["trans_fee_amount"] = ""
+							var feeTypeStr string
+
+							if strTransTypeKey == "2" {
+								feeTypeStr = "184"
+							}
+							if strTransTypeKey == "3" {
+								feeTypeStr = "185"
+							}
+
+							var feeItem models.MsProductFeeItem
+
+							_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+							if err != nil {
+								if err == sql.ErrNoRows {
+									_, err = models.GetMsProductFeeItemLastCalculateFifo(&feeItem, strProductKey, feeTypeStr)
+									if err != nil {
+										log.Error(err.Error())
+										paramsFifo["trans_fee_amount"] = "0"
+										paramsFifo["trans_nett_amount"] = "0"
+									} else {
+										transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+										strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+										paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+										transnett := transAmountFifo + transfeeamount
+										strTransnett := fmt.Sprintf("%g", transnett)
+										paramsFifo["trans_nett_amount"] = strTransnett
+									}
+								} else {
+									log.Error(err.Error())
+									paramsFifo["trans_fee_amount"] = "0"
+									paramsFifo["trans_nett_amount"] = "0"
+								}
+							} else {
+								transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+								paramsFifo["trans_fee_amount"] = strTransfeeamount
+
+								transnett := transAmountFifo - transfeeamount
+								strTransnett := fmt.Sprintf("%g", transnett)
+								paramsFifo["trans_nett_amount"] = strTransnett
+							}
+
 							paramsFifo["trans_fee_tax"] = "0"
-							// paramsFifo["trans_nett_amount"] = ""
 							paramsFifo["rec_status"] = "1"
 							paramsFifo["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 							paramsFifo["rec_created_date"] = time.Now().Format(dateLayout)
@@ -2217,6 +2342,12 @@ func ProsesPosting(c echo.Context) error {
 	paramsUserMessage["rec_status"] = "1"
 	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+		return lib.CustomError(status, err.Error(), "failed input data user message")
+	}
 
 	log.Info("Success update transaksi")
 

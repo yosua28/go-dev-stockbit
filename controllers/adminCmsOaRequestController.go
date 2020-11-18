@@ -5,6 +5,7 @@ import (
 	"api/db"
 	"api/lib"
 	"api/models"
+	"crypto/tls"
 	"database/sql"
 	"math"
 	"net/http"
@@ -14,6 +15,7 @@ import (
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func initAuthCs() error {
@@ -1077,6 +1079,50 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 
 	log.Info("Success update approved CS")
 
+	//send email to KYC
+	var oapersonal models.OaPersonalData
+	strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
+	status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
+	if err != nil {
+		log.Error("Error Personal Data not Found")
+		return lib.CustomError(status, err.Error(), "Personal data not found")
+	}
+
+	paramsScLogin := make(map[string]string)
+	paramsScLogin["role_key"] = "12"
+	paramsScLogin["rec_status"] = "1"
+	var userLogin []models.ScUserLogin
+	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+	if err != nil {
+		log.Error("Error get email")
+		log.Error(err)
+	}
+
+	for _, scLogin := range userLogin {
+		strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+		if (strUserCat == "2") || (strUserCat == "3") {
+			mailer := gomail.NewMessage()
+			mailer.SetHeader("From", config.EmailFrom)
+			mailer.SetHeader("To", scLogin.UloginEmail)
+			mailer.SetHeader("Subject", "[MNCduit] Verifikasi Opening Account")
+			mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+			dialer := gomail.NewDialer(
+				config.EmailSMTPHost,
+				int(config.EmailSMTPPort),
+				config.EmailFrom,
+				config.EmailFromPassword,
+			)
+			dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+			err = dialer.DialAndSend(mailer)
+			if err != nil {
+				log.Error("Error send email")
+				log.Error(err)
+			}
+		}
+	}
+	//end send email to KYC
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -1307,6 +1353,42 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	tx.Commit()
 
 	log.Info("Success create customer")
+
+	//send email to fund admin
+	paramsScLogin := make(map[string]string)
+	paramsScLogin["role_key"] = "13"
+	paramsScLogin["rec_status"] = "1"
+	var userLogin []models.ScUserLogin
+	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+	if err != nil {
+		log.Error("Error get email")
+		log.Error(err)
+	}
+
+	for _, scLogin := range userLogin {
+		strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+		if (strUserCat == "2") || (strUserCat == "3") {
+			mailer := gomail.NewMessage()
+			mailer.SetHeader("From", config.EmailFrom)
+			mailer.SetHeader("To", scLogin.UloginEmail)
+			mailer.SetHeader("Subject", "[MNCduit] Verifikasi Opening Account")
+			mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+			dialer := gomail.NewDialer(
+				config.EmailSMTPHost,
+				int(config.EmailSMTPPort),
+				config.EmailFrom,
+				config.EmailFromPassword,
+			)
+			dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+			err = dialer.DialAndSend(mailer)
+			if err != nil {
+				log.Error("Error send email")
+				log.Error(err)
+			}
+		}
+	}
+	//end send email to fund admin
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

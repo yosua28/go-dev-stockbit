@@ -3,69 +3,69 @@ package models
 import (
 	"api/db"
 	"log"
-	"strconv"
 	"net/http"
+	"strconv"
 	"strings"
 )
 
 type FfsNavPerformanceInfo struct {
-	NavDate       string      `json:"nav_date,omitempty"`
-	D1            string      `json:"1d,omitempty"`
-	MTD           string      `json:"mtd,omitempty"`
-	M1            string      `json:"1m,omitempty"`
-	M3            string      `json:"3m,omitempty"`
-	M6            string      `json:"6m,omitempty"`
-	Y1            string      `json:"1y,omitempty"`
-	Y3            string      `json:"3y,omitempty"`
-	Y5            string      `json:"5y,omitempty"`
-	YTD           string      `json:"ytd,omitempty"`
-	CAGR          string      `json:"cagr,omitempty"`
-	ALL           string      `json:"all,omitempty"`
+	NavDate string `json:"nav_date,omitempty"`
+	D1      string `json:"1d,omitempty"`
+	MTD     string `json:"mtd,omitempty"`
+	M1      string `json:"1m,omitempty"`
+	M3      string `json:"3m,omitempty"`
+	M6      string `json:"6m,omitempty"`
+	Y1      string `json:"1y,omitempty"`
+	Y3      string `json:"3y,omitempty"`
+	Y5      string `json:"5y,omitempty"`
+	YTD     string `json:"ytd,omitempty"`
+	CAGR    string `json:"cagr,omitempty"`
+	ALL     string `json:"all,omitempty"`
 }
 
 type FfsNavPerformance struct {
-	NavPerformKey        uint64    `db:"nav_perform_key"       json:"nav_perform_key"`
-	ProductKey           uint64    `db:"product_key"           json:"product_key"`
-	PeriodeKey          *uint64    `db:"periode_key"           json:"periode_key"`
-	NavDate              string    `db:"nav_date"              json:"nav_date"`
-	NavD0                float64   `db:"nav_d0"                json:"nav_d0"`
-	NavD1                float64   `db:"nav_d1"                json:"nav_d1"`
-	NavM0                float64   `db:"nav_m0"                json:"nav_m0"`
-	NavM1                float64   `db:"nav_m1"                json:"nav_m1"`
-	NavM3                float64   `db:"nav_m3"                json:"nav_m3"`
-	NavM6                float64   `db:"nav_m6"                json:"nav_m6"`
-	NavYtd               float64   `db:"nav_ytd"               json:"nav_ytd"`
-	Navy1                float64   `db:"nav_y1"                json:"nav_y1"`
-	Navy3                float64   `db:"nav_y3"                json:"nav_y3"`
-	Navy5                float64   `db:"nav_y5"                json:"nav_y5"`
-	PerformD1            float64   `db:"perform_d1"            json:"perform_d1"`
-	PerformMtd           float64   `db:"perform_mtd"           json:"perform_mtd"`
-	PerformM1            float64   `db:"perform_m1"            json:"perform_m1"`
-	PerformM3            float64   `db:"perform_m3"            json:"perform_m3"`
-	PerformM6            float64   `db:"perform_m6"            json:"perform_m6"`
-	PerformYtd           float64   `db:"perform_ytd"           json:"perform_ytd"`
-	PerformY1            float64   `db:"perform_y1"            json:"perform_y1"`
-	PerformY3            float64   `db:"perform_y3"            json:"perform_y3"`
-	PerformY5            float64   `db:"perform_y5"            json:"perform_y5"`
-	PerformCagr          float64   `db:"perform_cagr"          json:"perform_cagr"`
-	PerformAll           float64   `db:"perform_all"           json:"perform_all"`
-	RecOrder             *uint64   `db:"rec_order"             json:"rec_order"`
-	RecStatus            uint8     `db:"rec_status"            json:"rec_status"`
-	RecCreatedDate       *string   `db:"rec_created_date"      json:"rec_created_date"`
-	RecCreatedBy         *string   `db:"rec_created_by"        json:"rec_created_by"`
-	RecModifiedDate      *string   `db:"rec_modified_date"     json:"rec_modified_date"`
-	RecModifiedBy        *string   `db:"rec_modified_by"       json:"rec_modified_by"`
-	RecImage1            *string   `db:"rec_image1"            json:"rec_image1"`
-	RecImage2            *string   `db:"rec_image2"            json:"rec_image2"`
-	RecApprovalStatus    *uint8    `db:"rec_approval_status"   json:"rec_approval_status"`
-	RecApprovalStage     *uint64   `db:"rec_approval_stage"    json:"rec_approval_stage"`
-	RecApprovedDate      *string   `db:"rec_approved_date"     json:"rec_approved_date"`
-	RecApprovedBy        *string   `db:"rec_approved_by"       json:"rec_approved_by"`
-	RecDeletedDate       *string   `db:"rec_deleted_date"      json:"rec_deleted_date"`
-	RecDeletedBy         *string   `db:"rec_deleted_by"        json:"rec_deleted_by"`
-	RecAttributeID1      *string   `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
-	RecAttributeID2      *string   `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
-	RecAttributeID3      *string   `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
+	NavPerformKey     uint64  `db:"nav_perform_key"       json:"nav_perform_key"`
+	ProductKey        uint64  `db:"product_key"           json:"product_key"`
+	PeriodeKey        *uint64 `db:"periode_key"           json:"periode_key"`
+	NavDate           string  `db:"nav_date"              json:"nav_date"`
+	NavD0             float64 `db:"nav_d0"                json:"nav_d0"`
+	NavD1             float64 `db:"nav_d1"                json:"nav_d1"`
+	NavM0             float64 `db:"nav_m0"                json:"nav_m0"`
+	NavM1             float64 `db:"nav_m1"                json:"nav_m1"`
+	NavM3             float64 `db:"nav_m3"                json:"nav_m3"`
+	NavM6             float64 `db:"nav_m6"                json:"nav_m6"`
+	NavYtd            float64 `db:"nav_ytd"               json:"nav_ytd"`
+	Navy1             float64 `db:"nav_y1"                json:"nav_y1"`
+	Navy3             float64 `db:"nav_y3"                json:"nav_y3"`
+	Navy5             float64 `db:"nav_y5"                json:"nav_y5"`
+	PerformD1         float64 `db:"perform_d1"            json:"perform_d1"`
+	PerformMtd        float64 `db:"perform_mtd"           json:"perform_mtd"`
+	PerformM1         float64 `db:"perform_m1"            json:"perform_m1"`
+	PerformM3         float64 `db:"perform_m3"            json:"perform_m3"`
+	PerformM6         float64 `db:"perform_m6"            json:"perform_m6"`
+	PerformYtd        float64 `db:"perform_ytd"           json:"perform_ytd"`
+	PerformY1         float64 `db:"perform_y1"            json:"perform_y1"`
+	PerformY3         float64 `db:"perform_y3"            json:"perform_y3"`
+	PerformY5         float64 `db:"perform_y5"            json:"perform_y5"`
+	PerformCagr       float64 `db:"perform_cagr"          json:"perform_cagr"`
+	PerformAll        float64 `db:"perform_all"           json:"perform_all"`
+	RecOrder          *uint64 `db:"rec_order"             json:"rec_order"`
+	RecStatus         uint8   `db:"rec_status"            json:"rec_status"`
+	RecCreatedDate    *string `db:"rec_created_date"      json:"rec_created_date"`
+	RecCreatedBy      *string `db:"rec_created_by"        json:"rec_created_by"`
+	RecModifiedDate   *string `db:"rec_modified_date"     json:"rec_modified_date"`
+	RecModifiedBy     *string `db:"rec_modified_by"       json:"rec_modified_by"`
+	RecImage1         *string `db:"rec_image1"            json:"rec_image1"`
+	RecImage2         *string `db:"rec_image2"            json:"rec_image2"`
+	RecApprovalStatus *uint8  `db:"rec_approval_status"   json:"rec_approval_status"`
+	RecApprovalStage  *uint64 `db:"rec_approval_stage"    json:"rec_approval_stage"`
+	RecApprovedDate   *string `db:"rec_approved_date"     json:"rec_approved_date"`
+	RecApprovedBy     *string `db:"rec_approved_by"       json:"rec_approved_by"`
+	RecDeletedDate    *string `db:"rec_deleted_date"      json:"rec_deleted_date"`
+	RecDeletedBy      *string `db:"rec_deleted_by"        json:"rec_deleted_by"`
+	RecAttributeID1   *string `db:"rec_attribute_id1"     json:"rec_attribute_id1"`
+	RecAttributeID2   *string `db:"rec_attribute_id2"     json:"rec_attribute_id2"`
+	RecAttributeID3   *string `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
 func GetAllFfsNavPerformance(c *[]FfsNavPerformance, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -75,12 +75,12 @@ func GetAllFfsNavPerformance(c *[]FfsNavPerformance, limit uint64, offset uint64
 	var present bool
 	var whereClause []string
 	var condition string
-	
+
 	for field, value := range params {
-		if !(field == "orderBy" || field == "orderType"){
-			whereClause = append(whereClause, "ffs_nav_performance."+field + " = '" + value + "'")
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ffs_nav_performance."+field+" = '"+value+"'")
 		}
-	} 
+	}
 
 	// Combile where clause
 	if len(whereClause) > 0 {
@@ -141,7 +141,7 @@ func GetLastNavPerformanceIn(c *[]FfsNavPerformance, productKey []string) (int, 
 				ffs_nav_performance t1 JOIN (SELECT MAX(nav_perform_key) nav_perform_key FROM ffs_nav_performance GROUP BY product_key) t2
 				ON t1.nav_perform_key = t2.nav_perform_key`
 	query := query2 + " WHERE t1.product_key IN(" + inQuery + ")"
-	
+
 	log.Println(query)
 	err := db.Db.Select(c, query)
 	if err != nil {
@@ -172,12 +172,12 @@ func GetAllLastNavPerformance(c *[]FfsNavPerformance, params map[string]string) 
 	var present bool
 	var whereClause []string
 	var condition string
-	
+
 	for field, value := range params {
-		if !(field == "orderBy" || field == "orderType"){
-			whereClause = append(whereClause, "ffs_nav_performance."+field + " = '" + value + "'")
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ffs_nav_performance."+field+" = '"+value+"'")
 		}
-	} 
+	}
 
 	// Combile where clause
 	if len(whereClause) > 0 {
