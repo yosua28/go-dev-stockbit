@@ -13,6 +13,7 @@ import (
 	"crypto/tls"
 	"html/template"
 	"bytes"
+	"math"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -617,7 +618,7 @@ func GetTransactionList(c echo.Context) error {
 			data.TransDate = transaction.TransDate
 			data.NavDate = transaction.NavDate
 			data.TransAmount = transaction.TransAmount
-			data.TransUnit = transaction.TransUnit
+			data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*10000)/10000)
 			data.TotalAmount = transaction.TotalAmount
 			if transaction.FileUploadDate != nil {
 				data.Uploaded = true

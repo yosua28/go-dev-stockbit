@@ -10,6 +10,7 @@ import (
 	"fmt"
 	"html/template"
 	"os"
+	"math"
 
 	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
@@ -657,7 +658,7 @@ func GetMsProductData(c echo.Context) error {
 			}
 		}
 	}
-
+	data.BalanceUnit = float32(math.Floor(float64(data.BalanceUnit)*10000)/10000)
 	data.Nav = &nav
 
 	var perform models.FfsNavPerformanceInfo
