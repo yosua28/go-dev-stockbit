@@ -2327,6 +2327,37 @@
             "bearerAuth": []
           }
         ],
+        "parameters": [
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "product key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "start_date",
+            "in": "query",
+            "description": "transaction date start from",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2017-10-30"
+            }
+          },
+          {
+            "name": "end_date",
+            "in": "query",
+            "description": "end date",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "example": "2017-10-30"
+            }
+          }
+        ],
         "responses": {
           "200": {
             "description": "Success",
