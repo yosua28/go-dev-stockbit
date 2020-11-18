@@ -10567,7 +10567,7 @@
         }
       }
     },
-    "/admin/usermanagement": {
+    "/admin/usermanagementlist": {
       "get": {
         "description": "Get List Admin User Management : role 15",
         "tags": [
