@@ -4,12 +4,15 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"crypto/sha256"
 	"database/sql"
+	"encoding/hex"
 	"math"
 	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/badoux/checkmail"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 )
@@ -226,6 +229,7 @@ func GetDetailScUserLoginAdmin(c echo.Context) error {
 	var responseData models.AdminDetailScUserLogin
 
 	responseData.UserLoginKey = scUserLogin.UserLoginKey
+	responseData.NoHp = scUserLogin.UloginMobileno
 
 	var scUserCategory models.ScUserCategory
 	strUCKey := strconv.FormatUint(scUserLogin.UserCategoryKey, 10)
@@ -423,6 +427,201 @@ func LockUnlockUser(c echo.Context) error {
 	if err != nil {
 		log.Error("Failed create request data: " + err.Error())
 		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
+
+func CreateAdminScUserLogin(c echo.Context) error {
+	var err error
+	var status int
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	//user_category_key
+	usercategorykey := c.FormValue("user_category_key")
+	if usercategorykey == "" {
+		log.Error("Missing required parameter: user_category_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_category_key cann't be blank", "Missing required parameter: user_category_key cann't be blank")
+	}
+	sub, err := strconv.ParseUint(usercategorykey, 10, 64)
+	if err == nil && sub > 0 {
+		params["user_category_key"] = usercategorykey
+	} else {
+		log.Error("Wrong input for parameter: user_category_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_category_key must number", "Missing required parameter: user_category_key number")
+	}
+
+	//user_dept_key
+	userdeptkey := c.FormValue("user_dept_key")
+	if userdeptkey == "" {
+		log.Error("Missing required parameter: user_dept_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_dept_key cann't be blank", "Missing required parameter: user_dept_key cann't be blank")
+	}
+	sub, err = strconv.ParseUint(userdeptkey, 10, 64)
+	if err == nil && sub > 0 {
+		params["user_dept_key"] = userdeptkey
+	} else {
+		log.Error("Wrong input for parameter: user_dept_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_dept_key must number", "Missing required parameter: user_dept_key number")
+	}
+
+	//role_key
+	rolekey := c.FormValue("role_key")
+	if rolekey == "" {
+		log.Error("Missing required parameter: role_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key cann't be blank", "Missing required parameter: role_key cann't be blank")
+	}
+	sub, err = strconv.ParseUint(rolekey, 10, 64)
+	if err == nil && sub > 0 {
+		params["role_key"] = rolekey
+	} else {
+		log.Error("Wrong input for parameter: role_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key must number", "Missing required parameter: role_key number")
+	}
+
+	//ulogin_name / ulogin_email
+	uloginname := c.FormValue("username")
+	if uloginname == "" {
+		log.Error("Missing required parameter: username cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: username cann't be blank", "Missing required parameter: username cann't be blank")
+	}
+	params["ulogin_name"] = uloginname
+	params["ulogin_email"] = uloginname
+
+	//check unique ulogin_name / ulogin_email
+	paramsScUserLogin := make(map[string]string)
+	paramsScUserLogin["ulogin_name"] = uloginname
+	paramsScUserLogin["ulogin_email"] = uloginname
+
+	var countDataExisting models.CountData
+	status, err = models.AdminGetValidateUniqueInsertUpdateScUserLogin(&countDataExisting, paramsScUserLogin, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataExisting.CountData) > 0 {
+		log.Error("Missing required parameter: username already existing, use other username")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: username already existing, use other username", "Missing required parameter: username already existing, use other username")
+	}
+
+	// Validate email
+	err = checkmail.ValidateFormat(uloginname)
+	if err != nil {
+		log.Error("Username format is not valid, must email")
+		return lib.CustomError(http.StatusBadRequest, "Username format is not valid, Username must email format", "Username format is not valid, Username must email format")
+	}
+
+	//ulogin_full_name
+	uloginfullname := c.FormValue("ulogin_full_name")
+	if uloginfullname == "" {
+		log.Error("Missing required parameter: ulogin_full_name cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: ulogin_full_name cann't be blank", "Missing required parameter: ulogin_full_name cann't be blank")
+	}
+	params["ulogin_full_name"] = uloginfullname
+
+	password := c.FormValue("password")
+	if password == "" {
+		log.Error("Missing required parameter: password cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: password cann't be blank", "Missing required parameter: password cann't be blank")
+	}
+	// Validate password
+	length, number, upper, special := verifyPassword(password)
+	if length == false || number == false || upper == false || special == false {
+		log.Error("Password does meet the criteria")
+		return lib.CustomError(http.StatusBadRequest, "Password does meet the criteria", "Your password need at least 8 character length, has lower and upper case letter, has numeric letter, and has special character")
+	}
+	// Encrypt password
+	encryptedPasswordByte := sha256.Sum256([]byte(password))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	params["ulogin_password"] = encryptedPassword
+
+	//phone_number
+	nohp := c.FormValue("no_hp")
+	if nohp != "" {
+		params["ulogin_mobileno"] = nohp
+	}
+
+	//enabled
+	enabled := c.FormValue("enabled")
+	var enabledBool bool
+	if enabled != "" {
+		enabledBool, err = strconv.ParseBool(enabled)
+		if err != nil {
+			log.Error("enabled parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "enabled parameter should be true/false", "enabled parameter should be true/false")
+		}
+		if enabledBool == true {
+			params["rec_status"] = "1"
+		} else {
+			params["rec_status"] = "0"
+		}
+	} else {
+		log.Error("enabled parameter should be true/false")
+		return lib.CustomError(http.StatusBadRequest, "enabled parameter should be true/false", "enabled parameter should be true/false")
+	}
+
+	//locked
+	locked := c.FormValue("locked")
+	var lockedBool bool
+	if locked != "" {
+		lockedBool, err = strconv.ParseBool(locked)
+		if err != nil {
+			log.Error("locked parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "locked parameter should be true/false", "locked parameter should be true/false")
+		}
+		if lockedBool == true {
+			params["ulogin_locked"] = "1"
+		} else {
+			params["ulogin_locked"] = "0"
+		}
+	} else {
+		log.Error("locked parameter should be true/false")
+		return lib.CustomError(http.StatusBadRequest, "locked parameter should be true/false", "locked parameter should be true/false")
+	}
+
+	// Set expired for token
+	date := time.Now().AddDate(0, 0, 1)
+	dateLayout := "2006-01-02 15:04:05"
+	expired := date.Format(dateLayout)
+
+	// Generate verify key
+	verifyKeyByte := sha256.Sum256([]byte(uloginname + "_" + expired))
+	verifyKey := hex.EncodeToString(verifyKeyByte[:])
+
+	// Input to database
+	params["ulogin_must_changepwd"] = "0"
+	params["last_password_changed"] = time.Now().Format(dateLayout)
+	params["verified_email"] = "1"
+	params["verified_mobileno"] = "1"
+	params["ulogin_enabled"] = "1"
+	params["ulogin_failed_count"] = "0"
+	params["last_access"] = time.Now().Format(dateLayout)
+	params["accept_login_tnc"] = "1"
+	params["allowed_sharing_login"] = "1"
+	params["string_token"] = verifyKey
+	params["token_expired"] = expired
+
+	params["rec_order"] = "0"
+	params["rec_created_date"] = time.Now().Format(dateLayout)
+	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err = models.CreateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
 	}
 
 	var response lib.Response

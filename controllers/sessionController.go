@@ -1,31 +1,31 @@
 package controllers
 
 import (
+	"api/config"
 	"api/lib"
 	"api/models"
-	"api/config"
-	"net/http"
+	"bytes"
 	"crypto/sha256"
 	"crypto/tls"
+	_ "encoding/base64"
 	"encoding/hex"
 	"encoding/json"
-	_ "encoding/base64"
-	"time"
-	"unicode"
+	"html/template"
+	"io/ioutil"
+	"mime/multipart"
+	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
-	"io/ioutil"
-	"os"
-	"mime/multipart"
-	"path/filepath"
-	"html/template"
-	"bytes"
+	"time"
+	"unicode"
 
-	"github.com/labstack/echo"
 	"github.com/badoux/checkmail"
-	log "github.com/sirupsen/logrus"
-	uuid "github.com/satori/go.uuid"
 	jwt "github.com/dgrijalva/jwt-go"
+	"github.com/labstack/echo"
+	uuid "github.com/satori/go.uuid"
+	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
 )
 
@@ -66,7 +66,7 @@ func Register(c echo.Context) error {
 	// }
 	var user []models.ScUserLogin
 	params := make(map[string]string)
-	params["ulogin_email"] = email 
+	params["ulogin_email"] = email
 	status, err = models.GetAllScUserLogin(&user, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get email " + email)
@@ -98,27 +98,28 @@ func Register(c echo.Context) error {
 	verifyKey := hex.EncodeToString(verifyKeyByte[:])
 
 	// Input to database
-	params["ulogin_email"] = email 
-	params["ulogin_name"] = email 
-	params["ulogin_full_name"] = email 
-	params["ulogin_must_changepwd"] = "0" 
-	params["user_category_key"] = "1" 
-	params["user_dept_key"] = "1" 
-	params["last_password_changed"] = time.Now().Format(dateLayout) 
-	params["ulogin_password"] = encryptedPassword 
-	params["verified_email"] = "0" 
-	params["verified_mobileno"] = "0" 
-	params["ulogin_mobileno"] = phone 
-	params["ulogin_enabled"] = "1" 
-	params["ulogin_locked"] = "0" 
-	params["ulogin_failed_count"] = "0" 
-	params["user_category_key"] = "1" 
-	params["last_access"] = time.Now().Format(dateLayout) 
-	params["accept_login_tnc"] = "1" 
-	params["allowed_sharing_login"] = "1" 
-	params["string_token"] = verifyKey 
-	params["token_expired"] = expired 
-	params["rec_status"] = "1" 
+	params["ulogin_email"] = email
+	params["ulogin_name"] = email
+	params["ulogin_full_name"] = email
+	params["ulogin_must_changepwd"] = "0"
+	params["user_category_key"] = "1"
+	params["user_dept_key"] = "1"
+	params["last_password_changed"] = time.Now().Format(dateLayout)
+	params["ulogin_password"] = encryptedPassword
+	params["verified_email"] = "0"
+	params["verified_mobileno"] = "0"
+	params["ulogin_mobileno"] = phone
+	params["ulogin_enabled"] = "1"
+	params["ulogin_locked"] = "0"
+	params["ulogin_failed_count"] = "0"
+	params["user_category_key"] = "1"
+	params["last_access"] = time.Now().Format(dateLayout)
+	params["rec_created_date"] = time.Now().Format(dateLayout)
+	params["accept_login_tnc"] = "1"
+	params["allowed_sharing_login"] = "1"
+	params["string_token"] = verifyKey
+	params["token_expired"] = expired
+	params["rec_status"] = "1"
 
 	status, err = models.CreateScUserLogin(params)
 	if err != nil {
@@ -128,14 +129,14 @@ func Register(c echo.Context) error {
 
 	// Send email
 	t := template.New("index-email-activation.html")
-	
-	t, err = t.ParseFiles(config.BasePath+"/mail/index-email-activation.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-email-activation.html")
 	if err != nil {
 		log.Println(err)
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{Url string}{Url:config.BaseUrl+"/verifyemail?token="+verifyKey}); err != nil {
+	if err := t.Execute(&tpl, struct{ Url string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey}); err != nil {
 		log.Println(err)
 	}
 
@@ -176,8 +177,8 @@ func VerifyEmail(c echo.Context) error {
 	var err error
 	// Get parameter key
 	token := c.QueryParam("token")
-	if token == ""{
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Token tidak ditemukan")
+	if token == "" {
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Token tidak ditemukan")
 	}
 	params := make(map[string]string)
 	params["string_token"] = token
@@ -185,22 +186,22 @@ func VerifyEmail(c echo.Context) error {
 	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get email")
-		return lib.CustomError(http.StatusBadRequest,"Error get email","Gagal mendapatkan data email")
+		return lib.CustomError(http.StatusBadRequest, "Error get email", "Gagal mendapatkan data email")
 	}
 	if len(userLogin) < 1 {
 		log.Error("No matching token " + token)
-		return lib.CustomError(http.StatusBadRequest,"Token not found","Token tidak ditemukan")
+		return lib.CustomError(http.StatusBadRequest, "Token not found", "Token tidak ditemukan")
 	}
 
 	accountData := userLogin[0]
 	log.Info("Found account with email " + accountData.UloginEmail)
-	
+
 	// Check if token is expired
 	dateLayout := "2006-01-02 15:04:05"
 	expired, err := time.Parse(dateLayout, *accountData.TokenExpired)
 	if err != nil {
 		log.Error("Error parsing data")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Error parsing data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error parsing data")
 	}
 	now := time.Now()
 	if now.After(expired) {
@@ -209,7 +210,7 @@ func VerifyEmail(c echo.Context) error {
 	}
 	log.Info("Success verify email")
 	// Set expired for otp
-	date := time.Now().Add(1*time.Minute)
+	date := time.Now().Add(1 * time.Minute)
 	expiredOTP := date.Format(dateLayout)
 
 	// Send otp
@@ -217,7 +218,7 @@ func VerifyEmail(c echo.Context) error {
 	if err != nil {
 		log.Error(err.Error())
 		//return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
-	} 
+	}
 	if otp == "" {
 		log.Error("Failed send otp")
 		//return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
@@ -232,12 +233,12 @@ func VerifyEmail(c echo.Context) error {
 	params["last_verified_email"] = time.Now().Format(dateLayout)
 	params["string_token"] = ""
 
-	_ ,err = models.UpdateScUserLogin(params)
+	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
 		log.Error("Error update user data")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
-	
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -251,8 +252,8 @@ func VerifyOtp(c echo.Context) error {
 	var status int
 	// Get parameter key
 	otp := c.FormValue("otp")
-	if otp == ""{
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+	if otp == "" {
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
 	params := make(map[string]string)
 	params["otp_number"] = otp
@@ -260,23 +261,23 @@ func VerifyOtp(c echo.Context) error {
 	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("No matching otp " + otp)
-		return lib.CustomError(http.StatusBadRequest,"OTP not found","OTP not found")
+		return lib.CustomError(http.StatusBadRequest, "OTP not found", "OTP not found")
 	}
 
 	accountData := userLogin[0]
 	log.Info("Found account with email " + accountData.UloginEmail)
-	
+
 	// Check if token is expired
 	dateLayout := "2006-01-02 15:04:05"
 	expired, err := time.Parse(dateLayout, *accountData.OtpNumberExpired)
 	if err != nil {
 		log.Error("Error parsing data")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Error parsing data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error parsing data")
 	}
 	now := time.Now()
 	if now.After(expired) {
 		log.Error("OTP is expired")
-		return lib.CustomError(http.StatusInternalServerError,"OTP is expired","OTP is expired")
+		return lib.CustomError(http.StatusInternalServerError, "OTP is expired", "OTP is expired")
 	}
 	log.Info("Success verify OTP")
 
@@ -286,10 +287,10 @@ func VerifyOtp(c echo.Context) error {
 	params["verified_mobileno"] = "1"
 	params["last_verified_mobileno"] = time.Now().Format(dateLayout)
 
-	_ ,err = models.UpdateScUserLogin(params)
+	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
 		log.Error("Error update user data")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
 
 	// Create session key
@@ -321,12 +322,12 @@ func VerifyOtp(c echo.Context) error {
 	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
 		atClaims["role_key"] = *accountData.RoleKey
 		paramsRole := make(map[string]string)
-		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey,10)
+		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey, 10)
 		var role []models.ScRole
 		_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
 		if err != nil {
 			log.Error(err.Error())
-		}else if len(role) > 0 {
+		} else if len(role) > 0 {
 			if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
 				atClaims["role_category_key"] = *role[0].RoleCategoryKey
 			}
@@ -339,7 +340,7 @@ func VerifyOtp(c echo.Context) error {
 	token, err := at.SignedString([]byte(config.Secret))
 	if err != nil {
 		log.Error(err.Error())
-		return lib.CustomError(http.StatusUnauthorized,err.Error(),"Login failed")
+		return lib.CustomError(http.StatusUnauthorized, err.Error(), "Login failed")
 	}
 
 	// Check previous login
@@ -360,17 +361,17 @@ func VerifyOtp(c echo.Context) error {
 		status, err = models.UpdateScLoginSession(paramsSession)
 		if err != nil {
 			log.Error("Error update session")
-			return lib.CustomError(status,"Error update session","Login failed")
+			return lib.CustomError(status, "Error update session", "Login failed")
 		}
 	} else {
 		status, err = models.CreateScLoginSession(paramsSession)
 		if err != nil {
 			log.Error("Error create session")
-			return lib.CustomError(status,"Error create session","Login failed")
+			return lib.CustomError(status, "Error create session", "Login failed")
 		}
 	}
 	log.Info("Success login")
-	
+
 	var data models.ScLoginSessionInfo
 	data.SessionID = token
 	log.Info(data)
@@ -391,12 +392,12 @@ func Login(c echo.Context) error {
 	email := c.FormValue("email")
 	if email == "" {
 		log.Error("Missing required parameter")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
 	password := c.FormValue("password")
 	if password == "" {
 		log.Error("Missing required parameter")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
 
 	// Check valid email
@@ -406,11 +407,11 @@ func Login(c echo.Context) error {
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get email")
-		return lib.CustomError(status,"Error get email","Error get email")
+		return lib.CustomError(status, "Error get email", "Error get email")
 	}
 	if len(userLogin) < 1 {
 		log.Error("Email not registered")
-		return lib.CustomError(http.StatusUnauthorized,"Email not registered","Email not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
 	}
 
 	accountData := userLogin[0]
@@ -418,7 +419,7 @@ func Login(c echo.Context) error {
 
 	if *accountData.VerifiedEmail != 1 || accountData.VerifiedMobileno != 1 {
 		log.Error("Email or Mobile number not verified")
-		return lib.CustomError(http.StatusUnauthorized,"Email or Mobile number not verified","Email or Mobile number not verified")
+		return lib.CustomError(http.StatusUnauthorized, "Email or Mobile number not verified", "Email or Mobile number not verified")
 	}
 
 	// Check valid password
@@ -426,13 +427,13 @@ func Login(c echo.Context) error {
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 	if encryptedPassword != accountData.UloginPassword {
 		log.Error("Wrong password")
-		return lib.CustomError(http.StatusUnauthorized,"Wrong password","Wrong password")
+		return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
 	}
 
 	// Create session key
 	uuid := uuid.Must(uuid.NewV4(), nil)
 	uuidString := uuid.String()
-	
+
 	atClaims := jwt.MapClaims{}
 	paramsRequest := make(map[string]string)
 	paramsRequest["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
@@ -458,12 +459,12 @@ func Login(c echo.Context) error {
 	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
 		atClaims["role_key"] = *accountData.RoleKey
 		paramsRole := make(map[string]string)
-		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey,10)
+		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey, 10)
 		var role []models.ScRole
 		_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
 		if err != nil {
 			log.Error(err.Error())
-		}else if len(role) > 0 {
+		} else if len(role) > 0 {
 			if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
 				atClaims["role_category_key"] = *role[0].RoleCategoryKey
 			}
@@ -476,7 +477,7 @@ func Login(c echo.Context) error {
 	token, err := at.SignedString([]byte(config.Secret))
 	if err != nil {
 		log.Error(err.Error())
-		return lib.CustomError(http.StatusUnauthorized,err.Error(),"Login failed")
+		return lib.CustomError(http.StatusUnauthorized, err.Error(), "Login failed")
 	}
 
 	// sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
@@ -501,13 +502,13 @@ func Login(c echo.Context) error {
 		status, err = models.UpdateScLoginSession(paramsSession)
 		if err != nil {
 			log.Error("Error update session")
-			return lib.CustomError(status,"Error update session","Login failed")
+			return lib.CustomError(status, "Error update session", "Login failed")
 		}
 	} else {
 		status, err = models.CreateScLoginSession(paramsSession)
 		if err != nil {
 			log.Error("Error create session")
-			return lib.CustomError(status,"Error create session","Login failed")
+			return lib.CustomError(status, "Error create session", "Login failed")
 		}
 	}
 
@@ -546,7 +547,7 @@ func ResendVerification(c echo.Context) error {
 	}
 	if len(userLogin) < 1 {
 		log.Error("No matching email " + email)
-		return lib.CustomError(http.StatusBadRequest,"Email not registered","Email not registered")
+		return lib.CustomError(http.StatusBadRequest, "Email not registered", "Email not registered")
 	}
 
 	accountData := userLogin[0]
@@ -554,33 +555,33 @@ func ResendVerification(c echo.Context) error {
 
 	dateLayout := "2006-01-02 15:04:05"
 	if accountData.VerifiedEmail != nil && *accountData.VerifiedEmail == 1 {
-		date := time.Now().Add(1*time.Minute)
+		date := time.Now().Add(1 * time.Minute)
 		expiredOTP := date.Format(dateLayout)
-	
+
 		// Send otp
 		otp, err := sendOTP("0", *accountData.UloginMobileno)
-		if err != nil  {
+		if err != nil {
 			log.Error(err.Error())
 			return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
 		}
-		if  otp == ""  {
+		if otp == "" {
 			log.Error("Failed send otp")
 			return lib.CustomError(http.StatusInternalServerError, "Failed send otp", "Failed send otp")
 		}
-	
+
 		params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 		params["otp_number"] = otp
 		params["otp_number_expired"] = expiredOTP
 		params["verified_email"] = "1"
 		params["last_verified_email"] = time.Now().Format(dateLayout)
 		params["string_token"] = ""
-	
-		_ ,err = models.UpdateScUserLogin(params)
+
+		_, err = models.UpdateScUserLogin(params)
 		if err != nil {
 			log.Error("Error update user data")
-			return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 		}
-		
+
 		log.Info("Success send otp")
 	} else {
 		// Set expired for token
@@ -593,8 +594,8 @@ func ResendVerification(c echo.Context) error {
 
 		// Update token
 		params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
-		params["string_token"] = verifyKey 
-		params["token_expired"] = expired 
+		params["string_token"] = verifyKey
+		params["token_expired"] = expired
 
 		status, err = models.UpdateScUserLogin(params)
 		if err != nil {
@@ -604,18 +605,18 @@ func ResendVerification(c echo.Context) error {
 
 		// Send email
 		t := template.New("index-email-activation.html")
-		
+
 		var err error
-		t, err = t.ParseFiles(config.BasePath+"/mail/index-email-activation.html")
+		t, err = t.ParseFiles(config.BasePath + "/mail/index-email-activation.html")
 		if err != nil {
 			log.Println(err)
 		}
-	
+
 		var tpl bytes.Buffer
-		if err := t.Execute(&tpl, struct{Url string}{Url:config.BaseUrl+"/verifyemail?token="+verifyKey}); err != nil {
+		if err := t.Execute(&tpl, struct{ Url string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey}); err != nil {
 			log.Println(err)
 		}
-	
+
 		result := tpl.String()
 
 		mailer := gomail.NewMessage()
@@ -742,12 +743,12 @@ func UploadProfilePic(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
-	filePath := config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/profile"
+	filePath := config.BasePath + "/images/user/" + strconv.FormatUint(lib.Profile.UserID, 10) + "/profile"
 	err = os.MkdirAll(filePath, 0755)
 	if err != nil {
 		log.Error(err.Error())
 	} else {
-		
+
 		var file *multipart.FileHeader
 		file, err = c.FormFile("pic")
 		if file != nil {
@@ -764,7 +765,7 @@ func UploadProfilePic(c echo.Context) error {
 				var trans []models.TrTransaction
 				getParams := make(map[string]string)
 				getParams["rec_image1"] = filename + extension
-				_, err = os.Stat(filePath+"/"+filename+extension)
+				_, err = os.Stat(filePath + "/" + filename + extension)
 				if err != nil {
 					if os.IsNotExist(err) {
 						_, err = models.GetAllTrTransaction(&trans, getParams)
@@ -799,24 +800,24 @@ func UploadProfilePic(c echo.Context) error {
 }
 
 func ChangePassword(c echo.Context) error {
-	
+
 	var err error
 	var status int
 	// Check parameters
 	recentPassword := c.FormValue("recent_password")
 	if recentPassword == "" {
 		log.Error("Missing required parameter")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
 	newPassword1 := c.FormValue("new_password1")
 	if newPassword1 == "" {
 		log.Error("Missing required parameter")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
 	newPassword2 := c.FormValue("new_password2")
 	if newPassword2 == "" {
 		log.Error("Missing required parameter")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameter","Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
 
 	// Check valid email
@@ -826,11 +827,11 @@ func ChangePassword(c echo.Context) error {
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get email")
-		return lib.CustomError(status,"Error get email","Error get email")
+		return lib.CustomError(status, "Error get email", "Error get email")
 	}
 	if len(userLogin) < 1 {
 		log.Error("Email not registered")
-		return lib.CustomError(http.StatusUnauthorized,"Email not registered","Email not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
 	}
 
 	accountData := userLogin[0]
@@ -841,12 +842,12 @@ func ChangePassword(c echo.Context) error {
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 	if encryptedPassword != accountData.UloginPassword {
 		log.Error("Wrong password")
-		return lib.CustomError(http.StatusUnauthorized,"Wrong password","Wrong password")
+		return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
 	}
 
 	if newPassword1 != newPassword2 {
 		log.Error("Password doesnt match")
-		return lib.CustomError(http.StatusBadRequest,"Password doesnt match","Password doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "Password doesnt match", "Password doesnt match")
 	}
 	// Validate password
 	length, number, upper, special := verifyPassword(newPassword1)
@@ -861,13 +862,13 @@ func ChangePassword(c echo.Context) error {
 
 	dateLayout := "2006-01-02 15:04:05"
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
-	params["ulogin_password"] = encryptedPassword 
-	params["last_password_changed"] = time.Now().Format(dateLayout) 
+	params["ulogin_password"] = encryptedPassword
+	params["last_password_changed"] = time.Now().Format(dateLayout)
 
-	_ ,err = models.UpdateScUserLogin(params)
+	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
 		log.Error("Error update user data")
-		return lib.CustomError(http.StatusInternalServerError,err.Error(),"Failed update data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
 
 	var response lib.Response
@@ -911,7 +912,7 @@ func verifyPassword(s string) (length, number, upper, special bool) {
 	return
 }
 
-func sendOTP(gateway, phone string) (string, error){
+func sendOTP(gateway, phone string) (string, error) {
 	curlParam := make(map[string]string)
 	curlParam["retry"] = gateway
 	curlParam["msisdn"] = phone
@@ -926,7 +927,7 @@ func sendOTP(gateway, phone string) (string, error){
 	}
 	req.Header.Add("content-type", "application/json")
 	req.Header.Add("Authorization", "Apikey 7f837aea98ceea9efcd33ca1d435c9cf")
-		
+
 	res, err := http.DefaultClient.Do(req)
 	if err != nil {
 		log.Error("Error2", err.Error())
@@ -942,12 +943,12 @@ func sendOTP(gateway, phone string) (string, error){
 	var sec map[string]interface{}
 	if err = json.Unmarshal(body, &sec); err != nil {
 		log.Error("Error4", err.Error())
-	    return "", err
+		return "", err
 	}
 	var otp string
 	if sec["rc"].(float64) == 0 {
 		token := sec["token"].(string)
-		otp =  token[len(token)-4:]
+		otp = token[len(token)-4:]
 	}
 	return otp, nil
 }
