@@ -11165,6 +11165,294 @@
           }
         }
       }
+    },
+    "/admin/usercategorylist": {
+      "get": {
+        "description": "Get List User Category",
+        "tags": [
+          "Admin User Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fund_type_key",
+                "fund_type_code",
+                "fund_type_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "user_category_key": 1,
+                      "ucategory_code": "USR_CUSTOMER",
+                      "ucategory_name": "Customer or Visitor",
+                      "ucategory_desc": "Daftar Login seluruh customer atau visitor"
+                    },
+                    {
+                      "user_category_key": 2,
+                      "ucategory_code": "USR_BOHO",
+                      "ucategory_name": "User BackOffice HO",
+                      "ucategory_desc": "Daftar seluruh user HO"
+                    },
+                    {
+                      "user_category_key": 3,
+                      "ucategory_code": "USR_BOBRANCH",
+                      "ucategory_name": "User BackOffice Brach",
+                      "ucategory_desc": "Daftar seluruh user Branch"
+                    },
+                    {
+                      "user_category_key": 4,
+                      "ucategory_code": "USR_APERD",
+                      "ucategory_name": "User Selling Agent",
+                      "ucategory_desc": "Daftar seluruh user selling agent"
+                    },
+                    {
+                      "user_category_key": 5,
+                      "ucategory_code": "USR_FICON",
+                      "ucategory_name": "User Financial Consulant",
+                      "ucategory_desc": "Daftar seluruh user financial consultan"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/userdeptlist": {
+      "get": {
+        "description": "Get List User Dept",
+        "tags": [
+          "Admin User Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "fund_type_key",
+                "fund_type_code",
+                "fund_type_name"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "user_dept_key": 1,
+                      "user_dept_code": "PUBLIC",
+                      "user_dept_name": "Public Dept",
+                      "user_dept_desc": "Sales and Marketing"
+                    },
+                    {
+                      "user_dept_key": 2,
+                      "user_dept_code": "SALES",
+                      "user_dept_name": "Sales and Marketing Dept",
+                      "user_dept_desc": "Sales and Marketing"
+                    },
+                    {
+                      "user_dept_key": 3,
+                      "user_dept_code": "OPS",
+                      "user_dept_name": "Operation Dept",
+                      "user_dept_desc": "Operation"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

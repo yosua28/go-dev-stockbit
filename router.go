@@ -185,6 +185,8 @@ func router() *echo.Echo {
 	admin.POST("/usermanagement/disableenable", controllers.DisableEnableUser).Name = "DisableEnableUser"
 	admin.POST("/usermanagement/lockunlock", controllers.LockUnlockUser).Name = "LockUnlockUser"
 	admin.GET("/rolelist", controllers.AdminGetListScRole).Name = "AdminGetListScRole"
+	admin.GET("/usercategorylist", controllers.AdminGetListScUserCategory).Name = "AdminGetListScUserCategory"
+	admin.GET("/userdeptlist", controllers.AdminGetListScUserDept).Name = "AdminGetListScUserDept"
 
 	return e
 }
