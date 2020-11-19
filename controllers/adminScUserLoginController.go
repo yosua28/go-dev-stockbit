@@ -831,3 +831,136 @@ func UpdateAdminScUserLogin(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 
 }
+
+func ChangePasswordUser(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	userloginkey := c.FormValue("key")
+	if userloginkey == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+	struserloginkey, err := strconv.ParseUint(userloginkey, 10, 64)
+	if err == nil && struserloginkey > 0 {
+		params["user_login_key"] = userloginkey
+	} else {
+		log.Error("Wrong input for parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var scUserLogin models.ScUserLogin
+	_, err = models.GetScUserLoginByKey(&scUserLogin, userloginkey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	password := c.FormValue("password")
+	if password == "" {
+		log.Error("Missing required parameter: password cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: password cann't be blank", "Missing required parameter: password cann't be blank")
+	}
+	// Validate password
+	length, number, upper, special := verifyPassword(password)
+	if length == false || number == false || upper == false || special == false {
+		log.Error("Password does meet the criteria")
+		return lib.CustomError(http.StatusBadRequest, "Password does meet the criteria", "Your password need at least 8 character length, has lower and upper case letter, has numeric letter, and has special character")
+	}
+
+	// Encrypt password
+	encryptedPasswordByte := sha256.Sum256([]byte(password))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	params["ulogin_password"] = encryptedPassword
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_order"] = "0"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
+
+func ChangeRoleUser(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	userloginkey := c.FormValue("key")
+	if userloginkey == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+	struserloginkey, err := strconv.ParseUint(userloginkey, 10, 64)
+	if err == nil && struserloginkey > 0 {
+		params["user_login_key"] = userloginkey
+	} else {
+		log.Error("Wrong input for parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var scUserLogin models.ScUserLogin
+	_, err = models.GetScUserLoginByKey(&scUserLogin, userloginkey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	//role_key
+	rolekey := c.FormValue("role_key")
+	if rolekey == "" {
+		log.Error("Missing required parameter: role_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key cann't be blank", "Missing required parameter: role_key cann't be blank")
+	}
+	sub, err := strconv.ParseUint(rolekey, 10, 64)
+	if err == nil && sub > 0 {
+		params["role_key"] = rolekey
+	} else {
+		log.Error("Wrong input for parameter: role_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key must number", "Missing required parameter: role_key number")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_order"] = "0"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
