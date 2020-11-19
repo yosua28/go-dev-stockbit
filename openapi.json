@@ -10844,6 +10844,8 @@
                     },
                     "enabled": true,
                     "locked": false,
+                    "verified_email": true,
+                    "verified_mobileno": true,
                     "created_date": "03 Nov 2020",
                     "rec_image": "https://devapi.mncasset.com/images/user/7/profile/pRKamVzp6DWwAaBuoiDk.jpg",
                     "no_hp": "08123322213"

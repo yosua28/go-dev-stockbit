@@ -80,18 +80,20 @@ type AdminListScUserLogin struct {
 }
 
 type AdminDetailScUserLogin struct {
-	UserLoginKey   uint64             `json:"user_login_key"`
-	UserCategory   ScUserCategoryInfo `json:"user_category"`
-	UserDept       *ScUserDeptInfo    `json:"user_dept"`
-	UloginName     string             `json:"ulogin_name"`
-	UloginFullName string             `json:"ulogin_full_name"`
-	UloginEmail    string             `json:"ulogin_email"`
-	Role           *ScRoleInfoLogin   `json:"role"`
-	Enabled        bool               `json:"enabled"`
-	Locked         bool               `json:"locked"`
-	CreatedDate    *string            `json:"created_date"`
-	RecImage       string             `json:"rec_image"`
-	NoHp           *string            `json:"no_hp"`
+	UserLoginKey     uint64             `json:"user_login_key"`
+	UserCategory     ScUserCategoryInfo `json:"user_category"`
+	UserDept         *ScUserDeptInfo    `json:"user_dept"`
+	UloginName       string             `json:"ulogin_name"`
+	UloginFullName   string             `json:"ulogin_full_name"`
+	UloginEmail      string             `json:"ulogin_email"`
+	Role             *ScRoleInfoLogin   `json:"role"`
+	Enabled          bool               `json:"enabled"`
+	Locked           bool               `json:"locked"`
+	VerifiedEmail    bool               `json:"verified_email"`
+	VerifiedMobileno bool               `json:"verified_mobileno"`
+	CreatedDate      *string            `json:"created_date"`
+	RecImage         string             `json:"rec_image"`
+	NoHp             *string            `json:"no_hp"`
 }
 
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {

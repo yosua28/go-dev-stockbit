@@ -299,6 +299,22 @@ func GetDetailScUserLoginAdmin(c echo.Context) error {
 		responseData.Locked = false
 	}
 
+	if scUserLogin.VerifiedEmail != nil {
+		if *scUserLogin.VerifiedEmail == uint8(1) {
+			responseData.VerifiedEmail = true
+		} else {
+			responseData.VerifiedEmail = false
+		}
+	} else {
+		responseData.VerifiedEmail = false
+	}
+
+	if scUserLogin.VerifiedMobileno == uint8(1) {
+		responseData.VerifiedMobileno = true
+	} else {
+		responseData.VerifiedMobileno = false
+	}
+
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
 	if scUserLogin.RecCreatedDate != nil {
