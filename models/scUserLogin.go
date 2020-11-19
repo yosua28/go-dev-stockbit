@@ -91,6 +91,7 @@ type AdminDetailScUserLogin struct {
 	Locked         bool               `json:"locked"`
 	CreatedDate    *string            `json:"created_date"`
 	RecImage       string             `json:"rec_image"`
+	NoHp           *string            `json:"no_hp"`
 }
 
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -414,6 +415,53 @@ func AdminCountDataGetAllScUserlogin(c *CountData, params map[string]string, sea
 
 	// Main query
 	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetValidateUniqueInsertUpdateScUserLogin(c *CountData, paramsOr map[string]string, updateKey *string) (int, error) {
+	query := `SELECT
+			  count(sc_user_login.user_login_key) as count_data 
+			  FROM sc_user_login `
+	var orWhereClause []string
+	var condition string
+
+	for fieldOr, valueOr := range paramsOr {
+		orWhereClause = append(orWhereClause, "sc_user_login."+fieldOr+" = '"+valueOr+"'")
+	}
+
+	// Combile where Or clause
+	if len(orWhereClause) > 0 {
+		condition += " WHERE ("
+		for index, where := range orWhereClause {
+			condition += where
+			if (len(orWhereClause) - 1) > index {
+				condition += " OR "
+			} else {
+				condition += ") "
+			}
+		}
+	}
+
+	if updateKey != nil {
+		if len(orWhereClause) > 0 {
+			condition += " AND "
+		} else {
+			condition += " WHERE "
+		}
+
+		condition += " sc_user_login.user_login_key != '" + *updateKey + "'"
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
