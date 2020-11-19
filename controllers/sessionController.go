@@ -524,14 +524,14 @@ func Login(c echo.Context) error {
 	}
 
 	//update ulogin_failed_count = 0 if success login
-	paramsUpdate := make(map[string]string)
-	uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
-	paramsUpdate["user_login_key"] = uloginkey
-	paramsUpdate["ulogin_failed_count"] = "0"
-	_, err = models.UpdateScUserLogin(paramsUpdate)
-	if err != nil {
-		log.Error("erroe update ulogin_failed_count = 0 if success login")
-	}
+	// paramsUpdate := make(map[string]string)
+	// uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	// paramsUpdate["user_login_key"] = uloginkey
+	// paramsUpdate["ulogin_failed_count"] = "0"
+	// _, err = models.UpdateScUserLogin(paramsUpdate)
+	// if err != nil {
+	// 	log.Error("erroe update ulogin_failed_count = 0 if success login")
+	// }
 
 	log.Info("Success login")
 
