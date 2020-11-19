@@ -648,3 +648,186 @@ func CreateAdminScUserLogin(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 
 }
+
+func UpdateAdminScUserLogin(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	userloginkey := c.FormValue("key")
+	if userloginkey == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+	struserloginkey, err := strconv.ParseUint(userloginkey, 10, 64)
+	if err == nil && struserloginkey > 0 {
+		params["user_login_key"] = userloginkey
+	} else {
+		log.Error("Wrong input for parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var scUserLogin models.ScUserLogin
+	_, err = models.GetScUserLoginByKey(&scUserLogin, userloginkey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	//user_category_key
+	usercategorykey := c.FormValue("user_category_key")
+	if usercategorykey == "" {
+		log.Error("Missing required parameter: user_category_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_category_key cann't be blank", "Missing required parameter: user_category_key cann't be blank")
+	}
+	sub, err := strconv.ParseUint(usercategorykey, 10, 64)
+	if err == nil && sub > 0 {
+		params["user_category_key"] = usercategorykey
+	} else {
+		log.Error("Wrong input for parameter: user_category_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_category_key must number", "Missing required parameter: user_category_key number")
+	}
+
+	//user_dept_key
+	userdeptkey := c.FormValue("user_dept_key")
+	if userdeptkey == "" {
+		log.Error("Missing required parameter: user_dept_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_dept_key cann't be blank", "Missing required parameter: user_dept_key cann't be blank")
+	}
+	sub, err = strconv.ParseUint(userdeptkey, 10, 64)
+	if err == nil && sub > 0 {
+		params["user_dept_key"] = userdeptkey
+	} else {
+		log.Error("Wrong input for parameter: user_dept_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: user_dept_key must number", "Missing required parameter: user_dept_key number")
+	}
+
+	//role_key
+	rolekey := c.FormValue("role_key")
+	if rolekey == "" {
+		log.Error("Missing required parameter: role_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key cann't be blank", "Missing required parameter: role_key cann't be blank")
+	}
+	sub, err = strconv.ParseUint(rolekey, 10, 64)
+	if err == nil && sub > 0 {
+		params["role_key"] = rolekey
+	} else {
+		log.Error("Wrong input for parameter: role_key number")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key must number", "Missing required parameter: role_key number")
+	}
+
+	//ulogin_full_name
+	uloginfullname := c.FormValue("ulogin_full_name")
+	if uloginfullname == "" {
+		log.Error("Missing required parameter: ulogin_full_name cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: ulogin_full_name cann't be blank", "Missing required parameter: ulogin_full_name cann't be blank")
+	}
+	params["ulogin_full_name"] = uloginfullname
+
+	//phone_number
+	nohp := c.FormValue("no_hp")
+	if nohp != "" {
+		params["ulogin_mobileno"] = nohp
+	}
+
+	//rec_status
+	recstatus := c.FormValue("enabled")
+	var recstatusBool bool
+	if recstatus != "" {
+		recstatusBool, err = strconv.ParseBool(recstatus)
+		if err != nil {
+			log.Error("enabled parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "enabled parameter should be true/false", "enabled parameter should be true/false")
+		}
+		if recstatusBool == true {
+			params["rec_status"] = "1"
+		} else {
+			params["rec_status"] = "0"
+		}
+	} else {
+		log.Error("enabled parameter should be true/false")
+		return lib.CustomError(http.StatusBadRequest, "enabled parameter should be true/false", "enabled parameter should be true/false")
+	}
+
+	//ulogin_locked
+	uloginlocked := c.FormValue("locked")
+	var uloginlockedBool bool
+	if uloginlocked != "" {
+		uloginlockedBool, err = strconv.ParseBool(uloginlocked)
+		if err != nil {
+			log.Error("locked parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "locked parameter should be true/false", "locked parameter should be true/false")
+		}
+		if uloginlockedBool == true {
+			params["ulogin_locked"] = "1"
+		} else {
+			params["ulogin_locked"] = "0"
+		}
+	} else {
+		log.Error("locked parameter should be true/false")
+		return lib.CustomError(http.StatusBadRequest, "locked parameter should be true/false", "locked parameter should be true/false")
+	}
+
+	//verified_email
+	verifiedemail := c.FormValue("verified_email")
+	var verifiedemailBool bool
+	if verifiedemail != "" {
+		verifiedemailBool, err = strconv.ParseBool(verifiedemail)
+		if err != nil {
+			log.Error("verified_email parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "verified_email parameter should be true/false", "verified_email parameter should be true/false")
+		}
+		if verifiedemailBool == true {
+			params["verified_email"] = "1"
+		} else {
+			params["verified_email"] = "0"
+		}
+	} else {
+		log.Error("verified_email parameter should be true/false")
+		return lib.CustomError(http.StatusBadRequest, "verified_email parameter should be true/false", "verified_email parameter should be true/false")
+	}
+
+	//verified_mobileno
+	verifiedmobileno := c.FormValue("verified_mobileno")
+	var verifiedmobilenoBool bool
+	if verifiedmobileno != "" {
+		verifiedmobilenoBool, err = strconv.ParseBool(verifiedmobileno)
+		if err != nil {
+			log.Error("verified_mobileno parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "verified_mobileno parameter should be true/false", "verified_mobileno parameter should be true/false")
+		}
+		if verifiedmobilenoBool == true {
+			params["verified_mobileno"] = "1"
+		} else {
+			params["verified_mobileno"] = "0"
+		}
+	} else {
+		log.Error("verified_mobileno parameter should be true/false")
+		return lib.CustomError(http.StatusBadRequest, "verified_mobileno parameter should be true/false", "verified_mobileno parameter should be true/false")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_order"] = "0"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
