@@ -68,9 +68,13 @@ func GetAllMsCountry(c *[]MsCountry, params map[string]string) (int, error) {
 	var orderBy string
 	var orderType string
 	if orderBy, present = params["orderBy"]; present == true {
-		condition += " ORDER BY " + orderBy
-		if orderType, present = params["orderType"]; present == true {
-			condition += " " + orderType
+		if orderBy == "cou_name" {
+			condition += " ORDER BY FIELD(cou_name, 'Indonesia') DESC, cou_name ASC "
+		} else {
+			condition += " ORDER BY " + orderBy
+			if orderType, present = params["orderType"]; present == true {
+				condition += " " + orderType
+			}
 		}
 	}
 	query += condition
