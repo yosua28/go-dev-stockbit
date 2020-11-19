@@ -747,9 +747,13 @@ func Portofolio(c echo.Context) error {
 
 	var currencyIDs []string
 	productData := make(map[uint64]uint64)
+	netSubProduct := make(map[uint64]float32)
+	totalProduct := make(map[uint64]float32)
 	for _, product := range productDB {
 		currencyIDs = append(currencyIDs, strconv.FormatUint(*product.CurrencyKey, 10))
 		productData[product.ProductKey] = *product.CurrencyKey
+		netSubProduct[product.ProductKey] = 0
+		totalProduct[product.ProductKey] = 0
 	}
 
 	var currencyDB []models.MsCurrency
@@ -797,8 +801,12 @@ func Portofolio(c echo.Context) error {
 		if tc, ok:= tcData[transaction.TransactionKey]; ok {
 			if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 {
 				netSub += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
+				netSubProduct[transaction.ProductKey] += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
+				log.Info("NETSUB + #", transaction.ProductKey,"#", fmt.Sprintf("%.3f", (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])))
 			} else {
 				netSub -= (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])
+				netSubProduct[transaction.ProductKey] -= (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
+				log.Info("NETSUB - #", transaction.ProductKey, "#", fmt.Sprintf("%.3f", (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])))
 			}
 		}
 	}
@@ -893,10 +901,9 @@ func Portofolio(c echo.Context) error {
 	for _, nav := range navDB2 {
 		navData[nav.ProductKey] = nav
 		if b, ok := balanceUnit[nav.ProductKey]; ok {
-			log.Info(rateData[productData[nav.ProductKey]])
-			log.Info(nav.NavValue)
-			log.Info(b)
 			total += ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])
+			totalProduct[nav.ProductKey] += ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])
+			log.Info("TOTAL#",nav.ProductKey,"#", fmt.Sprintf("%.3f", ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])))
 		}
 	}
 	responseData["total_invest"] = total
@@ -917,6 +924,8 @@ func Portofolio(c echo.Context) error {
 		data["product_code"] = product.ProductCode
 		data["product_name"] = product.ProductName
 		data["product_name_alt"] = product.ProductNameAlt
+		imba := (totalProduct[product.ProductKey]/netSubProduct[product.ProductKey])*100
+		data["imba"] = fmt.Sprintf("%.3f", imba) + `%`
 		portofolioData.ProductName = product.ProductNameAlt
 		portofolioData.CCY = ccy[*product.CurrencyKey]
 		portofolioData.AvgNav = fmt.Sprintf("%.3f", avgNav[product.ProductKey])
