@@ -522,16 +522,18 @@ func GetMsProductData(c echo.Context) error {
 
 		var productBankData []models.MsProductBankAccountInfo
 		for _, bank := range productBankDB {
-			var data models.MsProductBankAccountInfo
-			data.BankAccountName = bank.BankAccountName
-			data.BankAccountPurpose = bank.BankAccountPurpose
-			if bank.BankAccountKey != nil {
-				if acc, ok := accountData[*bank.BankAccountKey]; ok {
-					data.BankAccount = acc
+			if bank.BankAccountPurpose == 269 {
+				var data models.MsProductBankAccountInfo
+				data.BankAccountName = bank.BankAccountName
+				data.BankAccountPurpose = bank.BankAccountPurpose
+				if bank.BankAccountKey != nil {
+					if acc, ok := accountData[*bank.BankAccountKey]; ok {
+						data.BankAccount = acc
+					}
 				}
+				
+				productBankData = append(productBankData, data)
 			}
-			
-			productBankData = append(productBankData, data)
 		}
 		data.BankAcc = productBankData
 	}
