@@ -426,17 +426,18 @@ func Login(c echo.Context) error {
 	encryptedPasswordByte := sha256.Sum256([]byte(password))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 	if encryptedPassword != accountData.UloginPassword {
-		// //update ulogin_failed_count wrong password
-		// paramsUpdate := make(map[string]string)
-		// uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
-		// countFalse := accountData.UloginFailedCount + 1
-		// strCountFalse := strconv.FormatUint(countFalse, 10)
-		// paramsUpdate["user_login_key"] = uloginkey
-		// paramsUpdate["ulogin_failed_count"] = strCountFalse
-		// _, err = models.UpdateScUserLogin(paramsUpdate)
-		// if err != nil {
-		// 	log.Error("erroe update ulogin_failed_count wrong password")
-		// }
+		//update ulogin_failed_count wrong password
+		paramsUpdate := make(map[string]string)
+		uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
+		countFalse := accountData.UloginFailedCount + 1
+		strCountFalse := strconv.FormatUint(countFalse, 10)
+		paramsUpdate["user_login_key"] = uloginkey
+		paramsUpdate["ulogin_failed_count"] = strCountFalse
+		_, err = models.UpdateScUserLogin(paramsUpdate)
+		if err != nil {
+			log.Error(err.Error())
+			log.Error("erroe update ulogin_failed_count wrong password")
+		}
 		log.Error("Wrong password")
 		return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
 	}
@@ -523,15 +524,16 @@ func Login(c echo.Context) error {
 		}
 	}
 
-	// // update ulogin_failed_count = 0 if success login
-	// paramsUpdate := make(map[string]string)
-	// uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
-	// paramsUpdate["user_login_key"] = uloginkey
-	// paramsUpdate["ulogin_failed_count"] = "0"
-	// _, err = models.UpdateScUserLogin(paramsUpdate)
-	// if err != nil {
-	// 	log.Error("erroe update ulogin_failed_count = 0 if success login")
-	// }
+	// update ulogin_failed_count = 0 if success login
+	paramsUpdate := make(map[string]string)
+	uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUpdate["user_login_key"] = uloginkey
+	paramsUpdate["ulogin_failed_count"] = "0"
+	_, err = models.UpdateScUserLogin(paramsUpdate)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("erroe update ulogin_failed_count = 0 if success login")
+	}
 
 	log.Info("Success login")
 

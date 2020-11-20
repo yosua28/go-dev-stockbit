@@ -2,7 +2,6 @@ package models
 
 import (
 	"api/db"
-	"database/sql"
 	"net/http"
 	"strconv"
 	"strings"
@@ -216,18 +215,22 @@ func UpdateScUserLogin(params map[string]string) (int, error) {
 		log.Error(err)
 		return http.StatusBadGateway, err
 	}
-	var ret sql.Result
-	ret, err = tx.Exec(query)
-	row, _ := ret.RowsAffected()
-	if row > 0 {
-		tx.Commit()
-	} else {
-		return http.StatusNotFound, err
-	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	//banyak transaction di DB ke lock, sementara di disabled dlu
+	// row, _ := ret.RowsAffected()
+	// if row > 0 {
+	// 	tx.Commit()
+	// } else {
+	// 	return http.StatusNotFound, err
+	// }
 	if err != nil {
+		tx.Rollback()
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	tx.Commit()
 	return http.StatusOK, nil
 }
 
