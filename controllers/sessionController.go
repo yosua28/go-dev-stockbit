@@ -402,16 +402,17 @@ func Login(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_email"] = email
+	// params["ulogin_email"] = email
+	params["ulogin_name"] = email
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
-		log.Error("Error get email")
-		return lib.CustomError(status, "Error get email", "Error get email")
+		log.Error("Error get Username")
+		return lib.CustomError(status, "Error get Username", "Error get Username")
 	}
 	if len(userLogin) < 1 {
-		log.Error("Email not registered")
-		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
+		log.Error("Username not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Username not registered", "Username not registered")
 	}
 
 	accountData := userLogin[0]
