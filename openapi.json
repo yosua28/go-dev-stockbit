@@ -278,6 +278,70 @@
         }
       }
     },
+    "/loginbo": {
+      "post": {
+        "description": "Login MNCDuit Back Office (BO)",
+        "tags": [
+          "Session"
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "email",
+                  "password"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success login",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "session_id": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE2MDIwNjIyMjAsIm9hX3N0YXR1cyI6Ik9BIEVOVFJJRUQiLCJyb2xlX2NhdGVnb3J5X2tleSI6MSwicm9sZV9rZXkiOjEsInV1aWQiOiIzZGIzMzUzZC1jYzU5LTQ5ZjYtYWEwNC0zNzE0YjYxODAwZDEifQ.XnJVpSqz8cgN0oR7DHr5069yYJA_KGUvHJgGnl-FKhE"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Login failed"
+              }
+            }
+          }
+        }
+      }
+    },
     "/resendverification": {
       "post": {
         "description": "Resend verification (email/otp)",

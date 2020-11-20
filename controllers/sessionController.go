@@ -404,15 +404,16 @@ func Login(c echo.Context) error {
 	params := make(map[string]string)
 	// params["ulogin_email"] = email
 	params["ulogin_name"] = email
+	params["user_category_key"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get Username")
-		return lib.CustomError(status, "Error get Username", "Error get Username")
+		return lib.CustomError(status, "Error get Email/Username", "Error get Email/Username")
 	}
 	if len(userLogin) < 1 {
-		log.Error("Username not registered")
-		return lib.CustomError(http.StatusUnauthorized, "Username not registered", "Username not registered")
+		log.Error("Email/Username not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email/Username not registered", "Email/Username not registered")
 	}
 
 	accountData := userLogin[0]
@@ -975,4 +976,177 @@ func sendOTP(gateway, phone string) (string, error) {
 		otp = token[len(token)-4:]
 	}
 	return otp, nil
+}
+
+func LoginBo(c echo.Context) error {
+
+	var err error
+	var status int
+	// Check parameters
+	email := c.FormValue("email")
+	if email == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	password := c.FormValue("password")
+	if password == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+
+	// Check valid email
+	params := make(map[string]string)
+	params["ulogin_name"] = email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get Username")
+		return lib.CustomError(status, "Error get Email/Username", "Error get Email/Username")
+	}
+	if len(userLogin) < 1 {
+		log.Error("Email/Username not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email/Username not registered", "Email/Username not registered")
+	}
+
+	accountData := userLogin[0]
+
+	//check user USR_BOHO / USR_BOBRANCH
+	if (accountData.UserCategoryKey != 2) && (accountData.UserCategoryKey != 3) {
+		log.Error("Email/Username not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email/Username not registered", "Email/Username not registered")
+	}
+
+	log.Info(accountData)
+
+	if *accountData.VerifiedEmail != 1 || accountData.VerifiedMobileno != 1 {
+		log.Error("Email or Mobile number not verified")
+		return lib.CustomError(http.StatusUnauthorized, "Email or Mobile number not verified", "Email or Mobile number not verified")
+	}
+
+	// Check valid password
+	encryptedPasswordByte := sha256.Sum256([]byte(password))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	if encryptedPassword != accountData.UloginPassword {
+		//update ulogin_failed_count wrong password
+		paramsUpdate := make(map[string]string)
+		uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
+		countFalse := accountData.UloginFailedCount + 1
+		strCountFalse := strconv.FormatUint(countFalse, 10)
+		paramsUpdate["user_login_key"] = uloginkey
+		paramsUpdate["ulogin_failed_count"] = strCountFalse
+		_, err = models.UpdateScUserLogin(paramsUpdate)
+		if err != nil {
+			log.Error(err.Error())
+			log.Error("erroe update ulogin_failed_count wrong password")
+		}
+		log.Error("Wrong password")
+		return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+	}
+
+	// Create session key
+	uuid := uuid.Must(uuid.NewV4(), nil)
+	uuidString := uuid.String()
+
+	atClaims := jwt.MapClaims{}
+	paramsRequest := make(map[string]string)
+	paramsRequest["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsRequest["orderBy"] = "oa_request_key"
+	paramsRequest["orderType"] = "DESC"
+	var request []models.OaRequest
+	status, err = models.GetAllOaRequest(&request, config.LimitQuery, 0, true, paramsRequest)
+	if err != nil {
+		log.Error(err.Error())
+	} else if len(request) > 0 {
+		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
+			var lookup models.GenLookup
+			status, err = models.GetGenLookup(&lookup, strconv.FormatUint(*request[0].Oastatus, 10))
+			if err != nil {
+				log.Error(err.Error())
+			} else {
+				if lookup.LkpName != nil && *lookup.LkpName != "" {
+					atClaims["oa_status"] = *lookup.LkpName
+				}
+			}
+		}
+	}
+	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
+		atClaims["role_key"] = *accountData.RoleKey
+		paramsRole := make(map[string]string)
+		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey, 10)
+		var role []models.ScRole
+		_, err = models.GetAllScRole(&role, config.LimitQuery, 0, paramsRole, true)
+		if err != nil {
+			log.Error(err.Error())
+		} else if len(role) > 0 {
+			if role[0].RoleCategoryKey != nil && *role[0].RoleCategoryKey > 0 {
+				atClaims["role_category_key"] = *role[0].RoleCategoryKey
+			}
+		}
+	}
+	atClaims["uuid"] = uuidString
+	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
+	atClaims["email"] = accountData.UloginEmail
+	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
+	token, err := at.SignedString([]byte(config.Secret))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusUnauthorized, err.Error(), "Login failed")
+	}
+
+	// sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
+	dateLayout := "2006-01-02 15:04:05"
+	// expired := date.Add(time.Second * time.Duration(config.SessionExpired)).Format(dateLayout)
+
+	// Check previous login
+	var loginSession []models.ScLoginSession
+	paramsSession := make(map[string]string)
+	paramsSession["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	status, err = models.GetAllScLoginSession(&loginSession, 0, 0, paramsSession, true)
+	paramsSession["session_id"] = uuidString
+	paramsSession["login_date"] = time.Now().Format(dateLayout)
+	paramsSession["rec_status"] = "1"
+	if err == nil && len(loginSession) > 0 {
+		log.Info("Active session for previous login, overwrite with new session")
+		if len(loginSession) > 1 {
+
+		}
+		paramsSession["login_session_key"] = strconv.FormatUint(loginSession[0].LoginSessionKey, 10)
+
+		status, err = models.UpdateScLoginSession(paramsSession)
+		if err != nil {
+			log.Error("Error update session")
+			return lib.CustomError(status, "Error update session", "Login failed")
+		}
+	} else {
+		status, err = models.CreateScLoginSession(paramsSession)
+		if err != nil {
+			log.Error("Error create session")
+			return lib.CustomError(status, "Error create session", "Login failed")
+		}
+	}
+
+	// update ulogin_failed_count = 0 if success login
+	paramsUpdate := make(map[string]string)
+	uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUpdate["user_login_key"] = uloginkey
+	paramsUpdate["ulogin_failed_count"] = "0"
+	_, err = models.UpdateScUserLogin(paramsUpdate)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("erroe update ulogin_failed_count = 0 if success login")
+	}
+
+	log.Info("Success login")
+
+	var data models.ScLoginSessionInfo
+	data.SessionID = token
+	log.Info(data)
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = data
+	log.Info(response)
+	return c.JSON(http.StatusOK, response)
 }

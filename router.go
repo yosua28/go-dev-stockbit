@@ -86,6 +86,7 @@ func router() *echo.Echo {
 	e.GET("/verifyemail", controllers.VerifyEmail).Name = "VerifyEmail"
 	e.POST("/verifyotp", controllers.VerifyOtp).Name = "VerifyOtp"
 	e.POST("/login", controllers.Login).Name = "Login"
+	e.POST("/loginbo", controllers.LoginBo).Name = "LoginBo"
 	e.POST("/resendverification", controllers.ResendVerification).Name = "ResendVerification"
 	auth.GET("/user", controllers.GetUserLogin).Name = "GetUserLogin"
 	auth.POST("/uploadprofilepic", controllers.UploadProfilePic).Name = "UploadProfilePic"
