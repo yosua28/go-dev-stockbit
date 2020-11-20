@@ -49,6 +49,13 @@ type CmsPostType struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
+type CmsPostTypeInfo struct {
+	PostTypeKey  uint64  `json:"post_type_key"`
+	PostTypeCode string  `json:"post_type_code"`
+	PostTypeName *string `json:"post_type_name"`
+	PostTypeDesc *string `json:"post_type_desc"`
+}
+
 func GetAllCmsPostType(c *[]CmsPostType, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               cms_post_type.*

@@ -39,6 +39,12 @@ type CmsPostSubtype struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
+type CmsPostSubtypeDropdown struct {
+	PostSubtypeKey  uint64  `json:"post_subtype_key"`
+	PostSubtypeCode string  `json:"post_subtype_code"`
+	PostSubtypeName *string `json:"post_subtype_name"`
+}
+
 func GetAllCmsPostSubtype(c *[]CmsPostSubtype, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               cms_post_subtype.*

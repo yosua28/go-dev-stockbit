@@ -108,6 +108,9 @@ func router() *echo.Echo {
 	admin.POST("/post/create", controllers.CreateAdminCmsPost).Name = "CreateAdminCmsPost"
 	admin.POST("/post/update/:key", controllers.UpdateAdminCmsPost).Name = "UpdateAdminCmsPost"
 	admin.POST("/post/delete", controllers.DeleteAdminCmsPost).Name = "DeleteAdminCmsPost"
+	admin.GET("/typelist", controllers.AdminGetListPostType).Name = "AdminGetListPostType"
+	admin.GET("/subtypelist", controllers.AdminGetListPostSubtype).Name = "AdminGetListPostSubtype"
+	admin.GET("/subtypelist/:post_type", controllers.AdminGetListPostSubtypeByType).Name = "AdminGetListPostSubtypeByType"
 
 	//Admin CMS Financial Calc
 	admin.GET("/financialcalc", controllers.GetAdminCmsFinancialCalcList).Name = "GetAdminCmsFinancialCalcList"
