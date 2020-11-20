@@ -550,7 +550,7 @@ func CreateAdminCmsPost(c echo.Context) error {
 		var file *multipart.FileHeader
 		file, err = c.FormFile("rec_image1")
 
-		items := []string{"1", "3", "5"}
+		items := []string{"1", "3", "4", "5"}
 		strType := strconv.FormatUint(postSubType.PostTypeKey, 10)
 
 		_, found := lib.Find(items, strType)
