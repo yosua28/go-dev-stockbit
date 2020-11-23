@@ -168,8 +168,6 @@ func GetListScUserLoginAdmin(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key", "Missing required parameter: role_key")
 		}
 	}
-
-	params["role.role_key"] = rolekey
 	//mapping scUserLogin
 	var scUserLogin []models.AdminListScUserLogin
 	status, err = models.AdminGetAllScUserLogin(&scUserLogin, limit, offset, params, noLimit, searchData)
