@@ -676,16 +676,28 @@ func ResendVerification(c echo.Context) error {
 }
 func ForgotPassword(c echo.Context) error {
 	var err error
+	var status int
 	// Check parameters
 	email := c.FormValue("email")
 	if email == "" {
 		log.Error("Missing required parameter")
 		return lib.CustomError(http.StatusBadRequest)
 	}
-	if email != lib.Profile.Email {
-		log.Error("Email doesnt match")
-		return lib.CustomError(http.StatusBadRequest, "Email doesnt match", "Email doesnt match")
+	params := make(map[string]string)
+	params["ulogin_email"] = email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status, err.Error(), "Failed get email")
 	}
+	if len(userLogin) < 1 {
+		log.Error("No matching email " + email)
+		return lib.CustomError(http.StatusBadRequest, "Email not registered", "Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info("Found account with email " + accountData.UloginEmail)
 
 	rand.Seed(time.Now().UnixNano())
 	digits := "0123456789"
@@ -707,8 +719,8 @@ func ForgotPassword(c echo.Context) error {
 	encryptedPasswordByte := sha256.Sum256([]byte(str))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 	dateLayout := "2006-01-02 15:04:05"
-	params := make(map[string]string)
-	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params = make(map[string]string)
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	params["ulogin_must_changepwd"] = "1"
 	params["last_password_changed"] = time.Now().Format(dateLayout)
 	params["ulogin_password"] = encryptedPassword

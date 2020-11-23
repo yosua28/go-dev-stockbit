@@ -409,7 +409,7 @@
         }
       }
     },
-    "/auth/forgotpassword": {
+    "/forgotpassword": {
       "post": {
         "description": "Forgot PAssword",
         "tags": [
