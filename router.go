@@ -196,6 +196,7 @@ func router() *echo.Echo {
 	admin.POST("/usermanagement/update", controllers.UpdateAdminScUserLogin).Name = "UpdateAdminScUserLogin"
 	admin.POST("/usermanagement/changepassword", controllers.ChangePasswordUser).Name = "ChangePasswordUser"
 	admin.POST("/usermanagement/changerole", controllers.ChangeRoleUser).Name = "ChangeRoleUser"
+	admin.POST("/usermanagement/delete", controllers.DeleteUser).Name = "DeleteUser"
 
 	return e
 }

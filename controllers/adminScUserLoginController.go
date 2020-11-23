@@ -290,7 +290,7 @@ func GetDetailScUserLoginAdmin(c echo.Context) error {
 		}
 	}
 
-	if scUserLogin.RecStatus == uint8(1) {
+	if scUserLogin.UloginEnabled == uint8(1) {
 		responseData.Enabled = true
 	} else {
 		responseData.Enabled = false
@@ -377,7 +377,7 @@ func DisableEnableUser(c echo.Context) error {
 
 	dateLayout := "2006-01-02 15:04:05"
 
-	if scUserLogin.RecStatus == 1 {
+	if scUserLogin.UloginEnabled == 1 {
 		params["ulogin_enabled"] = "0"
 	} else {
 		params["ulogin_enabled"] = "1"
@@ -971,6 +971,59 @@ func ChangeRoleUser(c echo.Context) error {
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
+
+func DeleteUser(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	key := c.FormValue("key")
+	if key == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	keyCek, err := strconv.ParseUint(key, 10, 64)
+	if err == nil && keyCek > 0 {
+		params["user_login_key"] = key
+	} else {
+		log.Error("Wrong input for parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var scUserLogin models.ScUserLogin
+	status, err := models.GetScUserLoginByKey(&scUserLogin, key)
+	if err != nil {
+		log.Error("User login not found")
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Failed create request data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
 	}
 
 	var response lib.Response
