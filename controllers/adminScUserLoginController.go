@@ -892,7 +892,7 @@ func ChangePasswordUser(c echo.Context) error {
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", scUserLogin.UloginEmail)
 	mailer.SetHeader("Subject", "[MNCduit] Change Password")
-	mailer.SetBody("text/html", "<p>Password Baru anda : <b>"+password+"<b/><p/>. <br/> <p>Login dengan password diatas dan ganti password anda dengan password baru.<p/>")
+	mailer.SetBody("text/html", "<p>Password Baru anda : <b>"+password+"<b>.<p/> <br/> <p>Login dengan password diatas dan ganti password anda dengan password baru.<p/>")
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
 		int(config.EmailSMTPPort),
