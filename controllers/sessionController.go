@@ -12,6 +12,7 @@ import (
 	"encoding/json"
 	"html/template"
 	"io/ioutil"
+	"math/rand"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -20,7 +21,6 @@ import (
 	"strings"
 	"time"
 	"unicode"
-	"math/rand"
 
 	"github.com/badoux/checkmail"
 	jwt "github.com/dgrijalva/jwt-go"
@@ -425,6 +425,16 @@ func Login(c echo.Context) error {
 		return lib.CustomError(http.StatusUnauthorized, "Email or Mobile number not verified", "Email or Mobile number not verified")
 	}
 
+	if accountData.UloginLocked == uint8(1) {
+		log.Error("User is locked")
+		return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+	}
+
+	if accountData.UloginEnabled == uint8(0) {
+		log.Error("User is Disable")
+		return lib.CustomError(http.StatusUnauthorized, "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.", "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.")
+	}
+
 	// Check valid password
 	encryptedPasswordByte := sha256.Sum256([]byte(password))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
@@ -436,13 +446,32 @@ func Login(c echo.Context) error {
 		strCountFalse := strconv.FormatUint(countFalse, 10)
 		paramsUpdate["user_login_key"] = uloginkey
 		paramsUpdate["ulogin_failed_count"] = strCountFalse
+
+		var scApp models.ScAppConfig
+		status, err = models.GetScAppConfigByCode(&scApp, "LOGIN_ATTEMPT")
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		countWrong, _ := strconv.ParseUint(*scApp.AppConfigValue, 10, 64)
+
+		if countFalse >= countWrong {
+			paramsUpdate["ulogin_locked"] = "1"
+		}
+
 		_, err = models.UpdateScUserLogin(paramsUpdate)
 		if err != nil {
 			log.Error(err.Error())
 			log.Error("erroe update ulogin_failed_count wrong password")
 		}
-		log.Error("Wrong password")
-		return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+
+		if countFalse >= countWrong {
+			log.Error("Wrong password, user is locked")
+			return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+		} else {
+			log.Error("Wrong password")
+			return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+		}
 	}
 
 	// Create session key
@@ -715,7 +744,7 @@ func ForgotPassword(c echo.Context) error {
 	rand.Shuffle(len(buf), func(i, j int) {
 		buf[i], buf[j] = buf[j], buf[i]
 	})
-	str := string(buf) 
+	str := string(buf)
 	encryptedPasswordByte := sha256.Sum256([]byte(str))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 	dateLayout := "2006-01-02 15:04:05"
@@ -766,7 +795,6 @@ func ForgotPassword(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
 	}
 	log.Info("Email sent")
-	
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -1125,6 +1153,16 @@ func LoginBo(c echo.Context) error {
 		return lib.CustomError(http.StatusUnauthorized, "Email or Mobile number not verified", "Email or Mobile number not verified")
 	}
 
+	if accountData.UloginLocked == uint8(1) {
+		log.Error("User is locked")
+		return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+	}
+
+	if accountData.UloginEnabled == uint8(0) {
+		log.Error("User is Disable")
+		return lib.CustomError(http.StatusUnauthorized, "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.", "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.")
+	}
+
 	// Check valid password
 	encryptedPasswordByte := sha256.Sum256([]byte(password))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
@@ -1136,13 +1174,32 @@ func LoginBo(c echo.Context) error {
 		strCountFalse := strconv.FormatUint(countFalse, 10)
 		paramsUpdate["user_login_key"] = uloginkey
 		paramsUpdate["ulogin_failed_count"] = strCountFalse
+
+		var scApp models.ScAppConfig
+		status, err = models.GetScAppConfigByCode(&scApp, "LOGIN_ATTEMPT")
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		countWrong, _ := strconv.ParseUint(*scApp.AppConfigValue, 10, 64)
+
+		if countFalse >= countWrong {
+			paramsUpdate["ulogin_locked"] = "1"
+		}
+
 		_, err = models.UpdateScUserLogin(paramsUpdate)
 		if err != nil {
 			log.Error(err.Error())
 			log.Error("erroe update ulogin_failed_count wrong password")
 		}
-		log.Error("Wrong password")
-		return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+
+		if countFalse >= countWrong {
+			log.Error("Wrong password, user is locked")
+			return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+		} else {
+			log.Error("Wrong password")
+			return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+		}
 	}
 
 	// Create session key

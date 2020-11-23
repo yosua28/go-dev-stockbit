@@ -11820,14 +11820,10 @@
                 "properties": {
                   "key": {
                     "type": "integer"
-                  },
-                  "password": {
-                    "type": "string"
                   }
                 },
                 "required": [
-                  "key",
-                  "password"
+                  "key"
                 ]
               }
             }

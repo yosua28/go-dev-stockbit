@@ -5,6 +5,7 @@ import (
 	"api/lib"
 	"api/models"
 	"crypto/sha256"
+	"crypto/tls"
 	"database/sql"
 	"encoding/hex"
 	"math"
@@ -15,6 +16,7 @@ import (
 	"github.com/badoux/checkmail"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func LogoutAdmin(c echo.Context) error {
@@ -167,6 +169,7 @@ func GetListScUserLoginAdmin(c echo.Context) error {
 		}
 	}
 
+	params["role.role_key"] = rolekey
 	//mapping scUserLogin
 	var scUserLogin []models.AdminListScUserLogin
 	status, err = models.AdminGetAllScUserLogin(&scUserLogin, limit, offset, params, noLimit, searchData)
@@ -375,9 +378,9 @@ func DisableEnableUser(c echo.Context) error {
 	dateLayout := "2006-01-02 15:04:05"
 
 	if scUserLogin.RecStatus == 1 {
-		params["rec_status"] = "0"
+		params["ulogin_enabled"] = "0"
 	} else {
-		params["rec_status"] = "1"
+		params["ulogin_enabled"] = "1"
 	}
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
@@ -570,7 +573,7 @@ func CreateAdminScUserLogin(c echo.Context) error {
 		params["ulogin_mobileno"] = nohp
 	}
 
-	//enabled
+	//ulogin_enabled
 	enabled := c.FormValue("enabled")
 	var enabledBool bool
 	if enabled != "" {
@@ -580,9 +583,9 @@ func CreateAdminScUserLogin(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "enabled parameter should be true/false", "enabled parameter should be true/false")
 		}
 		if enabledBool == true {
-			params["rec_status"] = "1"
+			params["ulogin_enabled"] = "1"
 		} else {
-			params["rec_status"] = "0"
+			params["ulogin_enabled"] = "0"
 		}
 	} else {
 		log.Error("enabled parameter should be true/false")
@@ -631,6 +634,7 @@ func CreateAdminScUserLogin(c echo.Context) error {
 	params["token_expired"] = expired
 
 	params["rec_order"] = "0"
+	params["rec_status"] = "1"
 	params["rec_created_date"] = time.Now().Format(dateLayout)
 	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
@@ -736,7 +740,7 @@ func UpdateAdminScUserLogin(c echo.Context) error {
 		params["ulogin_mobileno"] = nohp
 	}
 
-	//rec_status
+	//ulogin_enabled
 	recstatus := c.FormValue("enabled")
 	var recstatusBool bool
 	if recstatus != "" {
@@ -746,9 +750,9 @@ func UpdateAdminScUserLogin(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "enabled parameter should be true/false", "enabled parameter should be true/false")
 		}
 		if recstatusBool == true {
-			params["rec_status"] = "1"
+			params["ulogin_enabled"] = "1"
 		} else {
-			params["rec_status"] = "0"
+			params["ulogin_enabled"] = "0"
 		}
 	} else {
 		log.Error("enabled parameter should be true/false")
@@ -863,22 +867,14 @@ func ChangePasswordUser(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest)
 	}
 
-	password := c.FormValue("password")
-	if password == "" {
-		log.Error("Missing required parameter: password cann't be blank")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: password cann't be blank", "Missing required parameter: password cann't be blank")
-	}
-	// Validate password
-	length, number, upper, special := verifyPassword(password)
-	if length == false || number == false || upper == false || special == false {
-		log.Error("Password does meet the criteria")
-		return lib.CustomError(http.StatusBadRequest, "Password does meet the criteria", "Your password need at least 8 character length, has lower and upper case letter, has numeric letter, and has special character")
-	}
+	password := lib.RandStringBytesMaskImprSrc(8)
 
 	// Encrypt password
 	encryptedPasswordByte := sha256.Sum256([]byte(password))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 	params["ulogin_password"] = encryptedPassword
+	params["rec_attribute_id1"] = password
+	params["ulogin_must_changepwd"] = "1"
 
 	dateLayout := "2006-01-02 15:04:05"
 	params["rec_order"] = "0"
@@ -890,6 +886,27 @@ func ChangePasswordUser(c echo.Context) error {
 		log.Error(err.Error())
 		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
 	}
+
+	//send email to user
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", scUserLogin.UloginEmail)
+	mailer.SetHeader("Subject", "[MNCduit] Change Password")
+	mailer.SetBody("text/html", "<p>Password Baru anda : <b>"+password+"<b/><p/>. <br/> <p>Login dengan password diatas dan ganti password anda dengan password baru.<p/>")
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Error send email")
+		log.Error(err)
+	}
+	//end send email to user
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
