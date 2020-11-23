@@ -20,6 +20,7 @@ import (
 	"strings"
 	"time"
 	"unicode"
+	"math/rand"
 
 	"github.com/badoux/checkmail"
 	jwt "github.com/dgrijalva/jwt-go"
@@ -665,6 +666,95 @@ func ResendVerification(c echo.Context) error {
 		}
 		log.Info("Email sent")
 	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+func ForgotPassword(c echo.Context) error {
+	var err error
+	// Check parameters
+	email := c.FormValue("email")
+	if email == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+	if email != lib.Profile.Email {
+		log.Error("Email doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "Email doesnt match", "Email doesnt match")
+	}
+
+	rand.Seed(time.Now().UnixNano())
+	digits := "0123456789"
+	specials := "~=+%^*/()[]{}/!@#$?|"
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		digits + specials
+	length := 8
+	buf := make([]byte, length)
+	buf[0] = digits[rand.Intn(len(digits))]
+	buf[1] = specials[rand.Intn(len(specials))]
+	for i := 2; i < length; i++ {
+		buf[i] = all[rand.Intn(len(all))]
+	}
+	rand.Shuffle(len(buf), func(i, j int) {
+		buf[i], buf[j] = buf[j], buf[i]
+	})
+	str := string(buf) 
+	encryptedPasswordByte := sha256.Sum256([]byte(str))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	dateLayout := "2006-01-02 15:04:05"
+	params := make(map[string]string)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["ulogin_must_changepwd"] = "1"
+	params["last_password_changed"] = time.Now().Format(dateLayout)
+	params["ulogin_password"] = encryptedPassword
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	// Send email
+	t := template.New("index-forgot-password.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-forgot-password.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct{ Password string }{Password: str}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", email)
+	mailer.SetHeader("Subject", "[MNCduit] Password Changed")
+	mailer.SetBody("text/html", result)
+
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	log.Info("Email sent")
+	
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
