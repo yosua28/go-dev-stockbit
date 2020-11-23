@@ -1914,6 +1914,25 @@ func UploadExcelConfirmation(c echo.Context) error {
 				params["rec_created_date"] = time.Now().Format(dateLayout)
 				params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
+				if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM
+					var avgNav models.AvgNav
+					_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
+					if err != nil {
+						params["avg_nav"] = "0"
+					} else {
+						strAvgNav := fmt.Sprintf("%g", *avgNav.AvgNav)
+						params["avg_nav"] = strAvgNav
+					}
+				} else { //SUBS
+					if approveUnits != "" {
+						if approveUnitsFloat, err := strconv.ParseFloat(approveUnits, 64); err == nil {
+							avgNav := transaction.TotalAmount / float32(approveUnitsFloat)
+							strAvgNav := fmt.Sprintf("%g", avgNav)
+							params["avg_nav"] = strAvgNav
+						}
+					}
+				}
+
 				status, err, trConfirmationID := models.CreateTrTransactionConfirmation(params)
 				if err != nil {
 					log.Error(err.Error())
@@ -2202,7 +2221,7 @@ func ProsesPosting(c echo.Context) error {
 	strTransUnit := fmt.Sprintf("%g", transactionConf.ConfirmedUnit)
 
 	//create tr_balance
-	if strTransTypeKey == "1" { // SUB
+	if (strTransTypeKey == "1") || (strTransTypeKey == "4") { // SUB & SWIN
 		paramsBalance := make(map[string]string)
 		strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
 		paramsBalance["aca_key"] = strAcaKey
@@ -2219,6 +2238,36 @@ func ProsesPosting(c echo.Context) error {
 		paramsBalance["rec_status"] = "1"
 		paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
 		paramsBalance["rec_created_by"] = strIDUserLogin
+
+		//calculate avg_nag tr_balance
+		//sum balance unit
+		var balanceUnitSum float32
+		balanceUnitSum = 0
+		for _, trBalance := range trBalanceCustomer {
+			balanceUnitSum = balanceUnitSum + trBalance.BalanceUnit
+		}
+
+		//avg nav balance last
+		var avgNavLast float32
+		avgNavLast = 0
+		var avgNav models.AvgNav
+		_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
+		if err == nil {
+			if avgNav.AvgNav != nil {
+				avgNavLast = *avgNav.AvgNav
+			}
+		}
+
+		variable1 := balanceUnitSum * avgNavLast
+		variable2 := transactionConf.ConfirmedUnit * *transactionConf.AvgNav
+
+		balanceUnitSumAll := balanceUnitSum + transactionConf.ConfirmedUnit
+
+		countAvgNavBalance := (variable1 + variable2) / balanceUnitSumAll
+		strAvgNav := fmt.Sprintf("%g", countAvgNavBalance)
+		paramsBalance["avg_nav"] = strAvgNav
+		//end calculate avg_nag tr_balance
+
 		status, err := models.CreateTrBalance(paramsBalance)
 		if err != nil {
 			log.Error(err.Error())
@@ -2226,8 +2275,20 @@ func ProsesPosting(c echo.Context) error {
 		}
 	}
 
-	if strTransTypeKey == "2" { // REDM
+	if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM & SWOUT
 		sisaFifo := transactionConf.ConfirmedUnit
+		//avg nav balance last
+		var avgNavLast float32
+		avgNavLast = 0
+		var avgNav models.AvgNav
+		_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
+		if err == nil {
+			if avgNav.AvgNav != nil {
+				avgNavLast = *avgNav.AvgNav
+			}
+		}
+		strAvgNav := fmt.Sprintf("%g", avgNavLast)
+
 		for _, trBalance := range trBalanceCustomer {
 			if sisaFifo > 0 {
 				var sisaBalance float32
@@ -2263,6 +2324,7 @@ func ProsesPosting(c echo.Context) error {
 
 				paramsBalance["balance_date"] = balanceDate + " 00:00:00"
 				paramsBalance["balance_unit"] = strTransUnitSisa
+				paramsBalance["avg_nav"] = strAvgNav
 
 				var balance models.TrBalance
 				status, err = models.GetLastTrBalanceByTcRed(&balance, strTransactionRed)
@@ -2290,9 +2352,6 @@ func ProsesPosting(c echo.Context) error {
 				break
 			}
 		}
-	}
-
-	if strTransTypeKey == "4" { // SWITCH
 	}
 
 	//update tr_transaction

@@ -43,6 +43,10 @@ type TrBalanceCustomerProduk struct {
 	NavDate        string  `db:"nav_date"                  json:"nav_date"`
 }
 
+type AvgNav struct {
+	AvgNav *float32 `db:"avg_nav"                   json:"avg_nav"`
+}
+
 func GetLastBalanceIn(c *[]TrBalance, acaKey []string) (int, error) {
 	inQuery := strings.Join(acaKey, ",")
 	query2 := `SELECT 
@@ -133,6 +137,27 @@ func GetLastTrBalanceByTcRed(c *TrBalance, tcKeyRed string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetLastAvgNavTrBalanceCustomerByProductKey(c *AvgNav, customerKey string, productKey string) (int, error) {
+	query := `SELECT 
+				tb.avg_nav as avg_nav
+				FROM tr_balance AS tb
+				INNER JOIN tr_transaction_confirmation AS tc ON tb.tc_key = tc.tc_key
+				INNER JOIN tr_transaction AS tr ON tc.transaction_key = tr.transaction_key
+				WHERE tr.customer_key = ` + customerKey +
+		` AND tr.product_key = ` + productKey +
+		` AND tr.trans_status_key = 9 AND tr.rec_status = 1 
+				ORDER BY tb.balance_key DESC LIMIT 1`
+
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil
