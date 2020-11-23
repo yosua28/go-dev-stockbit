@@ -741,9 +741,257 @@ func SendEmailPortofolio(c echo.Context) error {
 
 func SendEmailTransaction(c echo.Context) error {
 
-	t := template.New("index-transaction.html")
-	
 	var err error
+	var status int
+	params := make(map[string]string)
+	trxHistory := make(map[string]interface{})
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	} 
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	params["customer_key"] = customerKey
+	params["rec_status"] = "1"
+	params["orderBy"] = "transaction_key"
+	params["orderType"] = "DESC"
+	productKeyStr := c.FormValue("product_key")
+	var product models.MsProduct
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err == nil && productKey > 0 {
+			params["product_key"] = productKeyStr
+			
+			status, err = models.GetMsProduct(&product, productKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Product not found")
+			}
+			trxHistory["ProductName"] = product.ProductNameAlt
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	var transactionDB []models.TrTransaction
+	startDate := c.FormValue("start_date")
+	startDate += " 00:00:00"
+	if startDate != "" {
+		date, err := time.Parse(layout, startDate)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Wrong input for parameter: start_date")
+		}
+		trxHistory["DateStart"] = date.Format(newLayout)
+	}else{
+		log.Error("Missing required parameter: start_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: start_date", "Missing required parameter: start_date")
+	}
+	
+	endDate := c.FormValue("end_date")
+	endDate += " 23:59:59"
+	if endDate != "" {
+		date, err := time.Parse(layout, endDate)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Wrong input for parameter: end_date")
+		}
+		trxHistory["DateEnd"] = date.Format(newLayout)
+	}else{
+		log.Error("Missing required parameter: end_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: end_date", "Missing required parameter: end_date")
+	}
+	
+	params["trans_status_key"] = "9"
+	status, err = models.GetTrTransactionDateRange(&transactionDB, params, "'"+startDate+"'","'"+ endDate + "'")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get transaction data")
+	}
+	if len(transactionDB) < 1 {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+	}
+	
+	var statusIDs []string
+	var typeIDs []string
+	var bankIDs []string
+	var transactionIDs []string
+	var navDates []string
+	for _, transaction := range transactionDB {
+		transactionIDs = append(transactionIDs, strconv.FormatUint(transaction.TransactionKey, 10))
+		statusIDs = append(statusIDs, strconv.FormatUint(transaction.TransStatusKey, 10))
+		typeIDs = append(typeIDs, strconv.FormatUint(transaction.TransTypeKey, 10))
+		if transaction.TransBankKey != nil {
+			bankIDs = append(bankIDs, strconv.FormatUint(*transaction.TransBankKey, 10))
+		}
+		navDates = append(navDates, "'"+transaction.NavDate+"'")
+	}
+
+	var tcDB []models.TrTransactionConfirmation
+	status, err = models.GetTrTransactionConfirmationIn(&tcDB, transactionIDs, "transaction_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get TC data")
+	}
+	if len(tcDB) < 1 {
+		log.Error("TC data not found")
+		return lib.CustomError(http.StatusNotFound, "TC data not found", "TC data not found")
+	}
+
+	tcData := make(map[uint64]models.TrTransactionConfirmation)
+	for _, tc := range tcDB {
+		tcData[tc.TransactionKey] = tc
+	}	
+
+	var statusDB []models.TrTransactionStatus
+	status, err = models.GetMsTransactionStatusIn(&statusDB, statusIDs, "trans_status_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get status data")
+	}
+	if len(statusDB) < 1 {
+		log.Error("Status key not found")
+		return lib.CustomError(http.StatusNotFound, "Status key not found", "Status key not found")
+	}
+	sData := make(map[uint64]models.TrTransactionStatus)
+	for _, status := range statusDB {
+		sData[status.TransStatusKey] = status
+	}	
+
+	var typeDB []models.TrTransactionType
+	status, err = models.GetMsTransactionTypeIn(&typeDB, typeIDs, "trans_type_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get type data")
+	}
+	if len(typeDB) < 1 {
+		log.Error("Type key not found")
+		return lib.CustomError(http.StatusNotFound, "Type key not found", "Type key not found")
+	}
+	tData := make(map[uint64]models.TrTransactionType)
+	for _, typ := range typeDB {
+		tData[typ.TransTypeKey] = typ
+	}	
+
+	var bankDB []models.MsBank
+	bData := make(map[uint64]models.MsBank)
+	if len(bankIDs) > 0 {
+		status, err = models.GetMsBankIn(&bankDB, bankIDs, "bank_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get bank data")
+		}
+		
+		for _, bank := range bankDB {
+			bData[bank.BankKey] = bank
+		}
+	}	
+
+	var navDB []models.TrNav
+	status, err = models.GetTrNavIn(&navDB, navDates, "nav_date")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get nav data")
+	}
+	if len(navDB) < 1 {
+		log.Error("Nav data not found")
+		return lib.CustomError(http.StatusNotFound, "Nav data not found", "Nav data not found")
+	}
+	nData := make(map[string]models.TrNav)
+	for _, nav := range navDB {
+		nData[nav.NavDate] = nav
+	}
+	
+	var trDatas []map[string]interface{}
+	var i uint64 = 0
+	for _, transaction := range transactionDB {
+		if transaction.TransTypeKey != 3 {
+			data := make(map[string]interface{})
+			i++
+			data["No"] = i
+			date, _ := time.Parse(layout, transaction.TransDate)
+			data["Date"] = date.Format(newLayout)
+			if typ, ok := tData[transaction.TransTypeKey]; ok{
+				data["Type"] =  *typ.TypeDescription
+			}
+			fee := transaction.TransFeeAmount + transaction.ChargesFeeAmount + transaction.ServicesFeeAmount
+			data["Fee"] = fee
+			if tc, ok := tcData[transaction.TransactionKey]; ok{
+				data["Unit"] =  tc.ConfirmedUnit
+				data["Amount"] =  tc.ConfirmedAmount
+				data["Total"] = tc.ConfirmedAmount + fee
+			}
+			if nav, ok := nData[transaction.NavDate]; ok{
+				data["Nav"] =  nav.NavValue
+			}
+			
+			trDatas = append(trDatas, data)
+		}
+	}
+	trxHistory["Datas"] = trDatas
+	t := template.New("transaction-history-template.html")
+	
+	t, err = t.ParseFiles(config.BasePath+"/mail/transaction-history-template.html")
+	if err != nil {
+		log.Println(err)
+	}
+	f, err := os.Create(config.BasePath+"/mail/transaction-history-"+strconv.FormatUint(lib.Profile.UserID, 10)+".html")
+	if err != nil {
+		log.Println("create file: ", err)
+	}
+	if err := t.Execute(f, trxHistory); err != nil {
+		log.Println(err)
+	}
+
+	f.Close()
+
+	// Create new PDF generator
+	pdfg, err := wkhtml.NewPDFGenerator()
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+
+	// Set global options
+	pdfg.Dpi.Set(300)
+	pdfg.Orientation.Set(wkhtml.OrientationLandscape)
+	pdfg.Grayscale.Set(false)
+
+	// Create a new input page from an URL
+	page := wkhtml.NewPage(config.BasePath+"/mail/transaction-history-"+strconv.FormatUint(lib.Profile.UserID, 10)+".html")
+
+	// Set options for this page
+	page.FooterRight.Set("[page]")
+	page.FooterFontSize.Set(10)
+	page.Zoom.Set(0.95)
+	page.Allow.Set(config.BasePath+"/mail/images")
+
+	// Add to document
+	pdfg.AddPage(page)
+
+	// Create PDF document in internal buffer
+	err = pdfg.Create()
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	err = os.MkdirAll(config.BasePath + "/files/"+strconv.FormatUint(lib.Profile.UserID, 10), 0755)
+	// Write buffer contents to file on disk
+	err = pdfg.WriteFile(config.BasePath + "/files/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transaction-history.pdf")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	log.Info("Success create file")
+
+	t = template.New("index-transaction.html")
+	
 	t, err = t.ParseFiles(config.BasePath+"/mail/index-transaction.html")
 	if err != nil {
 		log.Println(err)
@@ -761,6 +1009,7 @@ func SendEmailTransaction(c echo.Context) error {
 	mailer.SetHeader("To", lib.Profile.Email)
 	mailer.SetHeader("Subject", "[MNCduit] Transaction History")
 	mailer.SetBody("text/html", result)
+	mailer.Attach(config.BasePath+"/files/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transaction-history.pdf")
 
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
