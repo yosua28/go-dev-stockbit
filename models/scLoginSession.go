@@ -10,9 +10,10 @@ import (
 )
 
 type ScLoginSessionInfo struct {
-	SessionID string  `json:"session_id"`
-	Email     *string `json:"email,omitempty"`
-	Expired   *string `json:"expired,omitempty"`
+	SessionID          string  `json:"session_id"`
+	Email              *string `json:"email,omitempty"`
+	Expired            *string `json:"expired,omitempty"`
+	MustChangePassword bool    `json:"must_change_password"`
 }
 
 type ScLoginSession struct {

@@ -34,7 +34,7 @@ type ScUserLogin struct {
 	UloginMobileno       *string `db:"ulogin_mobileno"           json:"ulogin_mobileno"`
 	LastVerifiedMobileno *string `db:"last_verified_mobileno"    json:"last_verified_mobileno"`
 	VerifiedMobileno     uint8   `db:"verified_mobileno"         json:"verified_mobileno"`
-	UloginMustChangepwd  string  `db:"ulogin_must_changepwd"     json:"ulogin_must_changepwd"`
+	UloginMustChangepwd  uint8   `db:"ulogin_must_changepwd"     json:"ulogin_must_changepwd"`
 	LastPasswordChanged  *string `db:"last_password_changed"     json:"last_password_changed"`
 	OtpNumber            *string `db:"otp_number"                json:"otp_number"`
 	OtpNumberExpired     *string `db:"otp_number_expired"        json:"otp_number_expired"`

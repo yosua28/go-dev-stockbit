@@ -571,6 +571,11 @@ func Login(c echo.Context) error {
 
 	var data models.ScLoginSessionInfo
 	data.SessionID = token
+	if accountData.UloginMustChangepwd == uint8(1) {
+		data.MustChangePassword = true
+	} else {
+		data.MustChangePassword = false
+	}
 	log.Info(data)
 
 	var response lib.Response
@@ -1019,6 +1024,10 @@ func ChangePassword(c echo.Context) error {
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	params["ulogin_password"] = encryptedPassword
 	params["last_password_changed"] = time.Now().Format(dateLayout)
+	params["ulogin_must_changepwd"] = "0"
+	params["ulogin_failed_count"] = "0"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
@@ -1299,6 +1308,11 @@ func LoginBo(c echo.Context) error {
 
 	var data models.ScLoginSessionInfo
 	data.SessionID = token
+	if accountData.UloginMustChangepwd == uint8(1) {
+		data.MustChangePassword = true
+	} else {
+		data.MustChangePassword = false
+	}
 	log.Info(data)
 
 	var response lib.Response
