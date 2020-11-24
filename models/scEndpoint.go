@@ -1,5 +1,12 @@
 package models
 
+import (
+	"api/db"
+	"log"
+	"net/http"
+	"strings"
+)
+
 type ScEndpoint struct {
 	EndpointKey         uint64  `db:"endpoint_key"              json:"endpoint_key"`
 	MenuKey             *uint64 `db:"menu_key"                  json:"menu_key"`
@@ -30,4 +37,22 @@ type ScEndpoint struct {
 	RecAttributeID1     *string `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
 	RecAttributeID2     *string `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
 	RecAttributeID3     *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+}
+
+func GetScEndpointIn(c *[]ScEndpoint, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				sc_endpoint.* FROM 
+				sc_endpoint `
+	query := query2 + " WHERE sc_endpoint.rec_status = 1 AND sc_endpoint." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
 }

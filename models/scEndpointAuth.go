@@ -1,5 +1,12 @@
 package models
 
+import (
+	"api/db"
+	"database/sql"
+	"log"
+	"net/http"
+)
+
 type ScEndpointAuth struct {
 	EpAuthKey         uint64  `db:"ep_auth_key"               json:"ep_auth_key"`
 	MenuKey           *uint64 `db:"menu_key"                  json:"menu_key"`
@@ -22,4 +29,69 @@ type ScEndpointAuth struct {
 	RecAttributeID1   *string `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
 	RecAttributeID2   *string `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
 	RecAttributeID3   *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+}
+
+func CreateScEndpointAuth(params map[string]string) (int, error) {
+	query := "INSERT INTO sc_endpoint_auth"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func UpdateEndpointAuthByField(params map[string]string, value string, field string) (int, error) {
+	query := "UPDATE sc_endpoint_auth SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " = " + value
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
 }

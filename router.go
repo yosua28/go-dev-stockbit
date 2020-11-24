@@ -204,6 +204,7 @@ func router() *echo.Echo {
 	admin.GET("/rolemanagement/:key", controllers.GetDetailRoleManagement).Name = "GetDetailRoleManagement"
 	admin.GET("/rolemanagement/menulist", controllers.GetDetailMenuRoleManagement).Name = "GetDetailMenuRoleManagement"
 	admin.GET("/rolemanagement/rolecategorylist", controllers.GetListRoleCategory).Name = "GetListRoleCategory"
+	admin.POST("/rolemanagement/delete", controllers.DeleteRoleManagement).Name = "DeleteRoleManagement"
 
 	return e
 }

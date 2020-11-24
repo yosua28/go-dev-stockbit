@@ -8,6 +8,8 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
+	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -546,4 +548,145 @@ func GetListRoleCategory(c echo.Context) error {
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func CreateAdminRoleManagement(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	//role_category_key
+	rolecategorykey := c.FormValue("role_category_key")
+	if rolecategorykey == "" {
+		log.Error("Missing required parameter: role_category_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_category_key cann't be blank", "Missing required parameter: role_category_key cann't be blank")
+	}
+	strrolecategorykey, err := strconv.ParseUint(rolecategorykey, 10, 64)
+	if err == nil && strrolecategorykey > 0 {
+		params["role_category_key"] = rolecategorykey
+	} else {
+		log.Error("Wrong input for parameter: role_category_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_category_key", "Missing required parameter: role_category_key")
+	}
+
+	//role_code
+	rolecode := c.FormValue("role_code")
+	if rolecode == "" {
+		log.Error("Wrong input for parameter: role_code")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_code", "Missing required parameter: role_code")
+	}
+	params["role_code"] = rolecode
+
+	//role_name
+	rolename := c.FormValue("role_name")
+	if rolename == "" {
+		log.Error("Wrong input for parameter: role_name")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_name", "Missing required parameter: role_name")
+	}
+	params["role_name"] = rolename
+
+	//role_desc
+	roledesc := c.FormValue("role_desc")
+	if roledesc != "" {
+		params["role_desc"] = roledesc
+	}
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_status"] = "1"
+	params["rec_created_date"] = time.Now().Format(dateLayout)
+	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	//list menu id
+	menuids := c.FormValue("menu_ids")
+	var transParamIds []string
+	if menuids != "" {
+		s := strings.Split(menuids, ",")
+
+		for _, value := range s {
+			is := strings.TrimSpace(value)
+			if is != "" {
+				if _, ok := lib.Find(transParamIds, is); !ok {
+					transParamIds = append(transParamIds, is)
+				}
+			}
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
+
+func DeleteRoleManagement(c echo.Context) error {
+	var err error
+	var status int
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	//role_key
+	rolekey := c.FormValue("key")
+	if rolekey == "" {
+		log.Error("Missing required parameter: key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key cann't be blank", "Missing required parameter: key cann't be blank")
+	}
+	strrolekey, err := strconv.ParseUint(rolekey, 10, 64)
+	if err == nil && strrolekey > 0 {
+		params["role_key"] = rolekey
+	} else {
+		log.Error("Wrong input for parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var role models.ScRole
+	_, err = models.GetScRole(&role, rolekey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	//delete role management
+	status, err = models.UpdateScRole(params)
+	if err != nil {
+		log.Error("Failed delete role management : " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed delete role management")
+	}
+
+	//delete endpoint auth
+	paramsEndpointAuth := make(map[string]string)
+	paramsEndpointAuth["rec_status"] = "0"
+	paramsEndpointAuth["rec_deleted_date"] = time.Now().Format(dateLayout)
+	paramsEndpointAuth["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	status, err = models.UpdateEndpointAuthByField(paramsEndpointAuth, rolekey, "role_key")
+	if err != nil {
+		log.Error("Failed delete endpoint auth : " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed delete endpoint auth")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
 }
