@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
 	"math"
 	"net/http"
 	"strconv"
@@ -153,6 +154,155 @@ func GetListRoleManagementAdmin(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Pagination = pagination
 	response.Data = roleManagement
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetListUserByRole(c echo.Context) error {
+
+	var err error
+	var status int
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	//Get parameter limit
+	limitStr := c.QueryParam("limit")
+	var limit uint64
+	if limitStr != "" {
+		limit, err = strconv.ParseUint(limitStr, 10, 64)
+		if err == nil {
+			if (limit == 0) || (limit > config.LimitQuery) {
+				limit = config.LimitQuery
+			}
+		} else {
+			log.Error("Limit should be number")
+			return lib.CustomError(http.StatusBadRequest, "Limit should be number", "Limit should be number")
+		}
+	} else {
+		limit = config.LimitQuery
+	}
+	// Get parameter page
+	pageStr := c.QueryParam("page")
+	var page uint64
+	if pageStr != "" {
+		page, err = strconv.ParseUint(pageStr, 10, 64)
+		if err == nil {
+			if page == 0 {
+				page = 1
+			}
+		} else {
+			log.Error("Page should be number")
+			return lib.CustomError(http.StatusBadRequest, "Page should be number", "Page should be number")
+		}
+	} else {
+		page = 1
+	}
+	var offset uint64
+	if page > 1 {
+		offset = limit * (page - 1)
+	}
+
+	noLimitStr := c.QueryParam("nolimit")
+	var noLimit bool
+	if noLimitStr != "" {
+		noLimit, err = strconv.ParseBool(noLimitStr)
+		if err != nil {
+			log.Error("Nolimit parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "Nolimit parameter should be true/false", "Nolimit parameter should be true/false")
+		}
+	} else {
+		noLimit = false
+	}
+
+	items := []string{"ulogin_name", "ulogin_full_name", "ulogin_email"}
+
+	params := make(map[string]string)
+	orderBy := c.QueryParam("order_by")
+	if orderBy != "" {
+		_, found := lib.Find(items, orderBy)
+		if found {
+			params["orderBy"] = orderBy
+			orderType := c.QueryParam("order_type")
+			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
+				params["orderType"] = orderType
+			}
+		} else {
+			log.Error("Wrong input for parameter order_by")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
+		}
+	} else {
+		params["orderBy"] = "ulogin_name"
+		params["orderType"] = "ASC"
+	}
+
+	var isNew bool
+	isNew = true
+
+	roleKey := c.QueryParam("role_key")
+	if roleKey != "" {
+		sub, err := strconv.ParseUint(roleKey, 10, 64)
+		if err == nil && sub > 0 {
+			params["role_key"] = roleKey
+			isNew = false
+		} else {
+			log.Error("Wrong input for parameter: role_key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_key", "Missing required parameter: role_key")
+		}
+	}
+
+	params["rec_status"] = "1"
+
+	//mapping role management
+	var users []models.ScUserLogin
+	var countData models.CountData
+	var pagination int
+	var responseData []models.AdminListScUserLoginRole
+
+	if isNew == false {
+		status, err = models.GetAllScUserLogin(&users, limit, offset, params, noLimit)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+			}
+		}
+
+		for _, us := range users {
+			var data models.AdminListScUserLoginRole
+			data.UloginName = us.UloginName
+			data.UloginFullName = us.UloginFullName
+			data.UloginEmail = us.UloginEmail
+
+			responseData = append(responseData, data)
+		}
+
+		if limit > 0 {
+			status, err = models.GetCountScUserLogin(&countData, params)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+			if int(countData.CountData) < int(limit) {
+				pagination = 1
+			} else {
+				calc := math.Ceil(float64(countData.CountData) / float64(limit))
+				pagination = int(calc)
+			}
+		}
+	} else {
+		pagination = 1
+	}
+
+	var response lib.ResponseWithPagination
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Pagination = pagination
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 }

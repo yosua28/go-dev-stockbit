@@ -200,6 +200,7 @@ func router() *echo.Echo {
 
 	//Admin Role Management
 	admin.GET("/rolemanagementlist", controllers.GetListRoleManagementAdmin).Name = "GetListRoleManagementAdmin"
+	admin.GET("/rolemanagement/userlist", controllers.GetListUserByRole).Name = "GetListUserByRole"
 
 	return e
 }

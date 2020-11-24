@@ -96,9 +96,9 @@ type AdminDetailScUserLogin struct {
 }
 
 type AdminListScUserLoginRole struct {
-	UloginName     string `db:"ulogin_name"         json:"ulogin_name"`
-	UloginFullName string `db:"ulogin_full_name"    json:"ulogin_full_name"`
-	UloginEmail    string `db:"ulogin_email"        json:"ulogin_email"`
+	UloginName     string `json:"ulogin_name"`
+	UloginFullName string `json:"ulogin_full_name"`
+	UloginEmail    string `json:"ulogin_email"`
 }
 
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -476,6 +476,44 @@ func AdminGetValidateUniqueInsertUpdateScUserLogin(c *CountData, paramsOr map[st
 	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetCountScUserLogin(c *CountData, params map[string]string) (int, error) {
+	query := `SELECT
+			  count(sc_user_login.user_login_key) as count_data 
+			  FROM 
+			  sc_user_login`
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "sc_user_login."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
 		return http.StatusBadGateway, err
 	}
 
