@@ -47,6 +47,16 @@ type ScRoleInfoLogin struct {
 	RoleDesc *string `json:"role_desc"`
 }
 
+type AdminRoleManagement struct {
+	RoleKey          uint64  `db:"role_key"                  json:"role_key"`
+	RoleCategoryCode *string `db:"role_category_code"        json:"role_category_code"`
+	RoleCategoryName *string `db:"role_category_name"        json:"role_category_name"`
+	RoleCategoryKey  *uint64 `db:"role_category_key"         json:"role_category_key"`
+	RoleCode         *string `db:"role_code"                 json:"role_code"`
+	RoleName         *string `db:"role_name"                 json:"role_name"`
+	RoleDesc         *string `db:"role_desc"                 json:"role_desc"`
+}
+
 func GetAllScRole(c *[]ScRole, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               sc_role.* FROM 
@@ -109,6 +119,129 @@ func GetScRole(c *ScRole, key string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllRoleManagement(c *[]AdminRoleManagement, limit uint64, offset uint64, params map[string]string, nolimit bool, searchLike *string) (int, error) {
+	query := `SELECT
+				role.role_key AS role_key, 
+				cat.role_category_code AS role_category_code,
+				cat.role_category_name AS role_category_name, 
+				role.role_code AS role_code, 
+				role.role_name AS role_name,
+				role.role_desc AS role_desc 
+			  FROM sc_role AS role 
+			  INNER JOIN sc_role_category AS cat ON role.role_category_key = cat.role_category_key
+			  WHERE role.rec_status = 1`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	//search like all
+	if searchLike != nil {
+		condition += " AND ("
+		condition += " role.role_key LIKE '%" + *searchLike + "%' OR"
+		condition += " cat.role_category_code LIKE '%" + *searchLike + "%' OR"
+		condition += " cat.role_category_name LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_code LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_name LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_desc LIKE '%" + *searchLike + "%' )"
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminCountDataRoleManagement(c *CountData, params map[string]string, searchLike *string) (int, error) {
+	query := `SELECT
+	            count(role.role_key) AS count_data 
+			  FROM sc_role AS role 
+			  INNER JOIN sc_role_category AS cat ON role.role_category_key = cat.role_category_key
+			  WHERE role.rec_status = 1`
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	//search like all
+	if searchLike != nil {
+		condition += " AND ("
+		condition += " role.role_key LIKE '%" + *searchLike + "%' OR"
+		condition += " cat.role_category_code LIKE '%" + *searchLike + "%' OR"
+		condition += " cat.role_category_name LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_code LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_name LIKE '%" + *searchLike + "%' OR"
+		condition += " role.role_desc LIKE '%" + *searchLike + "%' )"
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

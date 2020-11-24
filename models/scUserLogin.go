@@ -95,6 +95,12 @@ type AdminDetailScUserLogin struct {
 	NoHp             *string            `json:"no_hp"`
 }
 
+type AdminListScUserLoginRole struct {
+	UloginName     string `db:"ulogin_name"         json:"ulogin_name"`
+	UloginFullName string `db:"ulogin_full_name"    json:"ulogin_full_name"`
+	UloginEmail    string `db:"ulogin_email"        json:"ulogin_email"`
+}
+
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               sc_user_login.* FROM 
