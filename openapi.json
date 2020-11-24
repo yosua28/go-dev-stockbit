@@ -12702,6 +12702,411 @@
           }
         }
       }
+    },
+    "/admin/rolemanagement/{key}": {
+      "get": {
+        "description": "Get Detail Role Management Admin (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin Role Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "role key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "role_key": 15,
+                    "role_category": {
+                      "role_category_key": 3,
+                      "role_category_code": "BO_OFFICER",
+                      "role_category_name": "Back Office",
+                      "role_category_desc": "Category Role BackOffice"
+                    },
+                    "role_code": "HO_IT",
+                    "role_name": "IT & SysAdmin",
+                    "role_desc": "Role IT or System Adminitratior"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rolemanagement/menulist": {
+      "get": {
+        "description": "Get List Menu in Admin Role Management detail/create/update : role 15",
+        "tags": [
+          "Admin Role Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "role_key",
+            "in": "query",
+            "description": "role_key. if create = value string kosong, if detail / update = value role_key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "menu_key": 5,
+                      "module_name": "CMS Menu",
+                      "menu_name": "CMS",
+                      "menu_desc": "Content Management System",
+                      "child_menu": [
+                        {
+                          "menu_key": 6,
+                          "menu_name": "Banner",
+                          "menu_desc": "Banner Management",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 7,
+                          "menu_name": "News",
+                          "menu_desc": "News Management",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 8,
+                          "menu_name": "Guidance",
+                          "menu_desc": "Guidance Management",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 9,
+                          "menu_name": "TNC",
+                          "menu_desc": "TNC Management (Registrasi Login, OA, Umum)",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 10,
+                          "menu_name": "Dictionary",
+                          "menu_desc": "Dictionary Management",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 11,
+                          "menu_name": "FAQ",
+                          "menu_desc": "FAQ Management",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 12,
+                          "menu_name": "Quiz",
+                          "menu_desc": "Question or Quiz Management",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 13,
+                          "menu_name": "Buziness Partner",
+                          "menu_desc": "Link bisnis partner untuk hasil calculator",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 14,
+                          "menu_name": "Product FFS",
+                          "menu_desc": "Fasilitas Upload link ffs. Ini akan terbit setiap awal bulan",
+                          "is_checked": false
+                        }
+                      ]
+                    },
+                    {
+                      "menu_key": 16,
+                      "module_name": "LOGIN",
+                      "menu_name": "DASHBOARD",
+                      "menu_desc": "DASHBOARD",
+                      "child_menu": [
+                        {
+                          "menu_key": 17,
+                          "menu_name": "Branch Dashboard",
+                          "menu_desc": "Dashboard Cabang",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 18,
+                          "menu_name": "Dashboard HO1",
+                          "menu_desc": "Dashboard HO-1",
+                          "is_checked": false
+                        }
+                      ]
+                    },
+                    {
+                      "menu_key": 20,
+                      "module_name": "APERD",
+                      "menu_name": "CUSTOMER",
+                      "menu_desc": "CUSTOMER",
+                      "child_menu": [
+                        {
+                          "menu_key": 24,
+                          "menu_name": "Inquiry Customer Retail",
+                          "menu_desc": "Menu inquiry nasabah Retail",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 28,
+                          "menu_name": "KYC File Download",
+                          "menu_desc": "Menu untuk membuat File KYC untuk SINVEST : Individu dan Institusi terpisah",
+                          "is_checked": false
+                        },
+                        {
+                          "menu_key": 29,
+                          "menu_name": "KYC File Upload",
+                          "menu_desc": "Menu untuk mengupload Fiel KYC dari SINVEST. Ini akan mengisi nomor SID dan IFUA",
+                          "is_checked": false
+                        }
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/rolemanagement/rolecategorylist": {
+      "get": {
+        "description": "Get List Role Category in Admin Role Management detail/create/update : role 15",
+        "tags": [
+          "Admin Role Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ulogin_name",
+                "ulogin_full_name",
+                "ulogin_email"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "role_category_key": 1,
+                      "role_category_code": "CUSTOMER",
+                      "role_category_name": "Customer",
+                      "role_category_desc": "Category Role Customer"
+                    },
+                    {
+                      "role_category_key": 2,
+                      "role_category_code": "MAM_API",
+                      "role_category_name": "MAM API",
+                      "role_category_desc": "Category Role API"
+                    },
+                    {
+                      "role_category_key": 3,
+                      "role_category_code": "BO_OFFICER",
+                      "role_category_name": "Back Office",
+                      "role_category_desc": "Category Role BackOffice"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

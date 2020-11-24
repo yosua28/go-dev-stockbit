@@ -414,7 +414,7 @@ func Login(c echo.Context) error {
 	}
 	if len(userLogin) < 1 {
 		log.Error("Email/Username not registered")
-		return lib.CustomError(http.StatusUnauthorized, "Email/Username not registered", "Email/Username not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email/Username tidak terdaftar", "Email/Username tidak terdaftar")
 	}
 
 	accountData := userLogin[0]
@@ -422,12 +422,12 @@ func Login(c echo.Context) error {
 
 	if *accountData.VerifiedEmail != 1 || accountData.VerifiedMobileno != 1 {
 		log.Error("Email or Mobile number not verified")
-		return lib.CustomError(http.StatusUnauthorized, "Email or Mobile number not verified", "Email or Mobile number not verified")
+		return lib.CustomError(http.StatusUnauthorized, "Email atau Nomor Telepon belum terverifikasi", "Email atau Nomor Telepon belum terverifikasi")
 	}
 
 	if accountData.UloginLocked == uint8(1) {
 		log.Error("User is locked")
-		return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+		return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 	}
 
 	if accountData.UloginEnabled == uint8(0) {
@@ -467,10 +467,10 @@ func Login(c echo.Context) error {
 
 		if countFalse >= countWrong {
 			log.Error("Wrong password, user is locked")
-			return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 		} else {
 			log.Error("Wrong password")
-			return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+			return lib.CustomError(http.StatusUnauthorized, "Password yang kamu masukkan salah", "Password yang kamu masukkan salah")
 		}
 	}
 
@@ -1164,12 +1164,12 @@ func LoginBo(c echo.Context) error {
 
 	if accountData.UloginLocked == uint8(1) {
 		log.Error("User is locked")
-		return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+		return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 	}
 
 	if accountData.UloginEnabled == uint8(0) {
 		log.Error("User is Disable")
-		return lib.CustomError(http.StatusUnauthorized, "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.", "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.")
+		return lib.CustomError(http.StatusUnauthorized, "Akun kamu tidak aktif. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu tidak aktif. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 	}
 
 	// Check valid password
@@ -1204,10 +1204,10 @@ func LoginBo(c echo.Context) error {
 
 		if countFalse >= countWrong {
 			log.Error("Wrong password, user is locked")
-			return lib.CustomError(http.StatusUnauthorized, "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.", "Akun anda terkunci karena salah memasukan password beberapa kali. Mohon hubungi admin MNCDuit untuk membuka akun anda kembali.")
+			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 		} else {
 			log.Error("Wrong password")
-			return lib.CustomError(http.StatusUnauthorized, "Wrong password", "Wrong password")
+			return lib.CustomError(http.StatusUnauthorized, "Password yang kamu masukkan salah", "Password yang kamu masukkan salah")
 		}
 	}
 

@@ -57,6 +57,14 @@ type AdminRoleManagement struct {
 	RoleDesc         *string `db:"role_desc"                 json:"role_desc"`
 }
 
+type AdminRoleManagementDetail struct {
+	RoleKey      uint64              `json:"role_key"`
+	RoleCategory *ScRoleCategoryInfo `json:"role_category"`
+	RoleCode     *string             `json:"role_code"`
+	RoleName     *string             `json:"role_name"`
+	RoleDesc     *string             `json:"role_desc"`
+}
+
 func GetAllScRole(c *[]ScRole, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               sc_role.* FROM 
