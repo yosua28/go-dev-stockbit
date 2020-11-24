@@ -410,11 +410,11 @@ func Login(c echo.Context) error {
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get Username")
-		return lib.CustomError(status, "Error get Email/Username", "Error get Email/Username")
+		return lib.CustomError(status, "Email/Username atau Kata Sandi kamu salah", "Email/Username atau Kata Sandi kamu salah")
 	}
 	if len(userLogin) < 1 {
 		log.Error("Email/Username not registered")
-		return lib.CustomError(http.StatusUnauthorized, "Email/Username tidak terdaftar", "Email/Username tidak terdaftar")
+		return lib.CustomError(http.StatusUnauthorized, "Email/Username atau Kata Sandi kamu salah", "Email/Username atau Kata Sandi kamu salah")
 	}
 
 	accountData := userLogin[0]
@@ -470,7 +470,7 @@ func Login(c echo.Context) error {
 			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 		} else {
 			log.Error("Wrong password")
-			return lib.CustomError(http.StatusUnauthorized, "Password yang kamu masukkan salah", "Password yang kamu masukkan salah")
+			return lib.CustomError(http.StatusUnauthorized, "Email/Username atau Kata Sandi kamu salah", "Email/Username atau Kata Sandi kamu salah")
 		}
 	}
 
