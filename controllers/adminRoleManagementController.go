@@ -601,6 +601,12 @@ func CreateAdminRoleManagement(c echo.Context) error {
 	params["rec_created_date"] = time.Now().Format(dateLayout)
 	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
+	status, err, lastID := models.CreateScRole(params)
+	if err != nil {
+		log.Error("Failed create role data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
 	//list menu id
 	menuids := c.FormValue("menu_ids")
 	var transParamIds []string
@@ -613,6 +619,37 @@ func CreateAdminRoleManagement(c echo.Context) error {
 				if _, ok := lib.Find(transParamIds, is); !ok {
 					transParamIds = append(transParamIds, is)
 				}
+			}
+		}
+	}
+
+	//get endpoint menu
+	if len(transParamIds) > 0 {
+		var scEndpoint []models.ScEndpoint
+		status, err = models.GetScEndpointIn(&scEndpoint, transParamIds, "menu_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+			}
+		}
+
+		for _, ep := range scEndpoint {
+			paramsEpAuth := make(map[string]string)
+
+			strMenuKey := strconv.FormatUint(*ep.MenuKey, 10)
+			strEpKey := strconv.FormatUint(ep.EndpointKey, 10)
+
+			paramsEpAuth["menu_key"] = strMenuKey
+			paramsEpAuth["endpoint_key"] = strEpKey
+			paramsEpAuth["role_key"] = lastID
+			paramsEpAuth["rec_status"] = "1"
+			paramsEpAuth["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsEpAuth["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+			status, err := models.CreateScEndpointAuth(paramsEpAuth)
+			if err != nil {
+				log.Error("Failed create endpoint auth data: " + err.Error())
+				return lib.CustomError(status, err.Error(), "failed input data")
 			}
 		}
 	}

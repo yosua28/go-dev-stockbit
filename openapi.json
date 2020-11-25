@@ -13178,6 +13178,92 @@
           }
         }
       }
+    },
+    "/admin/rolemanagement/create": {
+      "post": {
+        "description": "Create Role Management : role 15",
+        "tags": [
+          "Admin Role Management"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "role_category_key": {
+                    "type": "integer"
+                  },
+                  "role_code": {
+                    "type": "string"
+                  },
+                  "role_name": {
+                    "type": "string"
+                  },
+                  "role_desc": {
+                    "type": "string"
+                  },
+                  "menu_ids": {
+                    "type": "string",
+                    "example": "1,2,3,4,5,6"
+                  }
+                },
+                "required": [
+                  "role_category_key",
+                  "role_code",
+                  "role_name"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
