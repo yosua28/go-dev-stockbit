@@ -519,3 +519,85 @@ func GetCountScUserLogin(c *CountData, params map[string]string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetAllScUserLoginByNameOrEmail(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	query := `SELECT
+              sc_user_login.* FROM 
+			  sc_user_login`
+	var present bool
+	var whereClause []string
+	var orClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType" || field == "ulogin_name" || field == "ulogin_email") {
+			whereClause = append(whereClause, "sc_user_login."+field+" = '"+value+"'")
+		}
+		if field == "ulogin_name" || field == "ulogin_email" {
+			orClause = append(orClause, "sc_user_login."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Combile where or clause
+	if len(whereClause) > 0 {
+		condition += " AND ("
+		for index, where := range orClause {
+			condition += where
+			if (len(orClause) - 1) > index {
+				condition += " OR "
+			} else {
+				condition += " ) "
+			}
+		}
+	} else {
+		condition += " WHERE ("
+		for index, where := range orClause {
+			condition += where
+			if (len(orClause) - 1) > index {
+				condition += " OR "
+			} else {
+				condition += " ) "
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

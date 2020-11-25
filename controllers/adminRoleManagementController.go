@@ -417,7 +417,7 @@ func GetDetailMenuRoleManagement(c echo.Context) error {
 				cc.MenuKey = c.MenuKey
 				cc.MenuName = c.MenuName
 				cc.MenuDesc = c.MenuDesc
-				if parent.Checked == "1" {
+				if c.Checked == "1" {
 					cc.IsChecked = true
 				} else {
 					cc.IsChecked = false

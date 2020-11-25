@@ -403,11 +403,12 @@ func Login(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	// params["ulogin_email"] = email
+	params["rec_status"] = "1"
+	params["ulogin_email"] = email
 	params["ulogin_name"] = email
 	params["user_category_key"] = "1"
 	var userLogin []models.ScUserLogin
-	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	status, err = models.GetAllScUserLoginByNameOrEmail(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get Username")
 		return lib.CustomError(status, "Email/Username atau Kata Sandi kamu salah", "Email/Username atau Kata Sandi kamu salah")
@@ -427,7 +428,8 @@ func Login(c echo.Context) error {
 
 	if accountData.UloginLocked == uint8(1) {
 		log.Error("User is locked")
-		return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
+		countWrongPass := strconv.FormatUint(accountData.UloginFailedCount, 10)
+		return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password "+countWrongPass+" kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password "+countWrongPass+" kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 	}
 
 	if accountData.UloginEnabled == uint8(0) {
@@ -467,7 +469,7 @@ func Login(c echo.Context) error {
 
 		if countFalse >= countWrong {
 			log.Error("Wrong password, user is locked")
-			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
+			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password "+*scApp.AppConfigValue+" kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password "+*scApp.AppConfigValue+" kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
 		} else {
 			log.Error("Wrong password")
 			return lib.CustomError(http.StatusUnauthorized, "Email/Username atau Kata Sandi kamu salah", "Email/Username atau Kata Sandi kamu salah")
@@ -1135,9 +1137,11 @@ func LoginBo(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
+	params["rec_status"] = "1"
+	params["ulogin_email"] = email
 	params["ulogin_name"] = email
 	var userLogin []models.ScUserLogin
-	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	status, err = models.GetAllScUserLoginByNameOrEmail(&userLogin, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get Username")
 		return lib.CustomError(status, "Error get Email/Username", "Error get Email/Username")
