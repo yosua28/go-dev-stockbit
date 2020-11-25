@@ -603,7 +603,7 @@ func GetTransactionList(c echo.Context) error {
 
 			data.TransactionKey = transaction.TransactionKey
 			if product, ok := pData[transaction.ProductKey]; ok {
-				data.ProductName = product.ProductName
+				data.ProductName = product.ProductNameAlt
 			}
 			if status, ok := sData[transaction.TransStatusKey]; ok {
 				data.TransStatus = *status.StatusCode
