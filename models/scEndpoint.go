@@ -56,3 +56,22 @@ func GetScEndpointIn(c *[]ScEndpoint, value []string, field string) (int, error)
 
 	return http.StatusOK, nil
 }
+
+func AdminGetEndpointNewInUpdateRole(c *[]ScEndpoint, roleKey string, menuIds []string) (int, error) {
+	inQuery := strings.Join(menuIds, ",")
+	query := `SELECT
+				ep.*
+			  FROM sc_endpoint AS ep
+			  LEFT JOIN sc_endpoint_auth AS epa ON epa.endpoint_key = ep.endpoint_key AND epa.rec_status = 1 AND epa.role_key = ` + roleKey + `
+			  WHERE ep.rec_status = 1 AND epa.ep_auth_key IS NULL AND ep.menu_key IN(` + inQuery + `)`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+	"strings"
 )
 
 type ScEndpointAuth struct {
@@ -93,5 +94,23 @@ func UpdateEndpointAuthByField(params map[string]string, value string, field str
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func AdminGetEndpointAuthUncheckUpdate(c *[]ScEndpointAuth, roleKey string, menuIds []string) (int, error) {
+	inQuery := strings.Join(menuIds, ",")
+	query := `SELECT
+				epa.* 
+			  FROM sc_endpoint_auth AS epa 
+			  WHERE epa.menu_key NOT IN(` + inQuery + `) AND epa.rec_status = 1  AND epa.role_key = ` + roleKey
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }
