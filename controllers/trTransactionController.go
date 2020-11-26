@@ -15,14 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-<<<<<<< HEAD
-	"crypto/tls"
-	"html/template"
-	"bytes"
-	"math"
 	"fmt"
-=======
->>>>>>> 39a372e63c79599a363318c81ac6076df761f9c8
 
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
@@ -38,12 +31,8 @@ func CreateTransaction(c echo.Context) error {
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")
 		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
-<<<<<<< HEAD
 	} 
 	
-=======
-	}
->>>>>>> 39a372e63c79599a363318c81ac6076df761f9c8
 	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params["customer_key"] = customerKey
 	params["rec_status"] = "1"
@@ -145,12 +134,8 @@ func CreateTransaction(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: redem_all", "Wrong input for parameter: redem_all")
 		}
 	}
-<<<<<<< HEAD
 	typeStr := ""
 	parentKeyStr := "NULL" 
-=======
-	parentKeyStr := "NULL"
->>>>>>> 39a372e63c79599a363318c81ac6076df761f9c8
 	if typeKeyStr == "4" {
 		typeStr = "switching"
 		parentKeyStr = c.FormValue("parent_key")
