@@ -2394,15 +2394,18 @@ func ProsesPosting(c echo.Context) error {
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
 	if strTransTypeKey == "1" { // SUBS
-		paramsUserMessage["umessage_subject"] = "Subscribe Produk"
+		paramsUserMessage["umessage_subject"] = "Subscription Berhasil"
+		paramsUserMessage["umessage_body"] = "Transaksi subscription kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
 	if strTransTypeKey == "2" { // REDM
-		paramsUserMessage["umessage_subject"] = "Redm Produk"
+		paramsUserMessage["umessage_subject"] = "Redemtion Berhasil"
+		paramsUserMessage["umessage_body"] = "Transaksi redemtion kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
 	if strTransTypeKey == "4" { // SWITCH
-		paramsUserMessage["umessage_subject"] = "Switch Produk"
+		paramsUserMessage["umessage_subject"] = "Switching Berhasil"
+		paramsUserMessage["umessage_body"] = "Transaksi switching kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
-	paramsUserMessage["umessage_body"] = "Selamat !!! Transaksi anda sudah di approv."
+
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
 	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
