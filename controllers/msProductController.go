@@ -1,19 +1,19 @@
 package controllers
 
 import (
-	"api/models"
 	"api/config"
 	"api/lib"
-	"net/http"
-	"strconv"
-	"time"
+	"api/models"
 	"fmt"
 	"html/template"
-	"os"
 	"math"
+	"net/http"
+	"os"
+	"strconv"
+	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetMsProductList(c echo.Context) error {
@@ -46,7 +46,7 @@ func GetMsProductList(c echo.Context) error {
 			}
 		} else {
 			log.Error("Page should be number")
-			return lib.CustomError(http.StatusBadRequest,"Page should be number", "Page should be number")
+			return lib.CustomError(http.StatusBadRequest, "Page should be number", "Page should be number")
 		}
 	} else {
 		page = 1
@@ -62,7 +62,7 @@ func GetMsProductList(c echo.Context) error {
 		noLimit, err = strconv.ParseBool(noLimitStr)
 		if err != nil {
 			log.Error("Nolimit parameter should be true/false")
-			return lib.CustomError(http.StatusBadRequest,"Nolimit parameter should be true/false","Nolimit parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "Nolimit parameter should be true/false", "Nolimit parameter should be true/false")
 		}
 	} else {
 		noLimit = false
@@ -71,24 +71,24 @@ func GetMsProductList(c echo.Context) error {
 	params := make(map[string]string)
 	fundTypeKeyStr := c.QueryParam("fund_type")
 
-	if fundTypeKeyStr != ""{
+	if fundTypeKeyStr != "" {
 		fundTypeKey, _ := strconv.ParseUint(fundTypeKeyStr, 10, 64)
 		if fundTypeKey == 0 {
 			log.Error("Fund Type should be number")
-			return lib.CustomError(http.StatusNotFound,"Fund Type should be number","Fund Type should be number")
+			return lib.CustomError(http.StatusNotFound, "Fund Type should be number", "Fund Type should be number")
 		}
 		params["fund_type_key"] = fundTypeKeyStr
 	}
 
 	transaction := c.QueryParam("transaction")
-	if !(transaction == "sub" || transaction == "red" || transaction == "all"){
+	if !(transaction == "sub" || transaction == "red" || transaction == "all") {
 		transaction = "all"
 	}
 
 	exceptStr := c.QueryParam("except")
-	
+
 	var except uint64 = 0
-	if exceptStr != ""{
+	if exceptStr != "" {
 		except, _ = strconv.ParseUint(exceptStr, 10, 64)
 	}
 	var userProduct []string
@@ -96,7 +96,7 @@ func GetMsProductList(c echo.Context) error {
 		paramsAcc := make(map[string]string)
 		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 		paramsAcc["rec_status"] = "1"
-		
+
 		var accDB []models.TrAccount
 		status, err = models.GetAllTrAccount(&accDB, paramsAcc)
 		if err != nil {
@@ -147,7 +147,7 @@ func GetMsProductList(c echo.Context) error {
 	performData := false
 	// Get parameter order_by
 	orderBy := c.QueryParam("order_by")
-	if orderBy!=""{
+	if orderBy != "" {
 		if (orderBy == "post_title") || (orderBy == "post_publish_thru") || (orderBy == "post_publish_start") {
 			params["orderBy"] = orderBy
 			// Get parameter order_type
@@ -155,9 +155,9 @@ func GetMsProductList(c echo.Context) error {
 			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
 				params["orderType"] = orderType
 			}
-		}else if (orderBy == "cagr") || (orderBy == "y5") || (orderBy == "y3") || (orderBy == "y1") || (orderBy == "m6") || (orderBy == "m3") || (orderBy == "ytd"){
+		} else if (orderBy == "cagr") || (orderBy == "y5") || (orderBy == "y3") || (orderBy == "y1") || (orderBy == "m6") || (orderBy == "m3") || (orderBy == "ytd") {
 			params := make(map[string]string)
-			params["orderBy"] = "perform_"+orderBy
+			params["orderBy"] = "perform_" + orderBy
 			params["orderType"] = "DESC"
 			status, err = models.GetAllLastNavPerformance(&performanceDB, params)
 			if err != nil {
@@ -169,7 +169,7 @@ func GetMsProductList(c echo.Context) error {
 				responseOrder = append(responseOrder, strconv.FormatUint(perform.ProductKey, 10))
 			}
 			performData = true
-		}else{
+		} else {
 			log.Error("Wrong input for parameter order_by")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
 		}
@@ -195,7 +195,7 @@ func GetMsProductList(c echo.Context) error {
 	productData := make(map[string]models.MsProduct)
 	for _, product := range productDB {
 		_, ok := lib.Find(userProduct, strconv.FormatUint(product.ProductKey, 10))
-		if ((!ok && transaction == "sub") || (ok && transaction == "red") || transaction == "all") && product.ProductKey != except{
+		if ((!ok && transaction == "sub") || (ok && transaction == "red") || transaction == "all") && product.ProductKey != except {
 			productData[strconv.FormatUint(product.ProductKey, 10)] = product
 		}
 		if _, ok := lib.Find(productIDs, strconv.FormatUint(product.ProductKey, 10)); !ok {
@@ -232,7 +232,7 @@ func GetMsProductList(c echo.Context) error {
 	var riskDB []models.MsRiskProfile
 	status, err = models.GetMsRiskProfileIn(&riskDB, riskIDs)
 	if err != nil {
-		log.Error("Get risk profile: "+err.Error())
+		log.Error("Get risk profile: " + err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
 
@@ -253,13 +253,12 @@ func GetMsProductList(c echo.Context) error {
 	for _, risk := range riskDB {
 		rData[risk.RiskProfileKey] = risk
 	}
-	
-	
+
 	var responseData []models.MsProductList
 	for _, order := range responseOrder {
 		if product, ok := productData[order]; ok {
 			var data models.MsProductList
-		
+
 			data.ProductKey = product.ProductKey
 			data.ProductID = product.ProductID
 			data.ProductCode = product.ProductCode
@@ -268,9 +267,9 @@ func GetMsProductList(c echo.Context) error {
 			data.MinSubAmount = product.MinSubAmount
 			data.MinSubAmount = product.MinSubAmount
 
-			if product.RecImage1 != nil && *product.RecImage1 != ""{
+			if product.RecImage1 != nil && *product.RecImage1 != "" {
 				data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
-			}else{
+			} else {
 				data.RecImage1 = config.BaseUrl + "/images/product/default.png"
 			}
 
@@ -293,7 +292,7 @@ func GetMsProductList(c echo.Context) error {
 
 			layout := "2006-01-02 15:04:05"
 			newLayout := "02 Jan 2006"
-			
+
 			var nav models.TrNavInfo
 			if n, ok := nData[product.ProductKey]; ok {
 				date, _ := time.Parse(layout, n.NavDate)
@@ -301,7 +300,7 @@ func GetMsProductList(c echo.Context) error {
 				nav.NavValue = n.NavValue
 			}
 			data.Nav = &nav
-			
+
 			var perform models.FfsNavPerformanceInfo
 			if p, ok := pData[product.ProductKey]; ok {
 				date, _ := time.Parse(layout, p.NavDate)
@@ -317,9 +316,9 @@ func GetMsProductList(c echo.Context) error {
 				perform.YTD = fmt.Sprintf("%.3f", p.PerformYtd) + `%`
 				perform.CAGR = fmt.Sprintf("%.3f", p.PerformCagr) + `%`
 				perform.ALL = fmt.Sprintf("%.3f", p.PerformAll) + `%`
-			} 
+			}
 			data.NavPerformance = &perform
-		
+
 			responseData = append(responseData, data)
 		}
 	}
@@ -329,7 +328,7 @@ func GetMsProductList(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -350,7 +349,7 @@ func GetMsProductData(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
-	productIDs := []string{strconv.FormatUint(product.ProductKey, 10)} 
+	productIDs := []string{strconv.FormatUint(product.ProductKey, 10)}
 
 	var navDB []models.TrNav
 	status, err = models.GetLastNavIn(&navDB, productIDs)
@@ -531,7 +530,7 @@ func GetMsProductData(c echo.Context) error {
 						data.BankAccount = acc
 					}
 				}
-				
+
 				productBankData = append(productBankData, data)
 			}
 		}
@@ -551,19 +550,19 @@ func GetMsProductData(c echo.Context) error {
 	if len(chargesDB) > 0 {
 		for _, charges := range chargesDB {
 			if charges.AppConfigValue != nil {
-				if charges.AppConfigKey == 21 { 
+				if charges.AppConfigKey == 21 {
 					data.FeeTransfer = *charges.AppConfigValue
 				}
 				if charges.AppConfigKey == 22 {
 					data.FeeService = *charges.AppConfigValue
 				}
-			}else{
+			} else {
 				data.FeeTransfer = "0"
 				data.FeeService = "0"
 			}
 		}
 	}
-	
+
 	data.ProductKey = product.ProductKey
 	data.ProductID = product.ProductID
 	data.ProductCode = product.ProductCode
@@ -573,38 +572,38 @@ func GetMsProductData(c echo.Context) error {
 	data.MinRedAmount = product.MinRedAmount
 	data.MinRedUnit = product.MinRedUnit
 	data.MinUnitAfterRed = product.MinUnitAfterRed
-	if ffsDB[0].FfsLink != nil && *ffsDB[0].FfsLink != ""{
+	if ffsDB[0].FfsLink != nil && *ffsDB[0].FfsLink != "" {
 		data.FundFactSheet = *ffsDB[0].FfsLink
-	}else{
+	} else {
 		data.FundFactSheet = "#"
 	}
-	if product.ProspectusLink != nil && *product.ProspectusLink != ""{
+	if product.ProspectusLink != nil && *product.ProspectusLink != "" {
 		data.ProspectusLink = *product.ProspectusLink
-	}else{
+	} else {
 		data.ProspectusLink = "#"
 	}
-	if product.RecImage1 != nil && *product.RecImage1 != ""{
+	if product.RecImage1 != nil && *product.RecImage1 != "" {
 		data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
-	}else{
+	} else {
 		data.RecImage1 = config.BaseUrl + "/images/product/default.png"
 	}
 	data.FlagSubscription = false
 	if product.FlagSubscription == 1 {
 		data.FlagSubscription = true
 	}
-	data.FlagRedemption = false 
+	data.FlagRedemption = false
 	if product.FlagRedemption == 1 {
 		data.FlagRedemption = true
 	}
-	data.FlagSwitchOut = false 
+	data.FlagSwitchOut = false
 	if product.FlagSwitchOut == 1 {
 		data.FlagSwitchOut = true
 	}
-	data.FlagSwitchIn = false 
+	data.FlagSwitchIn = false
 	if product.FlagSwitchIn == 1 {
 		data.FlagSwitchIn = true
 	}
-	
+
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
 
@@ -612,13 +611,13 @@ func GetMsProductData(c echo.Context) error {
 	date, _ := time.Parse(layout, navDB[0].NavDate)
 	nav.NavDate = date.Format(newLayout)
 	nav.NavValue = navDB[0].NavValue
-	
+
 	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
 		paramsAcc := make(map[string]string)
 		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 		paramsAcc["product_key"] = strconv.FormatUint(product.ProductKey, 10)
 		paramsAcc["rec_status"] = "1"
-		
+
 		var accDB []models.TrAccount
 		status, err = models.GetAllTrAccount(&accDB, paramsAcc)
 		if err != nil {
@@ -660,7 +659,7 @@ func GetMsProductData(c echo.Context) error {
 			}
 		}
 	}
-	data.BalanceUnit = float32(math.Floor(float64(data.BalanceUnit)*10000)/10000)
+	data.BalanceUnit = float32(math.Floor(float64(data.BalanceUnit)*10000) / 10000)
 	data.Nav = &nav
 
 	var perform models.FfsNavPerformanceInfo
@@ -694,6 +693,26 @@ func GetMsProductData(c echo.Context) error {
 
 	data.CustodianBank = &custodian
 
+	var countData models.CountData
+	paramsCekTrans := make(map[string]string)
+	paramsCekTrans["rec_status"] = "1"
+	paramsCekTrans["product_key"] = strconv.FormatUint(product.ProductKey, 10)
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	paramsCekTrans["customer_key"] = customerKey
+	var transTypeKey []string
+	transTypeKey = append(transTypeKey, "1")
+	transTypeKey = append(transTypeKey, "4")
+	status, err = models.AdminGetCountTrTransaction(&countData, paramsCekTrans, transTypeKey, "trans_type_key")
+	if err == nil {
+		if int(countData.CountData) > 0 {
+			data.IsNew = false
+		} else {
+			data.IsNew = true
+		}
+	} else {
+		data.IsNew = false
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -709,11 +728,11 @@ func Portofolio(c echo.Context) error {
 
 	responseData := make(map[string]interface{})
 	params := make(map[string]string)
-	
+
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")
 		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
-	} 
+	}
 	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params["customer_key"] = customerKey
 	params["trans_status_key"] = "9"
@@ -798,15 +817,15 @@ func Portofolio(c echo.Context) error {
 	}
 	var netSub float32 = 0
 	for _, transaction := range transactionDB {
-		if tc, ok:= tcData[transaction.TransactionKey]; ok {
+		if tc, ok := tcData[transaction.TransactionKey]; ok {
 			if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 {
-				netSub += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
-				netSubProduct[transaction.ProductKey] += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
-				log.Info("NETSUB + #", transaction.ProductKey,"#", fmt.Sprintf("%.3f", (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])))
+				netSub += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])
+				netSubProduct[transaction.ProductKey] += (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])
+				log.Info("NETSUB + #", transaction.ProductKey, "#", fmt.Sprintf("%.3f", (tc.ConfirmedAmount*rateData[productData[transaction.ProductKey]])))
 			} else {
 				netSub -= (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])
-				netSubProduct[transaction.ProductKey] -= (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]]) 
-				log.Info("NETSUB - #", transaction.ProductKey, "#", fmt.Sprintf("%.3f", (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])))
+				netSubProduct[transaction.ProductKey] -= (tc.ConfirmedAmount * rateData[productData[transaction.ProductKey]])
+				log.Info("NETSUB - #", transaction.ProductKey, "#", fmt.Sprintf("%.3f", (tc.ConfirmedAmount*rateData[productData[transaction.ProductKey]])))
 			}
 		}
 	}
@@ -821,7 +840,7 @@ func Portofolio(c echo.Context) error {
 		paramsAcc := make(map[string]string)
 		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 		paramsAcc["rec_status"] = "1"
-		
+
 		var accDB []models.TrAccount
 		status, err = models.GetAllTrAccount(&accDB, paramsAcc)
 		if err != nil {
@@ -860,7 +879,7 @@ func Portofolio(c echo.Context) error {
 								if productKey, ok := accProduct[accKey]; ok {
 									if _, ok := balanceUnit[productKey]; ok {
 										balanceUnit[productKey] += balance.BalanceUnit
-									}else{
+									} else {
 										balanceUnit[productKey] = balance.BalanceUnit
 									}
 									avgNav[productKey] = *balance.AvgNav
@@ -885,7 +904,7 @@ func Portofolio(c echo.Context) error {
 		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
 	}
 	productData = make(map[uint64]uint64)
-	for _, product := range productDB {	
+	for _, product := range productDB {
 		productData[product.ProductKey] = *product.CurrencyKey
 	}
 
@@ -901,14 +920,14 @@ func Portofolio(c echo.Context) error {
 	for _, nav := range navDB2 {
 		navData[nav.ProductKey] = nav
 		if b, ok := balanceUnit[nav.ProductKey]; ok {
-			total += ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])
-			totalProduct[nav.ProductKey] += ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])
-			log.Info("TOTAL#",nav.ProductKey,"#", fmt.Sprintf("%.3f", ((b * nav.NavValue)* rateData[productData[nav.ProductKey]])))
+			total += ((b * nav.NavValue) * rateData[productData[nav.ProductKey]])
+			totalProduct[nav.ProductKey] += ((b * nav.NavValue) * rateData[productData[nav.ProductKey]])
+			log.Info("TOTAL#", nav.ProductKey, "#", fmt.Sprintf("%.3f", ((b*nav.NavValue)*rateData[productData[nav.ProductKey]])))
 		}
 	}
 	responseData["total_invest"] = total
-	
-	imba := (total/netSub)*100
+
+	imba := (total / netSub) * 100
 	responseData["imba"] = fmt.Sprintf("%.3f", imba) + `%`
 	var products []interface{}
 	var portofolio models.Portofolio
@@ -918,37 +937,37 @@ func Portofolio(c echo.Context) error {
 	for _, product := range productDB {
 		data := make(map[string]interface{})
 		var portofolioData models.ProductPortofolio
-	
+
 		data["product_key"] = product.ProductKey
 		data["product_id"] = product.ProductID
 		data["product_code"] = product.ProductCode
 		data["product_name"] = product.ProductName
 		data["product_name_alt"] = product.ProductNameAlt
-		imba := (totalProduct[product.ProductKey]/netSubProduct[product.ProductKey])*100
+		imba := (totalProduct[product.ProductKey] / netSubProduct[product.ProductKey]) * 100
 		data["imba"] = fmt.Sprintf("%.3f", imba) + `%`
 		portofolioData.ProductName = product.ProductNameAlt
 		portofolioData.CCY = ccy[*product.CurrencyKey]
 		portofolioData.AvgNav = fmt.Sprintf("%.3f", avgNav[product.ProductKey])
 		portofolioData.Kurs = fmt.Sprintf("%.3f", rateData[*product.CurrencyKey])
 
-		if product.RecImage1 != nil && *product.RecImage1 != ""{
+		if product.RecImage1 != nil && *product.RecImage1 != "" {
 			data["rec_image1"] = config.BaseUrl + "/images/product/" + *product.RecImage1
-		}else{
+		} else {
 			data["rec_image1"] = config.BaseUrl + "/images/product/default.png"
 		}
 		if n, ok := navData[product.ProductKey]; ok {
 			portofolioData.Nav = fmt.Sprintf("%.3f", n.NavValue)
 			if b, ok := balanceUnit[product.ProductKey]; ok {
-				data["invest_value"] =  (b * n.NavValue) * rateData[*product.CurrencyKey]
+				data["invest_value"] = (b * n.NavValue) * rateData[*product.CurrencyKey]
 				portofolioData.Amount = fmt.Sprintf("%.3f", (b * n.NavValue))
 				portofolioData.AmountIDR = fmt.Sprintf("%.3f", data["invest_value"].(float32))
 				portofolioData.Unit = fmt.Sprintf("%.3f", b)
 				gainLoss := (avgNav[product.ProductKey] - n.NavValue) * b
 				portofolioData.GainLoss = fmt.Sprintf("%.3f", gainLoss)
-				totalGainLoss += (gainLoss*rateData[*product.CurrencyKey])
-				portofolioData.GainLossIDR = fmt.Sprintf("%.3f", (gainLoss*rateData[*product.CurrencyKey]))
-				percent := (((b * n.NavValue)*rateData[*product.CurrencyKey])/total) * 100
-				data["percent"] =  fmt.Sprintf("%.3f", percent) + `%`
+				totalGainLoss += (gainLoss * rateData[*product.CurrencyKey])
+				portofolioData.GainLossIDR = fmt.Sprintf("%.3f", (gainLoss * rateData[*product.CurrencyKey]))
+				percent := (((b * n.NavValue) * rateData[*product.CurrencyKey]) / total) * 100
+				data["percent"] = fmt.Sprintf("%.3f", percent) + `%`
 			}
 		}
 		portofolioDatas = append(portofolioDatas, portofolioData)
@@ -988,7 +1007,7 @@ func Portofolio(c echo.Context) error {
 	request := requestDB[0]
 
 	var personalData models.OaPersonalData
-	status, err = models.GetOaPersonalData(&personalData, strconv.FormatUint(request.OaRequestKey,10), "oa_request_key")
+	status, err = models.GetOaPersonalData(&personalData, strconv.FormatUint(request.OaRequestKey, 10), "oa_request_key")
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, "Failed get personal data", "Failed get personal data")
@@ -1024,12 +1043,12 @@ func Portofolio(c echo.Context) error {
 	portofolio.City = city.CityName + " " + postalcode
 
 	t := template.New("account-statement-template.html")
-	
-	t, err = t.ParseFiles(config.BasePath+"/mail/account-statement-template.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/account-statement-template.html")
 	if err != nil {
 		log.Println(err)
 	}
-	f, err := os.Create(config.BasePath+"/mail/account-statement-"+strconv.FormatUint(lib.Profile.UserID, 10)+".html")
+	f, err := os.Create(config.BasePath + "/mail/account-statement-" + strconv.FormatUint(lib.Profile.UserID, 10) + ".html")
 	if err != nil {
 		log.Println("create file: ", err)
 	}
@@ -1046,20 +1065,19 @@ func Portofolio(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }
-
 
 func ProductListMutasi(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
-	
+
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")
 		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
-	} 
+	}
 	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params["customer_key"] = customerKey
 	params["trans_status_key"] = "9"
@@ -1093,13 +1111,13 @@ func ProductListMutasi(c echo.Context) error {
 	var products []interface{}
 	for _, product := range productDB {
 		data := make(map[string]interface{})
-	
+
 		data["product_key"] = product.ProductKey
 		data["product_id"] = product.ProductID
 		data["product_code"] = product.ProductCode
 		data["product_name"] = product.ProductName
 		data["product_name_alt"] = product.ProductNameAlt
-	
+
 		products = append(products, data)
 	}
 
@@ -1108,6 +1126,6 @@ func ProductListMutasi(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = products
-	
+
 	return c.JSON(http.StatusOK, response)
 }

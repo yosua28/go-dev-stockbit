@@ -1703,6 +1703,7 @@
                     "product_name": "MNC DANA LANCAR",
                     "product_name_alt": "DANA LANCAR",
                     "min_sub_amount": 0,
+                    "is_new": false,
                     "nav_performance": {
                       "nav_date": "21 Oct 2004",
                       "1d": "0.000%",

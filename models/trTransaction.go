@@ -11,29 +11,29 @@ import (
 )
 
 type Portofolio struct {
-	Date              string
-	Cif               string
-	Sid               string
-	Name              string
-	Address           string
-	City              string
-	Country           string
-	Datas             []ProductPortofolio
-	Total             string
-	TotalGainLoss     string
+	Date          string
+	Cif           string
+	Sid           string
+	Name          string
+	Address       string
+	City          string
+	Country       string
+	Datas         []ProductPortofolio
+	Total         string
+	TotalGainLoss string
 }
 
 type ProductPortofolio struct {
-	ProductName            string
-	AvgNav                 string
-	Nav                    string
-	Unit                   string
-	CCY                    string
-	Amount                 string
-	GainLoss               string
-	Kurs                   string
-	AmountIDR              string
-	GainLossIDR            string
+	ProductName string
+	AvgNav      string
+	Nav         string
+	Unit        string
+	CCY         string
+	Amount      string
+	GainLoss    string
+	Kurs        string
+	AmountIDR   string
+	GainLossIDR string
 }
 
 type TrTransaction struct {
@@ -357,6 +357,12 @@ func AdminGetCountTrTransaction(c *CountData, params map[string]string, valueIn 
 
 	var whereClause []string
 	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+		}
+	}
 
 	// Combile where clause
 	if len(whereClause) > 0 {
