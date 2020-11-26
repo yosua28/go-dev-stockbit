@@ -2398,8 +2398,8 @@ func ProsesPosting(c echo.Context) error {
 		paramsUserMessage["umessage_body"] = "Transaksi subscription kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
 	if strTransTypeKey == "2" { // REDM
-		paramsUserMessage["umessage_subject"] = "Redemtion Berhasil"
-		paramsUserMessage["umessage_body"] = "Transaksi redemtion kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		paramsUserMessage["umessage_subject"] = "Redemption Berhasil"
+		paramsUserMessage["umessage_body"] = "Transaksi redemption kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
 	if strTransTypeKey == "4" { // SWITCH
 		paramsUserMessage["umessage_subject"] = "Switching Berhasil"
