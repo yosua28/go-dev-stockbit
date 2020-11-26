@@ -6,6 +6,7 @@ import (
 	"api/models"
 	"bytes"
 	"crypto/tls"
+	"database/sql"
 	"html/template"
 	"math"
 	"mime/multipart"
@@ -481,22 +482,26 @@ func GetTransactionList(c echo.Context) error {
 		params["trans_status_key"] = "9"
 		status, err = models.GetTrTransactionDateRange(&transactionDB, params, "'"+startDate+"'", "'"+endDate+"'")
 		if err != nil {
-			log.Error(err.Error())
-			return lib.CustomError(status, err.Error(), "Failed get transaction data")
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get transaction data")
+			}
 		}
 		if len(transactionDB) < 1 {
 			log.Error("Transaction not found")
-			return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+			return lib.CustomError(status, "Transaction not found", "Transaction not found")
 		}
 	} else if trStatus == "process" {
 		status, err = models.GetTrTransactionOnProcess(&transactionDB, params)
 		if err != nil {
-			log.Error(err.Error())
-			return lib.CustomError(status, err.Error(), "Failed get transaction data")
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get transaction data")
+			}
 		}
 		if len(transactionDB) < 1 {
 			log.Error("Transaction not found")
-			return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+			return lib.CustomError(status, "Transaction not found", "Transaction not found")
 		}
 	} else {
 		log.Error("Wrong input for parameter: status")
