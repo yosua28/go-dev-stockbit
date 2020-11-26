@@ -623,7 +623,17 @@ func GetTransactionList(c echo.Context) error {
 			data.TransDate = transaction.TransDate
 			data.NavDate = transaction.NavDate
 			data.TransAmount = transaction.TransAmount
-			data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*10000) / 10000)
+
+			//cek transaction confirmation
+			var transactionConf models.TrTransactionConfirmation
+			strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+			_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
+			if err != nil {
+				data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*10000) / 10000)
+			} else {
+				data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*10000) / 10000)
+			}
+
 			data.TotalAmount = transaction.TotalAmount
 			if transaction.FileUploadDate != nil {
 				data.Uploaded = true
