@@ -1304,8 +1304,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	paramsUserMessage["umessage_sender_key"] = strKey
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
-	paramsUserMessage["umessage_subject"] = "Pembuatan Akun DUIT"
-	paramsUserMessage["umessage_body"] = "Selamat !!! User anda telah disetujui dan sekarang anda telah menjadi Customer."
+	paramsUserMessage["umessage_subject"] = "Selamat! Pembukaan Rekening telah Disetujui"
+	paramsUserMessage["umessage_body"] = "Saat ini akun kamu sudah aktif dan bisa melakukan transaksi. Yuk mulai investasi sekarang juga."
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
 	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)

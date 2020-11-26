@@ -326,3 +326,50 @@ func CreateScRole(params map[string]string) (int, error, string) {
 	lastID, _ := ret.LastInsertId()
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
+
+func AdminGetValidateUniqueMsRole(c *CountData, paramsAnd map[string]string, updateKey *string) (int, error) {
+	query := `SELECT
+			  count(sc_role.role_key) as count_data 
+			  FROM sc_role `
+
+	var andWhereClause []string
+	var condition string
+
+	for fieldAnd, valueAnd := range paramsAnd {
+		andWhereClause = append(andWhereClause, "sc_role."+fieldAnd+" = '"+valueAnd+"'")
+	}
+
+	// Combile where And clause
+	if len(andWhereClause) > 0 {
+		condition += " WHERE "
+
+		for index, where := range andWhereClause {
+			condition += where
+			if (len(andWhereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if updateKey != nil {
+		if len(andWhereClause) > 0 {
+			condition += " AND "
+		} else {
+			condition += " WHERE "
+		}
+
+		condition += " sc_role.role_key != '" + *updateKey + "'"
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

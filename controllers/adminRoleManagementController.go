@@ -582,6 +582,20 @@ func CreateAdminRoleManagement(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_code", "Missing required parameter: role_code")
 	}
 	params["role_code"] = rolecode
+	paramCode := make(map[string]string)
+	paramCode["role_code"] = rolecode
+	paramCode["rec_status"] = "1"
+
+	var countDataExisting models.CountData
+	status, err := models.AdminGetValidateUniqueMsRole(&countDataExisting, paramCode, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataExisting.CountData) > 0 {
+		log.Error("Missing required parameter: role_code already existing, use other role_code")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_code already existing, use other role_code", "Missing required parameter: role_code already existing, use other role_code")
+	}
 
 	//role_name
 	rolename := c.FormValue("role_name")
@@ -590,6 +604,19 @@ func CreateAdminRoleManagement(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_name", "Missing required parameter: role_name")
 	}
 	params["role_name"] = rolename
+	paramName := make(map[string]string)
+	paramName["role_name"] = rolename
+	paramName["rec_status"] = "1"
+
+	status, err = models.AdminGetValidateUniqueMsRole(&countDataExisting, paramName, nil)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataExisting.CountData) > 0 {
+		log.Error("Missing required parameter: role_name already existing, use other role_name")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_name already existing, use other role_name", "Missing required parameter: role_name already existing, use other role_name")
+	}
 
 	//role_desc
 	roledesc := c.FormValue("role_desc")
@@ -600,6 +627,12 @@ func CreateAdminRoleManagement(c echo.Context) error {
 	params["rec_status"] = "1"
 	params["rec_created_date"] = time.Now().Format(dateLayout)
 	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err, lastID := models.CreateScRole(params)
+	if err != nil {
+		log.Error("Failed create role data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
 
 	//list menu id
 	menuids := c.FormValue("menu_ids")
@@ -617,13 +650,43 @@ func CreateAdminRoleManagement(c echo.Context) error {
 		}
 	}
 
+	//get endpoint menu
+	if len(transParamIds) > 0 {
+		var scEndpoint []models.ScEndpoint
+		status, err = models.GetScEndpointIn(&scEndpoint, transParamIds, "menu_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+			}
+		}
+
+		for _, ep := range scEndpoint {
+			paramsEpAuth := make(map[string]string)
+
+			strMenuKey := strconv.FormatUint(*ep.MenuKey, 10)
+			strEpKey := strconv.FormatUint(ep.EndpointKey, 10)
+
+			paramsEpAuth["menu_key"] = strMenuKey
+			paramsEpAuth["endpoint_key"] = strEpKey
+			paramsEpAuth["role_key"] = lastID
+			paramsEpAuth["rec_status"] = "1"
+			paramsEpAuth["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsEpAuth["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+			status, err := models.CreateScEndpointAuth(paramsEpAuth)
+			if err != nil {
+				log.Error("Failed create endpoint auth data: " + err.Error())
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
+		}
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = nil
 	return c.JSON(http.StatusOK, response)
-
 }
 
 func DeleteRoleManagement(c echo.Context) error {
@@ -689,4 +752,194 @@ func DeleteRoleManagement(c echo.Context) error {
 	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 
+}
+
+func UpdateAdminRoleManagement(c echo.Context) error {
+	var err error
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	keyStr := c.FormValue("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+	params["role_key"] = keyStr
+
+	var role models.ScRole
+	_, err = models.GetScRole(&role, keyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	//role_category_key
+	rolecategorykey := c.FormValue("role_category_key")
+	if rolecategorykey == "" {
+		log.Error("Missing required parameter: role_category_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_category_key cann't be blank", "Missing required parameter: role_category_key cann't be blank")
+	}
+	strrolecategorykey, err := strconv.ParseUint(rolecategorykey, 10, 64)
+	if err == nil && strrolecategorykey > 0 {
+		params["role_category_key"] = rolecategorykey
+	} else {
+		log.Error("Wrong input for parameter: role_category_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_category_key", "Missing required parameter: role_category_key")
+	}
+
+	//role_code
+	rolecode := c.FormValue("role_code")
+	if rolecode == "" {
+		log.Error("Wrong input for parameter: role_code")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_code", "Missing required parameter: role_code")
+	}
+	params["role_code"] = rolecode
+	paramCode := make(map[string]string)
+	paramCode["role_code"] = rolecode
+	paramCode["rec_status"] = "1"
+
+	var countDataExisting models.CountData
+	status, err := models.AdminGetValidateUniqueMsRole(&countDataExisting, paramCode, &keyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataExisting.CountData) > 0 {
+		log.Error("Missing required parameter: role_code already existing, use other role_code")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_code already existing, use other role_code", "Missing required parameter: role_code already existing, use other role_code")
+	}
+
+	//role_name
+	rolename := c.FormValue("role_name")
+	if rolename == "" {
+		log.Error("Wrong input for parameter: role_name")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_name", "Missing required parameter: role_name")
+	}
+	params["role_name"] = rolename
+	paramName := make(map[string]string)
+	paramName["role_name"] = rolename
+	paramName["rec_status"] = "1"
+
+	status, err = models.AdminGetValidateUniqueMsRole(&countDataExisting, paramName, &keyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataExisting.CountData) > 0 {
+		log.Error("Missing required parameter: role_name already existing, use other role_name")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role_name already existing, use other role_name", "Missing required parameter: role_name already existing, use other role_name")
+	}
+
+	//role_desc
+	roledesc := c.FormValue("role_desc")
+	if roledesc != "" {
+		params["role_desc"] = roledesc
+	}
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err = models.UpdateScRole(params)
+	if err != nil {
+		log.Error("Failed update role data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed update data")
+	}
+
+	//list menu id
+	menuids := c.FormValue("menu_ids")
+	var transParamIds []string
+	if menuids != "" {
+		s := strings.Split(menuids, ",")
+
+		for _, value := range s {
+			is := strings.TrimSpace(value)
+			if is != "" {
+				if _, ok := lib.Find(transParamIds, is); !ok {
+					transParamIds = append(transParamIds, is)
+				}
+			}
+		}
+	}
+
+	//get endpoint menu
+	if len(transParamIds) > 0 {
+		//add jika ada new endpoint menu
+		var scEndpoint []models.ScEndpoint
+		status, err = models.AdminGetEndpointNewInUpdateRole(&scEndpoint, keyStr, transParamIds)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+			}
+		}
+
+		for _, ep := range scEndpoint {
+			paramsEpAuth := make(map[string]string)
+
+			strMenuKey := strconv.FormatUint(*ep.MenuKey, 10)
+			strEpKey := strconv.FormatUint(ep.EndpointKey, 10)
+
+			paramsEpAuth["menu_key"] = strMenuKey
+			paramsEpAuth["endpoint_key"] = strEpKey
+			paramsEpAuth["role_key"] = keyStr
+			paramsEpAuth["rec_status"] = "1"
+			paramsEpAuth["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsEpAuth["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+			status, err := models.CreateScEndpointAuth(paramsEpAuth)
+			if err != nil {
+				log.Error("Failed create endpoint auth data: " + err.Error())
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
+		}
+
+		//update rec_status = 0 jika yg sudah pernah dipilih, tidak dipilih lagi
+		var scEndpointAuth []models.ScEndpointAuth
+		status, err = models.AdminGetEndpointAuthUncheckUpdate(&scEndpointAuth, keyStr, transParamIds)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+			}
+		}
+
+		for _, epa := range scEndpointAuth {
+			paramsEpAuthUpdate := make(map[string]string)
+
+			strEpAuthKey := strconv.FormatUint(epa.EpAuthKey, 10)
+
+			paramsEpAuthUpdate["ep_auth_key"] = strEpAuthKey
+			paramsEpAuthUpdate["rec_status"] = "0"
+			paramsEpAuthUpdate["rec_deleted_date"] = time.Now().Format(dateLayout)
+			paramsEpAuthUpdate["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+			status, err = models.UpdateEndpointAuthByField(paramsEpAuthUpdate, strEpAuthKey, "ep_auth_key")
+			if err != nil {
+				log.Error("Failed delete endpoint auth : " + err.Error())
+			}
+		}
+	} else {
+		//delete endpoint auth all
+		paramsEndpointAuth := make(map[string]string)
+		paramsEndpointAuth["rec_status"] = "0"
+		paramsEndpointAuth["rec_deleted_date"] = time.Now().Format(dateLayout)
+		paramsEndpointAuth["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		status, err = models.UpdateEndpointAuthByField(paramsEndpointAuth, keyStr, "role_key")
+		if err != nil {
+			log.Error("Failed delete endpoint auth : " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed delete endpoint auth")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
 }

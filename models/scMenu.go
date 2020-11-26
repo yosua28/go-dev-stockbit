@@ -87,7 +87,7 @@ func AdminGetListMenuRole(c *[]ListMenuRoleManagement, roleKey string, isParent 
 					ELSE '1' 
 				END) AS checked 
 			FROM sc_menu AS menu 
-			LEFT JOIN sc_endpoint_auth AS ep ON ep.menu_key = menu.menu_key AND ep.rec_status = 1 AND ep.role_key = '` + roleKey + `'  
+			LEFT JOIN (SELECT ee.* FROM sc_endpoint_auth AS ee WHERE ee.rec_status = 1 AND ee.role_key = '` + roleKey + `' GROUP BY ee.menu_key) AS ep ON ep.menu_key = menu.menu_key 
 			LEFT JOIN sc_app_module AS app ON app.app_module_key = menu.app_module_key 
 			WHERE menu.rec_status = 1 AND menu.app_module_key != 1`
 
