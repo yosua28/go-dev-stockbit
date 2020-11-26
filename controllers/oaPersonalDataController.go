@@ -10,10 +10,14 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"html/template"
+	"bytes"
+	"crypto/tls"
 
 	"github.com/badoux/checkmail"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func CreateOaPersonalData(c echo.Context) error {
@@ -311,6 +315,8 @@ func CreateOaPersonalData(c echo.Context) error {
 				return lib.CustomError(http.StatusInternalServerError)
 			}
 			params["pic_ktp"] = filename + extension
+		} else {
+			return lib.CustomError(http.StatusBadRequest)
 		}
 
 		file, err = c.FormFile("pic_selfie_ktp")
@@ -340,6 +346,8 @@ func CreateOaPersonalData(c echo.Context) error {
 				return lib.CustomError(http.StatusInternalServerError)
 			}
 			params["pic_selfie_ktp"] = filename + extension
+		} else {
+			return lib.CustomError(http.StatusBadRequest)
 		}
 	}
 
@@ -627,6 +635,42 @@ func CreateOaPersonalData(c echo.Context) error {
 		log.Error("Failed create personal data: " + err.Error())
 		return lib.CustomError(status, err.Error(), "failed input data")
 	}
+
+	// Send email
+	t := template.New("index-registration.html")
+	
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct{ Name string; FileUrl string }{Name: fullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MNCduit] Konfirmasi Registrasi")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
+	}
+	log.Info("Email sent")
+
 	responseData := make(map[string]string)
 	responseData["request_key"] = requestKey
 	var response lib.Response

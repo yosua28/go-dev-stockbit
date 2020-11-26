@@ -137,7 +137,7 @@ func Register(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Url string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey}); err != nil {
+	if err := t.Execute(&tpl, struct{ Url string; FileUrl string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -675,7 +675,7 @@ func ResendVerification(c echo.Context) error {
 		}
 
 		var tpl bytes.Buffer
-		if err := t.Execute(&tpl, struct{ Url string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey}); err != nil {
+		if err := t.Execute(&tpl, struct{ Url string; FileUrl string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 			log.Println(err)
 		}
 
@@ -776,7 +776,7 @@ func ForgotPassword(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Password string }{Password: str}); err != nil {
+	if err := t.Execute(&tpl, struct{ Password string; FileUrl string }{Password: str, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 

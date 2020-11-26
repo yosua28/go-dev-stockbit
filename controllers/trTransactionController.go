@@ -14,6 +14,7 @@ import (
 	"html/template"
 	"bytes"
 	"math"
+	"fmt"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -30,15 +31,22 @@ func CreateTransaction(c echo.Context) error {
 		log.Error("No customer found")
 		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
 	} 
+	
 	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params["customer_key"] = customerKey
 	params["rec_status"] = "1"
 
 	productKeyStr := c.FormValue("product_key")
+	var product models.MsProduct
 	if productKeyStr != "" {
 		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
 		if err == nil && productKey > 0 {
 			params["product_key"] = productKeyStr
+			status, err = models.GetMsProduct(&product, productKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+			}
 		} else {
 			log.Error("Wrong input for parameter: product_key")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
@@ -46,6 +54,60 @@ func CreateTransaction(c echo.Context) error {
 	} else {
 		log.Error("Missing required parameter: product_key")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	productIDs := []string{productKeyStr} 
+	
+	var navDB []models.TrNav
+	status, err = models.GetLastNavIn(&navDB, productIDs)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get nav data")
+	}
+
+	paramsAcc := make(map[string]string)
+	paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	paramsAcc["product_key"] = productKeyStr
+	paramsAcc["rec_status"] = "1"
+	var balanceUnit float32
+	var investValue float32
+	var accDB []models.TrAccount
+	status, err = models.GetAllTrAccount(&accDB, paramsAcc)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	var accIDs []string
+	accProduct := make(map[uint64]uint64)
+	acaProduct := make(map[uint64]uint64)
+	var acaDB []models.TrAccountAgent
+	if len(accDB) > 0 {
+		for _, acc := range accDB {
+			accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
+			accProduct[acc.AccKey] = acc.ProductKey
+		}
+		status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
+		if err != nil {
+			log.Error(err.Error())
+		}
+		if len(acaDB) > 0 {
+			var acaIDs []string
+			for _, aca := range acaDB {
+				acaIDs = append(acaIDs, strconv.FormatUint(aca.AcaKey, 10))
+				acaProduct[aca.AcaKey] = aca.AccKey
+			}
+			var balanceDB []models.TrBalance
+			status, err = models.GetLastBalanceIn(&balanceDB, acaIDs)
+			if err != nil {
+				log.Error(err.Error())
+			}
+			if len(balanceDB) > 0 {
+				for _, balance := range balanceDB {
+					balanceUnit += balance.BalanceUnit
+				}
+				investValue = navDB[0].NavValue * balanceUnit
+			}
+		}
 	}
 
 	typeKeyStr := c.FormValue("type_key")
@@ -71,8 +133,10 @@ func CreateTransaction(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: redem_all", "Wrong input for parameter: redem_all")
 		}
 	}
+	typeStr := ""
 	parentKeyStr := "NULL" 
 	if typeKeyStr == "4" {
+		typeStr = "switching"
 		parentKeyStr = c.FormValue("parent_key")
 		if parentKeyStr != "" {
 			parentKey, err := strconv.ParseUint(parentKeyStr, 10, 64)
@@ -97,11 +161,28 @@ func CreateTransaction(c echo.Context) error {
 	}
 
 	transUnitStr := c.FormValue("trans_unit")
+	var unitValue float64
 	if transUnitStr != "" {
-		_, err := strconv.ParseFloat(transUnitStr, 64)
+		unitValue, err = strconv.ParseFloat(transUnitStr, 64)
 		if err != nil {
 			log.Error("Wrong input for parameter: trans_unit")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_unit", "Wrong input for parameter: trans_unit")
+		}
+		float := float32(unitValue)
+		if typeKeyStr == "2" {
+			typeStr = "redemption"
+			if float > balanceUnit {
+				log.Error("unit redemp > balance")
+				return lib.CustomError(http.StatusBadRequest, "unit redemp > balance", "Jumlah unit yang di redem melebihi balance yang ada")
+			}
+			if float < product.MinRedUnit {
+				log.Error("red unit < minimum red")
+				return lib.CustomError(http.StatusBadRequest, "red unit < minum red", "Minimum redemption untuk product ini adalah: " + fmt.Sprintf("%.3f", product.MinRedUnit) + "unit")
+			}
+			if (balanceUnit - float) < product.MinUnitAfterRed {
+				log.Error("unit after redemption < minimum unit after red")
+				return lib.CustomError(http.StatusBadRequest, "unit after redemption < minimum unit after red", "Minumum unit setelah redemption untuk product ini adalah: " + fmt.Sprintf("%.3f", product.MinUnitAfterRed) + "unit")
+			}
 		}
 	} else {
 		log.Error("Missing required parameter: trans_unit")
@@ -110,10 +191,31 @@ func CreateTransaction(c echo.Context) error {
 
 	transAmountStr := c.FormValue("trans_amount")
 	if transAmountStr != "" {
-		_, err := strconv.ParseFloat(transAmountStr, 64)
+		value, err := strconv.ParseFloat(transAmountStr, 64)
 		if err != nil {
 			log.Error("Wrong input for parameter: trans_amount")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_amount", "Wrong input for parameter: trans_amount")
+		}
+		float := float32(value)
+		if typeKeyStr == "1" {
+			typeStr = "subscription"
+			if balanceUnit > 0 {
+				typeStr = "topup"	
+			}
+			if float < product.MinSubAmount {
+				log.Error("sub amount < minimum sub")
+				return lib.CustomError(http.StatusBadRequest, "sub amount < minum sub", "Minumum subscription untuk product ini adalah: " + fmt.Sprintf("%.3f", product.MinSubAmount))
+			}
+		} else if typeKeyStr == "2" {
+			typeStr = "redemption"
+			if float > investValue {
+				log.Error("Amount redemp > invest value")
+				return lib.CustomError(http.StatusBadRequest, "amount redemp > invest value", "Jumlah redem melebihi total invest value untuk product ini")
+			}
+			if unitValue == 0 && float < product.MinRedAmount {
+				log.Error("red amount < minimum red")
+				return lib.CustomError(http.StatusBadRequest, "red amount < minimum red", "Minumum redemption untuk product ini adalah: " + fmt.Sprintf("%.3f", product.MinRedAmount))
+			}
 		}
 	} else {
 		log.Error("Missing required parameter: trans_amount")
@@ -277,7 +379,7 @@ func CreateTransaction(c echo.Context) error {
 	params["trans_unit"] = transUnitStr
 	params["trans_type_key"] = typeKeyStr
 	if flagRedemAll {
-		params["flag_redem_all"] = redemAllStr
+		params["flag_redempt_all"] = redemAllStr
 	}
 	params["parent_key"] = parentKeyStr
 	params["flag_newsub"] = "0"
@@ -350,6 +452,14 @@ func CreateTransaction(c echo.Context) error {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed input data")
 	}
+
+	if typeKeyStr != "3" {
+		params["product_name"] = product.ProductNameAlt
+		params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
+		params["parrent"] = parentKeyStr
+		err = mailTransaction(typeStr, params)
+	}
+
 	responseData := make(map[string]string)
 	responseData["transaction_key"] = transactionID	
 	var response lib.Response
@@ -704,7 +814,7 @@ func SendEmailPortofolio(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, ""); err != nil {
+	if err := t.Execute(&tpl, struct{ FileUrl string }{ FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -998,7 +1108,7 @@ func SendEmailTransaction(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, ""); err != nil {
+	if err := t.Execute(&tpl, struct{ FileUrl string }{ FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -1033,3 +1143,153 @@ func SendEmailTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func mailTransaction(typ string, params map[string]string) error {
+	var err error
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+	if params["currency"] == "1"{
+		mailParam["Symbol"] = "Rp. "
+	} else if params["currency"] == "2" {
+		mailParam["Symbol"] = "$"
+	}
+	mailParam["Fee"] = mailParam["Symbol"]+params["trans_fee_amount"]
+	if typ == "subscription" || typ == "topup" {
+		if _, ok := params["rec_image1"]; ok {
+			mailTemp = "index-"+typ+"-complete.html"
+			subject = "Konfirmasi "+ typ
+		}else{
+			mailTemp = "index-"+typ+"-uncomplete.html"
+			subject = "Transaksi "+typ+" kamu belum selesai"
+		}
+	} else if typ == "redemption" {
+		mailTemp = "index-"+typ+".html"
+		subject = "Konfirmasi "+ typ
+		var requestDB []models.OaRequest
+		paramRequest := make(map[string]string)
+		paramRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		paramRequest["orderBy"] = "oa_request_key"
+		paramRequest["orderType"] = "DESC"
+		_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
+		if err != nil {
+			log.Error("Failed send mail: "+ err.Error())
+			return err
+		}
+		if len(requestDB) < 1 {
+			log.Error("Failed send mail: no bank data")
+			return nil
+		}
+		var personalData models.OaPersonalData
+		requestKey := strconv.FormatUint(requestDB[0].OaRequestKey, 10)
+		_, err = models.GetOaPersonalData(&personalData, requestKey, "oa_request_key")
+		if err != nil {
+			log.Error("Failed send mail: "+ err.Error())
+			return err
+		}
+		var bankAccount models.MsBankAccount
+		bankAccountKey := strconv.FormatUint(*personalData.BankAccountKey, 10)
+		_, err = models.GetBankAccount(&bankAccount, bankAccountKey)
+		if err != nil {
+			log.Error("Failed send mail: "+ err.Error())
+			return err
+		}
+		var bank models.MsBank
+		bankKey := strconv.FormatUint(bankAccount.BankKey, 10)
+		_, err = models.GetMsBank(&bank, bankKey)
+		if err != nil {
+			log.Error("Failed send mail: "+ err.Error())
+			return err
+		}
+
+		mailParam["BankName"] = bank.BankName
+		mailParam["BankAccNo"] = bankAccount.AccountNo
+		mailParam["AccHolderName"] = bankAccount.AccountHolderName
+		mailParam["Branch"] = *bankAccount.BranchName
+
+	} else if typ == "switching" {
+		mailTemp = "index-"+typ+".html"
+		subject = "Konfirmasi "+ typ
+
+		var transaction models.TrTransaction
+		_, err = models.GetTrTransaction(&transaction, params["parrent"])
+		if err != nil {
+			log.Error("Failed send mail: "+ err.Error())
+			return err
+		}
+
+		var product models.MsProduct
+		_, err = models.GetMsProduct(&product, strconv.FormatUint(transaction.ProductKey, 10))
+		if err != nil {
+			log.Error("Failed send mail: "+ err.Error())
+			return err
+		}
+		mailParam["ProductOut"] = product.ProductNameAlt
+	}else{
+		log.Error("Failed send mail: type not valid")
+		return err
+	}
+	value, _ := strconv.ParseFloat(params["trans_unit"], 64)
+	if value > 0 {
+		mailParam["Symbol"] = ""
+		mailParam["Amount"] = params["trans_unit"]
+		mailParam["Str"] = " Unit"
+	}else{
+		mailParam["Amount"] = params["trans_amount"]
+	}
+	var customer models.MsCustomer
+	_, err = models.GetMsCustomer(&customer, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
+	if err != nil {
+		log.Error("Failed send mail: "+ err.Error())
+		return err
+	}
+	mailParam["Name"] = customer.FullName
+	mailParam["Cif"] = customer.UnitHolderIDno
+	layout := "2006-01-02 15:04:05"
+	dateLayout := "02 Jan 2006"
+	date, _ := time.Parse(layout, params["trans_date"])
+	mailParam["Date"] = date.Format(dateLayout)
+	hr, min, _:= date.Clock()
+	mailParam["Time"] = strconv.Itoa(hr) + "." + strconv.Itoa(min) + " WIB"
+	
+	mailParam["ProductName"] = params["product_name"]
+	mailParam["ProductIn"] = params["product_name"]
+	
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+	
+	t := template.New(mailTemp)
+	
+	t, err = t.ParseFiles(config.BasePath+"/mail/"+mailTemp)
+	if err != nil {
+		log.Error("Failed send mail: "+ err.Error())
+		return err
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, mailParam); err != nil {
+		log.Error("Failed send mail: "+ err.Error())
+		return err
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MNCduit] "+subject)
+	mailer.SetBody("text/html", result)
+	
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Failed send mail: "+ err.Error())
+		return err
+	}
+	log.Info("Email sent")
+	return nil
+}
