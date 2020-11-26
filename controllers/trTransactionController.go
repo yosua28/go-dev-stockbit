@@ -614,7 +614,8 @@ func GetTransactionList(c echo.Context) error {
 				data.TransStatus = *status.StatusCode
 			}
 			if typ, ok := tData[transaction.TransTypeKey]; ok {
-				data.TransType = *typ.TypeCode
+				// data.TransType = *typ.TypeCode
+				data.TransType = *typ.TypeDescription
 			}
 			if nav, ok := nData[transaction.NavDate]; ok {
 				data.NavValue = nav.NavValue
