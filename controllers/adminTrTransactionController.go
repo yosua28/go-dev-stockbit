@@ -1870,7 +1870,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 				//1. create tr_transaction_confirmation
 				dateLayout := "2006-01-02 15:04:05"
 				params := make(map[string]string)
-				params["confirm_date"] = time.Now().Format(dateLayout)
 				params["transaction_key"] = iDTransaction
 				params["confirmed_amount"] = approveAmount
 				params["confirmed_unit"] = approveUnits
@@ -1932,6 +1931,15 @@ func UploadExcelConfirmation(c echo.Context) error {
 						}
 					}
 				}
+
+				layout := "2006-01-02 15:04:05"
+				newLayout := "2006-01-02"
+				date, _ := time.Parse(layout, transaction.NavDate)
+
+				layoutISO := "2006-01-02"
+				t, _ := time.Parse(layoutISO, date.Format(newLayout))
+
+				params["confirm_date"] = SettDate(t, int(1)) + " 00:00:00"
 
 				status, err, trConfirmationID := models.CreateTrTransactionConfirmation(params)
 				if err != nil {
