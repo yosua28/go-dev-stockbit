@@ -207,7 +207,6 @@ func router() *echo.Echo {
 	admin.POST("/rolemanagement/delete", controllers.DeleteRoleManagement).Name = "DeleteRoleManagement"
 	admin.POST("/rolemanagement/create", controllers.CreateAdminRoleManagement).Name = "CreateAdminRoleManagement"
 	admin.POST("/rolemanagement/update", controllers.UpdateAdminRoleManagement).Name = "UpdateAdminRoleManagement"
-	admin.GET("/kirimemail", controllers.KirimEmail).Name = "KirimEmail"
 
 	return e
 }

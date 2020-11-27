@@ -4,7 +4,6 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
-	"bytes"
 	"crypto/tls"
 	"database/sql"
 	"fmt"
@@ -16,8 +15,6 @@ import (
 	"strconv"
 	"strings"
 	"time"
-
-	"html/template"
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/labstack/echo"
@@ -2423,57 +2420,6 @@ func ProsesPosting(c echo.Context) error {
 	}
 
 	log.Info("Success update transaksi")
-
-	var response lib.Response
-	response.Status.Code = http.StatusOK
-	response.Status.MessageServer = "OK"
-	response.Status.MessageClient = "OK"
-	response.Data = ""
-	return c.JSON(http.StatusOK, response)
-}
-
-func KirimEmail(c echo.Context) error {
-	// Send email
-	t := template.New("email-sukses-verifikasi.html")
-
-	cwd, _ := os.Getwd()
-
-	t, err := t.ParseFiles(cwd + "/html/email-sukses-verifikasi.html")
-	if err != nil {
-		log.Println(err)
-	}
-
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct {
-		Url     string
-		FileUrl string
-	}{Url: config.BaseUrl + "/verifyemail?token=", FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-		log.Println(err)
-	}
-
-	result := tpl.String()
-
-	// log.Println(result)
-
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
-	mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
-	mailer.SetBody("text/html", result)
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error(err)
-		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
-	}
-	log.Info("Email sent")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

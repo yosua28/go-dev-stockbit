@@ -5,8 +5,10 @@ import (
 	"api/db"
 	"api/lib"
 	"api/models"
+	"bytes"
 	"crypto/tls"
 	"database/sql"
+	"html/template"
 	"math"
 	"net/http"
 	"strconv"
@@ -1354,6 +1356,13 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 
 	log.Info("Success create customer")
 
+	//send email to customer
+	var userData models.ScUserLogin
+	status, err = models.GetScUserLoginByCustomerKey(&userData, requestID)
+	if err == nil {
+		sendEmailApproveOa(oapersonal.FullName, userData.UloginEmail)
+	}
+
 	//send email to fund admin
 	paramsScLogin := make(map[string]string)
 	paramsScLogin["role_key"] = "13"
@@ -1596,4 +1605,48 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func sendEmailApproveOa(fullName string, email string) string {
+	// Send email
+	t := template.New("index-sukses-verifikasi.html")
+
+	t, err := t.ParseFiles(config.BasePath + "/mail/index-sukses-verifikasi.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl,
+		struct {
+			Name    string
+			FileUrl string
+		}{
+			Name:    fullName,
+			FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	// mailer.SetHeader("To", email)
+	mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
+	mailer.SetHeader("Subject", "[MNC Duit] Pendaftaran Kamu Telah Disetujui")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
+	}
+	log.Info("Email sent")
 }
