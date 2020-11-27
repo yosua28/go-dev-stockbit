@@ -1609,7 +1609,7 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 
 func sendEmailApproveOa(fullName string, email string) {
 	// Send email
-	t := template.New("index-sukses-verifikasi.html")
+	t := template.New("email-sukses-verifikasi.html")
 
 	t, err := t.ParseFiles(config.BasePath + "/mail/email-sukses-verifikasi.html")
 	if err != nil {
