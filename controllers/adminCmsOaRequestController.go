@@ -1607,7 +1607,7 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func sendEmailApproveOa(fullName string, email string) string {
+func sendEmailApproveOa(fullName string, email string) {
 	// Send email
 	t := template.New("index-sukses-verifikasi.html")
 
@@ -1646,7 +1646,6 @@ func sendEmailApproveOa(fullName string, email string) string {
 	err = dialer.DialAndSend(mailer)
 	if err != nil {
 		log.Error(err)
-		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
 	}
 	log.Info("Email sent")
 }
