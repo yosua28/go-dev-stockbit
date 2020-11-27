@@ -13356,7 +13356,7 @@
         }
       }
     },
-    "/kirimemail": {
+    "/admin/kirimemail": {
       "get": {
         "description": "Verify email of MNC duit account",
         "tags": [
