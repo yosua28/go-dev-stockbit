@@ -79,12 +79,12 @@
         </tr>
         <tr class="content">
             <td style="padding:10px;">
-                <h3>Terima Kasih telah Mendaftar</h3>
+                <h3>Yes ! ... Transaksi Switching Kamu Telah Berhasil</h3>
             </td>
         </tr>
         <tr style="text-align:center">
             <td>
-                <img src="{{.FileUrl}}/approve-registration.PNG" width="157"
+                <img src="{{.FileUrl}}/transaction-switching.PNG" width="157"
                     class="mx-auto my-2 d-block">
             </td>
         </tr>
@@ -92,9 +92,129 @@
             <td style="padding:10px;">
                 <p style="text-align: justify">
                     Hai <b>{{.Name}}</b> <br />
-                    Selamat datang di MNC Duit<br />
-                    Saat ini akun kamu sudah aktif dan bisa melakukan transaksi.<br /><br />
-                    Yuk mulai investasi sekarang juga di MNC Duit. Mudah, Murah, dan Menyenangkan!<br />
+                    Transaksi switching kamu telah berhasil kami proses:
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:10px;">
+                <table style="margin:0;">
+                    <tr>
+                        <td>
+                            Nama Lengkap
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Name}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nomor CIF
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Cif}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Tanggal Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Date}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Waktu Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Time}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Produk Asal
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.ProductFrom}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Produk Tujuan
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.ProductTo}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Switching
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Symbol}} {{.Amount}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Biaya Switching
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Symbol}} {{.Fee}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Status
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            <b>Berhasil</b>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    Ketentuan Switching :
+                <ol>
+                    <li>
+                        Instruksi Pengalihan yang dilakukan si sistem MNC Duit sebelum pukul 12.00 WIB pada hari yang
+                        sama akan mengikuti perhitungan NAB yang ditutup pada akhir hari tersebut.
+                    </li>
+                    <li>
+                        Instruksi Pengalihan yang dilakukan di sistem MNC Duit setelah pukul 12.00 WIB pada hari yang
+                        sama akan mengikuti perhitungan NAB keesokan harinya.
+                    </li>
+                </ol>
                 </p>
             </td>
         </tr>
@@ -186,8 +306,8 @@
         </tr>
         <tr class="footer">
             <td>
-                <img class="mx-auto my-3 d-block" src="{{.FileUrl}}/mncduit_600x282.png"
-                    alt="MDuit" width="150" />
+                <img class="mx-auto my-3 d-block" src="{{.FileUrl}}/mncduit_600x282.png" alt="MDuit"
+                    width="150" />
             </td>
         </tr>
         <tr>

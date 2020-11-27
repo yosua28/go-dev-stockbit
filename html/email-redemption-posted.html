@@ -79,22 +79,178 @@
         </tr>
         <tr class="content">
             <td style="padding:10px;">
-                <h3>Terima Kasih telah Mendaftar</h3>
+                <h3>Yes ! ... Transaksi Redemption Kamu Telah Berhasil Kami Proses</h3>
             </td>
         </tr>
         <tr style="text-align:center">
             <td>
-                <img src="{{.FileUrl}}/approve-registration.PNG" width="157"
+                <img src="{{.FileUrl}}/transaction-redemption.PNG" width="157"
                     class="mx-auto my-2 d-block">
             </td>
         </tr>
         <tr class="content">
             <td style="padding:10px;">
                 <p style="text-align: justify">
+                    <b>Konfirmasi Redemption</b>
                     Hai <b>{{.Name}}</b> <br />
-                    Selamat datang di MNC Duit<br />
-                    Saat ini akun kamu sudah aktif dan bisa melakukan transaksi.<br /><br />
-                    Yuk mulai investasi sekarang juga di MNC Duit. Mudah, Murah, dan Menyenangkan!<br />
+                    Transaksi redemption kamu sudah selesai kami proses:
+                </p>
+            </td>
+        </tr>
+        <tr>
+            <td style="padding:10px;">
+                <table style="margin:0;">
+                    <tr>
+                        <td>
+                            Nama Lengkap
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Name}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nomor CIF
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Cif}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Tanggal Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Date}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Waktu Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Time}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nama Produk
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.ProductName}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Redemption
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.RedmUnit}} Unit
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Biaya Redemption
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Symbol}} {{.Fee}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nama Bank
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.BankName}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nomor Rekening bank
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NoRek}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nama Pada Rekening Bank
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NamaRek}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Cabang
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Cabang}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Status
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            <b>Berhasil</b>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr><tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    Ketentuan Redemption :
+                <ol>
+                    <li>
+                        Instruksi Penjualan yang dilakukan si sistem MNC Duit sebelum pukul 12.00 WIB pada hari yang sama akan mengikuti NAB
+                        mengikuti perhitungan NAB yang ditutup pada akhir hari tersebut.
+                    </li>
+                    <li>
+                        Instruksi Penjualan yang dilakukan di sistem MNC Duit setelah pukul 12.00 WIB pada hari yang sama akan mengikuti perhitungan
+                        NAB keesokan harinya.
+                    </li>
+                    <li>
+                        Instruksi Penjualan setiap jenis produk Reksa Dana mengikuti ketentuan yang berlaku di Prospektus.
+                    </li>
+                </ol>
                 </p>
             </td>
         </tr>
@@ -186,8 +342,8 @@
         </tr>
         <tr class="footer">
             <td>
-                <img class="mx-auto my-3 d-block" src="{{.FileUrl}}/mncduit_600x282.png"
-                    alt="MDuit" width="150" />
+                <img class="mx-auto my-3 d-block" src="{{.FileUrl}}/mncduit_600x282.png" alt="MDuit"
+                    width="150" />
             </td>
         </tr>
         <tr>

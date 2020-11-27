@@ -1631,8 +1631,7 @@ func sendEmailApproveOa(fullName string, email string) {
 
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
-	// mailer.SetHeader("To", email)
-	mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
+	mailer.SetHeader("To", email)
 	mailer.SetHeader("Subject", "[MNC Duit] Pendaftaran Kamu Telah Disetujui")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(

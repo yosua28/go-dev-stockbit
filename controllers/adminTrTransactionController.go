@@ -4,9 +4,11 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"bytes"
 	"crypto/tls"
 	"database/sql"
 	"fmt"
+	"html/template"
 	"math"
 	"mime/multipart"
 	"net/http"
@@ -2421,10 +2423,183 @@ func ProsesPosting(c echo.Context) error {
 
 	log.Info("Success update transaksi")
 
+	//send email posted
+	if strTransTypeKey != "3" {
+		sendEmailTransactionPosted(transaction, transactionConf, userLogin, strCustomerKey, strTransTypeKey)
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
+}
+
+func sendEmailTransactionPosted(
+	transaction models.TrTransaction,
+	transactionConf models.TrTransactionConfirmation,
+	userLogin models.ScUserLogin,
+	strCustomerKey string,
+	strTransTypeKey string) {
+
+	var subject string
+	var tpl bytes.Buffer
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	timeLayout := "15.04"
+
+	productFrom := "-"
+
+	var customer models.MsCustomer
+	_, err := models.GetMsCustomer(&customer, strCustomerKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+		}
+	}
+
+	strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+
+	var product models.MsProduct
+	_, err = models.GetMsProduct(&product, strProductKey)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	var currencyDB models.MsCurrency
+	_, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	date, _ := time.Parse(layout, time.Now().Format(layout))
+
+	var transactionParent models.TrTransaction
+	if strTransTypeKey == "4" { // SWITCH IN
+		if transaction.ParentKey != nil {
+			strTrParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
+			_, err := models.GetTrTransaction(&transactionParent, strTrParentKey)
+			if err == nil {
+				strProductParentKey := strconv.FormatUint(transactionParent.ProductKey, 10)
+
+				var productparent models.MsProduct
+				_, err = models.GetMsProduct(&productparent, strProductParentKey)
+				if err != nil {
+					productFrom = productparent.ProductNameAlt
+				}
+			}
+		}
+	}
+
+	dataReplace := struct {
+		FileUrl     string
+		Name        string
+		Cif         string
+		Date        string
+		Time        string
+		ProductName string
+		Symbol      *string
+		Amount      string
+		Fee         string
+		RedmUnit    string
+		BankName    string
+		NoRek       string
+		NamaRek     string
+		Cabang      string
+		ProductFrom string
+		ProductTo   string
+	}{
+		FileUrl:     config.FileUrl + "/images/mail",
+		Name:        customer.FullName,
+		Cif:         customer.UnitHolderIDno,
+		Date:        date.Format(newLayout),
+		Time:        date.Format(timeLayout) + " WIB",
+		ProductName: product.ProductNameAlt,
+		Symbol:      currencyDB.Symbol,
+		Amount:      fmt.Sprintf("%.2f", transactionConf.ConfirmedAmount),
+		Fee:         fmt.Sprintf("%.2f", transaction.TransFeeAmount),
+		RedmUnit:    fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit),
+		BankName:    "-",
+		NoRek:       "-",
+		NamaRek:     "-",
+		Cabang:      "-",
+		ProductFrom: productFrom,
+		ProductTo:   product.ProductNameAlt}
+
+	// log.Println("=====================================")
+	// log.Println(date.Format(newLayout))
+	// log.Println(date.Format(timeLayout))
+	// log.Println(fmt.Sprintf("%.2f", transactionConf.ConfirmedAmount))
+	// log.Println(fmt.Sprintf("%.2f", transaction.TransFeeAmount))
+	// log.Println("=====================================")
+
+	if strTransTypeKey == "1" { // SUBS
+		subject = "[MNC Duit] Transaksi Subscription Berhasil"
+		t := template.New("email-subscription-posted.html")
+
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		if err := t.Execute(&tpl, dataReplace); err != nil {
+			log.Println(err)
+		}
+	}
+
+	if strTransTypeKey == "2" { // REDM
+		subject = "[MNC Duit] Transaksi Redemption Berhasil"
+		t := template.New("email-redemption-posted.html")
+
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		if err := t.Execute(&tpl, dataReplace); err != nil {
+			log.Println(err)
+		}
+
+	}
+
+	if strTransTypeKey == "4" { // SWITCH
+		subject = "[MNC Duit] Transaksi Switching Berhasil"
+		t := template.New("email-switching-posted.html")
+
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		if err := t.Execute(&tpl, dataReplace); err != nil {
+			log.Println(err)
+		}
+
+	}
+
+	// Send email
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", userLogin.UloginEmail)
+	// mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
+	mailer.SetHeader("Subject", subject)
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Info("Email sent error")
+		log.Error(err)
+	} else {
+		log.Info("Email sent")
+	}
 }
