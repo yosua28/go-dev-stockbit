@@ -706,7 +706,7 @@ func GetTrTransactionDateRange(c *[]TrTransaction, params map[string]string, sta
 func GetTrTransactionOnProcess(c *[]TrTransaction, params map[string]string) (int, error) {
 	query := `SELECT
               tr_transaction.* FROM 
-			  tr_transaction WHERE tr_transaction.trans_status_key < 9`
+			  tr_transaction WHERE tr_transaction.trans_status_key < 9 AND tr_transaction.trans_status_key != 3`
 	var present bool
 	var whereClause []string
 	var condition string
