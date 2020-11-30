@@ -75,7 +75,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar \n Silahkan masukkan email lainnya \n Atau hubungi Customer Service untuk informasi lebih lanjut")
+		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar. \n Silahkan masukkan email lainnya atau hubungi Customer.")
 	}
 
 	// Validate password
@@ -137,7 +137,10 @@ func Register(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Url string; FileUrl string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+	if err := t.Execute(&tpl, struct {
+		Url     string
+		FileUrl string
+	}{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -675,7 +678,10 @@ func ResendVerification(c echo.Context) error {
 		}
 
 		var tpl bytes.Buffer
-		if err := t.Execute(&tpl, struct{ Url string; FileUrl string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		if err := t.Execute(&tpl, struct {
+			Url     string
+			FileUrl string
+		}{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 			log.Println(err)
 		}
 
@@ -776,7 +782,10 @@ func ForgotPassword(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Password string; FileUrl string }{Password: str, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+	if err := t.Execute(&tpl, struct {
+		Password string
+		FileUrl  string
+	}{Password: str, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
