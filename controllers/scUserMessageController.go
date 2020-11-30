@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"api/models"
 	"api/lib"
+	"api/models"
 	"net/http"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetMessageList(c echo.Context) error {
@@ -41,7 +41,7 @@ func GetMessageList(c echo.Context) error {
 		}
 	}
 	var responseData []models.ScUserMessageData
-	
+
 	for _, message := range messageDB {
 		var data models.ScUserMessageData
 
@@ -50,9 +50,9 @@ func GetMessageList(c echo.Context) error {
 			if l, ok := lookupData[*message.UmessageType]; ok {
 				data.UmessageType.Value = l.LookupKey
 				data.UmessageType.Name = *l.LkpName
-			}	
+			}
 		}
-		
+
 		data.UmessageReceiptDate = message.UmessageReceiptDate
 		data.FlagRead = message.FlagRead
 		data.UmessageBody = message.UmessageBody
@@ -63,7 +63,7 @@ func GetMessageList(c echo.Context) error {
 			if l, ok := lookupData[*message.UmessageCategory]; ok {
 				data.UmessageCategory.Value = l.LookupKey
 				data.UmessageCategory.Name = *l.LkpName
-			}	
+			}
 		}
 		responseData = append(responseData, data)
 	}
@@ -73,7 +73,7 @@ func GetMessageList(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -126,9 +126,9 @@ func GetMessageData(c echo.Context) error {
 		if l, ok := lookupData[*message.UmessageType]; ok {
 			data.UmessageType.Value = l.LookupKey
 			data.UmessageType.Name = *l.LkpName
-		}	
+		}
 	}
-	
+
 	data.UmessageReceiptDate = message.UmessageReceiptDate
 	data.FlagRead = message.FlagRead
 	data.UmessageSubject = message.UmessageSubject
@@ -138,7 +138,7 @@ func GetMessageData(c echo.Context) error {
 		if l, ok := lookupData[*message.UmessageCategory]; ok {
 			data.UmessageCategory.Value = l.LookupKey
 			data.UmessageCategory.Name = *l.LkpName
-		}	
+		}
 	}
 
 	var response lib.Response
@@ -146,7 +146,7 @@ func GetMessageData(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = data
-	
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -196,13 +196,36 @@ func PatchMessage(c echo.Context) error {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed update data")
 	}
-	
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = nil
-	
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetCountMessageData(c echo.Context) error {
+	var err error
+	params := make(map[string]string)
+	params["umessage_recipient_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_status"] = "1"
+	params["flag_archieved"] = "0"
+	params["flag_read"] = "0"
+
+	count := 0
+
+	var countData models.CountData
+	_, err = models.GetCountUserMessage(&countData, params)
+	if err == nil {
+		count = countData.CountData
+	}
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = count
+
 	return c.JSON(http.StatusOK, response)
 }
