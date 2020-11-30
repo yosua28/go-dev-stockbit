@@ -31,6 +31,13 @@ type MsCustomerBankAccount struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"     json:"rec_attribute_id3"`
 }
 
+type MsCustomerBankAccountInfo struct {
+	CustBankaccKey uint64 `db:"cust_bankacc_key"      json:"cust_bankacc_key"`
+	BankName       string `db:"bank_name"             json:"bank_name"`
+	AccountNo      string `db:"account_no"            json:"account_no"`
+	AccountName    string `db:"account_name"          json:"account_name"`
+}
+
 func CreateMsCustomerBankAccount(params map[string]string) (int, error) {
 	query := "INSERT INTO ms_customer_bank_account"
 	// Get params
@@ -59,5 +66,49 @@ func CreateMsCustomerBankAccount(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetAllMsCustomerBankAccountTransaction(c *[]MsCustomerBankAccountInfo, customerKey string) (int, error) {
+	query2 := `SELECT 
+				ba.cust_bankacc_key AS cust_bankacc_key, 
+				bank.bank_fullname AS bank_name, 
+				b.account_no AS account_no, 
+				b.account_holder_name AS account_name 
+			FROM ms_customer_bank_account AS ba 
+			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`
+	query := query2 + " WHERE ba.rec_status = 1 AND ba.customer_key = '" + customerKey + "'"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsCustomerBankAccountTransactionByKey(c *MsCustomerBankAccountInfo, custBankKey string) (int, error) {
+	query2 := `SELECT 
+				ba.cust_bankacc_key AS cust_bankacc_key, 
+				bank.bank_fullname AS bank_name, 
+				b.account_no AS account_no, 
+				b.account_holder_name AS account_name 
+			FROM ms_customer_bank_account AS ba 
+			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`
+	query := query2 + " WHERE ba.rec_status = 1 AND ba.cust_bankacc_key = '" + custBankKey + "'"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

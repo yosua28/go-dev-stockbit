@@ -2,8 +2,10 @@ package models
 
 import (
 	"api/db"
-	"log"
+	"database/sql"
 	"net/http"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type TrTransactionBankAccount struct {
@@ -58,5 +60,56 @@ func CreateTrTransactionBankAccount(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func UpdateTrTransactionBankAccount(params map[string]string, value string, field string) (int, error) {
+	query := "UPDATE tr_transaction_bank_account SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " = " + value
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func GetTrTransactionBankAccountByField(c *TrTransactionBankAccount, value string, field string) (int, error) {
+	query := `SELECT
+              tr_transaction_bank_account.* FROM 
+			  tr_transaction_bank_account 
+			  where tr_transaction_bank_account.rec_status = 1 and tr_transaction_bank_account.` + field + ` = ` + value + ` limit 1`
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

@@ -243,7 +243,8 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 
 	_, cekConfirm := lib.Find(transStatusKey, "7")
 	_, cekPosting := lib.Find(transStatusKey, "8")
-	if !cekConfirm && !cekPosting {
+	_, cekCutoff := lib.Find(transStatusKey, "5")
+	if !cekConfirm && !cekPosting && !cekCutoff {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	} else {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
@@ -896,9 +897,9 @@ func GetTransactionDetail(c echo.Context) error {
 	}
 
 	//check transaction confirmation
+	strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
 	if transaction.AcaKey != nil {
 		var tc models.TrTransactionConfirmation
-		strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
 		status, err = models.GetTrTransactionConfirmation(&tc, strTrKey)
 		if err != nil {
 			if err != sql.ErrNoRows {
@@ -912,6 +913,25 @@ func GetTransactionDetail(c echo.Context) error {
 			transTc.ConfirmedUnit = tc.ConfirmedUnit
 
 			responseData.TransactionConfirmation = &transTc
+		}
+	}
+
+	//bank transaction customer
+	var trBankAccount models.TrTransactionBankAccount
+	status, err = models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
+	if err == nil {
+		strCustBankAcc := strconv.FormatUint(trBankAccount.CustBankaccKey, 10)
+		var trBankCust models.MsCustomerBankAccountInfo
+		status, err = models.GetMsCustomerBankAccountTransactionByKey(&trBankCust, strCustBankAcc)
+		if err == nil {
+			responseData.CustomerBankAccount = &trBankCust
+		}
+
+		strProdBankAcc := strconv.FormatUint(trBankAccount.ProdBankaccKey, 10)
+		var prodBankAccount models.MsProductBankAccountTransactionInfo
+		status, err = models.GetMsProductBankAccountTransactionByKey(&prodBankAccount, strProdBankAcc)
+		if err == nil {
+			responseData.ProductBankAccount = &prodBankAccount
 		}
 	}
 
@@ -1204,6 +1224,101 @@ func UpdateNavDate(c echo.Context) error {
 
 	params["nav_date"] = postnavdate
 
+	//trans_fee_percent
+	transfeepercent := c.FormValue("trans_fee_percent")
+	if transfeepercent != "" {
+		transfeepercentFloat, err := strconv.ParseFloat(transfeepercent, 64)
+		if err == nil {
+			if transfeepercentFloat < 0 {
+				log.Error("Wrong input for parameter: trans_fee_percent cann't negatif")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_percent must cann't negatif", "Missing required parameter: trans_fee_percent cann't negatif")
+			}
+			params["trans_fee_percent"] = transfeepercent
+		} else {
+			log.Error("Wrong input for parameter: trans_fee_percent number")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_percent must number", "Missing required parameter: trans_fee_percent number")
+		}
+	}
+
+	//trans_fee_amount
+	transfeeamount := c.FormValue("trans_fee_amount")
+	if transfeeamount != "" {
+		transfeeamountFloat, err := strconv.ParseFloat(transfeeamount, 64)
+		if err == nil {
+			if transfeeamountFloat < 0 {
+				log.Error("Wrong input for parameter: trans_fee_amount cann't negatif")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_amount must cann't negatif", "Missing required parameter: trans_fee_amount cann't negatif")
+			}
+			params["trans_fee_amount"] = transfeeamount
+		} else {
+			log.Error("Wrong input for parameter: trans_fee_amount number")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_amount must number", "Missing required parameter: trans_fee_amount number")
+		}
+	}
+
+	//charges_fee_amount
+	chargesfeeamount := c.FormValue("charges_fee_amount")
+	if chargesfeeamount != "" {
+		chargesfeeamountFloat, err := strconv.ParseFloat(chargesfeeamount, 64)
+		if err == nil {
+			if chargesfeeamountFloat < 0 {
+				log.Error("Wrong input for parameter: charges_fee_amount cann't negatif")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: charges_fee_amount must cann't negatif", "Missing required parameter: charges_fee_amount cann't negatif")
+			}
+			params["charges_fee_amount"] = chargesfeeamount
+		} else {
+			log.Error("Wrong input for parameter: charges_fee_amount number")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: charges_fee_amount must number", "Missing required parameter: charges_fee_amount number")
+		}
+	}
+
+	//services_fee_amount
+	servicesfeeamount := c.FormValue("services_fee_amount")
+	if servicesfeeamount != "" {
+		servicesfeeamountFloat, err := strconv.ParseFloat(servicesfeeamount, 64)
+		if err == nil {
+			if servicesfeeamountFloat < 0 {
+				log.Error("Wrong input for parameter: services_fee_amount cann't negatif")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: services_fee_amount must cann't negatif", "Missing required parameter: services_fee_amount cann't negatif")
+			}
+			params["services_fee_amount"] = servicesfeeamount
+		} else {
+			log.Error("Wrong input for parameter: services_fee_amount number")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: services_fee_amount must number", "Missing required parameter: services_fee_amount number")
+		}
+	}
+
+	var productbankacckey string
+	var customerbankacckey string
+
+	//prod_bankacc_key
+	prodbankacckey := c.FormValue("prod_bankacc_key")
+	if prodbankacckey == "" {
+		log.Error("Missing required parameter: prod_bankacc_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: prod_bankacc_key cann't be blank", "Missing required parameter: prod_bankacc_key cann't be blank")
+	}
+	strprodbankacckey, err := strconv.ParseUint(prodbankacckey, 10, 64)
+	if err == nil && strprodbankacckey > 0 {
+		productbankacckey = prodbankacckey
+	} else {
+		log.Error("Wrong input for parameter: prod_bankacc_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: prod_bankacc_key", "Missing required parameter: prod_bankacc_key")
+	}
+
+	//cust_bankacc_key
+	custbankacckey := c.FormValue("cust_bankacc_key")
+	if custbankacckey == "" {
+		log.Error("Missing required parameter: cust_bankacc_key cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: cust_bankacc_key cann't be blank", "Missing required parameter: cust_bankacc_key cann't be blank")
+	}
+	strcustbankacckey, err := strconv.ParseUint(custbankacckey, 10, 64)
+	if err == nil && strcustbankacckey > 0 {
+		customerbankacckey = custbankacckey
+	} else {
+		log.Error("Wrong input for parameter: cust_bankacc_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: cust_bankacc_key", "Missing required parameter: cust_bankacc_key")
+	}
+
 	transactionkey := c.FormValue("transaction_key")
 	if transactionkey == "" {
 		log.Error("Missing required parameter: transaction_key")
@@ -1225,11 +1340,6 @@ func UpdateNavDate(c echo.Context) error {
 	}
 
 	strTransType := strconv.FormatUint(transaction.TransTypeKey, 10)
-
-	if strTransType == "3" {
-		log.Error("Transaction not found")
-		return lib.CustomError(http.StatusBadRequest)
-	}
 
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
 
@@ -1286,6 +1396,35 @@ func UpdateNavDate(c echo.Context) error {
 				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 			}
 		}
+	}
+
+	//cek tr_transaction_bank_account by transaction_key
+	var trBankAccount models.TrTransactionBankAccount
+	status, err = models.GetTrTransactionBankAccountByField(&trBankAccount, transactionkey, "transaction_key")
+	paramsTrBankAcc := make(map[string]string)
+	paramsTrBankAcc["prod_bankacc_key"] = productbankacckey
+	paramsTrBankAcc["cust_bankacc_key"] = customerbankacckey
+	if err == nil { //exis -> update
+		paramsTrBankAcc["rec_modified_by"] = strIDUserLogin
+		paramsTrBankAcc["rec_modified_date"] = time.Now().Format(dateLayout)
+		strTrBankAccKey := strconv.FormatUint(trBankAccount.TransBankaccKey, 10)
+		_, err = models.UpdateTrTransactionBankAccount(paramsTrBankAcc, strTrBankAccKey, "trans_bankacc_key")
+		if err != nil {
+			log.Error(err.Error())
+			log.Error("Error update tr transaction bank account parent")
+		}
+
+	} else { //null -> insert
+		paramsTrBankAcc["transaction_key"] = transactionkey
+		paramsTrBankAcc["rec_modified_by"] = strIDUserLogin
+		paramsTrBankAcc["rec_modified_date"] = time.Now().Format(dateLayout)
+		paramsTrBankAcc["rec_status"] = "1"
+		_, err = models.CreateTrTransactionBankAccount(paramsTrBankAcc)
+		if err != nil {
+			log.Error(err.Error())
+			log.Error("Error insert tr transaction bank account parent")
+		}
+
 	}
 
 	log.Info("Success update transaksi")
@@ -2527,13 +2666,6 @@ func sendEmailTransactionPosted(
 		ProductFrom: productFrom,
 		ProductTo:   product.ProductNameAlt}
 
-	// log.Println("=====================================")
-	// log.Println(date.Format(newLayout))
-	// log.Println(date.Format(timeLayout))
-	// log.Println(fmt.Sprintf("%.2f", transactionConf.ConfirmedAmount))
-	// log.Println(fmt.Sprintf("%.2f", transaction.TransFeeAmount))
-	// log.Println("=====================================")
-
 	if strTransTypeKey == "1" { // SUBS
 		subject = "[MNC Duit] Transaksi Subscription Berhasil"
 		t := template.New("email-subscription-posted.html")
@@ -2584,7 +2716,6 @@ func sendEmailTransactionPosted(
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", userLogin.UloginEmail)
-	// mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
 	mailer.SetHeader("Subject", subject)
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
@@ -2602,4 +2733,87 @@ func sendEmailTransactionPosted(
 	} else {
 		log.Info("Email sent")
 	}
+}
+
+func GetCustomerBankAccount(c echo.Context) error {
+
+	var err error
+	var status int
+
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	strCusKey := strconv.FormatUint(transaction.CustomerKey, 10)
+
+	var customerBankAccountInfo []models.MsCustomerBankAccountInfo
+	status, err = models.GetAllMsCustomerBankAccountTransaction(&customerBankAccountInfo, strCusKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = customerBankAccountInfo
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetProductBankAccount(c echo.Context) error {
+
+	var err error
+	var status int
+
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+
+	var lookupTransType string
+
+	if transaction.TransTypeKey == 1 || transaction.TransTypeKey == 4 { //sub + sw.in
+		lookupTransType = "269"
+	} else { //red + sw.out
+		lookupTransType = "270"
+	}
+
+	var bankAccountTransactionInfo []models.MsProductBankAccountTransactionInfo
+
+	status, err = models.GetAllMsProductBankAccountTransaction(&bankAccountTransactionInfo, strProductKey, lookupTransType)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = bankAccountTransactionInfo
+
+	return c.JSON(http.StatusOK, response)
 }

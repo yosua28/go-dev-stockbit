@@ -6168,7 +6168,7 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "transaction_key": 1,
+                    "transaction_key": 15,
                     "branch": {
                       "branch_key": 1,
                       "branch_code": "HO-1",
@@ -6180,22 +6180,22 @@
                       "agent_name": "SALES MNC DUIT"
                     },
                     "customer": {
-                      "customer_key": 40,
-                      "full_name": "Aldy Yoga yuyu",
-                      "sid_no": null,
+                      "customer_key": 51,
+                      "full_name": "khair",
+                      "sid_no": "IDD0612K0234572",
                       "unit_holder_idno": "202010000001"
                     },
                     "product": {
-                      "product_key": 1,
-                      "product_code": "BDLC",
-                      "product_name": "MNC DANA LANCAR"
+                      "product_key": 9,
+                      "product_code": "MDSE",
+                      "product_name": "MNC DANA SYARIAH EKUITAS"
                     },
                     "trans_status": {
-                      "trans_status_key": 2,
-                      "status_code": "ENTRIED",
-                      "status_description": "Transaction has been successfully entry by customer or branch admin, waiting for CS Approval."
+                      "trans_status_key": 5,
+                      "status_code": "CHECKED_2",
+                      "status_description": "transaction has been approved by Compliance, and wait to proceed"
                     },
-                    "trans_date": "09 Oct 2020",
+                    "trans_date": "02 Nov 2020",
                     "trans_type": {
                       "trans_type_key": 1,
                       "type_code": "SUB",
@@ -6207,49 +6207,40 @@
                       "lkp_code": "BUY",
                       "lkp_name": "BUY"
                     },
-                    "nav_date": "09 Oct 2020",
+                    "nav_date": "23 Oct 2020",
                     "entry_mode": {
                       "lookup_key": 140,
                       "lkp_group_key": 31,
                       "lkp_code": "AMOUNT",
                       "lkp_name": "Amount"
                     },
-                    "trans_amount": 100000,
-                    "trans_unit": 10,
-                    "trans_unit_percent": 0.2,
+                    "trans_amount": 1000000,
+                    "trans_unit": 0,
+                    "trans_unit_percent": null,
                     "flag_redempt_all": false,
-                    "flag_newsub": true,
-                    "trans_fee_percent": 1,
-                    "trans_fee_amount": 1000,
-                    "charges_fee_amount": 0,
-                    "services_fee_amount": 0,
-                    "total_amount": 1000,
-                    "settlement_date": null,
-                    "trans_bank_accno": "Yona",
-                    "trans_bankacc_name": "Santi",
-                    "trans_bank": {
-                      "bank_key": 1,
-                      "bank_code": "ABNAIDJA",
-                      "bank_name": "ABN AMRO"
-                    },
-                    "trans_remarks": null,
+                    "flag_newsub": false,
+                    "trans_fee_percent": 0.5,
+                    "trans_fee_amount": 0,
+                    "charges_fee_amount": 3000,
+                    "services_fee_amount": 4000,
+                    "total_amount": 1007500,
+                    "settlement_date": "2020-10-23 00:00:00",
+                    "trans_bank_accno": null,
+                    "trans_bankacc_name": null,
+                    "trans_bank": null,
+                    "trans_remarks": "ninuninu",
                     "trans_references": null,
                     "promo_code": null,
                     "sales_code": null,
                     "risk_waiver": true,
-                    "file_upload_date": null,
+                    "file_upload_date": "2020-11-02 15:35:38",
                     "payment_method": {
                       "lookup_key": 284,
                       "lkp_group_key": 68,
                       "lkp_code": "0",
                       "lkp_name": "Transfer"
                     },
-                    "trx_risk_level": {
-                      "lookup_key": 111,
-                      "lkp_group_key": 23,
-                      "lkp_code": "1",
-                      "lkp_name": "Risiko Rendah"
-                    },
+                    "trx_risk_level": null,
                     "proceed_date": null,
                     "proceed_amount": null,
                     "sent_date": null,
@@ -6258,23 +6249,196 @@
                     "posted_date": null,
                     "posted_units": null,
                     "aca": {
-                      "aca_key": 2,
-                      "acc_key": 1,
-                      "agent_key": 40,
-                      "agent_code": "BNISEK",
-                      "agent_name": "SALES APERD BNI SEKURITAS"
+                      "aca_key": 8,
+                      "acc_key": 9,
+                      "agent_key": 1,
+                      "agent_code": "303",
+                      "agent_name": "SALES MNC DUIT"
                     },
                     "settled_date": null,
-                    "rec_image1": "https://devapi.mncasset.com/images/user/7/transfer/oke.jpg",
-                    "rec_created_date": "20 Oct 2020",
-                    "rec_created_by": "12",
-                    "transaction_confirmation": {
-                      "tc_key": 1,
-                      "confirm_date": "2020-10-21 10:34:46",
-                      "confirmed_amount": 1000000,
-                      "confirmed_unit": 20
+                    "rec_image1": "https://devapi.mncasset.com/images/user/7100/transfer/ZJywvxeUvPoJCOOcX6A7.jpg",
+                    "rec_created_date": null,
+                    "rec_created_by": null,
+                    "transaction_confirmation": null,
+                    "product_bank_account": {
+                      "prod_bankacc_key": 56,
+                      "bank_name": "BANK MANDIRI",
+                      "account_no": "103-0006243329",
+                      "account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS"
+                    },
+                    "customer_bank_account": {
+                      "cust_bankacc_key": 1,
+                      "bank_name": "ABN AMRO",
+                      "account_no": "084551813",
+                      "account_name": "bsjsbshshs"
                     }
                   }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transaction/productbanklist/{key}": {
+      "get": {
+        "description": "Get All product bank transaction (User Allowed : RoleKey 7, 10, 11, 12, 13)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "transaction key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "prod_bankacc_key": 56,
+                      "bank_name": "BANK MANDIRI",
+                      "account_no": "103-0006243329",
+                      "account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS"
+                    },
+                    {
+                      "prod_bankacc_key": 57,
+                      "bank_name": "BCA",
+                      "account_no": "458-2191003",
+                      "account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transaction/customerbanklist/{key}": {
+      "get": {
+        "description": "Get All customer bank transaction (User Allowed : RoleKey 7, 10, 11, 12, 13)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "transaction key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "cust_bankacc_key": 3,
+                      "bank_name": "BANK BJB",
+                      "account_no": "123456789012",
+                      "account_name": "asdasdasd"
+                    }
+                  ]
                 }
               }
             }
@@ -6510,11 +6674,31 @@
                   "nav_date": {
                     "type": "string",
                     "example": "2020-10-23"
+                  },
+                  "trans_fee_percent": {
+                    "type": "number"
+                  },
+                  "trans_fee_amount": {
+                    "type": "number"
+                  },
+                  "charges_fee_amount": {
+                    "type": "number"
+                  },
+                  "services_fee_amount": {
+                    "type": "number"
+                  },
+                  "prod_bankacc_key": {
+                    "type": "integer"
+                  },
+                  "cust_bankacc_key": {
+                    "type": "integer"
                   }
                 },
                 "required": [
                   "transaction_key",
-                  "nav_date"
+                  "nav_date",
+                  "prod_bankacc_key",
+                  "cust_bankacc_key"
                 ]
               }
             }

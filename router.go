@@ -132,6 +132,8 @@ func router() *echo.Echo {
 	admin.POST("/transaction/downloadformatexcel", controllers.GetFormatExcelDownloadList).Name = "GetFormatExcelDownloadList"
 	admin.POST("/transaction/uploadexcelconfirmation", controllers.UploadExcelConfirmation).Name = "UploadExcelConfirmation"
 	admin.POST("/transactionapproval/posting", controllers.ProsesPosting).Name = "ProsesPosting"
+	admin.GET("/transaction/productbanklist/:key", controllers.GetProductBankAccount).Name = "GetProductBankAccount"
+	admin.GET("/transaction/customerbanklist/:key", controllers.GetCustomerBankAccount).Name = "GetCustomerBankAccount"
 
 	//Admin Transaction type
 	admin.GET("/transactiontypelist", controllers.GetTransactionType).Name = "GetTransactionType"
