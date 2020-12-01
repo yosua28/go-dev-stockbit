@@ -695,30 +695,36 @@ func GetMsProductData(c echo.Context) error {
 	data.CustodianBank = &custodian
 
 	var countData models.CountData
-	paramsCekTrans := make(map[string]string)
-	paramsCekTrans["rec_status"] = "1"
-	paramsCekTrans["product_key"] = strconv.FormatUint(product.ProductKey, 10)
-	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
-	paramsCekTrans["customer_key"] = customerKey
-	var transTypeKey []string
-	transTypeKey = append(transTypeKey, "1")
-	transTypeKey = append(transTypeKey, "4")
-	status, err = models.AdminGetCountTrTransaction(&countData, paramsCekTrans, transTypeKey, "trans_type_key")
-	if err == nil {
-		if int(countData.CountData) > 0 {
-			data.IsNew = false
-			data.TncIsNew = ""
-		} else {
-			data.IsNew = true
-			var scApp models.ScAppConfig
-			status, err = models.GetScAppConfigByCode(&scApp, "NEW_PRODUCT_SUBSCRIBE")
-			if err != nil {
+
+	if lib.Profile.CustomerKey != nil {
+		paramsCekTrans := make(map[string]string)
+		paramsCekTrans["rec_status"] = "1"
+		paramsCekTrans["product_key"] = strconv.FormatUint(product.ProductKey, 10)
+		customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+		paramsCekTrans["customer_key"] = customerKey
+		var transTypeKey []string
+		transTypeKey = append(transTypeKey, "1")
+		transTypeKey = append(transTypeKey, "4")
+		status, err = models.AdminGetCountTrTransaction(&countData, paramsCekTrans, transTypeKey, "trans_type_key")
+		if err == nil {
+			if int(countData.CountData) > 0 {
+				data.IsNew = false
 				data.TncIsNew = ""
 			} else {
-				str1 := scApp.AppConfigValue
-				res1 := strings.Replace(*str1, "#ProductName#", product.ProductNameAlt, 1)
-				data.TncIsNew = res1
+				data.IsNew = true
+				var scApp models.ScAppConfig
+				status, err = models.GetScAppConfigByCode(&scApp, "NEW_PRODUCT_SUBSCRIBE")
+				if err != nil {
+					data.TncIsNew = ""
+				} else {
+					str1 := scApp.AppConfigValue
+					res1 := strings.Replace(*str1, "#ProductName#", product.ProductNameAlt, 1)
+					data.TncIsNew = res1
+				}
 			}
+		} else {
+			data.IsNew = false
+			data.TncIsNew = ""
 		}
 	} else {
 		data.IsNew = false
