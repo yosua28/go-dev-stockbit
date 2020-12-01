@@ -723,7 +723,7 @@ func GetMsProductData(c echo.Context) error {
 					data.TncIsNew = ""
 				} else {
 					str1 := scApp.AppConfigValue
-					res1 := strings.Replace(*str1, "#ProductName#", product.ProductNameAlt, 1)
+					res1 := strings.Replace(*str1, "#ProductName#", product.ProductName, 1)
 					data.TncIsNew = res1
 				}
 			}
