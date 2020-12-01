@@ -1169,12 +1169,299 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 
 	log.Info("Success update transaksi")
 
+	//notif if reject
+	if transStatus == "3" {
+
+		strCustomerKey := strconv.FormatUint(transaction.CustomerKey, 10)
+
+		var userLogin models.ScUserLogin
+		_, err := models.GetScUserLoginByCustomerKey(&userLogin, strCustomerKey)
+		if err != nil {
+			log.Error(err.Error())
+		}
+		//create user message
+		CreateNotifRejected(strCustomerKey, strIDUserLogin, notes, strTransTypeKey, transaction, userLogin)
+
+		//notip email
+		SendEmailRejected(strCustomerKey, strIDUserLogin, notes, strTransTypeKey, transaction, userLogin)
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
+}
+
+func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
+	notes string, strTransTypeKey string, transaction models.TrTransaction,
+	userLogin models.ScUserLogin) {
+
+	var subject string
+	var tpl bytes.Buffer
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	timeLayout := "15.04"
+
+	productFrom := "-"
+
+	var customer models.MsCustomer
+	_, err := models.GetMsCustomer(&customer, strCustomerKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+		}
+	}
+
+	strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+
+	var product models.MsProduct
+	_, err = models.GetMsProduct(&product, strProductKey)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	var trNavData models.TrNav
+
+	var trNav []models.TrNav
+	_, err = models.GetTrNavByProductKeyAndNavDate(&trNav, strProductKey, transaction.NavDate)
+
+	if err == nil {
+		trNavData = trNav[0]
+	}
+
+	var currencyDB models.MsCurrency
+	_, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	date, _ := time.Parse(layout, transaction.TransDate)
+
+	var transactionParent models.TrTransaction
+	if strTransTypeKey == "4" { // SWITCH IN
+		if transaction.ParentKey != nil {
+			strTrParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
+			_, err := models.GetTrTransaction(&transactionParent, strTrParentKey)
+			if err == nil {
+				strProductParentKey := strconv.FormatUint(transactionParent.ProductKey, 10)
+
+				var productparent models.MsProduct
+				_, err = models.GetMsProduct(&productparent, strProductParentKey)
+				if err != nil {
+					productFrom = productparent.ProductNameAlt
+				}
+			}
+		}
+	}
+
+	bankNameCus := "-"
+	noRekCus := "-"
+	namaRekCus := "-"
+	cabangRek := "-"
+
+	//bank account customer
+	strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+	if strTransTypeKey == "2" { //redm
+		var trBankAccount models.TrTransactionBankAccount
+		_, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
+		if err == nil {
+			strCustBankAcc := strconv.FormatUint(trBankAccount.CustBankaccKey, 10)
+			var trBankCust models.MsCustomerBankAccountInfo
+			_, err = models.GetMsCustomerBankAccountTransactionByKey(&trBankCust, strCustBankAcc)
+			if err == nil {
+				bankNameCus = trBankCust.BankName
+				noRekCus = trBankCust.AccountNo
+				namaRekCus = trBankCust.AccountName
+				if trBankCust.BranchName != nil {
+					cabangRek = *trBankCust.BranchName
+				}
+			}
+		}
+	}
+
+	transType := "Subscription"
+	transTypeKecil := "subscription"
+	if strTransTypeKey == "1" { // SUBS
+		if transaction.FlagNewSub != nil {
+			if *transaction.FlagNewSub == 0 {
+				transType = "Top Up"
+				transTypeKecil = "top up"
+			}
+		}
+	}
+
+	dataReplace := struct {
+		FileUrl        string
+		Name           string
+		Cif            string
+		Date           string
+		Time           string
+		ProductName    string
+		Symbol         *string
+		Amount         string
+		Fee            string
+		RedmUnit       string
+		NabUnit        string
+		BankName       string
+		NoRek          string
+		NamaRek        string
+		Cabang         string
+		ProductFrom    string
+		ProductTo      string
+		TransType      string
+		Notes          string
+		TransTypeKecil string
+	}{
+		FileUrl:        config.FileUrl + "/images/mail",
+		Name:           customer.FullName,
+		Cif:            customer.UnitHolderIDno,
+		Date:           date.Format(newLayout),
+		Time:           date.Format(timeLayout) + " WIB",
+		ProductName:    product.ProductNameAlt,
+		Symbol:         currencyDB.Symbol,
+		Amount:         fmt.Sprintf("%.2f", transaction.TransAmount),
+		Fee:            fmt.Sprintf("%.2f", transaction.TransFeeAmount),
+		RedmUnit:       fmt.Sprintf("%.2f", transaction.TransUnit),
+		NabUnit:        fmt.Sprintf("%.2f", trNavData.NavValue),
+		BankName:       bankNameCus,
+		NoRek:          noRekCus,
+		NamaRek:        namaRekCus,
+		Cabang:         cabangRek,
+		ProductFrom:    productFrom,
+		ProductTo:      product.ProductNameAlt,
+		TransType:      transType,
+		Notes:          notes,
+		TransTypeKecil: transTypeKecil}
+
+	if strTransTypeKey == "1" { // SUBS
+		if transaction.FlagNewSub != nil {
+			if *transaction.FlagNewSub == 1 {
+				subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+			} else {
+				subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+			}
+		} else {
+			subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+		}
+
+		t := template.New("email-subscription-posted.html")
+
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		if err := t.Execute(&tpl, dataReplace); err != nil {
+			log.Println(err)
+		}
+	}
+
+	if strTransTypeKey == "2" { // REDM
+		subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
+		t := template.New("email-redemption-posted.html")
+
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		if err := t.Execute(&tpl, dataReplace); err != nil {
+			log.Println(err)
+		}
+
+	}
+
+	if strTransTypeKey == "4" { // SWITCH
+		subject = "[MNC Duit] Switching Kamu telah Berhasil"
+		t := template.New("email-switching-posted.html")
+
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		if err := t.Execute(&tpl, dataReplace); err != nil {
+			log.Println(err)
+		}
+
+	}
+
+	// Send email
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", userLogin.UloginEmail)
+	mailer.SetHeader("Subject", subject)
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Info("Email sent error")
+		log.Error(err)
+	} else {
+		log.Info("Email sent")
+	}
+}
+
+func CreateNotifRejected(strCustomerKey string, strIDUserLogin string,
+	notes string, strTransTypeKey string, transaction models.TrTransaction,
+	userLogin models.ScUserLogin) {
+
+	dateLayout := "2006-01-02 15:04:05"
+
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+
+	strUserLoginKey := strconv.FormatUint(userLogin.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strIDUserLogin
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	if strTransTypeKey == "1" { // SUBS
+		if transaction.FlagNewSub != nil {
+			if *transaction.FlagNewSub == 1 {
+				paramsUserMessage["umessage_subject"] = "Subscription Tidak Dapat Diproses"
+			} else {
+				paramsUserMessage["umessage_subject"] = "Top Up Tidak Dapat Diproses"
+			}
+		}
+	}
+
+	if strTransTypeKey == "2" { // REDM
+		paramsUserMessage["umessage_subject"] = "Redemption Tidak Dapat Diproses"
+	}
+	if strTransTypeKey == "4" { // SWITCH
+		paramsUserMessage["umessage_subject"] = "Switching Tidak Dapat Diproses"
+	}
+
+	paramsUserMessage["umessage_body"] = notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	_, err := models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("Error create user message")
+	} else {
+		log.Println("Success create user message")
+	}
 }
 
 func UpdateNavDate(c echo.Context) error {
@@ -2674,6 +2961,15 @@ func sendEmailTransactionPosted(
 		}
 	}
 
+	transType := "Subscription"
+	if strTransTypeKey == "1" { // SUBS
+		if transaction.FlagNewSub != nil {
+			if *transaction.FlagNewSub == 0 {
+				transType = "Top Up"
+			}
+		}
+	}
+
 	dataReplace := struct {
 		FileUrl        string
 		Name           string
@@ -2694,6 +2990,7 @@ func sendEmailTransactionPosted(
 		ProductTo      string
 		NABDate        string
 		UnitPenyertaan string
+		TransType      string
 	}{
 		FileUrl:        config.FileUrl + "/images/mail",
 		Name:           customer.FullName,
@@ -2713,10 +3010,20 @@ func sendEmailTransactionPosted(
 		ProductFrom:    productFrom,
 		ProductTo:      product.ProductNameAlt,
 		NABDate:        nabDate.Format(newLayout),
-		UnitPenyertaan: fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit)}
+		UnitPenyertaan: fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit),
+		TransType:      transType}
 
 	if strTransTypeKey == "1" { // SUBS
-		subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+		if transaction.FlagNewSub != nil {
+			if *transaction.FlagNewSub == 1 {
+				subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+			} else {
+				subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+			}
+		} else {
+			subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+		}
+
 		t := template.New("email-subscription-posted.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
