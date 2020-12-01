@@ -14,9 +14,9 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"golang.org/x/text/language"
-    "golang.org/x/text/message"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 )
 
 func GetMsProductList(c echo.Context) error {
@@ -151,7 +151,7 @@ func GetMsProductList(c echo.Context) error {
 	// Get parameter order_by
 	orderBy := c.QueryParam("order_by")
 	if orderBy != "" {
-		if (orderBy == "post_title") || (orderBy == "post_publish_thru") || (orderBy == "post_publish_start") {
+		if (orderBy == "post_title") || (orderBy == "post_publish_thru") || (orderBy == "post_publish_start") || (orderBy == "rec_order") {
 			params["orderBy"] = orderBy
 			// Get parameter order_type
 			orderType := c.QueryParam("order_type")
@@ -176,6 +176,9 @@ func GetMsProductList(c echo.Context) error {
 			log.Error("Wrong input for parameter order_by")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
 		}
+	} else {
+		params["orderBy"] = "rec_order"
+		params["orderType"] = "DESC"
 	}
 
 	params["flag_enabled"] = "1"
@@ -947,13 +950,13 @@ func Portofolio(c echo.Context) error {
 	}
 	responseData["total_invest"] = float32(math.Trunc(float64(total)))
 
-	imba := ((total-netSub) / netSub) * 100
+	imba := ((total - netSub) / netSub) * 100
 	responseData["imba"] = fmt.Sprintf("%.2f", imba) + `%`
 	var products []interface{}
 	var portofolio models.Portofolio
 	p := message.NewPrinter(language.Indonesian)
 	portofolio.Total = p.Sprintf("%v", float32(math.Trunc(float64(total))))
-	
+
 	var portofolioDatas []models.ProductPortofolio
 	var totalGainLoss float32
 	for _, product := range productDB {
@@ -981,13 +984,13 @@ func Portofolio(c echo.Context) error {
 			portofolioData.Nav = p.Sprintf("%.2f", n.NavValue)
 			if b, ok := balanceUnit[product.ProductKey]; ok {
 				data["invest_value"] = float32(math.Trunc(float64((b * n.NavValue) * rateData[*product.CurrencyKey])))
-				portofolioData.Amount = p.Sprintf("%v", float32(math.Trunc(float64(b * n.NavValue))))
+				portofolioData.Amount = p.Sprintf("%v", float32(math.Trunc(float64(b*n.NavValue))))
 				portofolioData.AmountIDR = p.Sprintf("%v", float32(math.Trunc(float64(data["invest_value"].(float32)))))
 				portofolioData.Unit = p.Sprintf("%.2f", b)
 				gainLoss := (avgNav[product.ProductKey] - n.NavValue) * b
 				portofolioData.GainLoss = p.Sprintf("%v", float32(math.Trunc(float64(gainLoss))))
 				totalGainLoss += (gainLoss * rateData[*product.CurrencyKey])
-				portofolioData.GainLossIDR = p.Sprintf("%v", float32(math.Trunc(float64(gainLoss * rateData[*product.CurrencyKey]))))
+				portofolioData.GainLossIDR = p.Sprintf("%v", float32(math.Trunc(float64(gainLoss*rateData[*product.CurrencyKey]))))
 				percent := (((b * n.NavValue) * rateData[*product.CurrencyKey]) / total) * 100
 				data["percent"] = fmt.Sprintf("%.2f", percent) + `%`
 			}
