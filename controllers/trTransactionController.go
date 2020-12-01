@@ -1214,7 +1214,8 @@ func mailTransaction(typ string, params map[string]string) error {
 	} else if params["currency"] == "2" {
 		mailParam["Symbol"] = "$"
 	}
-	mailParam["Fee"] = mailParam["Symbol"] + params["trans_fee_amount"]
+	val, _ := strconv.ParseFloat(params["trans_fee_amount"], 64)
+	mailParam["Fee"] = p.Sprintf("%v", math.Trunc(val))
 	if typ == "subscription" || typ == "topup" {
 		if _, ok := params["rec_image1"]; ok {
 			mailTemp = "index-" + typ + "-complete.html"
