@@ -475,20 +475,20 @@ func CreateTransaction(c echo.Context) error {
 	if typeKeyStr == "1" { // SUBS
 		if params["flag_newsub"] == "1" {
 			paramsUserMessage["umessage_subject"] = "Subscription sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Subscription kamu sedang diproses. Terima kasih telah melakukan transaksi subscription."
+			paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
 		} else {
 			paramsUserMessage["umessage_subject"] = "Top Up sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Top Up kamu sedang diproses. Terima kasih telah melakukan transaksi top up."
+			paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
 		}
 	}
 
 	if typeKeyStr == "2" { // REDM
 		paramsUserMessage["umessage_subject"] = "Redemption sedang Diproses"
-		paramsUserMessage["umessage_body"] = "Redemption kamu sedang diproses. Terima kasih telah melakukan transaksi redemption."
+		paramsUserMessage["umessage_body"] = "Redemption kamu sudah kami terima. Kami akan memproses transaksi kamu."
 	}
 	if typeKeyStr == "4" || typeKeyStr == "3" { // SWITCH
 		paramsUserMessage["umessage_subject"] = "Switching sedang Diproses"
-		paramsUserMessage["umessage_body"] = "Switching kamu sedang diproses. Terima kasih telah melakukan transaksi switching."
+		paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan transaksi switching. Kami sedang memproses transaksi kamu."
 	}
 
 	paramsUserMessage["umessage_category"] = "248"
