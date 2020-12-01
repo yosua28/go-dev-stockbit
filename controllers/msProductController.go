@@ -13,6 +13,8 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"golang.org/x/text/language"
+    "golang.org/x/text/message"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -305,17 +307,17 @@ func GetMsProductList(c echo.Context) error {
 			if p, ok := pData[product.ProductKey]; ok {
 				date, _ := time.Parse(layout, p.NavDate)
 				perform.NavDate = date.Format(newLayout)
-				perform.D1 = fmt.Sprintf("%.3f", p.PerformD1) + `%`
-				perform.MTD = fmt.Sprintf("%.3f", p.PerformMtd) + `%`
-				perform.M1 = fmt.Sprintf("%.3f", p.PerformM1) + `%`
-				perform.M3 = fmt.Sprintf("%.3f", p.PerformM3) + `%`
-				perform.M6 = fmt.Sprintf("%.3f", p.PerformM6) + `%`
-				perform.Y1 = fmt.Sprintf("%.3f", p.PerformY1) + `%`
-				perform.Y3 = fmt.Sprintf("%.3f", p.PerformY3) + `%`
-				perform.Y5 = fmt.Sprintf("%.3f", p.PerformY5) + `%`
-				perform.YTD = fmt.Sprintf("%.3f", p.PerformYtd) + `%`
-				perform.CAGR = fmt.Sprintf("%.3f", p.PerformCagr) + `%`
-				perform.ALL = fmt.Sprintf("%.3f", p.PerformAll) + `%`
+				perform.D1 = fmt.Sprintf("%.2f", p.PerformD1) + `%`
+				perform.MTD = fmt.Sprintf("%.2f", p.PerformMtd) + `%`
+				perform.M1 = fmt.Sprintf("%.2f", p.PerformM1) + `%`
+				perform.M3 = fmt.Sprintf("%.2f", p.PerformM3) + `%`
+				perform.M6 = fmt.Sprintf("%.2f", p.PerformM6) + `%`
+				perform.Y1 = fmt.Sprintf("%.2f", p.PerformY1) + `%`
+				perform.Y3 = fmt.Sprintf("%.2f", p.PerformY3) + `%`
+				perform.Y5 = fmt.Sprintf("%.2f", p.PerformY5) + `%`
+				perform.YTD = fmt.Sprintf("%.2f", p.PerformYtd) + `%`
+				perform.CAGR = fmt.Sprintf("%.2f", p.PerformCagr) + `%`
+				perform.ALL = fmt.Sprintf("%.2f", p.PerformAll) + `%`
 			}
 			data.NavPerformance = &perform
 
@@ -654,7 +656,7 @@ func GetMsProductData(c echo.Context) error {
 					}
 					var invest float32
 					invest = nav.NavValue * data.BalanceUnit
-					data.InvestValue = fmt.Sprintf("%.6f", invest)
+					data.InvestValue = fmt.Sprintf("%f", math.Trunc(float64(invest)))
 				}
 			}
 		}
@@ -665,17 +667,17 @@ func GetMsProductData(c echo.Context) error {
 	var perform models.FfsNavPerformanceInfo
 	date, _ = time.Parse(layout, performanceDB[0].NavDate)
 	perform.NavDate = date.Format(newLayout)
-	perform.D1 = fmt.Sprintf("%.3f", performanceDB[0].PerformD1) + `%`
-	perform.MTD = fmt.Sprintf("%.3f", performanceDB[0].PerformMtd) + `%`
-	perform.M1 = fmt.Sprintf("%.3f", performanceDB[0].PerformM1) + `%`
-	perform.M3 = fmt.Sprintf("%.3f", performanceDB[0].PerformM3) + `%`
-	perform.M6 = fmt.Sprintf("%.3f", performanceDB[0].PerformM6) + `%`
-	perform.Y1 = fmt.Sprintf("%.3f", performanceDB[0].PerformY1) + `%`
-	perform.Y3 = fmt.Sprintf("%.3f", performanceDB[0].PerformY3) + `%`
-	perform.Y5 = fmt.Sprintf("%.3f", performanceDB[0].PerformY5) + `%`
-	perform.YTD = fmt.Sprintf("%.3f", performanceDB[0].PerformYtd) + `%`
-	perform.CAGR = fmt.Sprintf("%.3f", performanceDB[0].PerformCagr) + `%`
-	perform.ALL = fmt.Sprintf("%.3f", performanceDB[0].PerformAll) + `%`
+	perform.D1 = fmt.Sprintf("%.2f", performanceDB[0].PerformD1) + `%`
+	perform.MTD = fmt.Sprintf("%.2f", performanceDB[0].PerformMtd) + `%`
+	perform.M1 = fmt.Sprintf("%.2f", performanceDB[0].PerformM1) + `%`
+	perform.M3 = fmt.Sprintf("%.2f", performanceDB[0].PerformM3) + `%`
+	perform.M6 = fmt.Sprintf("%.2f", performanceDB[0].PerformM6) + `%`
+	perform.Y1 = fmt.Sprintf("%.2f", performanceDB[0].PerformY1) + `%`
+	perform.Y3 = fmt.Sprintf("%.2f", performanceDB[0].PerformY3) + `%`
+	perform.Y5 = fmt.Sprintf("%.2f", performanceDB[0].PerformY5) + `%`
+	perform.YTD = fmt.Sprintf("%.2f", performanceDB[0].PerformYtd) + `%`
+	perform.CAGR = fmt.Sprintf("%.2f", performanceDB[0].PerformCagr) + `%`
+	perform.ALL = fmt.Sprintf("%.2f", performanceDB[0].PerformAll) + `%`
 	data.NavPerformance = &perform
 
 	var risk models.MsRiskProfileInfo
@@ -830,7 +832,7 @@ func Portofolio(c echo.Context) error {
 		}
 	}
 
-	responseData["net_sub"] = netSub
+	responseData["net_sub"] = float32(math.Trunc(float64(netSub)))
 
 	params = make(map[string]string)
 	var userProduct []string
@@ -922,16 +924,18 @@ func Portofolio(c echo.Context) error {
 		if b, ok := balanceUnit[nav.ProductKey]; ok {
 			total += ((b * nav.NavValue) * rateData[productData[nav.ProductKey]])
 			totalProduct[nav.ProductKey] += ((b * nav.NavValue) * rateData[productData[nav.ProductKey]])
-			log.Info("TOTAL#", nav.ProductKey, "#", fmt.Sprintf("%.3f", ((b*nav.NavValue)*rateData[productData[nav.ProductKey]])))
+			log.Info("TOTAL#", nav.ProductKey, "#", fmt.Sprintf("%.2f", ((b*nav.NavValue)*rateData[productData[nav.ProductKey]])))
 		}
 	}
-	responseData["total_invest"] = total
+	responseData["total_invest"] = float32(math.Trunc(float64(total)))
 
-	imba := (total / netSub) * 100
-	responseData["imba"] = fmt.Sprintf("%.3f", imba) + `%`
+	imba := ((total-netSub) / netSub) * 100
+	responseData["imba"] = fmt.Sprintf("%.2f", imba) + `%`
 	var products []interface{}
 	var portofolio models.Portofolio
-	portofolio.Total = fmt.Sprintf("%.3f", total)
+	p := message.NewPrinter(language.Indonesian)
+	portofolio.Total = p.Sprintf("%v", float32(math.Trunc(float64(total))))
+	
 	var portofolioDatas []models.ProductPortofolio
 	var totalGainLoss float32
 	for _, product := range productDB {
@@ -943,12 +947,12 @@ func Portofolio(c echo.Context) error {
 		data["product_code"] = product.ProductCode
 		data["product_name"] = product.ProductName
 		data["product_name_alt"] = product.ProductNameAlt
-		imba := (totalProduct[product.ProductKey] / netSubProduct[product.ProductKey]) * 100
-		data["imba"] = fmt.Sprintf("%.3f", imba) + `%`
+		imba := ((totalProduct[product.ProductKey] - netSubProduct[product.ProductKey]) / netSubProduct[product.ProductKey]) * 100
+		data["imba"] = fmt.Sprintf("%.2f", imba) + `%`
 		portofolioData.ProductName = product.ProductNameAlt
 		portofolioData.CCY = ccy[*product.CurrencyKey]
-		portofolioData.AvgNav = fmt.Sprintf("%.3f", avgNav[product.ProductKey])
-		portofolioData.Kurs = fmt.Sprintf("%.3f", rateData[*product.CurrencyKey])
+		portofolioData.AvgNav = p.Sprintf("%.2f", avgNav[product.ProductKey])
+		portofolioData.Kurs = p.Sprintf("%v", float32(math.Trunc(float64(rateData[*product.CurrencyKey]))))
 
 		if product.RecImage1 != nil && *product.RecImage1 != "" {
 			data["rec_image1"] = config.BaseUrl + "/images/product/" + *product.RecImage1
@@ -956,18 +960,18 @@ func Portofolio(c echo.Context) error {
 			data["rec_image1"] = config.BaseUrl + "/images/product/default.png"
 		}
 		if n, ok := navData[product.ProductKey]; ok {
-			portofolioData.Nav = fmt.Sprintf("%.3f", n.NavValue)
+			portofolioData.Nav = p.Sprintf("%.2f", n.NavValue)
 			if b, ok := balanceUnit[product.ProductKey]; ok {
-				data["invest_value"] = (b * n.NavValue) * rateData[*product.CurrencyKey]
-				portofolioData.Amount = fmt.Sprintf("%.3f", (b * n.NavValue))
-				portofolioData.AmountIDR = fmt.Sprintf("%.3f", data["invest_value"].(float32))
-				portofolioData.Unit = fmt.Sprintf("%.3f", b)
+				data["invest_value"] = float32(math.Trunc(float64((b * n.NavValue) * rateData[*product.CurrencyKey])))
+				portofolioData.Amount = p.Sprintf("%v", float32(math.Trunc(float64(b * n.NavValue))))
+				portofolioData.AmountIDR = p.Sprintf("%v", float32(math.Trunc(float64(data["invest_value"].(float32)))))
+				portofolioData.Unit = p.Sprintf("%.2f", b)
 				gainLoss := (avgNav[product.ProductKey] - n.NavValue) * b
-				portofolioData.GainLoss = fmt.Sprintf("%.3f", gainLoss)
+				portofolioData.GainLoss = p.Sprintf("%v", float32(math.Trunc(float64(gainLoss))))
 				totalGainLoss += (gainLoss * rateData[*product.CurrencyKey])
-				portofolioData.GainLossIDR = fmt.Sprintf("%.3f", (gainLoss * rateData[*product.CurrencyKey]))
+				portofolioData.GainLossIDR = p.Sprintf("%v", float32(math.Trunc(float64(gainLoss * rateData[*product.CurrencyKey]))))
 				percent := (((b * n.NavValue) * rateData[*product.CurrencyKey]) / total) * 100
-				data["percent"] = fmt.Sprintf("%.3f", percent) + `%`
+				data["percent"] = fmt.Sprintf("%.2f", percent) + `%`
 			}
 		}
 		portofolioDatas = append(portofolioDatas, portofolioData)
@@ -975,7 +979,7 @@ func Portofolio(c echo.Context) error {
 	}
 
 	// PDF Template
-	portofolio.TotalGainLoss = fmt.Sprintf("%.3f", totalGainLoss)
+	portofolio.TotalGainLoss = p.Sprintf("%v", float32(math.Trunc(float64(totalGainLoss))))
 	portofolio.Datas = portofolioDatas
 	var customer models.MsCustomer
 	status, err = models.GetMsCustomer(&customer, customerKey)

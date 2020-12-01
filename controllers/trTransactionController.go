@@ -106,7 +106,7 @@ func CreateTransaction(c echo.Context) error {
 				for _, balance := range balanceDB {
 					balanceUnit += balance.BalanceUnit
 				}
-				investValue = navDB[0].NavValue * balanceUnit
+				investValue = float32(math.Trunc(float64(navDB[0].NavValue * balanceUnit)))
 			}
 		}
 	}
@@ -739,11 +739,11 @@ func GetTransactionList(c echo.Context) error {
 			strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
 			_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
 			if err != nil {
-				data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*10000) / 10000)
-				data.TransAmount = transaction.TransAmount
+				data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
+				data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
 			} else {
-				data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*10000) / 10000)
-				data.TransAmount = transactionConf.ConfirmedAmount
+				data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
+				data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
 			}
 
 			data.TotalAmount = transaction.TotalAmount
@@ -1047,12 +1047,12 @@ func SendEmailTransaction(c echo.Context) error {
 			if typ, ok := tData[transaction.TransTypeKey]; ok {
 				data["Type"] = *typ.TypeDescription
 			}
-			fee := transaction.TransFeeAmount + transaction.ChargesFeeAmount + transaction.ServicesFeeAmount
+			fee := transaction.TransFeeAmount
 			data["Fee"] = fee
 			if tc, ok := tcData[transaction.TransactionKey]; ok {
-				data["Unit"] = tc.ConfirmedUnit
-				data["Amount"] = tc.ConfirmedAmount
-				data["Total"] = tc.ConfirmedAmount + fee
+				data["Unit"] = math.Floor(float64(tc.ConfirmedUnit)*100)/100
+				data["Amount"] = float32(math.Trunc(float64(tc.ConfirmedAmount)))
+				data["Total"] = float32(math.Trunc(float64(tc.ConfirmedAmount + fee)))
 			}
 			if nav, ok := nData[transaction.NavDate]; ok {
 				data["Nav"] = nav.NavValue

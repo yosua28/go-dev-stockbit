@@ -18,6 +18,7 @@ func GetMessageList(c echo.Context) error {
 	params["umessage_recipient_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["rec_status"] = "1"
 	params["flag_archieved"] = "0"
+	params["flag_read"] = "0"
 	var messageDB []models.ScUserMessage
 	status, err = models.GetAllScUserMessage(&messageDB, params)
 	if err != nil {
