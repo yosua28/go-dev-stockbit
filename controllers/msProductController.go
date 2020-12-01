@@ -613,7 +613,7 @@ func GetMsProductData(c echo.Context) error {
 	var nav models.TrNavInfo
 	date, _ := time.Parse(layout, navDB[0].NavDate)
 	nav.NavDate = date.Format(newLayout)
-	nav.NavValue = navDB[0].NavValue
+	nav.NavValue = float32(math.Floor(float64(navDB[0].NavValue)*100) / 100)
 
 	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
 		paramsAcc := make(map[string]string)
@@ -657,12 +657,12 @@ func GetMsProductData(c echo.Context) error {
 					}
 					var invest float32
 					invest = nav.NavValue * data.BalanceUnit
-					data.InvestValue = fmt.Sprintf("%f", math.Trunc(float64(invest)))
+					data.InvestValue = fmt.Sprintf("%v", math.Trunc(float64(invest)))
 				}
 			}
 		}
 	}
-	data.BalanceUnit = float32(math.Floor(float64(data.BalanceUnit)*10000) / 10000)
+	data.BalanceUnit = float32(math.Floor(float64(data.BalanceUnit)*100) / 100)
 	data.Nav = &nav
 
 	var perform models.FfsNavPerformanceInfo
