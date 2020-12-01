@@ -20,9 +20,9 @@ import (
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/gomail.v2"
 	"golang.org/x/text/language"
-    "golang.org/x/text/message"
+	"golang.org/x/text/message"
+	"gopkg.in/gomail.v2"
 )
 
 func CreateTransaction(c echo.Context) error {
@@ -795,7 +795,11 @@ func GetTransactionList(c echo.Context) error {
 				data.Uploaded = true
 				data.DateUploaded = transaction.FileUploadDate
 			} else {
-				data.Uploaded = false
+				if transaction.TransTypeKey == 1 {
+					data.Uploaded = false
+				} else {
+					data.Uploaded = true
+				}
 			}
 			if transaction.TransBankKey != nil {
 				if bank, ok := bData[*transaction.TransBankKey]; ok {
@@ -1094,7 +1098,7 @@ func SendEmailTransaction(c echo.Context) error {
 			fee := transaction.TransFeeAmount
 			data["Fee"] = fee
 			if tc, ok := tcData[transaction.TransactionKey]; ok {
-				data["Unit"] = math.Floor(float64(tc.ConfirmedUnit)*100)/100
+				data["Unit"] = math.Floor(float64(tc.ConfirmedUnit)*100) / 100
 				data["Amount"] = float32(math.Trunc(float64(tc.ConfirmedAmount)))
 				data["Total"] = float32(math.Trunc(float64(tc.ConfirmedAmount + fee)))
 			}
@@ -1223,7 +1227,7 @@ func mailTransaction(typ string, params map[string]string) error {
 			if typ == "topup" {
 				s = "Top Up"
 			}
-			subject = s+" Kamu sedang Diproses"
+			subject = s + " Kamu sedang Diproses"
 		} else {
 			mailTemp = "index-" + typ + "-uncomplete.html"
 			subject = "Ayo Upload Bukti Transfer Kamu"
