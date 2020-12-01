@@ -32,10 +32,11 @@ type MsCustomerBankAccount struct {
 }
 
 type MsCustomerBankAccountInfo struct {
-	CustBankaccKey uint64 `db:"cust_bankacc_key"      json:"cust_bankacc_key"`
-	BankName       string `db:"bank_name"             json:"bank_name"`
-	AccountNo      string `db:"account_no"            json:"account_no"`
-	AccountName    string `db:"account_name"          json:"account_name"`
+	CustBankaccKey uint64  `db:"cust_bankacc_key"      json:"cust_bankacc_key"`
+	BankName       string  `db:"bank_name"             json:"bank_name"`
+	AccountNo      string  `db:"account_no"            json:"account_no"`
+	AccountName    string  `db:"account_name"          json:"account_name"`
+	BranchName     *string `db:"branch_name"           json:"branch_name"`
 }
 
 func CreateMsCustomerBankAccount(params map[string]string) (int, error) {
@@ -74,7 +75,8 @@ func GetAllMsCustomerBankAccountTransaction(c *[]MsCustomerBankAccountInfo, cust
 				ba.cust_bankacc_key AS cust_bankacc_key, 
 				bank.bank_fullname AS bank_name, 
 				b.account_no AS account_no, 
-				b.account_holder_name AS account_name 
+				b.account_holder_name AS account_name,
+				b.branch_name as branch_name 
 			FROM ms_customer_bank_account AS ba 
 			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
 			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`
@@ -96,7 +98,8 @@ func GetMsCustomerBankAccountTransactionByKey(c *MsCustomerBankAccountInfo, cust
 				ba.cust_bankacc_key AS cust_bankacc_key, 
 				bank.bank_fullname AS bank_name, 
 				b.account_no AS account_no, 
-				b.account_holder_name AS account_name 
+				b.account_holder_name AS account_name,
+				b.branch_name as branch_name  
 			FROM ms_customer_bank_account AS ba 
 			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
 			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`

@@ -2535,16 +2535,24 @@ func ProsesPosting(c echo.Context) error {
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
 	if strTransTypeKey == "1" { // SUBS
-		paramsUserMessage["umessage_subject"] = "Subscription Berhasil"
-		paramsUserMessage["umessage_body"] = "Transaksi subscription kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		if transaction.FlagNewSub != nil {
+			if *transaction.FlagNewSub == 1 {
+				paramsUserMessage["umessage_subject"] = "Subscription Berhasil"
+				paramsUserMessage["umessage_body"] = "Subscription kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+			} else {
+				paramsUserMessage["umessage_subject"] = "Top Up Berhasil"
+				paramsUserMessage["umessage_body"] = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+			}
+		}
 	}
+
 	if strTransTypeKey == "2" { // REDM
 		paramsUserMessage["umessage_subject"] = "Redemption Berhasil"
-		paramsUserMessage["umessage_body"] = "Transaksi redemption kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		paramsUserMessage["umessage_body"] = "Redemption kamu telah berhasil dijalankan. Dana akan ditransfer ke rekening bank kamu maks. 7 hari bursa. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
 	if strTransTypeKey == "4" { // SWITCH
 		paramsUserMessage["umessage_subject"] = "Switching Berhasil"
-		paramsUserMessage["umessage_body"] = "Transaksi switching kamu telah berhasil kami proses. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		paramsUserMessage["umessage_body"] = "Switching kamu telah berhasil dijalankan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
 	}
 
 	paramsUserMessage["umessage_category"] = "248"
@@ -2606,13 +2614,23 @@ func sendEmailTransactionPosted(
 		log.Error(err.Error())
 	}
 
+	var trNavData models.TrNav
+
+	var trNav []models.TrNav
+	_, err = models.GetTrNavByProductKeyAndNavDate(&trNav, strProductKey, transaction.NavDate)
+
+	if err == nil {
+		trNavData = trNav[0]
+	}
+
 	var currencyDB models.MsCurrency
 	_, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
 	if err != nil {
 		log.Error(err.Error())
 	}
 
-	date, _ := time.Parse(layout, time.Now().Format(layout))
+	date, _ := time.Parse(layout, transaction.TransDate)
+	nabDate, _ := time.Parse(layout, transaction.NavDate)
 
 	var transactionParent models.TrTransaction
 	if strTransTypeKey == "4" { // SWITCH IN
@@ -2631,43 +2649,74 @@ func sendEmailTransactionPosted(
 		}
 	}
 
+	bankNameCus := "-"
+	noRekCus := "-"
+	namaRekCus := "-"
+	cabangRek := "-"
+
+	//bank account customer
+	strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+	if strTransTypeKey == "2" { //redm
+		var trBankAccount models.TrTransactionBankAccount
+		_, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
+		if err == nil {
+			strCustBankAcc := strconv.FormatUint(trBankAccount.CustBankaccKey, 10)
+			var trBankCust models.MsCustomerBankAccountInfo
+			_, err = models.GetMsCustomerBankAccountTransactionByKey(&trBankCust, strCustBankAcc)
+			if err == nil {
+				bankNameCus = trBankCust.BankName
+				noRekCus = trBankCust.AccountNo
+				namaRekCus = trBankCust.AccountName
+				if trBankCust.BranchName != nil {
+					cabangRek = *trBankCust.BranchName
+				}
+			}
+		}
+	}
+
 	dataReplace := struct {
-		FileUrl     string
-		Name        string
-		Cif         string
-		Date        string
-		Time        string
-		ProductName string
-		Symbol      *string
-		Amount      string
-		Fee         string
-		RedmUnit    string
-		BankName    string
-		NoRek       string
-		NamaRek     string
-		Cabang      string
-		ProductFrom string
-		ProductTo   string
+		FileUrl        string
+		Name           string
+		Cif            string
+		Date           string
+		Time           string
+		ProductName    string
+		Symbol         *string
+		Amount         string
+		Fee            string
+		RedmUnit       string
+		NabUnit        string
+		BankName       string
+		NoRek          string
+		NamaRek        string
+		Cabang         string
+		ProductFrom    string
+		ProductTo      string
+		NABDate        string
+		UnitPenyertaan string
 	}{
-		FileUrl:     config.FileUrl + "/images/mail",
-		Name:        customer.FullName,
-		Cif:         customer.UnitHolderIDno,
-		Date:        date.Format(newLayout),
-		Time:        date.Format(timeLayout) + " WIB",
-		ProductName: product.ProductNameAlt,
-		Symbol:      currencyDB.Symbol,
-		Amount:      fmt.Sprintf("%.2f", transactionConf.ConfirmedAmount),
-		Fee:         fmt.Sprintf("%.2f", transaction.TransFeeAmount),
-		RedmUnit:    fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit),
-		BankName:    "-",
-		NoRek:       "-",
-		NamaRek:     "-",
-		Cabang:      "-",
-		ProductFrom: productFrom,
-		ProductTo:   product.ProductNameAlt}
+		FileUrl:        config.FileUrl + "/images/mail",
+		Name:           customer.FullName,
+		Cif:            customer.UnitHolderIDno,
+		Date:           date.Format(newLayout),
+		Time:           date.Format(timeLayout) + " WIB",
+		ProductName:    product.ProductNameAlt,
+		Symbol:         currencyDB.Symbol,
+		Amount:         fmt.Sprintf("%.2f", transactionConf.ConfirmedAmount),
+		Fee:            fmt.Sprintf("%.2f", transaction.TransFeeAmount),
+		RedmUnit:       fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit),
+		NabUnit:        fmt.Sprintf("%.2f", trNavData.NavValue),
+		BankName:       bankNameCus,
+		NoRek:          noRekCus,
+		NamaRek:        namaRekCus,
+		Cabang:         cabangRek,
+		ProductFrom:    productFrom,
+		ProductTo:      product.ProductNameAlt,
+		NABDate:        nabDate.Format(newLayout),
+		UnitPenyertaan: fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit)}
 
 	if strTransTypeKey == "1" { // SUBS
-		subject = "[MNC Duit] Transaksi Subscription Berhasil"
+		subject = "[MNC Duit] Subscription Kamu telah Berhasil"
 		t := template.New("email-subscription-posted.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
@@ -2681,7 +2730,7 @@ func sendEmailTransactionPosted(
 	}
 
 	if strTransTypeKey == "2" { // REDM
-		subject = "[MNC Duit] Transaksi Redemption Berhasil"
+		subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
 		t := template.New("email-redemption-posted.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
@@ -2696,7 +2745,7 @@ func sendEmailTransactionPosted(
 	}
 
 	if strTransTypeKey == "4" { // SWITCH
-		subject = "[MNC Duit] Transaksi Switching Berhasil"
+		subject = "[MNC Duit] Switching Kamu telah Berhasil"
 		t := template.New("email-switching-posted.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")
