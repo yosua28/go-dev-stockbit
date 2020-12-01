@@ -21,6 +21,8 @@ import (
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
+	"golang.org/x/text/language"
+    "golang.org/x/text/message"
 )
 
 func CreateTransaction(c echo.Context) error {
@@ -1206,6 +1208,7 @@ func mailTransaction(typ string, params map[string]string) error {
 	var err error
 	var mailTemp, subject string
 	mailParam := make(map[string]string)
+	p := message.NewPrinter(language.Indonesian)
 	if params["currency"] == "1" {
 		mailParam["Symbol"] = "Rp. "
 	} else if params["currency"] == "2" {
@@ -1215,14 +1218,18 @@ func mailTransaction(typ string, params map[string]string) error {
 	if typ == "subscription" || typ == "topup" {
 		if _, ok := params["rec_image1"]; ok {
 			mailTemp = "index-" + typ + "-complete.html"
-			subject = "Konfirmasi " + typ
+			s := "Subscription"
+			if typ == "topup" {
+				s = "Top Up"
+			}
+			subject = s+" Kamu sedang Diproses"
 		} else {
 			mailTemp = "index-" + typ + "-uncomplete.html"
-			subject = "Transaksi " + typ + " kamu belum selesai"
+			subject = "Ayo Upload Bukti Transfer Kamu"
 		}
 	} else if typ == "redemption" {
 		mailTemp = "index-" + typ + ".html"
-		subject = "Konfirmasi " + typ
+		subject = "Redemption Kamu sedang Diproses"
 		var requestDB []models.OaRequest
 		paramRequest := make(map[string]string)
 		paramRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
@@ -1266,7 +1273,7 @@ func mailTransaction(typ string, params map[string]string) error {
 
 	} else if typ == "switching" {
 		mailTemp = "index-" + typ + ".html"
-		subject = "Konfirmasi " + typ
+		subject = "Switching Kamu sedang Diproses"
 
 		var transaction models.TrTransaction
 		_, err = models.GetTrTransaction(&transaction, params["parrent"])
@@ -1289,10 +1296,11 @@ func mailTransaction(typ string, params map[string]string) error {
 	value, _ := strconv.ParseFloat(params["trans_unit"], 64)
 	if value > 0 {
 		mailParam["Symbol"] = ""
-		mailParam["Amount"] = params["trans_unit"]
+		mailParam["Amount"] = fmt.Sprintf("%.2f", value)
 		mailParam["Str"] = " Unit"
 	} else {
-		mailParam["Amount"] = params["trans_amount"]
+		val, _ := strconv.ParseFloat(params["trans_amount"], 64)
+		mailParam["Amount"] = p.Sprintf("%v", math.Trunc(val))
 	}
 	var customer models.MsCustomer
 	_, err = models.GetMsCustomer(&customer, strconv.FormatUint(*lib.Profile.CustomerKey, 10))

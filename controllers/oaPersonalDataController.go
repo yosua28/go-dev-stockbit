@@ -654,7 +654,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MNCduit] Konfirmasi Registrasi")
+	mailer.SetHeader("Subject", "[MNCduit] Pembukaan Rekening Kamu sedang Diproses")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,

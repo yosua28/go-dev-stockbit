@@ -150,7 +150,7 @@ func Register(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
+	mailer.SetHeader("Subject", "[MNCduit] Verifikasi Email Kamu")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
@@ -691,7 +691,7 @@ func ResendVerification(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", email)
-		mailer.SetHeader("Subject", "[MNCduit] Verify your email address")
+		mailer.SetHeader("Subject", "[MNCduit] Verifikasi Email Kamu")
 		mailer.SetBody("text/html", result)
 
 		dialer := gomail.NewDialer(
@@ -786,7 +786,8 @@ func ForgotPassword(c echo.Context) error {
 	if err := t.Execute(&tpl, struct {
 		Password string
 		FileUrl  string
-	}{Password: str, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		Name  string
+	}{Password: str, FileUrl: config.FileUrl + "/images/mail", Name: accountData.UloginFullName}); err != nil {
 		log.Println(err)
 	}
 
@@ -795,7 +796,7 @@ func ForgotPassword(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNCduit] Password Changed")
+	mailer.SetHeader("Subject", "[MNCduit] Lupa Kata Sandi")
 	mailer.SetBody("text/html", result)
 
 	dialer := gomail.NewDialer(
