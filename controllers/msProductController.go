@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -706,11 +707,22 @@ func GetMsProductData(c echo.Context) error {
 	if err == nil {
 		if int(countData.CountData) > 0 {
 			data.IsNew = false
+			data.TncIsNew = ""
 		} else {
 			data.IsNew = true
+			var scApp models.ScAppConfig
+			status, err = models.GetScAppConfigByCode(&scApp, "NEW_PRODUCT_SUBSCRIBE")
+			if err != nil {
+				data.TncIsNew = ""
+			} else {
+				str1 := scApp.AppConfigValue
+				res1 := strings.Replace(*str1, "#ProductName#", product.ProductNameAlt, 1)
+				data.TncIsNew = res1
+			}
 		}
 	} else {
 		data.IsNew = false
+		data.TncIsNew = ""
 	}
 
 	var response lib.Response

@@ -1058,7 +1058,7 @@ func ChangePassword(c echo.Context) error {
 	paramsUserMessage["umessage_sender_key"] = strKey
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
-	paramsUserMessage["umessage_subject"] = "Perubahan Kata Sandi Berhasil."
+	paramsUserMessage["umessage_subject"] = "Perubahan Kata Sandi Berhasil"
 	paramsUserMessage["umessage_body"] = "Kata sandi kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan kata sandi, mohon segera menghubungi customer service kami."
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"

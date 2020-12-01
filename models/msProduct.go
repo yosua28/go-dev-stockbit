@@ -58,6 +58,7 @@ type MsProductData struct {
 	InvestValue      string                     `json:"invest_value"`
 	BalanceUnit      float32                    `json:"balance_unit"`
 	IsNew            bool                       `json:"is_new"`
+	TncIsNew         string                     `json:"tnc_is_new"`
 	Currency         MsCurrencyInfo             `json:"currency"`
 	BankAcc          []MsProductBankAccountInfo `json:"bank_account"`
 	ProductFee       []MsProductFeeInfo         `json:"product_fee"`

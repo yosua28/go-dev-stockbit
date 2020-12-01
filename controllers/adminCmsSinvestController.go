@@ -390,12 +390,7 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 			data.CountryOfNationality = ""
 			data.CountryOfBirth = ""
 			if co, ok := countryData[n.Nationality]; ok {
-				strCountry := strconv.FormatUint(co.CountryKey, 10)
-				if strCountry == "97" { // indonesia WNI
-					data.CountryOfNationality = "1"
-				} else {
-					data.CountryOfNationality = "2"
-				}
+				data.CountryOfNationality = co.CouCode
 				data.CountryOfBirth = co.CouCode
 			}
 
@@ -514,7 +509,9 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 					}
 					if a.KabupatenKey != nil {
 						if c, ok := cityData[*a.KabupatenKey]; ok {
-							data.KTPCityCode = c.CityCode
+							if c.RecAttributeID2 != nil {
+								data.KTPCityCode = *c.RecAttributeID2
+							}
 						}
 					}
 
@@ -545,9 +542,15 @@ func DownloadOaRequestFormatSinvest(c echo.Context) error {
 								data.CountryOfDomicile = co.CouCode
 								data.CountryOfCorrespondence = co.CouCode
 							}
-							data.DomicileCityCode = c.CityCode
+
+							if c.RecAttributeID2 != nil {
+								data.DomicileCityCode = *c.RecAttributeID2
+							}
 							data.DomicileCityName = c.CityName
-							data.CorrespondenceCityCode = c.CityCode
+							if c.RecAttributeID2 != nil {
+								data.CorrespondenceCityCode = *c.RecAttributeID2
+							}
+
 							data.CorrespondenceCityName = c.CityName
 						}
 					}
