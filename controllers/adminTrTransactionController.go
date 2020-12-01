@@ -1202,7 +1202,7 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	var tpl bytes.Buffer
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
-	timeLayout := "15.04"
+	timeLayout := "15:04"
 
 	productFrom := "-"
 
@@ -1775,6 +1775,14 @@ func TransactionApprovalCutOff(c echo.Context) error {
 			log.Error("Missing required parameter: trans_ids")
 			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_ids ", "Missing required parameter: trans_ids")
 		}
+
+		//bank account customer
+		// strTrKey := strconv.FormatUint(tr.TransactionKey, 10)
+		// var trBankAccount models.TrTransactionBankAccount
+		// _, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
+		// if err == nil {
+
+		// }
 
 		strTransType := strconv.FormatUint(tr.TransTypeKey, 10)
 		if strTransType == "4" {
@@ -2881,7 +2889,7 @@ func sendEmailTransactionPosted(
 	var tpl bytes.Buffer
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
-	timeLayout := "15.04"
+	timeLayout := "15:04"
 
 	productFrom := "-"
 
