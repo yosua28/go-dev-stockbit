@@ -461,6 +461,48 @@ func CreateTransaction(c echo.Context) error {
 		err = mailTransaction(typeStr, params)
 	}
 
+	//insert message notif in app
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	if typeKeyStr == "1" { // SUBS
+		if params["flag_newsub"] == "1" {
+			paramsUserMessage["umessage_subject"] = "Subscription sedang Diproses"
+			paramsUserMessage["umessage_body"] = "Subscription kamu sedang diproses. Terima kasih telah melakukan transaksi subscription."
+		} else {
+			paramsUserMessage["umessage_subject"] = "Top Up sedang Diproses"
+			paramsUserMessage["umessage_body"] = "Top Up kamu sedang diproses. Terima kasih telah melakukan transaksi top up."
+		}
+	}
+
+	if typeKeyStr == "2" { // REDM
+		paramsUserMessage["umessage_subject"] = "Redemption sedang Diproses"
+		paramsUserMessage["umessage_body"] = "Redemption kamu sedang diproses. Terima kasih telah melakukan transaksi redemption."
+	}
+	if typeKeyStr == "4" || typeKeyStr == "3" { // SWITCH
+		paramsUserMessage["umessage_subject"] = "Switching sedang Diproses"
+		paramsUserMessage["umessage_body"] = "Switching kamu sedang diproses. Terima kasih telah melakukan transaksi switching."
+	}
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+
 	responseData := make(map[string]string)
 	responseData["transaction_key"] = transactionID
 	var response lib.Response
