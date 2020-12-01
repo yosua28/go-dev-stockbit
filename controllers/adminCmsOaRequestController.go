@@ -1399,6 +1399,29 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	}
 	//end send email to fund admin
 
+	//insert into table ms_customer_bank_account
+	paramsCusBankAcc := make(map[string]string)
+	strBankAccKey := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
+	paramsCusBankAcc["customer_key"] = requestID
+	paramsCusBankAcc["bank_account_key"] = strBankAccKey
+	//get ms abank account
+	var bankaccount models.MsBankAccount
+	status, err = models.GetBankAccount(&bankaccount, strBankAccKey)
+	if err == nil {
+		paramsCusBankAcc["bank_account_name"] = bankaccount.AccountHolderName
+	}
+	paramsCusBankAcc["flag_priority"] = "1"
+	paramsCusBankAcc["rec_status"] = "1"
+	paramsCusBankAcc["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsCusBankAcc["rec_created_by"] = strKey
+	status, err = models.CreateMsCustomerBankAccount(paramsCusBankAcc)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error create ms_customer_bank_account")
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	//end insert into table ms_customer_bank_account
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -1632,7 +1655,7 @@ func sendEmailApproveOa(fullName string, email string) {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Pendaftaran Kamu Telah Disetujui")
+	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu telah Disetujui")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,

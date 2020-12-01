@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"crypto/tls"
+	"database/sql"
 	_ "encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -75,7 +76,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar \n Silahkan masukkan email lainnya \n Atau hubungi Customer Service untuk informasi lebih lanjut")
+		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar.\nSilahkan masukkan email lainnya atau hubungi Customer.")
 	}
 
 	// Validate password
@@ -137,7 +138,10 @@ func Register(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Url string; FileUrl string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+	if err := t.Execute(&tpl, struct {
+		Url     string
+		FileUrl string
+	}{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -675,7 +679,10 @@ func ResendVerification(c echo.Context) error {
 		}
 
 		var tpl bytes.Buffer
-		if err := t.Execute(&tpl, struct{ Url string; FileUrl string }{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		if err := t.Execute(&tpl, struct {
+			Url     string
+			FileUrl string
+		}{Url: config.BaseUrl + "/verifyemail?token=" + verifyKey, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 			log.Println(err)
 		}
 
@@ -776,7 +783,10 @@ func ForgotPassword(c echo.Context) error {
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Password string; FileUrl string }{Password: str, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+	if err := t.Execute(&tpl, struct {
+		Password string
+		FileUrl  string
+	}{Password: str, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -1035,6 +1045,82 @@ func ChangePassword(c echo.Context) error {
 	if err != nil {
 		log.Error("Error update user data")
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//insert table sc_user_message
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	strUserLoginKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strKey
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = "Perubahan Kata Sandi Berhasil"
+	paramsUserMessage["umessage_body"] = "Kata sandi kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan kata sandi, mohon segera menghubungi customer service kami."
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strKey
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("Error create user message")
+	}
+
+	//kirim email
+	t := template.New("index-sukses-ubah-password.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-sukses-ubah-password.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var customer models.MsCustomer
+	strCustomerKey := strconv.FormatUint(*accountData.CustomerKey, 10)
+	status, err = models.GetMsCustomer(&customer, strCustomerKey)
+	if err == nil {
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl,
+			struct {
+				Name    string
+				FileUrl string
+			}{
+				Name:    customer.FullName,
+				FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+			log.Println(err)
+		}
+
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", accountData.UloginEmail)
+		mailer.SetHeader("Subject", "[MNC Duit] Berhasil Merubah Kata Sandi")
+		mailer.SetBody("text/html", result)
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error(err)
+		}
+		log.Info("Email sent")
+	} else {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
 	}
 
 	var response lib.Response

@@ -66,6 +66,13 @@ type MsProductBankAccountDetailAdmin struct {
 	BankAccountPurpose LookupTrans     `json:"bank_account_purpose"`
 }
 
+type MsProductBankAccountTransactionInfo struct {
+	ProdBankaccKey uint64 `db:"prod_bankacc_key"      json:"prod_bankacc_key"`
+	BankName       string `db:"bank_name"             json:"bank_name"`
+	AccountNo      string `db:"account_no"            json:"account_no"`
+	AccountName    string  `db:"account_name"          json:"account_name"`
+}
+
 func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]string) (int, error) {
 	query := `SELECT
               ms_product_bank_account.* FROM 
@@ -337,5 +344,49 @@ func CreateMsProductBankAccount(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetAllMsProductBankAccountTransaction(c *[]MsProductBankAccountTransactionInfo, productKey string, transType string) (int, error) {
+	query2 := `SELECT 
+				ba.prod_bankacc_key AS prod_bankacc_key,
+				bank.bank_fullname AS bank_name, 
+				b.account_no AS account_no, 
+				b.account_holder_name AS account_name 
+			FROM ms_product_bank_account AS ba 
+			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`
+	query := query2 + " WHERE ba.rec_status = 1 AND ba.product_key = '" + productKey + "' AND ba.bank_account_purpose = '" + transType + "'"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsProductBankAccountTransactionByKey(c *MsProductBankAccountTransactionInfo, prodBankaccKey string) (int, error) {
+	query2 := `SELECT 
+				ba.prod_bankacc_key AS prod_bankacc_key,
+				bank.bank_fullname AS bank_name, 
+				b.account_no AS account_no, 
+				b.account_holder_name AS account_name 
+			FROM ms_product_bank_account AS ba 
+			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`
+	query := query2 + " WHERE ba.rec_status = 1 AND ba.prod_bankacc_key = '" + prodBankaccKey + "'"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

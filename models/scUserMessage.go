@@ -2,30 +2,30 @@ package models
 
 import (
 	"api/db"
-	"net/http"
 	"database/sql"
+	"net/http"
 
 	log "github.com/sirupsen/logrus"
 )
 
 type ScUserMessageList struct {
-	UmessageKey          uint64         `db:"umessage_key"              json:"umessage_key"`
-	UmessageType         GenLookupInfo  `db:"umessage_type"             json:"umessage_type"`
-	UmessageReceiptDate  *string        `db:"umessage_receipt_date"     json:"umessage_receipt_date"`
-	FlagRead             uint8          `db:"flag_read"                 json:"flag_read"`
-	UmessageSubject      *string        `db:"umessage_subject"          json:"umessage_subject"`
-	UmessageCategory     GenLookupInfo  `db:"umessage_category"         json:"umessage_category"`
+	UmessageKey         uint64        `db:"umessage_key"              json:"umessage_key"`
+	UmessageType        GenLookupInfo `db:"umessage_type"             json:"umessage_type"`
+	UmessageReceiptDate *string       `db:"umessage_receipt_date"     json:"umessage_receipt_date"`
+	FlagRead            uint8         `db:"flag_read"                 json:"flag_read"`
+	UmessageSubject     *string       `db:"umessage_subject"          json:"umessage_subject"`
+	UmessageCategory    GenLookupInfo `db:"umessage_category"         json:"umessage_category"`
 }
 
 type ScUserMessageData struct {
-	UmessageKey          uint64         `db:"umessage_key"              json:"umessage_key"`
-	UmessageType         GenLookupInfo  `db:"umessage_type"             json:"umessage_type"`
-	UmessageReceiptDate  *string        `db:"umessage_receipt_date"     json:"umessage_receipt_date"`
-	FlagRead             uint8          `db:"flag_read"                 json:"flag_read"`
-	UmessageSubject      *string        `db:"umessage_subject"          json:"umessage_subject"`
-	UmessageBody         *string        `db:"umessage_body"             json:"umessage_body"`
-	UparentKey           *uint64        `db:"uparent_key"               json:"uparent_key"`
-	UmessageCategory     GenLookupInfo  `db:"umessage_category"         json:"umessage_category"`
+	UmessageKey         uint64        `db:"umessage_key"              json:"umessage_key"`
+	UmessageType        GenLookupInfo `db:"umessage_type"             json:"umessage_type"`
+	UmessageReceiptDate *string       `db:"umessage_receipt_date"     json:"umessage_receipt_date"`
+	FlagRead            uint8         `db:"flag_read"                 json:"flag_read"`
+	UmessageSubject     *string       `db:"umessage_subject"          json:"umessage_subject"`
+	UmessageBody        *string       `db:"umessage_body"             json:"umessage_body"`
+	UparentKey          *uint64       `db:"uparent_key"               json:"uparent_key"`
+	UmessageCategory    GenLookupInfo `db:"umessage_category"         json:"umessage_category"`
 }
 
 type ScUserMessage struct {
@@ -187,5 +187,43 @@ func UpdateScUserMessage(params map[string]string) (int, error) {
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetCountUserMessage(c *CountData, params map[string]string) (int, error) {
+	query := `SELECT
+              count(sc_user_message.umessage_key) as count_data FROM 
+			  sc_user_message`
+
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "sc_user_message."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

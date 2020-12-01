@@ -79,7 +79,7 @@
         </tr>
         <tr class="content">
             <td style="padding:10px;">
-                <h3>Yes ! ... Transaksi Redemption Kamu Telah Berhasil Kami Proses</h3>
+                <h3>Redemption Kamu telah Berhasil</h3>
             </td>
         </tr>
         <tr style="text-align:center">
@@ -91,9 +91,8 @@
         <tr class="content">
             <td style="padding:10px;">
                 <p style="text-align: justify">
-                    <b>Konfirmasi Redemption</b>
                     Hai <b>{{.Name}}</b> <br />
-                    Transaksi redemption kamu sudah selesai kami proses:
+                    Redemption kamu telah berhasil dijalankan.
                 </p>
             </td>
         </tr>
@@ -113,7 +112,7 @@
                     </tr>
                     <tr>
                         <td>
-                            Nomor CIF
+                            No. CIF
                         </td>
                         <td>
                             :
@@ -157,7 +156,7 @@
                     </tr>
                     <tr>
                         <td>
-                            Jumlah Redemption
+                            Jumlah Transaksi
                         </td>
                         <td>
                             :
@@ -168,13 +167,46 @@
                     </tr>
                     <tr>
                         <td>
-                            Biaya Redemption
+                            Biaya Transaksi
                         </td>
                         <td>
                             :
                         </td>
                         <td>
                             {{.Symbol}} {{.Fee}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Tanggal NAB
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NABDate}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            NAB/Unit
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NabUnit}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nominal
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Symbol}} {{.Amount}}
                         </td>
                     </tr>
                     <tr>
@@ -221,43 +253,35 @@
                             {{.Cabang}}
                         </td>
                     </tr>
-                    <tr>
-                        <td>
-                            Status
-                        </td>
-                        <td>
-                            :
-                        </td>
-                        <td>
-                            <b>Berhasil</b>
-                        </td>
-                    </tr>
                 </table>
             </td>
-        </tr><tr class="content">
+        </tr>
+        <tr class="content">
             <td style="padding:10px;">
-                <p style="text-align: justify">
-                    Ketentuan Redemption :
-                <ol>
-                    <li>
-                        Instruksi Penjualan yang dilakukan si sistem MNC Duit sebelum pukul 12.00 WIB pada hari yang sama akan mengikuti NAB
-                        mengikuti perhitungan NAB yang ditutup pada akhir hari tersebut.
-                    </li>
-                    <li>
-                        Instruksi Penjualan yang dilakukan di sistem MNC Duit setelah pukul 12.00 WIB pada hari yang sama akan mengikuti perhitungan
-                        NAB keesokan harinya.
-                    </li>
-                    <li>
-                        Instruksi Penjualan setiap jenis produk Reksa Dana mengikuti ketentuan yang berlaku di Prospektus.
-                    </li>
-                </ol>
+                <p>
+                    Sesuai ketentuan yang tertera pada prospektus, kamu akan menerima hasil redemption pada rekening bank kamu paling lambat
+                    7 (tujuh) hari bursa terhitung setelah tanggal NAB.
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p>
+                    Bank Kustodian akan mengirimkan E-statement Konfirmasi Transaksi Reksa Dana kamu paling lambat 7 (tujuh) hari bursa.
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p>
+                    Silakan cek portofolio di akun kamu untuk melihat transaksi.
                 </p>
             </td>
         </tr>
         <tr>
             <td style="padding:10px;font-size: 15px;">
                 <p>
-                    apabila ada pertanyaan silahkan hubungi kami di :
+                    Apabila ada pertanyaan silahkan hubungi kami di :
                 </p>
             <td>
         </tr>
