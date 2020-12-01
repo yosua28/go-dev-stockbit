@@ -1346,9 +1346,9 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 			subject = "[MNC Duit] Top Up Kamu telah Berhasil"
 		}
 
-		t := template.New("email-subscription-posted.html")
+		t := template.New("email-subscription-rejected.html")
 
-		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-rejected.html")
 		if err != nil {
 			log.Println(err)
 		}
@@ -1360,9 +1360,9 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 
 	if strTransTypeKey == "2" { // REDM
 		subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
-		t := template.New("email-redemption-posted.html")
+		t := template.New("email-redemption-rejected.html")
 
-		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-rejected.html")
 		if err != nil {
 			log.Println(err)
 		}
@@ -1375,9 +1375,9 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 
 	if strTransTypeKey == "4" { // SWITCH
 		subject = "[MNC Duit] Switching Kamu telah Berhasil"
-		t := template.New("email-switching-posted.html")
+		t := template.New("email-switching-rejected.html")
 
-		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")
+		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-rejected.html")
 		if err != nil {
 			log.Println(err)
 		}
