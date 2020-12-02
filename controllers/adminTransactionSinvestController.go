@@ -362,19 +362,24 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 	responseData.SwitchTransaction = &switchTransaction
 
 	if len(transactionIds) > 0 {
-		paramsUpdate := make(map[string]string)
+		for _, trID := range transactionIds {
+			paramsUpdate := make(map[string]string)
+			transBatchKey := CheckTransactionBatch(trID)
+			paramsUpdate["trans_status_key"] = "7"
+			dateLayout := "2006-01-02 15:04:05"
+			paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)
+			strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+			paramsUpdate["rec_modified_by"] = strKey
+			paramsUpdate["batch_key"] = transBatchKey
+			paramsUpdate["transaction_key"] = trID
 
-		paramsUpdate["trans_status_key"] = "7"
-		dateLayout := "2006-01-02 15:04:05"
-		paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)
-		strKey := strconv.FormatUint(lib.Profile.UserID, 10)
-		paramsUpdate["rec_modified_by"] = strKey
-
-		_, err = models.UpdateTrTransactionByKeyIn(paramsUpdate, transactionIds, "transaction_key")
-		if err != nil {
-			log.Error("Error update Transaction")
-			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			_, err = models.UpdateTrTransaction(paramsUpdate)
+			if err != nil {
+				log.Error("Error update Transaction")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
 		}
+
 	}
 
 	var response lib.Response
@@ -384,4 +389,86 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func CheckTransactionBatch(transKey string) string {
+	transBatchKet := ""
+
+	var trBatch models.CheckTrTransactionBacth
+	_, err := models.CheckTrTransactionBatchByTransKey(&trBatch, transKey)
+	if err == nil {
+		transBatchKet = strconv.FormatUint(trBatch.BatchKey, 10)
+	} else {
+		//insert into batch
+		var paramBatch models.ParamBatchTrTransaction
+		_, err := models.ParamBatchTrTransactionByKey(&paramBatch, transKey)
+		if err == nil {
+			dateLayout := "2006-01-02 15:04:05"
+			paramsBatch := make(map[string]string)
+			if paramBatch.Batch == nil {
+				paramsBatch["batch_number"] = "1"
+			} else {
+				paramsBatch["batch_number"] = strconv.FormatUint(*paramBatch.Batch+1, 10)
+			}
+			bulanRomawi := ""
+			if paramBatch.Bulan == "1" {
+				bulanRomawi = "I"
+			}
+			if paramBatch.Bulan == "2" {
+				bulanRomawi = "II"
+			}
+			if paramBatch.Bulan == "3" {
+				bulanRomawi = "III"
+			}
+			if paramBatch.Bulan == "4" {
+				bulanRomawi = "IV"
+			}
+			if paramBatch.Bulan == "5" {
+				bulanRomawi = "V"
+			}
+			if paramBatch.Bulan == "6" {
+				bulanRomawi = "VI"
+			}
+			if paramBatch.Bulan == "7" {
+				bulanRomawi = "VII"
+			}
+			if paramBatch.Bulan == "8" {
+				bulanRomawi = "VIII"
+			}
+			if paramBatch.Bulan == "9" {
+				bulanRomawi = "IX"
+			}
+			if paramBatch.Bulan == "10" {
+				bulanRomawi = "X"
+			}
+			if paramBatch.Bulan == "11" {
+				bulanRomawi = "XI"
+			}
+			if paramBatch.Bulan == "12" {
+				bulanRomawi = "XII"
+			}
+
+			batchDisplayNo := paramBatch.ProductCode + "/" + paramBatch.TypeCode + "/" + bulanRomawi + "/" + paramBatch.Tahun
+
+			paramsBatch["batch_display_no"] = batchDisplayNo
+			paramsBatch["nav_date"] = paramBatch.NavDate
+			paramsBatch["product_key"] = strconv.FormatUint(paramBatch.ProductKey, 10)
+			paramsBatch["trans_type_key"] = strconv.FormatUint(paramBatch.TransTypeKey, 10)
+			paramsBatch["rec_order"] = "0"
+			paramsBatch["rec_status"] = "1"
+			paramsBatch["rec_created_date"] = time.Now().Format(dateLayout)
+			strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+			paramsBatch["rec_created_by"] = strKey
+
+			_, err, lastID := models.CreateTrTransactionBacth(paramsBatch)
+			if err != nil {
+				log.Error(err.Error())
+				log.Error("Error create batch")
+			}
+
+			transBatchKet = lastID
+		}
+	}
+
+	return transBatchKet
 }

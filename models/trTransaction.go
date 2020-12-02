@@ -92,6 +92,7 @@ type TrTransaction struct {
 	PostedUnits       *float32 `db:"posted_units"              json:"posted_units"`
 	AcaKey            *uint64  `db:"aca_key"                   json:"aca_key"`
 	SettledDate       *string  `db:"settled_date"              json:"settled_date"`
+	BatchKey          *uint64  `db:"batch_key"                 json:"batch_key"`
 	RecOrder          *uint64  `db:"rec_order"                 json:"rec_order"`
 	RecStatus         uint8    `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate    *string  `db:"rec_created_date"          json:"rec_created_date"`
@@ -283,6 +284,19 @@ type TransactionConfirmation struct {
 	ConfirmDate     string  `json:"confirm_date"`
 	ConfirmedAmount float32 `json:"confirmed_amount"`
 	ConfirmedUnit   float32 `json:"confirmed_unit"`
+}
+
+type ParamBatchTrTransaction struct {
+	ProductCode    string  `db:"product_code"     json:"product_code"`
+	TypeCode       string  `db:"type_code"        json:"type_code"`
+	Bulan          string  `db:"bulan"            json:"bulan"`
+	Tahun          string  `db:"tahun"            json:"tahun"`
+	NavDate        string  `db:"nav_date"         json:"nav_date"`
+	ProductKey     uint64  `db:"product_key"      json:"product_key"`
+	TransTypeKey   uint64  `db:"trans_type_key"   json:"trans_type_key"`
+	TransactionKey string  `db:"transaction_key"  json:"transaction_key"`
+	TransDate      string  `db:"trans_date"       json:"trans_date"`
+	Batch          *uint64 `db:"batch"            json:"batch"`
 }
 
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
@@ -741,6 +755,34 @@ func GetTrTransactionOnProcess(c *[]TrTransaction, params map[string]string) (in
 	// Main query
 	log.Info(query)
 	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func ParamBatchTrTransactionByKey(c *ParamBatchTrTransaction, transactionKey string) (int, error) {
+	query := `SELECT
+				p.product_code AS product_code,
+				tt.type_code AS type_code,
+				MONTH(t.trans_date) AS bulan,
+				YEAR(t.trans_date) AS tahun,
+				t.nav_date AS nav_date,
+				p.product_key AS product_key,
+				t.trans_type_key AS trans_type_key,
+				t.transaction_key AS transaction_key,
+				t.trans_date AS trans_date,
+			    (SELECT batch_number AS bat FROM tr_transaction_batch ORDER BY batch_number DESC LIMIT 1) AS batch 
+			FROM tr_transaction AS t
+			INNER JOIN ms_product AS p ON p.product_key = t.product_key
+			INNER JOIN tr_transaction_type AS tt ON tt.trans_type_key = t.trans_type_key
+			WHERE t.transaction_key = ` + transactionKey + ` LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
