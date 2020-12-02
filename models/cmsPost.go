@@ -160,7 +160,7 @@ func GetAllCmsPost(c *[]CmsPost, limit uint64, offset uint64, params map[string]
 	return http.StatusOK, nil
 }
 
-func GetCmsPostIn(c *[]CmsPost, value []string, field string) (int, error) {
+func GetCmsPostIn(c *[]CmsPost, value []string, field string, params map[string]string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
 				cms_post.* FROM 
@@ -168,7 +168,39 @@ func GetCmsPostIn(c *[]CmsPost, value []string, field string) (int, error) {
 				cms_post.post_publish_start <= NOW() AND 
 				cms_post.post_publish_thru > NOW() AND 
 				cms_post.rec_status = 1 `
+
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ms_product."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
 	query := query2 + " AND cms_post." + field + " IN(" + inQuery + ")"
+
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
 
 	// Main query
 	log.Println(query)

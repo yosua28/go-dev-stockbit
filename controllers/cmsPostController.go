@@ -129,7 +129,7 @@ func GetCmsPostList(c echo.Context) error {
 		params["orderType"] = orderType
 	}
 	var posts []models.CmsPost
-	status, err = models.GetCmsPostIn(&posts, postSubtypeIDs, "post_subtype_key")
+	status, err = models.GetCmsPostIn(&posts, postSubtypeIDs, "post_subtype_key", params)
 	if err != nil {
 		return lib.CustomError(status)
 	}
