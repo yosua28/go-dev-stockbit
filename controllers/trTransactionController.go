@@ -877,7 +877,7 @@ func SendEmailPortofolio(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MNCduit] Laporan Akun Statement")
+	mailer.SetHeader("Subject", "[MNC Duit] Laporan Akun")
 	mailer.SetBody("text/html", result)
 	mailer.Attach(config.BasePath + "/files/" + strconv.FormatUint(lib.Profile.UserID, 10) + "/account-statement.pdf")
 
@@ -1171,7 +1171,7 @@ func SendEmailTransaction(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MNCduit] Transaction History")
+	mailer.SetHeader("Subject", "[MNC Duit] Histori Transaksi")
 	mailer.SetBody("text/html", result)
 	mailer.Attach(config.BasePath + "/files/" + strconv.FormatUint(lib.Profile.UserID, 10) + "/transaction-history.pdf")
 
