@@ -610,12 +610,13 @@ func GetMsProductData(c echo.Context) error {
 		data.FlagSwitchIn = true
 	}
 
-	layout := "2006-01-02 15:04:05"
-	newLayout := "02 Jan 2006"
+	// layout := "2006-01-02 15:04:05"
+	// newLayout := "02 Jan 2006"
 
 	var nav models.TrNavInfo
-	date, _ := time.Parse(layout, navDB[0].NavDate)
-	nav.NavDate = date.Format(newLayout)
+	// date, _ := time.Parse(layout, navDB[0].NavDate)
+	// nav.NavDate = date.Format(newLayout)
+	nav.NavDate = navDB[0].NavDate
 	nav.NavValue = float32(math.Floor(float64(navDB[0].NavValue)*100) / 100)
 
 	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
@@ -669,8 +670,9 @@ func GetMsProductData(c echo.Context) error {
 	data.Nav = &nav
 
 	var perform models.FfsNavPerformanceInfo
-	date, _ = time.Parse(layout, performanceDB[0].NavDate)
-	perform.NavDate = date.Format(newLayout)
+	// date, _ = time.Parse(layout, performanceDB[0].NavDate)
+	// perform.NavDate = date.Format(newLayout)
+	perform.NavDate = performanceDB[0].NavDate
 	perform.D1 = fmt.Sprintf("%.2f", performanceDB[0].PerformD1) + `%`
 	perform.MTD = fmt.Sprintf("%.2f", performanceDB[0].PerformMtd) + `%`
 	perform.M1 = fmt.Sprintf("%.2f", performanceDB[0].PerformM1) + `%`
