@@ -126,6 +126,7 @@ func GetAllScUserMessage(c *[]ScUserMessage, params map[string]string) (int, err
 		if orderType, present = params["orderType"]; present == true {
 			condition += " " + orderType
 		}
+		condition += " , umessage_receipt_date DESC"
 	}
 	query += condition
 
