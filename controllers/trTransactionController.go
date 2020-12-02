@@ -20,9 +20,9 @@ import (
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/gomail.v2"
 	"golang.org/x/text/language"
-    "golang.org/x/text/message"
+	"golang.org/x/text/message"
+	"gopkg.in/gomail.v2"
 )
 
 func CreateTransaction(c echo.Context) error {
@@ -475,20 +475,20 @@ func CreateTransaction(c echo.Context) error {
 	if typeKeyStr == "1" { // SUBS
 		if params["flag_newsub"] == "1" {
 			paramsUserMessage["umessage_subject"] = "Subscription sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Subscription kamu sedang diproses. Terima kasih telah melakukan transaksi subscription."
+			paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
 		} else {
 			paramsUserMessage["umessage_subject"] = "Top Up sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Top Up kamu sedang diproses. Terima kasih telah melakukan transaksi top up."
+			paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
 		}
 	}
 
 	if typeKeyStr == "2" { // REDM
 		paramsUserMessage["umessage_subject"] = "Redemption sedang Diproses"
-		paramsUserMessage["umessage_body"] = "Redemption kamu sedang diproses. Terima kasih telah melakukan transaksi redemption."
+		paramsUserMessage["umessage_body"] = "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
 	}
 	if typeKeyStr == "4" || typeKeyStr == "3" { // SWITCH
 		paramsUserMessage["umessage_subject"] = "Switching sedang Diproses"
-		paramsUserMessage["umessage_body"] = "Switching kamu sedang diproses. Terima kasih telah melakukan transaksi switching."
+		paramsUserMessage["umessage_body"] = "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
 	}
 
 	paramsUserMessage["umessage_category"] = "248"
@@ -795,7 +795,11 @@ func GetTransactionList(c echo.Context) error {
 				data.Uploaded = true
 				data.DateUploaded = transaction.FileUploadDate
 			} else {
-				data.Uploaded = false
+				if transaction.TransTypeKey == 1 {
+					data.Uploaded = false
+				} else {
+					data.Uploaded = true
+				}
 			}
 			if transaction.TransBankKey != nil {
 				if bank, ok := bData[*transaction.TransBankKey]; ok {
@@ -1094,7 +1098,7 @@ func SendEmailTransaction(c echo.Context) error {
 			fee := transaction.TransFeeAmount
 			data["Fee"] = fee
 			if tc, ok := tcData[transaction.TransactionKey]; ok {
-				data["Unit"] = math.Floor(float64(tc.ConfirmedUnit)*100)/100
+				data["Unit"] = math.Floor(float64(tc.ConfirmedUnit)*100) / 100
 				data["Amount"] = float32(math.Trunc(float64(tc.ConfirmedAmount)))
 				data["Total"] = float32(math.Trunc(float64(tc.ConfirmedAmount + fee)))
 			}
@@ -1223,7 +1227,7 @@ func mailTransaction(typ string, params map[string]string) error {
 			if typ == "topup" {
 				s = "Top Up"
 			}
-			subject = s+" Kamu sedang Diproses"
+			subject = s + " Kamu sedang Diproses"
 		} else {
 			mailTemp = "index-" + typ + "-uncomplete.html"
 			subject = "Ayo Upload Bukti Transfer Kamu"

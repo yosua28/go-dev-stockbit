@@ -442,7 +442,7 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 		}
 
 		if n, ok := productData[tr.ProductKey]; ok {
-			data.ProductName = n.ProductName
+			data.ProductName = n.ProductNameAlt
 		}
 
 		if n, ok := transStatusData[tr.TransStatusKey]; ok {
@@ -1222,15 +1222,6 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 		log.Error(err.Error())
 	}
 
-	var trNavData models.TrNav
-
-	var trNav []models.TrNav
-	_, err = models.GetTrNavByProductKeyAndNavDate(&trNav, strProductKey, transaction.NavDate)
-
-	if err == nil {
-		trNavData = trNav[0]
-	}
-
 	var currencyDB models.MsCurrency
 	_, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
 	if err != nil {
@@ -1303,7 +1294,6 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 		Amount         string
 		Fee            string
 		RedmUnit       string
-		NabUnit        string
 		BankName       string
 		NoRek          string
 		NamaRek        string
@@ -1324,7 +1314,6 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 		Amount:         fmt.Sprintf("%.2f", transaction.TransAmount),
 		Fee:            fmt.Sprintf("%.2f", transaction.TransFeeAmount),
 		RedmUnit:       fmt.Sprintf("%.2f", transaction.TransUnit),
-		NabUnit:        fmt.Sprintf("%.2f", trNavData.NavValue),
 		BankName:       bankNameCus,
 		NoRek:          noRekCus,
 		NamaRek:        namaRekCus,
@@ -1338,12 +1327,12 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	if strTransTypeKey == "1" { // SUBS
 		if transaction.FlagNewSub != nil {
 			if *transaction.FlagNewSub == 1 {
-				subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+				subject = "[MNC Duit] Subscription Kamu Gagal"
 			} else {
 				subject = "[MNC Duit] Top Up Kamu telah Berhasil"
 			}
 		} else {
-			subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+			subject = "[MNC Duit] Top Up Kamu Gagal"
 		}
 
 		t := template.New("email-subscription-rejected.html")
@@ -1359,7 +1348,7 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	}
 
 	if strTransTypeKey == "2" { // REDM
-		subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
+		subject = "[MNC Duit] Redemption Kamu Gagal"
 		t := template.New("email-redemption-rejected.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-rejected.html")
@@ -1374,7 +1363,7 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	}
 
 	if strTransTypeKey == "4" { // SWITCH
-		subject = "[MNC Duit] Switching Kamu telah Berhasil"
+		subject = "[MNC Duit] Switching Kamu Gagal"
 		t := template.New("email-switching-rejected.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-rejected.html")
@@ -1769,6 +1758,10 @@ func TransactionApprovalCutOff(c echo.Context) error {
 
 	strStatusCutOff := "5"
 
+	trBankAccDone := 0
+	trBankAccNotDone := 0
+	var transParamIdsValid []string
+
 	for _, tr := range transactionList {
 		strTransStatusKey := strconv.FormatUint(tr.TransStatusKey, 10)
 		if strTransStatusKey != strStatusCutOff {
@@ -1777,20 +1770,16 @@ func TransactionApprovalCutOff(c echo.Context) error {
 		}
 
 		//bank account customer
-		// strTrKey := strconv.FormatUint(tr.TransactionKey, 10)
-		// var trBankAccount models.TrTransactionBankAccount
-		// _, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
-		// if err == nil {
-
-		// }
-
-		strTransType := strconv.FormatUint(tr.TransTypeKey, 10)
-		if strTransType == "4" {
-			if tr.ParentKey != nil {
-				if _, ok := lib.Find(transParamIds, strconv.FormatUint(*tr.ParentKey, 10)); !ok {
-					transParamIds = append(transParamIds, strconv.FormatUint(*tr.ParentKey, 10))
-				}
+		strTrKey := strconv.FormatUint(tr.TransactionKey, 10)
+		var trBankAccount models.TrTransactionBankAccount
+		_, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
+		if err == nil {
+			if _, ok := lib.Find(transParamIdsValid, strTrKey); !ok {
+				transParamIdsValid = append(transParamIdsValid, strTrKey)
 			}
+			trBankAccDone++
+		} else {
+			trBankAccNotDone++
 		}
 	}
 
@@ -1802,10 +1791,17 @@ func TransactionApprovalCutOff(c echo.Context) error {
 	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
 	paramsUpdate["rec_modified_by"] = strKey
 
-	_, err := models.UpdateTrTransactionByKeyIn(paramsUpdate, transParamIds, "transaction_key")
-	if err != nil {
-		log.Error("Error update oa request")
-		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	if len(transParamIdsValid) > 0 {
+		_, err := models.UpdateTrTransactionByKeyIn(paramsUpdate, transParamIdsValid, "transaction_key")
+		if err != nil {
+			log.Error("Error update oa request")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		}
+	}
+
+	if trBankAccNotDone > 0 {
+		log.Error("Ada Transaksi yang belum memiliki transaksi bank akun. Silakan update terlebih dahulu.")
+		return lib.CustomError(http.StatusInternalServerError, "Ada Transaksi yang belum memiliki transaksi bank akun. Silakan update terlebih dahulu.", "Ada Transaksi yang belum memiliki transaksi bank akun. Silakan update terlebih dahulu.")
 	}
 
 	var response lib.Response
