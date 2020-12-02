@@ -740,21 +740,6 @@ func GetTransactionList(c echo.Context) error {
 		}
 	}
 
-	var navDB []models.TrNav
-	status, err = models.GetTrNavIn(&navDB, navDates, "nav_date")
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get nav data")
-	}
-	if len(navDB) < 1 {
-		log.Error("Nav data not found")
-		// return lib.CustomError(http.StatusNotFound, "Nav data not found", "Nav data not found")
-	}
-	nData := make(map[string]models.TrNav)
-	for _, nav := range navDB {
-		nData[nav.NavDate] = nav
-	}
-
 	var responseData []models.TrTransactionList
 	for _, transaction := range transactionDB {
 		if transaction.TransTypeKey != 3 {
@@ -768,15 +753,19 @@ func GetTransactionList(c echo.Context) error {
 				data.TransStatus = *status.StatusCode
 			}
 			if typ, ok := tData[transaction.TransTypeKey]; ok {
-				// data.TransType = *typ.TypeCode
 				data.TransType = *typ.TypeDescription
 			}
-			if nav, ok := nData[transaction.NavDate]; ok {
-				data.NavValue = nav.NavValue
+
+			strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+			var navTrans models.TrNav
+			status, err = models.GetNavByProductKeyAndNavDate(&navTrans, strProductKey, transaction.NavDate)
+			if err == nil {
+				data.NavValue = navTrans.NavValue
+			} else {
+				data.NavValue = float32(0)
 			}
 			data.TransDate = transaction.TransDate
 			data.NavDate = transaction.NavDate
-			// data.TransAmount = transaction.TransAmount
 
 			//cek transaction confirmation
 			var transactionConf models.TrTransactionConfirmation

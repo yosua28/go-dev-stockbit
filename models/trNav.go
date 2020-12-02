@@ -194,3 +194,20 @@ func GetTrNavByProductKeyAndNavDate(c *[]TrNav, productKey string, navDate strin
 
 	return http.StatusOK, nil
 }
+
+func GetNavByProductKeyAndNavDate(c *TrNav, productKey string, navDate string) (int, error) {
+	query := `SELECT
+              tr_nav.* FROM 
+			  tr_nav`
+	query += " WHERE tr_nav.rec_status = 1 AND tr_nav.product_key = '" + productKey + "' AND tr_nav.nav_date = '" + navDate + "'"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
