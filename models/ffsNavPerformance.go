@@ -18,9 +18,9 @@ type FfsNavPerformanceInfo struct {
 	Y1      string `json:"1y,omitempty"`
 	Y3      string `json:"3y,omitempty"`
 	Y5      string `json:"5y,omitempty"`
-	YTD     string `json:"YTD,omitempty"`
+	YTD     string `json:"ytd,omitempty"`
 	CAGR    string `json:"cagr,omitempty"`
-	ALL     string `json:"All,omitempty"`
+	ALL     string `json:"all,omitempty"`
 }
 
 type FfsNavPerformance struct {
