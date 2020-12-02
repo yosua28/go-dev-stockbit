@@ -720,7 +720,7 @@ func GetTrTransactionDateRange(c *[]TrTransaction, params map[string]string, sta
 func GetTrTransactionOnProcess(c *[]TrTransaction, params map[string]string) (int, error) {
 	query := `SELECT
               tr_transaction.* FROM 
-			  tr_transaction WHERE tr_transaction.trans_status_key < 9 AND DATE_ADD(tr_transaction.nav_date, INTERVAL 2 DAY) >= NOW()`
+			  tr_transaction WHERE tr_transaction.trans_status_key < 9 AND DATE_ADD(tr_transaction.nav_date, INTERVAL 1 DAY) >= NOW()`
 	var present bool
 	var whereClause []string
 	var condition string
@@ -767,8 +767,8 @@ func ParamBatchTrTransactionByKey(c *ParamBatchTrTransaction, transactionKey str
 	query := `SELECT
 				p.product_code AS product_code,
 				tt.type_code AS type_code,
-				MONTH(t.trans_date) AS bulan,
-				YEAR(t.trans_date) AS tahun,
+				MONTH(t.nav_date) AS bulan,
+				YEAR(t.nav_date) AS tahun,
 				t.nav_date AS nav_date,
 				p.product_key AS product_key,
 				t.trans_type_key AS trans_type_key,
