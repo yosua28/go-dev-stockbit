@@ -296,21 +296,23 @@ func GetMsProductList(c echo.Context) error {
 			}
 			data.RiskProfile = &risk
 
-			layout := "2006-01-02 15:04:05"
-			newLayout := "02 Jan 2006"
+			// layout := "2006-01-02 15:04:05"
+			// newLayout := "02 Jan 2006"
 
 			var nav models.TrNavInfo
 			if n, ok := nData[product.ProductKey]; ok {
-				date, _ := time.Parse(layout, n.NavDate)
-				nav.NavDate = date.Format(newLayout)
+				// date, _ := time.Parse(layout, n.NavDate)
+				// nav.NavDate = date.Format(newLayout)
+				nav.NavDate = n.NavDate
 				nav.NavValue = n.NavValue
 			}
 			data.Nav = &nav
 
 			var perform models.FfsNavPerformanceInfo
 			if p, ok := pData[product.ProductKey]; ok {
-				date, _ := time.Parse(layout, p.NavDate)
-				perform.NavDate = date.Format(newLayout)
+				// date, _ := time.Parse(layout, p.NavDate)
+				// perform.NavDate = date.Format(newLayout)
+				perform.NavDate = p.NavDate
 				perform.D1 = fmt.Sprintf("%.2f", p.PerformD1) + `%`
 				perform.MTD = fmt.Sprintf("%.2f", p.PerformMtd) + `%`
 				perform.M1 = fmt.Sprintf("%.2f", p.PerformM1) + `%`
