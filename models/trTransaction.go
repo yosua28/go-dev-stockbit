@@ -205,6 +205,8 @@ type AdminTransactionDetail struct {
 	TransactionConfirmation *TransactionConfirmation             `json:"transaction_confirmation"`
 	ProductBankAccount      *MsProductBankAccountTransactionInfo `json:"product_bank_account"`
 	CustomerBankAccount     *MsCustomerBankAccountInfo           `json:"customer_bank_account"`
+	IsEnableUnposting       bool                                 `json:"is_enable_unposting"`
+	MessageEnableUnposting  string                               `json:"message_enable_unposting"`
 }
 
 type DownloadFormatExcelList struct {
@@ -779,6 +781,27 @@ func ParamBatchTrTransactionByKey(c *ParamBatchTrTransaction, transactionKey str
 			INNER JOIN ms_product AS p ON p.product_key = t.product_key
 			INNER JOIN tr_transaction_type AS tt ON tt.trans_type_key = t.trans_type_key
 			WHERE t.transaction_key = ` + transactionKey + ` LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CheckTrTransactionLastProductCustomer(c *TrTransaction, customerKey string, productKey string, transKey string) (int, error) {
+	query := `SELECT
+				tr_transaction.* FROM 
+				tr_transaction `
+	query += " WHERE tr_transaction.rec_status = 1"
+	query += " AND trans_status_key = 9"
+	query += " AND customer_key = " + customerKey
+	query += " AND product_key = " + productKey
+	query += " AND transaction_key > " + transKey + " LIMIT 1"
 
 	// Main query
 	log.Println(query)

@@ -6496,7 +6496,9 @@
                       "bank_name": "ABN AMRO",
                       "account_no": "084551813",
                       "account_name": "bsjsbshshs"
-                    }
+                    },
+                    "is_enable_unposting": true,
+                    "message_enable_unposting": ""
                   }
                 }
               }

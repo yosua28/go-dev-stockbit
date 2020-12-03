@@ -949,6 +949,21 @@ func GetTransactionDetail(c echo.Context) error {
 		}
 	}
 
+	responseData.IsEnableUnposting = false
+	responseData.MessageEnableUnposting = ""
+
+	if strTrSt == "9" {
+		responseData.MessageEnableUnposting = "Transaksi tidak dapat di Un-posting karena bukan data terakhir dari customer dan produk yang sama."
+		var transAfter models.TrTransaction
+		status, err = models.CheckTrTransactionLastProductCustomer(&transAfter, strCustomer, strPro, keyStr)
+		if err != nil {
+			if err == sql.ErrNoRows {
+				responseData.IsEnableUnposting = true
+				responseData.MessageEnableUnposting = ""
+			}
+		}
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -3230,6 +3245,16 @@ func ProsesUnposting(c echo.Context) error {
 	if strTransStatusKey != "9" {
 		log.Error("User Autorizer, status transaksi not posted")
 		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	strCustomer := strconv.FormatUint(transaction.CustomerKey, 10)
+	strPro := strconv.FormatUint(transaction.ProductKey, 10)
+
+	var transAfter models.TrTransaction
+	status, err = models.CheckTrTransactionLastProductCustomer(&transAfter, strCustomer, strPro, transactionkey)
+	if err == nil {
+		log.Error("Transaksi tidak dapat di Un-posting karena bukan data terakhir dari customer dan produk yang sama.")
+		return lib.CustomError(http.StatusBadRequest, "Transaksi tidak dapat di Un-posting karena bukan data terakhir dari customer dan produk yang sama.", "Transaksi tidak dapat di Un-posting karena bukan data terakhir dari customer dan produk yang sama.")
 	}
 
 	dateLayout := "2006-01-02 15:04:05"
