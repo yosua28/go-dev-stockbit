@@ -145,6 +145,19 @@ func GetTransactionPostingList(c echo.Context) error {
 	return getListAdmin(transStatusKey, c, nil)
 }
 
+func GetTransactionUnpostingList(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var transStatusKey []string
+	transStatusKey = append(transStatusKey, "9")
+
+	return getListAdmin(transStatusKey, c, nil)
+}
+
 func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) error {
 
 	var err error
@@ -244,7 +257,8 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	_, cekConfirm := lib.Find(transStatusKey, "7")
 	_, cekPosting := lib.Find(transStatusKey, "8")
 	_, cekCutoff := lib.Find(transStatusKey, "5")
-	if !cekConfirm && !cekPosting && !cekCutoff {
+	_, cekPosted := lib.Find(transStatusKey, "9")
+	if !cekConfirm && !cekPosting && !cekCutoff && !cekPosted {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	} else {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
@@ -3175,5 +3189,129 @@ func GetProductBankAccount(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = bankAccountTransactionInfo
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func ProsesUnposting(c echo.Context) error {
+	errorAuth := initAuthFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	transactionkey := c.FormValue("transaction_key")
+	if transactionkey == "" {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	n, err := strconv.ParseUint(transactionkey, 10, 64)
+	if err == nil && n > 0 {
+		params["transaction_key"] = transactionkey
+	} else {
+		log.Error("Wrong input for parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+	}
+
+	var transaction models.TrTransaction
+	status, err = models.GetTrTransaction(&transaction, transactionkey)
+	if err != nil {
+		log.Error("Transaction not exist")
+		return lib.CustomError(status)
+	}
+
+	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
+
+	if strTransStatusKey != "9" {
+		log.Error("User Autorizer, status transaksi not posted")
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+	var transactionConf models.TrTransactionConfirmation
+	strTransactionKey := strconv.FormatUint(transaction.TransactionKey, 10)
+	_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTransactionKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	//update tr_transaction
+	params["trans_status_key"] = "7"
+	params["rec_modified_by"] = strIDUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	_, err = models.UpdateTrTransaction(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//update delete tr_transaction_confirmation
+	strTcKey := strconv.FormatUint(transactionConf.TcKey, 10)
+	paramsConf := make(map[string]string)
+	paramsConf["tc_key"] = strTcKey
+	paramsConf["rec_status"] = "0"
+	paramsConf["rec_deleted_by"] = strIDUserLogin
+	paramsConf["rec_deleted_date"] = time.Now().Format(dateLayout)
+
+	_, err = models.UpdateTrTransactionConfirmation(paramsConf)
+	if err != nil {
+		log.Error("Error delete tr transaction condirmation")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error delete tr transaction condirmation")
+	}
+
+	//update delete tr_transaction_fifo
+	paramsFifo := make(map[string]string)
+	paramsFifo["rec_status"] = "0"
+	paramsFifo["rec_deleted_by"] = strIDUserLogin
+	paramsFifo["rec_deleted_date"] = time.Now().Format(dateLayout)
+
+	var field string
+	if strTransTypeKey == "1" || strTransTypeKey == "4" {
+		field = "trans_conf_sub_key"
+	} else {
+		field = "trans_conf_red_key"
+	}
+
+	_, err = models.UpdateTrTransactionFifo(paramsFifo, strTcKey, field)
+	if err != nil {
+		log.Error("Error delete tr transaction fifo")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error delete tr transaction fifo")
+	}
+
+	//update delete tr_balance
+	paramsBalance := make(map[string]string)
+	paramsBalance["rec_status"] = "0"
+	paramsBalance["rec_deleted_by"] = strIDUserLogin
+	paramsBalance["rec_deleted_date"] = time.Now().Format(dateLayout)
+
+	var fieldBalance string
+	if strTransTypeKey == "1" || strTransTypeKey == "4" {
+		fieldBalance = "tc_key"
+	} else {
+		fieldBalance = "tc_key_red"
+	}
+
+	_, err = models.UpdateTrBalance(paramsFifo, strTcKey, fieldBalance)
+	if err != nil {
+		log.Error("Error delete tr balance")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error delete tr balance")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }

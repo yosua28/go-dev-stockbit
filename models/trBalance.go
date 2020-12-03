@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"log"
 	"net/http"
 	"strings"
@@ -160,5 +161,40 @@ func GetLastAvgNavTrBalanceCustomerByProductKey(c *AvgNav, customerKey string, p
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateTrBalance(params map[string]string, value string, field string) (int, error) {
+	query := "UPDATE tr_balance SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " = " + value
+	// log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		// log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		// log.Error(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }

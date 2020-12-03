@@ -116,3 +116,41 @@ func GetTrTransactionConfirmationIn(c *[]TrTransactionConfirmation, value []stri
 
 	return http.StatusOK, nil
 }
+
+func UpdateTrTransactionConfirmation(params map[string]string) (int, error) {
+	query := "UPDATE tr_transaction_confirmation SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "tc_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE tc_key = " + params["tc_key"]
+	// log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		// log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		// log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
