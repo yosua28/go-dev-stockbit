@@ -685,7 +685,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
 	paramsUserMessage["umessage_subject"] = "Pembukaan Rekening sedang Diproses"
-	paramsUserMessage["umessage_body"] = "Pembukaan rekening reksa dana yang kamu ajukan telah kami terima. Kami sedang memproses pembukaan rekening kamu max. 1X24 jam."
+	paramsUserMessage["umessage_body"] = "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
 
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
