@@ -676,6 +676,7 @@ func CreateOaPersonalData(c echo.Context) error {
 
 	//insert message notif in app
 	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	dateLayout := "2006-01-02 15:04:05"
 	paramsUserMessage := make(map[string]string)
 	paramsUserMessage["umessage_type"] = "245"
 	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
