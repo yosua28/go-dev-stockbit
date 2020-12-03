@@ -4,15 +4,15 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"bytes"
+	"crypto/tls"
+	"html/template"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-	"html/template"
-	"bytes"
-	"crypto/tls"
 
 	"github.com/badoux/checkmail"
 	"github.com/labstack/echo"
@@ -638,14 +638,17 @@ func CreateOaPersonalData(c echo.Context) error {
 
 	// Send email
 	t := template.New("index-registration.html")
-	
+
 	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
 	if err != nil {
 		log.Println(err)
 	}
 
 	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct{ Name string; FileUrl string }{Name: fullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+	if err := t.Execute(&tpl, struct {
+		Name    string
+		FileUrl string
+	}{Name: fullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
 		log.Println(err)
 	}
 
@@ -670,6 +673,32 @@ func CreateOaPersonalData(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
 	}
 	log.Info("Email sent")
+
+	//insert message notif in app
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = "Pembukaan Rekening sedang Diproses"
+	paramsUserMessage["umessage_body"] = "Pembukaan rekening reksa dana yang kamu ajukan telah kami terima. Kami sedang memproses pembukaan rekening kamu."
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
 
 	responseData := make(map[string]string)
 	responseData["request_key"] = requestKey
