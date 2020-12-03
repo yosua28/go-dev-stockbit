@@ -581,7 +581,7 @@ func GetTransactionDetail(c echo.Context) error {
 		}
 	}
 	if lib.Profile.RoleKey == roleKeyFundAdmin {
-		status := []string{"5", "6", "7", "8"}
+		status := []string{"5", "6", "7", "8", "9"}
 		_, found := lib.Find(status, strTransStatusKey)
 		if !found {
 			log.Error("User Autorizer")
