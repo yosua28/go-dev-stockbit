@@ -260,6 +260,25 @@ func GetMsProductList(c echo.Context) error {
 		rData[risk.RiskProfileKey] = risk
 	}
 
+	var productNotAllow []models.ProductCheckAllowRedmSwtching
+	if lib.Profile.CustomerKey != nil {
+		if len(productIDs) > 0 {
+			strCustomer := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+			status, err = models.CheckProductAllowRedmOrSwitching(&productNotAllow, strCustomer, productIDs)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	var productIDNotAllowed []string
+	for _, pKey := range productNotAllow {
+		if _, ok := lib.Find(productIDNotAllowed, strconv.FormatUint(pKey.ProductKey, 10)); !ok {
+			productIDNotAllowed = append(productIDNotAllowed, strconv.FormatUint(pKey.ProductKey, 10))
+		}
+	}
+
 	var responseData []models.MsProductList
 	for _, order := range responseOrder {
 		if product, ok := productData[order]; ok {
@@ -330,17 +349,9 @@ func GetMsProductList(c echo.Context) error {
 			data.IsAllowRedemption = true
 			data.IsAllowSwitchin = true
 
-			var countData models.CountData
-			if lib.Profile.CustomerKey != nil {
-				strCustomer := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
-				strProductKey := strconv.FormatUint(product.ProductKey, 10)
-				status, err = models.CheckProductAllowRedmOrSwitching(&countData, strCustomer, strProductKey)
-				if err == nil {
-					if int(countData.CountData) > int(0) {
-						data.IsAllowRedemption = false
-						data.IsAllowSwitchin = false
-					}
-				}
+			if _, ok := lib.Find(productIDNotAllowed, strconv.FormatUint(product.ProductKey, 10)); !ok {
+				data.IsAllowRedemption = true
+				data.IsAllowSwitchin = true
 			} else {
 				data.IsAllowRedemption = false
 				data.IsAllowSwitchin = false

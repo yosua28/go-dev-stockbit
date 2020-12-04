@@ -301,6 +301,10 @@ type ParamBatchTrTransaction struct {
 	Batch          *uint64 `db:"batch"            json:"batch"`
 }
 
+type ProductCheckAllowRedmSwtching struct {
+	ProductKey uint64 `db:"product_key"             json:"product_key"`
+}
+
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
 	params map[string]string, valueIn []string, fieldIn string, isAll bool) (int, error) {
 	query := `SELECT
@@ -814,18 +818,22 @@ func CheckTrTransactionLastProductCustomer(c *TrTransaction, customerKey string,
 	return http.StatusOK, nil
 }
 
-func CheckProductAllowRedmOrSwitching(c *CountData, customerKey string, productKey string) (int, error) {
-	query := `SELECT count(tr_transaction.transaction_key) as count_data 
+func CheckProductAllowRedmOrSwitching(c *[]ProductCheckAllowRedmSwtching, customerKey string, productKeyIn []string) (int, error) {
+
+	inQuery := strings.Join(productKeyIn, ",")
+
+	query := `SELECT product_key 
 				FROM tr_transaction`
 	query += " WHERE rec_status = 1"
 	query += " AND trans_type_key IN (2,3)"
 	query += " AND trans_status_key NOT IN (3,9)"
 	query += " AND customer_key = " + customerKey
-	query += " AND product_key = " + productKey
+	query += " AND product_key IN(" + inQuery + ")"
+	query += " GROUP BY product_key"
 
 	// Main query
 	log.Println(query)
-	err := db.Db.Get(c, query)
+	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
