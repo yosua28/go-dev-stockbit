@@ -548,7 +548,7 @@ func GetTransactionDetail(c echo.Context) error {
 	}
 
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
-	strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+	// strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
 
 	// if strTransTypeKey == "3" {
 	// 	log.Error("Data not found")
