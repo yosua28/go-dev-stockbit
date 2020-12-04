@@ -176,190 +176,247 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 
 	var responseData models.TransactionFormatSinvest
 
-	var subscriptionRedeemption []models.SubscriptionRedeemption
-	for _, trSubRed := range transSubRed {
-		var subred models.SubscriptionRedeemption
-		layout := "2006-01-02 15:04:05"
-		newLayout := "20060102"
-		date, _ := time.Parse(layout, trSubRed.NavDate)
-		subred.TransactionDate = date.Format(newLayout)
+	var dataRowSubRedArray []models.OaRequestCsvFormatFiksTxt
 
-		subred.TransactionType = trSubRed.TransTypeKey
-		subred.SACode = "EP002"
+	if len(transSubRed) > 0 {
+		txtHeaderSubRed := "transaction_date|transaction_type|sa_code|investor_fund_unit|fund_code|amount_nominal|amount_unit|amount_all_unit|fee_nominal|fee_unit|fee_percent|redm_payment_ac_sequence_code|redm_payment_bank_bic_code|redm_payment_bank_bi_member_code|redm_payment_ac_code|payment_date|transfer_type|sa_reference_no"
+		var dataRowSubRed models.OaRequestCsvFormatFiksTxt
+		dataRowSubRed.DataRow = txtHeaderSubRed
+		dataRowSubRedArray = append(dataRowSubRedArray, dataRowSubRed)
 
-		subred.InvestorFundUnitACNo = ""
-		if co, ok := accountData[trSubRed.CustomerKey]; ok {
-			subred.InvestorFundUnitACNo = *co.IfuaNo
-		}
+		for _, trSubRed := range transSubRed {
+			var txt models.OaRequestCsvFormatFiksTxt
+			var subred models.SubscriptionRedeemption
+			layout := "2006-01-02 15:04:05"
+			newLayout := "20060102"
+			date, _ := time.Parse(layout, trSubRed.NavDate)
+			subred.TransactionDate = date.Format(newLayout)
 
-		subred.FundCode = ""
-		if pro, ok := productData[trSubRed.ProductKey]; ok {
-			subred.FundCode = *pro.SinvestFundCode
-		}
+			subred.TransactionType = strconv.FormatUint(trSubRed.TransTypeKey, 10)
+			subred.SACode = "EP002"
 
-		strTransTypeKey := strconv.FormatUint(trSubRed.TransTypeKey, 10)
+			subred.InvestorFundUnitACNo = ""
+			if co, ok := accountData[trSubRed.CustomerKey]; ok {
+				subred.InvestorFundUnitACNo = *co.IfuaNo
+			}
 
-		subred.AmountNominal = ""
-		if strTransTypeKey == "1" { //SUB
-			if trSubRed.TransAmount > 0 {
-				strTransAmount := fmt.Sprintf("%g", trSubRed.TransAmount)
-				subred.AmountNominal = strTransAmount
+			subred.FundCode = ""
+			if pro, ok := productData[trSubRed.ProductKey]; ok {
+				subred.FundCode = *pro.SinvestFundCode
+			}
+
+			strTransTypeKey := strconv.FormatUint(trSubRed.TransTypeKey, 10)
+
+			subred.AmountNominal = ""
+			if strTransTypeKey == "1" { //SUB
+				if trSubRed.TransAmount > 0 {
+					strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
+					subred.AmountNominal = strTransAmount
+				} else {
+					subred.AmountNominal = "0"
+				}
 			} else {
-				subred.AmountNominal = "0"
-			}
-		} else {
-			if trSubRed.TransAmount > 0 {
-				strTransAmount := fmt.Sprintf("%g", trSubRed.TransAmount)
-				subred.AmountNominal = strTransAmount
-			}
-		}
-
-		subred.AmountUnit = ""
-		subred.AmountAllUnit = ""
-		if strTransTypeKey == "2" { //REDM
-			if trSubRed.TransUnit > 0 {
-				strTransUnit := fmt.Sprintf("%g", trSubRed.TransUnit)
-				subred.AmountUnit = strTransUnit
-			} else {
-				subred.AmountUnit = "0"
-			}
-
-			if trSubRed.FlagRedemtAll != nil {
-				if int(*trSubRed.FlagRedemtAll) > 0 {
-					subred.AmountAllUnit = "Y"
+				if trSubRed.TransAmount > 0 {
+					strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
+					subred.AmountNominal = strTransAmount
 				}
 			}
-		}
 
-		subred.FeeNominal = ""
-		if trSubRed.TransFeeAmount > 0 {
-			strFeeAmount := fmt.Sprintf("%g", trSubRed.TransFeeAmount)
-			subred.FeeNominal = strFeeAmount
-		}
-
-		subred.FeeUnit = ""
-
-		subred.FeePercent = ""
-		if trSubRed.TransFeePercent > 0 {
-			strFeePercent := fmt.Sprintf("%g", trSubRed.TransFeePercent)
-			subred.FeePercent = strFeePercent
-		}
-
-		subred.RedmPaymentACSequenceCode = "1"
-
-		subred.RedmPaymentBankBICCode = ""
-		subred.RedmPaymentBankBIMemberCode = ""
-		subred.RedmPaymentACCode = ""
-		subred.TransferType = ""
-		if strTransTypeKey == "2" { //REDM
-			if ba, ok := bankTransData[trSubRed.CustomerKey]; ok {
-				if ba.SwiftCode != nil {
-					subred.RedmPaymentBankBICCode = *ba.SwiftCode
-				}
-				if ba.BiMemberCode != nil {
-					subred.RedmPaymentBankBIMemberCode = *ba.BiMemberCode
-				}
-				subred.RedmPaymentACCode = ba.CustomerAccountNo
-			}
-			subred.TransferType = "3"
-		}
-
-		if trSubRed.SettlementDate != nil {
-			date, _ = time.Parse(layout, *trSubRed.SettlementDate)
-			subred.PaymentDate = date.Format(newLayout)
-		} else {
-			date, _ = time.Parse(layout, trSubRed.NavDate)
-			subred.PaymentDate = date.Format(newLayout)
-		}
-		subred.SaReferenceNo = trSubRed.TransactionKey
-
-		subscriptionRedeemption = append(subscriptionRedeemption, subred)
-
-	}
-
-	var switchTransaction []models.SwitchTransaction
-	for _, trSwitch := range transSwitch {
-		var swc models.SwitchTransaction
-
-		layout := "2006-01-02 15:04:05"
-		newLayout := "20060102"
-		date, _ := time.Parse(layout, trSwitch.NavDate)
-		swc.TransactionDate = date.Format(newLayout)
-
-		swc.TransactionType = trSwitch.TransTypeKey
-		swc.SACode = "EP002"
-
-		swc.InvestorFundUnitACNo = ""
-		if co, ok := accountData[trSwitch.CustomerKey]; ok {
-			swc.InvestorFundUnitACNo = *co.IfuaNo
-		}
-
-		swc.SwitchOutFundCode = ""
-		swc.SwitchOutAmountNominal = ""
-		swc.SwitchOutAmountUnit = ""
-		swc.SwitchOutAmountAll = ""
-		if trSwitch.ParentKey != nil {
-			if pt, ok := parentTrData[*trSwitch.ParentKey]; ok {
-				if pt.SinvestFundCode != nil {
-					swc.SwitchOutFundCode = *pt.SinvestFundCode
+			subred.AmountUnit = ""
+			subred.AmountAllUnit = ""
+			if strTransTypeKey == "2" { //REDM
+				if trSubRed.TransUnit > 0 {
+					strTransUnit := fmt.Sprintf("%.2f", trSubRed.TransUnit)
+					subred.AmountUnit = strTransUnit
+				} else {
+					subred.AmountUnit = "0"
 				}
 
-				if pt.TransAmount > 0 {
-					strTransAmount := fmt.Sprintf("%g", pt.TransAmount)
-					swc.SwitchOutAmountNominal = strTransAmount
-				}
-				if pt.TransUnit > 0 {
-					strTransUnit := fmt.Sprintf("%g", pt.TransUnit)
-					swc.SwitchOutAmountUnit = strTransUnit
-				}
-				if pt.FlagRedemtAll != nil {
-					if int(*pt.FlagRedemtAll) > 0 {
-						swc.SwitchOutAmountAll = "Y"
+				if trSubRed.FlagRedemtAll != nil {
+					if int(*trSubRed.FlagRedemtAll) > 0 {
+						subred.AmountAllUnit = "Y"
 					}
 				}
 			}
+
+			subred.FeeNominal = ""
+			if trSubRed.TransFeeAmount > 0 {
+				strFeeAmount := fmt.Sprintf("%.2f", trSubRed.TransFeeAmount)
+				subred.FeeNominal = strFeeAmount
+			}
+
+			subred.FeeUnit = ""
+
+			subred.FeePercent = ""
+			if trSubRed.TransFeePercent > 0 {
+				strFeePercent := fmt.Sprintf("%.2f", trSubRed.TransFeePercent)
+				subred.FeePercent = strFeePercent
+			}
+
+			subred.RedmPaymentACSequenceCode = "1"
+
+			subred.RedmPaymentBankBICCode = ""
+			subred.RedmPaymentBankBIMemberCode = ""
+			subred.RedmPaymentACCode = ""
+			subred.TransferType = ""
+			if strTransTypeKey == "2" { //REDM
+				if ba, ok := bankTransData[trSubRed.CustomerKey]; ok {
+					if ba.SwiftCode != nil {
+						subred.RedmPaymentBankBICCode = *ba.SwiftCode
+					}
+					if ba.BiMemberCode != nil {
+						subred.RedmPaymentBankBIMemberCode = *ba.BiMemberCode
+					}
+					subred.RedmPaymentACCode = ba.CustomerAccountNo
+				}
+				subred.TransferType = "3"
+			}
+
+			if trSubRed.SettlementDate != nil {
+				date, _ = time.Parse(layout, *trSubRed.SettlementDate)
+				subred.PaymentDate = date.Format(newLayout)
+			} else {
+				date, _ = time.Parse(layout, trSubRed.NavDate)
+				subred.PaymentDate = date.Format(newLayout)
+			}
+			subred.SaReferenceNo = strconv.FormatUint(trSubRed.TransactionKey, 10)
+
+			txtData := subred.TransactionDate + "|" +
+				subred.TransactionType + "|" +
+				subred.SACode + "|" +
+				subred.InvestorFundUnitACNo + "|" +
+				subred.FundCode + "|" +
+				subred.AmountNominal + "|" +
+				subred.AmountUnit + "|" +
+				subred.AmountAllUnit + "|" +
+				subred.FeeNominal + "|" +
+				subred.FeeUnit + "|" +
+				subred.FeePercent + "|" +
+				subred.RedmPaymentACSequenceCode + "|" +
+				subred.RedmPaymentBankBICCode + "|" +
+				subred.RedmPaymentBankBIMemberCode + "|" +
+				subred.RedmPaymentACCode + "|" +
+				subred.PaymentDate + "|" +
+				subred.TransferType + "|" +
+				subred.SaReferenceNo
+
+			txt.DataRow = txtData
+
+			dataRowSubRedArray = append(dataRowSubRedArray, txt)
 		}
-
-		swc.SwitchingFeeChargeFund = "1"
-		if trSwitch.ChargesFeeAmount > 0 {
-			swc.SwitchingFeeChargeFund = "2"
-		}
-
-		swc.FeeNominal = ""
-		if trSwitch.TransFeeAmount > 0 {
-			strFeeAmount := fmt.Sprintf("%g", trSwitch.TransFeeAmount)
-			swc.FeeNominal = strFeeAmount
-		}
-
-		swc.FeeUnit = ""
-
-		swc.FeePercent = ""
-		if trSwitch.TransFeePercent > 0 {
-			strFeePercent := fmt.Sprintf("%g", trSwitch.TransFeePercent)
-			swc.FeePercent = strFeePercent
-		}
-
-		swc.SwitchInFundCode = ""
-		if pro, ok := productData[trSwitch.ProductKey]; ok {
-			swc.SwitchInFundCode = *pro.SinvestFundCode
-		}
-
-		if trSwitch.SettlementDate != nil {
-			date, _ = time.Parse(layout, *trSwitch.SettlementDate)
-			swc.PaymentDate = date.Format(newLayout)
-		} else {
-			date, _ = time.Parse(layout, trSwitch.NavDate)
-			swc.PaymentDate = date.Format(newLayout)
-		}
-
-		swc.TransferType = "3"
-		swc.SaReferenceNo = trSwitch.TransactionKey
-
-		switchTransaction = append(switchTransaction, swc)
 	}
 
-	responseData.SubscriptionRedeemption = &subscriptionRedeemption
-	responseData.SwitchTransaction = &switchTransaction
+	var dataRowSwitchArray []models.OaRequestCsvFormatFiksTxt
+
+	if len(transSwitch) > 0 {
+		txtHeaderSubRed := "transaction_date|transaction_type|sa_code|investor_fund_unit|switch_out_fund_code|switch_out_amount_nominal|switch_out_amount_unit|switch_out_amount_all|switching_fee_charge_fund|fee_nominal|fee_unit|fee_percent|switch_in_fund_code|payment_date|transfer_type|sa_reference_no"
+		var dataRowSwitch models.OaRequestCsvFormatFiksTxt
+		dataRowSwitch.DataRow = txtHeaderSubRed
+		dataRowSwitchArray = append(dataRowSwitchArray, dataRowSwitch)
+
+		for _, trSwitch := range transSwitch {
+			var txtSw models.OaRequestCsvFormatFiksTxt
+			var swc models.SwitchTransaction
+
+			layout := "2006-01-02 15:04:05"
+			newLayout := "20060102"
+			date, _ := time.Parse(layout, trSwitch.NavDate)
+			swc.TransactionDate = date.Format(newLayout)
+
+			swc.TransactionType = strconv.FormatUint(trSwitch.TransTypeKey, 10)
+			swc.SACode = "EP002"
+
+			swc.InvestorFundUnitACNo = ""
+			if co, ok := accountData[trSwitch.CustomerKey]; ok {
+				swc.InvestorFundUnitACNo = *co.IfuaNo
+			}
+
+			swc.SwitchOutFundCode = ""
+			swc.SwitchOutAmountNominal = ""
+			swc.SwitchOutAmountUnit = ""
+			swc.SwitchOutAmountAll = ""
+			if trSwitch.ParentKey != nil {
+				if pt, ok := parentTrData[*trSwitch.ParentKey]; ok {
+					if pt.SinvestFundCode != nil {
+						swc.SwitchOutFundCode = *pt.SinvestFundCode
+					}
+
+					if pt.TransAmount > 0 {
+						strTransAmount := fmt.Sprintf("%.2f", pt.TransAmount)
+						swc.SwitchOutAmountNominal = strTransAmount
+					}
+					if pt.TransUnit > 0 {
+						strTransUnit := fmt.Sprintf("%.2f", pt.TransUnit)
+						swc.SwitchOutAmountUnit = strTransUnit
+					}
+					if pt.FlagRedemtAll != nil {
+						if int(*pt.FlagRedemtAll) > 0 {
+							swc.SwitchOutAmountAll = "Y"
+						}
+					}
+				}
+			}
+
+			swc.SwitchingFeeChargeFund = "1"
+			if trSwitch.ChargesFeeAmount > 0 {
+				swc.SwitchingFeeChargeFund = "2"
+			}
+
+			swc.FeeNominal = ""
+			if trSwitch.TransFeeAmount > 0 {
+				strFeeAmount := fmt.Sprintf("%.2f", trSwitch.TransFeeAmount)
+				swc.FeeNominal = strFeeAmount
+			}
+
+			swc.FeeUnit = ""
+
+			swc.FeePercent = ""
+			if trSwitch.TransFeePercent > 0 {
+				strFeePercent := fmt.Sprintf("%.2f", trSwitch.TransFeePercent)
+				swc.FeePercent = strFeePercent
+			}
+
+			swc.SwitchInFundCode = ""
+			if pro, ok := productData[trSwitch.ProductKey]; ok {
+				swc.SwitchInFundCode = *pro.SinvestFundCode
+			}
+
+			if trSwitch.SettlementDate != nil {
+				date, _ = time.Parse(layout, *trSwitch.SettlementDate)
+				swc.PaymentDate = date.Format(newLayout)
+			} else {
+				date, _ = time.Parse(layout, trSwitch.NavDate)
+				swc.PaymentDate = date.Format(newLayout)
+			}
+
+			swc.TransferType = "3"
+			swc.SaReferenceNo = strconv.FormatUint(trSwitch.TransactionKey, 10)
+
+			txtData := swc.TransactionDate + "|" +
+				swc.TransactionType + "|" +
+				swc.SACode + "|" +
+				swc.InvestorFundUnitACNo + "|" +
+				swc.SwitchOutFundCode + "|" +
+				swc.SwitchOutAmountNominal + "|" +
+				swc.SwitchOutAmountUnit + "|" +
+				swc.SwitchOutAmountAll + "|" +
+				swc.SwitchingFeeChargeFund + "|" +
+				swc.FeeNominal + "|" +
+				swc.FeeUnit + "|" +
+				swc.FeePercent + "|" +
+				swc.SwitchInFundCode + "|" +
+				swc.PaymentDate + "|" +
+				swc.TransferType + "|" +
+				swc.SaReferenceNo
+
+			txtSw.DataRow = txtData
+
+			dataRowSwitchArray = append(dataRowSwitchArray, txtSw)
+		}
+	}
+
+	responseData.SubscriptionRedeemption = &dataRowSubRedArray
+	responseData.SwitchTransaction = &dataRowSwitchArray
 
 	if len(transactionIds) > 0 {
 		for _, trID := range transactionIds {

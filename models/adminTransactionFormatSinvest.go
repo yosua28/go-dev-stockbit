@@ -8,13 +8,15 @@ import (
 )
 
 type TransactionFormatSinvest struct {
-	SubscriptionRedeemption *[]SubscriptionRedeemption `json:"subscription_redeemption"`
-	SwitchTransaction       *[]SwitchTransaction       `json:"switch"`
+	// SubscriptionRedeemption *[]SubscriptionRedeemption `json:"subscription_redeemption"`
+	// SwitchTransaction       *[]SwitchTransaction       `json:"switch"`
+	SubscriptionRedeemption *[]OaRequestCsvFormatFiksTxt `json:"subscription_redeemption"`
+	SwitchTransaction       *[]OaRequestCsvFormatFiksTxt `json:"switch"`
 }
 
 type SubscriptionRedeemption struct {
 	TransactionDate             string `json:"transaction_date"`
-	TransactionType             uint64 `json:"transaction_type"`
+	TransactionType             string `json:"transaction_type"`
 	SACode                      string `json:"sa_code"`
 	InvestorFundUnitACNo        string `json:"investor_fund_unit"`
 	FundCode                    string `json:"fund_code"`
@@ -30,12 +32,12 @@ type SubscriptionRedeemption struct {
 	RedmPaymentACCode           string `json:"redm_payment_ac_code"`
 	PaymentDate                 string `json:"payment_date"`
 	TransferType                string `json:"transfer_type"`
-	SaReferenceNo               uint64 `json:"sa_reference_no"`
+	SaReferenceNo               string `json:"sa_reference_no"`
 }
 
 type SwitchTransaction struct {
 	TransactionDate        string `json:"transaction_date"`
-	TransactionType        uint64 `json:"transaction_type"`
+	TransactionType        string `json:"transaction_type"`
 	SACode                 string `json:"sa_code"`
 	InvestorFundUnitACNo   string `json:"investor_fund_unit"`
 	SwitchOutFundCode      string `json:"switch_out_fund_code"`
@@ -49,7 +51,7 @@ type SwitchTransaction struct {
 	SwitchInFundCode       string `json:"switch_in_fund_code"`
 	PaymentDate            string `json:"payment_date"`
 	TransferType           string `json:"transfer_type"`
-	SaReferenceNo          uint64 `json:"sa_reference_no"`
+	SaReferenceNo          string `json:"sa_reference_no"`
 }
 
 type DataTransactionParent struct {

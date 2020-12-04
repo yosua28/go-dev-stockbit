@@ -7084,64 +7084,18 @@
                   "data": {
                     "subscription_redeemption": [
                       {
-                        "transaction_date": "20201023",
-                        "transaction_type": 1,
-                        "sa_code": "EP002",
-                        "investor_fund_unit": "",
-                        "fund_code": "EP002MMCDANLCR00",
-                        "amount_nominal": "100000",
-                        "amount_unit": "",
-                        "amount_all_unit": "",
-                        "fee_nominal": "1000",
-                        "fee_unit": "",
-                        "fee_percent": "1",
-                        "redm_payment_ac_sequence_code": "1",
-                        "redm_payment_bank_bic_code": "",
-                        "redm_payment_bank_bi_member_code": "",
-                        "redm_payment_ac_code": "",
-                        "payment_date": "20201023",
-                        "transfer_type": "",
-                        "sa_reference_no": 1
+                        "data_row": "transaction_date|transaction_type|sa_code|investor_fund_unit|fund_code|amount_nominal|amount_unit|amount_all_unit|fee_nominal|fee_unit|fee_percent|redm_payment_ac_sequence_code|redm_payment_bank_bic_code|redm_payment_bank_bi_member_code|redm_payment_ac_code|payment_date|transfer_type|sa_reference_no"
                       },
                       {
-                        "transaction_date": "20201023",
-                        "transaction_type": 2,
-                        "sa_code": "EP002",
-                        "investor_fund_unit": "",
-                        "fund_code": "EP002MMCDANLCR00",
-                        "amount_nominal": "200000",
-                        "amount_unit": "200",
-                        "amount_all_unit": "",
-                        "fee_nominal": "2000",
-                        "fee_unit": "",
-                        "fee_percent": "1",
-                        "redm_payment_ac_sequence_code": "1",
-                        "redm_payment_bank_bic_code": "BMRIIDJA",
-                        "redm_payment_bank_bi_member_code": "0008",
-                        "redm_payment_ac_code": "025508",
-                        "payment_date": "20201109",
-                        "transfer_type": "3",
-                        "sa_reference_no": 2
+                        "data_row": "20201201|1|EP002|EP002009997F0145|EP002EQSDANSEK00|1000000.00|||||10.50|1||||20201026||15"
                       }
                     ],
                     "switch": [
                       {
-                        "transaction_date": "20201023",
-                        "transaction_type": 3,
-                        "sa_code": "EP002",
-                        "investor_fund_unit": "",
-                        "switch_out_fund_code": "",
-                        "switch_out_amount_nominal": "",
-                        "switch_out_amount_unit": "",
-                        "switch_out_amount_all": "",
-                        "switching_fee_charge_fund": "",
-                        "fee_nominal": "",
-                        "fee_unit": "",
-                        "fee_percent": "",
-                        "switch_in_fund_code": "",
-                        "payment_date": "",
-                        "transfer_type": "",
-                        "sa_reference_no": 2
+                        "data_row": "transaction_date|transaction_type|sa_code|investor_fund_unit|switch_out_fund_code|switch_out_amount_nominal|switch_out_amount_unit|switch_out_amount_all|switching_fee_charge_fund|fee_nominal|fee_unit|fee_percent|switch_in_fund_code|payment_date|transfer_type|sa_reference_no"
+                      },
+                      {
+                        "data_row": "20201201|4|EP002|EP002009997F0140|EP002MMCDANLCR00|2000000.00|201.00||2|90000.80||90000.80|EP002MXCDANKOK00|20201023|3|35"
                       }
                     ]
                   }
