@@ -377,7 +377,12 @@ func CreateTransaction(c echo.Context) error {
 			i++
 		}
 	}
+
 	params["entry_mode"] = "140"
+	if transAmountStr == "0" {
+		params["entry_mode"] = "139"
+	}
+
 	params["trans_amount"] = transAmountStr
 	params["trans_unit"] = transUnitStr
 	params["trans_type_key"] = typeKeyStr
@@ -464,45 +469,47 @@ func CreateTransaction(c echo.Context) error {
 	}
 
 	//insert message notif in app
-	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
-	paramsUserMessage := make(map[string]string)
-	paramsUserMessage["umessage_type"] = "245"
-	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
-	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_read"] = "0"
-	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_sent"] = "1"
-	if typeKeyStr == "1" { // SUBS
-		if params["flag_newsub"] == "1" {
-			paramsUserMessage["umessage_subject"] = "Subscription sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
-		} else {
-			paramsUserMessage["umessage_subject"] = "Top Up sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
+	if typeKeyStr != "3" {
+		strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsUserMessage := make(map[string]string)
+		paramsUserMessage["umessage_type"] = "245"
+		paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+		paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["flag_read"] = "0"
+		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["flag_sent"] = "1"
+		if typeKeyStr == "1" { // SUBS
+			if params["flag_newsub"] == "1" {
+				paramsUserMessage["umessage_subject"] = "Subscription sedang Diproses"
+				paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
+			} else {
+				paramsUserMessage["umessage_subject"] = "Top Up sedang Diproses"
+				paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
+			}
 		}
-	}
 
-	if typeKeyStr == "2" { // REDM
-		paramsUserMessage["umessage_subject"] = "Redemption sedang Diproses"
-		paramsUserMessage["umessage_body"] = "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
-	}
-	if typeKeyStr == "4" || typeKeyStr == "3" { // SWITCH
-		paramsUserMessage["umessage_subject"] = "Switching sedang Diproses"
-		paramsUserMessage["umessage_body"] = "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
-	}
+		if typeKeyStr == "2" { // REDM
+			paramsUserMessage["umessage_subject"] = "Redemption sedang Diproses"
+			paramsUserMessage["umessage_body"] = "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
+		}
+		if typeKeyStr == "4" || typeKeyStr == "3" { // SWITCH
+			paramsUserMessage["umessage_subject"] = "Switching sedang Diproses"
+			paramsUserMessage["umessage_body"] = "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
+		}
 
-	paramsUserMessage["umessage_category"] = "248"
-	paramsUserMessage["flag_archieved"] = "0"
-	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_status"] = "1"
-	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_created_by"] = strIDUserLogin
+		paramsUserMessage["umessage_category"] = "248"
+		paramsUserMessage["flag_archieved"] = "0"
+		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["rec_status"] = "1"
+		paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["rec_created_by"] = strIDUserLogin
 
-	status, err = models.CreateScUserMessage(paramsUserMessage)
-	if err != nil {
-		log.Error("Error create user message")
-	} else {
-		log.Error("Sukses insert user message")
+		status, err = models.CreateScUserMessage(paramsUserMessage)
+		if err != nil {
+			log.Error("Error create user message")
+		} else {
+			log.Error("Sukses insert user message")
+		}
 	}
 
 	responseData := make(map[string]string)
@@ -799,12 +806,12 @@ func GetTransactionList(c echo.Context) error {
 			}
 			if transaction.TransTypeKey == 4 {
 				if product, ok := pData[transaction.ProductKey]; ok {
-					data.ProductIn = &product.ProductName
+					data.ProductIn = &product.ProductNameAlt
 				}
 				if transaction.ParentKey != nil {
 					if swot, ok := switchout[*transaction.ParentKey]; ok {
 						if product, ok := pData[swot.ProductKey]; ok {
-							data.ProductOut = &product.ProductName
+							data.ProductOut = &product.ProductNameAlt
 						}
 					}
 				}
