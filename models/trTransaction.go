@@ -813,3 +813,23 @@ func CheckTrTransactionLastProductCustomer(c *TrTransaction, customerKey string,
 
 	return http.StatusOK, nil
 }
+
+func CheckProductAllowRedmOrSwitching(c *CountData, customerKey string, productKey string) (int, error) {
+	query := `SELECT count(tr_transaction.transaction_key) as count_data 
+				FROM tr_transaction`
+	query += " WHERE rec_status = 1"
+	query += " AND trans_type_key IN (2,3)"
+	query += " AND trans_status_key NOT IN (3,9)"
+	query += " AND customer_key = " + customerKey
+	query += " AND product_key = " + productKey
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

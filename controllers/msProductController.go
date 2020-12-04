@@ -327,6 +327,31 @@ func GetMsProductList(c echo.Context) error {
 			}
 			data.NavPerformance = &perform
 
+			data.IsAllowRedemption = true
+			data.IsAllowSwitchin = true
+
+			var countData models.CountData
+			if lib.Profile.CustomerKey != nil {
+				strCustomer := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+				strProductKey := strconv.FormatUint(product.ProductKey, 10)
+				status, err = models.CheckProductAllowRedmOrSwitching(&countData, strCustomer, strProductKey)
+				if err == nil {
+					if int(countData.CountData) > int(0) {
+						data.IsAllowRedemption = false
+						data.IsAllowSwitchin = false
+					}
+				}
+			} else {
+				data.IsAllowRedemption = false
+				data.IsAllowSwitchin = false
+			}
+
+			if product.FlagSwitchIn == 1 {
+				data.IsAllowProductDestination = true
+			} else {
+				data.IsAllowProductDestination = false
+			}
+
 			responseData = append(responseData, data)
 		}
 	}
