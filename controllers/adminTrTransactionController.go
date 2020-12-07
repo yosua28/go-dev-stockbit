@@ -2684,7 +2684,7 @@ func ProsesPosting(c echo.Context) error {
 	strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
 	strCustomerKey := strconv.FormatUint(transaction.CustomerKey, 10)
 
-	if strTransTypeKey == "2" { // REDM
+	if strTransTypeKey == "2" || strTransTypeKey == "3" { // REDM
 		_, err = models.GetLastBalanceCustomerByProductKey(&trBalanceCustomer, strCustomerKey, strProductKey)
 		if err != nil {
 			if err != sql.ErrNoRows {
