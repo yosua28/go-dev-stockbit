@@ -110,10 +110,23 @@ func GetTrNav(c *TrNav, key string) (int, error) {
 
 func GetLastNavIn(c *[]TrNav, productKey []string) (int, error) {
 	inQuery := strings.Join(productKey, ",")
-	query2 := `SELECT t1.nav_key, t1.product_key, t1.nav_date, t1.nav_value FROM
-			   tr_nav t1 JOIN (SELECT MAX(nav_key) nav_key FROM tr_nav GROUP BY product_key) t2
-			   ON t1.nav_key = t2.nav_key`
-	query := query2 + " WHERE t1.product_key IN(" + inQuery + ") GROUP BY product_key"
+	// query2 := `SELECT t1.nav_key, t1.product_key, t1.nav_date, t1.nav_value FROM
+	// 		   tr_nav t1 JOIN (SELECT MAX(nav_key) nav_key FROM tr_nav GROUP BY product_key) t2
+	// 		   ON t1.nav_key = t2.nav_key`
+	// query := query2 + " WHERE t1.product_key IN(" + inQuery + ") GROUP BY product_key"
+
+	query := `SELECT a.nav_key, a.product_key, a.nav_date, a.nav_value
+		FROM tr_nav a
+		INNER JOIN (
+			SELECT product_key, MAX(nav_date) AS nav_date
+			FROM tr_nav
+			WHERE rec_status = 1
+			AND publish_mode = 236 AND product_key IN(` + inQuery + `)
+			GROUP BY product_key
+		) b ON (a.product_key = b.product_key AND a.nav_date=b.nav_date)
+		WHERE a.rec_status = 1
+		AND a.publish_mode = 236 AND a.product_key IN(` + inQuery + `)
+		ORDER BY a.nav_date DESC`
 
 	log.Println(query)
 	err := db.Db.Select(c, query)
