@@ -183,6 +183,7 @@ func GetMsProductList(c echo.Context) error {
 
 	params["flag_enabled"] = "1"
 	params["rec_status"] = "1"
+	params["flag_enabled"] = "1"
 
 	var productDB []models.MsProduct
 	status, err = models.GetAllMsProduct(&productDB, limit, offset, params, noLimit)
