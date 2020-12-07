@@ -70,6 +70,15 @@ func GetTransactionApprovalList(c echo.Context) error {
 		transStatusKey = append(transStatusKey, "4")
 	}
 
+	// var haha float32
+
+	// haha = 1854.0900
+	// ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
+	// log.Println(fmt.Println(ac.FormatMoney(haha)))
+	// log.Println(fmt.Println(ac.FormatMoney(haha)))
+	// log.Println(fmt.Println(ac.FormatMoney(haha)))
+	// log.Println(fmt.Println(ac.FormatMoney(haha)))
+
 	return getListAdmin(transStatusKey, c, nil)
 }
 
@@ -257,8 +266,9 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	_, cekConfirm := lib.Find(transStatusKey, "7")
 	_, cekPosting := lib.Find(transStatusKey, "8")
 	_, cekCutoff := lib.Find(transStatusKey, "5")
+	_, cekBatch := lib.Find(transStatusKey, "6")
 	_, cekPosted := lib.Find(transStatusKey, "9")
-	if !cekConfirm && !cekPosting && !cekCutoff && !cekPosted {
+	if !cekConfirm && !cekPosting && !cekCutoff && !cekPosted && !cekBatch {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	} else {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
