@@ -1441,7 +1441,7 @@ func mailTransaction(typ string, params map[string]string) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MNCduit] "+subject)
+	mailer.SetHeader("Subject", "[MNC Duit] "+subject)
 	mailer.SetBody("text/html", result)
 
 	dialer := gomail.NewDialer(

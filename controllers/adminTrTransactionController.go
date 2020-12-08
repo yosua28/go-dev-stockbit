@@ -1183,7 +1183,7 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 					mailer.SetHeader("From", config.EmailFrom)
 					// mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
 					mailer.SetHeader("To", scLogin.UloginEmail)
-					mailer.SetHeader("Subject", "[MNCduit] Verifikasi Transaksi Produk")
+					mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Transaksi Produk")
 					mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
 					dialer := gomail.NewDialer(
 						config.EmailSMTPHost,

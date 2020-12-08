@@ -1122,7 +1122,7 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 				mailer := gomail.NewMessage()
 				mailer.SetHeader("From", config.EmailFrom)
 				mailer.SetHeader("To", scLogin.UloginEmail)
-				mailer.SetHeader("Subject", "[MNCduit] Verifikasi Opening Account")
+				mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
 				mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
 				dialer := gomail.NewDialer(
 					config.EmailSMTPHost,
@@ -1444,7 +1444,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				mailer := gomail.NewMessage()
 				mailer.SetHeader("From", config.EmailFrom)
 				mailer.SetHeader("To", scLogin.UloginEmail)
-				mailer.SetHeader("Subject", "[MNCduit] Verifikasi Opening Account")
+				mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
 				mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
 				dialer := gomail.NewDialer(
 					config.EmailSMTPHost,
