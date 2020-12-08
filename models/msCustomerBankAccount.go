@@ -115,3 +115,49 @@ func GetMsCustomerBankAccountTransactionByKey(c *MsCustomerBankAccountInfo, cust
 
 	return http.StatusOK, nil
 }
+
+func GetAllMsCustomerBankAccount(c *[]MsCustomerBankAccount, params map[string]string) (int, error) {
+	query := `SELECT
+              ms_customer_bank_account.* FROM 
+			  ms_customer_bank_account`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ms_customer_bank_account."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

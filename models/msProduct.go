@@ -59,6 +59,8 @@ type MsProductData struct {
 	FeeService       string                     `json:"fee_service"`
 	FeeTransfer      string                     `json:"fee_transfer"`
 	InvestValue      string                     `json:"invest_value"`
+	RedSuspend       bool                       `json:"red_suspend"`
+	SubSuspend       bool                       `json:"sub_suspend"`
 	BalanceUnit      float32                    `json:"balance_unit"`
 	IsNew            bool                       `json:"is_new"`
 	TncIsNew         string                     `json:"tnc_is_new"`

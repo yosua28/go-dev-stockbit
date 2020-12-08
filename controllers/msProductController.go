@@ -486,27 +486,29 @@ func GetMsProductData(c echo.Context) error {
 
 		var feeData []models.MsProductFeeInfo
 		for _, fee := range feeDB {
-			var data models.MsProductFeeInfo
-			if fee.FeeAnnotation != nil {
-				data.FeeAnnotation = *fee.FeeAnnotation
-			}
-			if fee.FlagShowOntnc != nil {
+			if fee.FlagShowOntnc != nil && *fee.FlagShowOntnc == 1 {
+				var data models.MsProductFeeInfo
+				if fee.FeeAnnotation != nil {
+					data.FeeAnnotation = *fee.FeeAnnotation
+				}
+				
 				data.FlagShowOntnc = *fee.FlagShowOntnc
-			}
-			if fee.FeeType != nil {
-				data.FeeType = *fee.FeeType
-			}
-			if fee.FeeDesc != nil {
-				data.FeeDesc = *fee.FeeDesc
-			}
-			if fee.FeeCode != nil {
-				data.FeeCode = *fee.FeeCode
-			}
-			if item, ok := feeItemData[fee.FeeKey]; ok {
-				data.FeeItem = item
-			}
+				
+				if fee.FeeType != nil {
+					data.FeeType = *fee.FeeType
+				}
+				if fee.FeeDesc != nil {
+					data.FeeDesc = *fee.FeeDesc
+				}
+				if fee.FeeCode != nil {
+					data.FeeCode = *fee.FeeCode
+				}
+				if item, ok := feeItemData[fee.FeeKey]; ok {
+					data.FeeItem = item
+				}
 
-			feeData = append(feeData, data)
+				feeData = append(feeData, data)
+			}
 		}
 		data.ProductFee = feeData
 	}
@@ -657,6 +659,8 @@ func GetMsProductData(c echo.Context) error {
 	nav.NavDate = navDB[0].NavDate
 	nav.NavValue = float32(math.Floor(float64(navDB[0].NavValue)*100) / 100)
 
+	data.SubSuspend = false
+	data.RedSuspend = false
 	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
 		paramsAcc := make(map[string]string)
 		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
@@ -677,6 +681,12 @@ func GetMsProductData(c echo.Context) error {
 			for _, acc := range accDB {
 				accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
 				accProduct[acc.AccKey] = acc.ProductKey
+				if acc.SubSuspendFlag != nil && *acc.SubSuspendFlag == 1 {
+					data.SubSuspend = true
+				}
+				if acc.RedSuspendFlag != nil && *acc.RedSuspendFlag == 1 {
+					data.RedSuspend = true
+				}
 			}
 			status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
 			if err != nil {
@@ -899,6 +909,7 @@ func Portofolio(c echo.Context) error {
 	var userProduct []string
 	balanceUnit := make(map[uint64]float32)
 	avgNav := make(map[uint64]float32)
+	suspend := make(map[uint64]bool)
 	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
 		paramsAcc := make(map[string]string)
 		paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
@@ -918,6 +929,12 @@ func Portofolio(c echo.Context) error {
 			for _, acc := range accDB {
 				accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
 				accProduct[acc.AccKey] = acc.ProductKey
+				if (acc.SubSuspendFlag != nil && *acc.SubSuspendFlag == 1) || 
+				(acc.RedSuspendFlag != nil && *acc.RedSuspendFlag == 1) {
+					suspend[acc.ProductKey] = true
+				}else{
+					suspend[acc.ProductKey] = false
+				}
 			}
 			status, err = models.GetTrAccountAgentIn(&acaDB, accIDs, "acc_key")
 			if err != nil {
@@ -1005,6 +1022,11 @@ func Portofolio(c echo.Context) error {
 
 		data["product_key"] = product.ProductKey
 		data["product_id"] = product.ProductID
+		if _, ok := suspend[product.ProductKey]; ok {
+			data["suspend"] = suspend[product.ProductKey]
+		} else {
+			data["suspend"] = false
+		}
 		data["product_code"] = product.ProductCode
 		data["product_name"] = product.ProductName
 		data["product_name_alt"] = product.ProductNameAlt

@@ -889,6 +889,11 @@ func GetUserLogin(c echo.Context) error {
 	if customerDB.SidNo != nil {
 		responseData.SID = *customerDB.SidNo
 	}
+	if customerDB.CifSuspendFlag == 0 {
+		responseData.CifSuspendFlag = false
+	} else {
+		responseData.CifSuspendFlag = true
+	}
 	responseData.Email = lib.Profile.Email
 	responseData.PhoneNumber = lib.Profile.PhoneNumber
 	responseData.RiskProfile.RiskProfileKey = riskDB.RiskProfileKey

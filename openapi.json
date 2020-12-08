@@ -1349,6 +1349,9 @@
                   "total_amount": {
                     "type": "number"
                   },
+                  "product_bankacc_key": {
+                    "type": "number"
+                  },
                   "trans_source": {
                     "type": "integer"
                   },

@@ -29,6 +29,7 @@ func CreateTransaction(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
+	paramsTransaction := make(map[string]string)
 
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")
@@ -313,6 +314,15 @@ func CreateTransaction(c echo.Context) error {
 	status, err = models.GetAllTrAccount(&trAccountDB, params)
 	if len(trAccountDB) > 0 {
 		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
+		if ((typeKeyStr == "1" || typeKeyStr == "4") && (trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag != 1) ||
+		(typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag != 1)) {
+			log.Error("Account suspended")
+			return lib.CustomError(status, "Account suspended", "Account suspended")
+		}
+		if (typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag != 1) {
+			log.Error("Account suspended")
+			return lib.CustomError(status, "Account suspended", "Account suspended")
+		}
 	} else {
 		params["acc_status"] = "204"
 		status, err, accKey = models.CreateTrAccount(params)
@@ -459,6 +469,58 @@ func CreateTransaction(c echo.Context) error {
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	paramsTransaction["transaction_key"] = transactionID
+	productBankAccountKey := c.FormValue("product_bankacc_key")
+	if typeKeyStr == "1" {
+		if productBankAccountKey != "" {
+			productBankAccount, _ := strconv.ParseUint(productBankAccountKey, 10, 64)
+			if productBankAccount > 0 {
+				paramsTransaction["prod_bankacc_key"] = productBankAccountKey
+			}else {
+				log.Error("Wrong input for parameter: product_bankacc_key")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_bankacc_key", "Wrong input for parameter: product_bankacc_key")
+			}
+		} else {
+			log.Error("Missing required parameter: product_bankacc_key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_bankacc_key", "Missing required parameter: product_bankacc_key")
+		}
+	} else {
+		purpose := "270"
+		if typeKeyStr == "4" {
+			purpose = "269"
+		}
+		params := make(map[string]string)
+		params["bank_account_purpose"] = purpose
+		params["product_key"] = productKeyStr
+		var productBankDB []models.MsProductBankAccount
+		status, err = models.GetAllMsProductBankAccount(&productBankDB, params)
+		if err != nil {
+			log.Error(err.Error())
+			paramsTransaction["prod_bankacc_key"] = "1"
+		}else{
+			paramsTransaction["prod_bankacc_key"] = strconv.FormatUint(productBankDB[0].ProdBankaccKey, 10)
+		}
+	}
+
+	var customerBankDB []models.MsCustomerBankAccount
+	paramCustomerBank := make(map[string]string)
+	paramCustomerBank["customer_key"] = customerKey
+	paramCustomerBank["orderBy"] = "cust_bankacc_key"
+	paramCustomerBank["orderType"] = "DESC"
+	status, err = models.GetAllMsCustomerBankAccount(&customerBankDB, paramCustomerBank)
+	if err != nil {
+		log.Error(err.Error())
+		paramsTransaction["cust_bankacc_key"] = "1"
+	} else {
+		paramsTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
+	}
+
+	paramsTransaction["rec_status"] = "1"
+	status, err = models.CreateTrTransactionBankAccount(paramsTransaction)
+	if err != nil {
+		log.Error(err.Error())
 	}
 
 	if typeKeyStr != "3" {
