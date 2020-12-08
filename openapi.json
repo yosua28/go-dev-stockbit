@@ -2980,7 +2980,8 @@
               "enum": [
                 "all",
                 "sub",
-                "red"
+                "red",
+                "switch"
               ]
             }
           },

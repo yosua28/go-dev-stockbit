@@ -84,7 +84,7 @@ func GetMsProductList(c echo.Context) error {
 	}
 
 	transaction := c.QueryParam("transaction")
-	if !(transaction == "sub" || transaction == "red" || transaction == "all") {
+	if !(transaction == "sub" || transaction == "red" || transaction == "all" || transaction == "switch") {
 		transaction = "all"
 	}
 
@@ -202,8 +202,14 @@ func GetMsProductList(c echo.Context) error {
 	productData := make(map[string]models.MsProduct)
 	for _, product := range productDB {
 		_, ok := lib.Find(userProduct, strconv.FormatUint(product.ProductKey, 10))
-		if ((!ok && transaction == "sub") || (ok && transaction == "red") || transaction == "all") && product.ProductKey != except {
-			productData[strconv.FormatUint(product.ProductKey, 10)] = product
+		if ((!ok && transaction == "switch") || (!ok && transaction == "sub") || (ok && transaction == "red") || transaction == "all") && product.ProductKey != except {
+			if transaction == "switch" {
+				if product.FlagSwitchIn == 1 {
+					productData[strconv.FormatUint(product.ProductKey, 10)] = product
+				}
+			} else {
+				productData[strconv.FormatUint(product.ProductKey, 10)] = product
+			}
 		}
 		if _, ok := lib.Find(productIDs, strconv.FormatUint(product.ProductKey, 10)); !ok {
 			productIDs = append(productIDs, strconv.FormatUint(product.ProductKey, 10))
@@ -492,9 +498,9 @@ func GetMsProductData(c echo.Context) error {
 				if fee.FeeAnnotation != nil {
 					data.FeeAnnotation = *fee.FeeAnnotation
 				}
-				
+
 				data.FlagShowOntnc = *fee.FlagShowOntnc
-				
+
 				if fee.FeeType != nil {
 					data.FeeType = *fee.FeeType
 				}
@@ -930,10 +936,10 @@ func Portofolio(c echo.Context) error {
 			for _, acc := range accDB {
 				accIDs = append(accIDs, strconv.FormatUint(acc.AccKey, 10))
 				accProduct[acc.AccKey] = acc.ProductKey
-				if (acc.SubSuspendFlag != nil && *acc.SubSuspendFlag == 1) || 
-				(acc.RedSuspendFlag != nil && *acc.RedSuspendFlag == 1) {
+				if (acc.SubSuspendFlag != nil && *acc.SubSuspendFlag == 1) ||
+					(acc.RedSuspendFlag != nil && *acc.RedSuspendFlag == 1) {
 					suspend[acc.ProductKey] = true
-				}else{
+				} else {
 					suspend[acc.ProductKey] = false
 				}
 			}
