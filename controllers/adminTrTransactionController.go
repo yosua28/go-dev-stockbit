@@ -20,6 +20,7 @@ import (
 
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/labstack/echo"
+	"github.com/leekchan/accounting"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
 )
@@ -69,6 +70,12 @@ func GetTransactionApprovalList(c echo.Context) error {
 	if lib.Profile.RoleKey == roleKeyKyc {
 		transStatusKey = append(transStatusKey, "4")
 	}
+
+	ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
+	aaa := ac.FormatMoney(83483895.35466)
+	log.Println(aaa)
+	log.Println(aaa)
+	log.Println(aaa)
 
 	return getListAdmin(transStatusKey, c, nil)
 }
@@ -257,8 +264,9 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	_, cekConfirm := lib.Find(transStatusKey, "7")
 	_, cekPosting := lib.Find(transStatusKey, "8")
 	_, cekCutoff := lib.Find(transStatusKey, "5")
+	_, cekBatch := lib.Find(transStatusKey, "6")
 	_, cekPosted := lib.Find(transStatusKey, "9")
-	if !cekConfirm && !cekPosting && !cekCutoff && !cekPosted {
+	if !cekConfirm && !cekPosting && !cekCutoff && !cekPosted && !cekBatch {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", false)
 	} else {
 		status, err = models.AdminGetAllTrTransaction(&trTransaction, limit, offset, noLimit, params, transStatusKey, "trans_status_key", true)
@@ -548,12 +556,6 @@ func GetTransactionDetail(c echo.Context) error {
 	}
 
 	strTransStatusKey := strconv.FormatUint(transaction.TransStatusKey, 10)
-	// strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
-
-	// if strTransTypeKey == "3" {
-	// 	log.Error("Data not found")
-	// 	return lib.CustomError(http.StatusUnauthorized, "Data not found", "Data not found")
-	// }
 
 	var roleKeyCs uint64
 	roleKeyCs = 11
@@ -1031,6 +1033,13 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 	}
 
 	notes := c.FormValue("notes")
+
+	if (transStatus == "1") || (transStatus == "3") { //CORRECTED / DELETED
+		if notes == "" {
+			log.Error("Missing required parameter notes: Notes tidak boleh kosong")
+			return lib.CustomError(http.StatusBadRequest, "Notes tidak boleh kosong", "Notes tidak boleh kosong")
+		}
+	}
 
 	if lib.Profile.RoleKey == roleKeyKyc {
 		trxrisklevel := c.FormValue("trx_risk_level")
@@ -2674,7 +2683,7 @@ func ProsesPosting(c echo.Context) error {
 	strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
 	strCustomerKey := strconv.FormatUint(transaction.CustomerKey, 10)
 
-	if strTransTypeKey == "2" { // REDM
+	if strTransTypeKey == "2" || strTransTypeKey == "3" { // REDM
 		_, err = models.GetLastBalanceCustomerByProductKey(&trBalanceCustomer, strCustomerKey, strProductKey)
 		if err != nil {
 			if err != sql.ErrNoRows {
@@ -2837,63 +2846,62 @@ func ProsesPosting(c echo.Context) error {
 	}
 
 	//create user message
-	paramsUserMessage := make(map[string]string)
-	paramsUserMessage["umessage_type"] = "245"
+	if strTransTypeKey != "3" { // SELAIN SWITCH-OUT
+		paramsUserMessage := make(map[string]string)
+		paramsUserMessage["umessage_type"] = "245"
 
-	var userLogin models.ScUserLogin
-	_, err = models.GetScUserLoginByCustomerKey(&userLogin, strCustomerKey)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(http.StatusBadRequest)
-	}
+		var userLogin models.ScUserLogin
+		_, err = models.GetScUserLoginByCustomerKey(&userLogin, strCustomerKey)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest)
+		}
 
-	strUserLoginKey := strconv.FormatUint(userLogin.UserLoginKey, 10)
-	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
-	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_read"] = "0"
-	paramsUserMessage["umessage_sender_key"] = strIDUserLogin
-	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_sent"] = "1"
-	if strTransTypeKey == "1" { // SUBS
-		if transaction.FlagNewSub != nil {
-			if *transaction.FlagNewSub == 1 {
-				paramsUserMessage["umessage_subject"] = "Subscription Berhasil"
-				paramsUserMessage["umessage_body"] = "Subscription kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
-			} else {
-				paramsUserMessage["umessage_subject"] = "Top Up Berhasil"
-				paramsUserMessage["umessage_body"] = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		strUserLoginKey := strconv.FormatUint(userLogin.UserLoginKey, 10)
+		paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+		paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["flag_read"] = "0"
+		paramsUserMessage["umessage_sender_key"] = strIDUserLogin
+		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["flag_sent"] = "1"
+		if strTransTypeKey == "1" { // SUBS
+			if transaction.FlagNewSub != nil {
+				if *transaction.FlagNewSub == 1 {
+					paramsUserMessage["umessage_subject"] = "Subscription Berhasil"
+					paramsUserMessage["umessage_body"] = "Subscription kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+				} else {
+					paramsUserMessage["umessage_subject"] = "Top Up Berhasil"
+					paramsUserMessage["umessage_body"] = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+				}
 			}
 		}
-	}
 
-	if strTransTypeKey == "2" { // REDM
-		paramsUserMessage["umessage_subject"] = "Redemption Berhasil"
-		paramsUserMessage["umessage_body"] = "Redemption kamu telah berhasil dijalankan. Dana akan ditransfer ke rekening bank kamu maks. 7 hari bursa. Silakan cek portofolio di akun kamu untuk melihat transaksi."
-	}
-	if strTransTypeKey == "4" { // SWITCH
-		paramsUserMessage["umessage_subject"] = "Switching Berhasil"
-		paramsUserMessage["umessage_body"] = "Switching kamu telah berhasil dijalankan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
-	}
+		if strTransTypeKey == "2" { // REDM
+			paramsUserMessage["umessage_subject"] = "Redemption Berhasil"
+			paramsUserMessage["umessage_body"] = "Redemption kamu telah berhasil dijalankan. Dana akan ditransfer ke rekening bank kamu maks. 7 hari bursa. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		}
+		if strTransTypeKey == "4" { // SWITCH
+			paramsUserMessage["umessage_subject"] = "Switching Berhasil"
+			paramsUserMessage["umessage_body"] = "Switching kamu telah berhasil dijalankan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+		}
 
-	paramsUserMessage["umessage_category"] = "248"
-	paramsUserMessage["flag_archieved"] = "0"
-	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_status"] = "1"
-	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_created_by"] = strIDUserLogin
+		paramsUserMessage["umessage_category"] = "248"
+		paramsUserMessage["flag_archieved"] = "0"
+		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["rec_status"] = "1"
+		paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["rec_created_by"] = strIDUserLogin
 
-	status, err = models.CreateScUserMessage(paramsUserMessage)
-	if err != nil {
-		log.Error("Error create user message")
-		return lib.CustomError(status, err.Error(), "failed input data user message")
+		status, err = models.CreateScUserMessage(paramsUserMessage)
+		if err != nil {
+			log.Error("Error create user message")
+			return lib.CustomError(status, err.Error(), "failed input data user message")
+		}
+
+		sendEmailTransactionPosted(transaction, transactionConf, userLogin, strCustomerKey, strTransTypeKey)
 	}
 
 	log.Info("Success update transaksi")
-
-	//send email posted
-	if strTransTypeKey != "3" {
-		sendEmailTransactionPosted(transaction, transactionConf, userLogin, strCustomerKey, strTransTypeKey)
-	}
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -2962,7 +2970,7 @@ func sendEmailTransactionPosted(
 
 				var productparent models.MsProduct
 				_, err = models.GetMsProduct(&productparent, strProductParentKey)
-				if err != nil {
+				if err == nil {
 					productFrom = productparent.ProductNameAlt
 				}
 			}
@@ -3003,6 +3011,8 @@ func sendEmailTransactionPosted(
 		}
 	}
 
+	ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
+
 	dataReplace := struct {
 		FileUrl        string
 		Name           string
@@ -3032,10 +3042,10 @@ func sendEmailTransactionPosted(
 		Time:           date.Format(timeLayout) + " WIB",
 		ProductName:    product.ProductNameAlt,
 		Symbol:         currencyDB.Symbol,
-		Amount:         fmt.Sprintf("%.2f", transactionConf.ConfirmedAmount),
-		Fee:            fmt.Sprintf("%.2f", transaction.TransFeeAmount),
-		RedmUnit:       fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit),
-		NabUnit:        fmt.Sprintf("%.2f", trNavData.NavValue),
+		Amount:         ac.FormatMoney(transactionConf.ConfirmedAmount),
+		Fee:            ac.FormatMoney(transaction.TransFeeAmount),
+		RedmUnit:       ac.FormatMoney(transactionConf.ConfirmedUnit),
+		NabUnit:        ac.FormatMoney(trNavData.NavValue),
 		BankName:       bankNameCus,
 		NoRek:          noRekCus,
 		NamaRek:        namaRekCus,
@@ -3043,7 +3053,7 @@ func sendEmailTransactionPosted(
 		ProductFrom:    productFrom,
 		ProductTo:      product.ProductNameAlt,
 		NABDate:        nabDate.Format(newLayout),
-		UnitPenyertaan: fmt.Sprintf("%.2f", transactionConf.ConfirmedUnit),
+		UnitPenyertaan: ac.FormatMoney(transactionConf.ConfirmedUnit),
 		TransType:      transType}
 
 	if strTransTypeKey == "1" { // SUBS

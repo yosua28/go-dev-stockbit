@@ -3068,128 +3068,88 @@
                   },
                   "data": [
                     {
-                      "product_key": 1,
-                      "product_id": 5,
-                      "product_code": "BDLC",
-                      "product_name": "MNC DANA LANCAR",
-                      "product_name_alt": "DANA LANCAR",
-                      "min_sub_amount": 0,
+                      "product_key": 3,
+                      "product_id": 12,
+                      "product_code": "BDLSATU",
+                      "product_name": "MNC DANA LIKUID",
+                      "product_name_alt": "Dana Likuid",
+                      "min_sub_amount": 100000,
+                      "rec_image1": "https://devapi.mncasset.com/images/product/bdlsatu.jpg",
                       "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
+                        "fund_type_key": 2,
+                        "fund_type_code": "FI",
+                        "fund_type_name": "Pendapatan Tetap"
                       },
                       "nav_performance": {
-                        "nav_date": "21 Oct 2004",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
+                        "nav_date": "2020-12-02 00:00:00.000000",
+                        "1d": "0.06%",
+                        "mtd": "0.06%",
+                        "1m": "1.31%",
+                        "3m": "2.12%",
+                        "6m": "4.80%",
+                        "1y": "-8.68%",
+                        "3y": "-0.27%",
+                        "5y": "19.11%",
+                        "ytd": "6.13%",
+                        "cagr": "6.81%",
+                        "all": "60.05%"
                       },
                       "nav": {
-                        "nav_date": "30 Dec 2010",
-                        "nav_value": 1000
-                      }
+                        "nav_date": "2020-12-02 00:00:00",
+                        "nav_value": 2503.2495
+                      },
+                      "risk_profile": {
+                        "risk_profile_key": 2,
+                        "risk_code": "RendahMenengah",
+                        "risk_name": "Moderat",
+                        "risk_desc": "Nasabah masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi lebih baik dibandingkan dengan produk regular perbankan.",
+                        "score": 0
+                      },
+                      "is_allow_redemption": true,
+                      "is_allow_switchin": true,
+                      "is_allow_product_destination": true
                     },
                     {
-                      "product_key": 18,
-                      "product_id": 204,
-                      "product_code": "MNCSBAR",
-                      "product_name": "REKSA DANA SYARIAH MNC DANA SYARIAH BAROKAH",
-                      "product_name_alt": "DANA SYARIAH BAROKAH",
-                      "min_sub_amount": 0,
+                      "product_key": 2,
+                      "product_id": 11,
+                      "product_code": "BDM",
+                      "product_name": "MNC DANA SYARIAH",
+                      "product_name_alt": "Dana Syariah",
+                      "min_sub_amount": 100000,
+                      "rec_image1": "https://devapi.mncasset.com/images/product/bdm.jpg",
                       "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
+                        "fund_type_key": 2,
+                        "fund_type_code": "FI",
+                        "fund_type_name": "Pendapatan Tetap"
                       },
                       "nav_performance": {
-                        "nav_date": "21 Mar 2016",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
+                        "nav_date": "2020-12-02 00:00:00.000000",
+                        "1d": "-0.01%",
+                        "mtd": "-0.01%",
+                        "1m": "0.96%",
+                        "3m": "2.03%",
+                        "6m": "4.88%",
+                        "1y": "-6.42%",
+                        "3y": "2.57%",
+                        "5y": "20.91%",
+                        "ytd": "5.61%",
+                        "cagr": "7.26%",
+                        "all": "63.68%"
                       },
                       "nav": {
-                        "nav_date": "21 Mar 2016",
-                        "nav_value": 1000
-                      }
-                    },
-                    {
-                      "product_key": 32,
-                      "product_id": 221,
-                      "product_code": "MNCDPUII",
-                      "product_name": "REKSA DANA MNC DANA PASAR UANG II",
-                      "product_name_alt": "DANA PASAR UANG II",
-                      "min_sub_amount": 0,
-                      "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
+                        "nav_date": "2020-12-02 00:00:00",
+                        "nav_value": 2753.589
                       },
-                      "nav_performance": {
-                        "nav_date": "22 Aug 2017",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
+                      "risk_profile": {
+                        "risk_profile_key": 2,
+                        "risk_code": "RendahMenengah",
+                        "risk_name": "Moderat",
+                        "risk_desc": "Nasabah masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi lebih baik dibandingkan dengan produk regular perbankan.",
+                        "score": 0
                       },
-                      "nav": {
-                        "nav_date": "22 Aug 2017",
-                        "nav_value": 1000
-                      }
-                    },
-                    {
-                      "product_key": 35,
-                      "product_id": 225,
-                      "product_code": "MNCDPU",
-                      "product_name": "REKSA DANA MNC DANA PASAR UANG",
-                      "product_name_alt": "DANA PASAR UANG",
-                      "min_sub_amount": 0,
-                      "fund_type": {
-                        "fund_type_key": 1,
-                        "fund_type_code": "MM",
-                        "fund_type_name": "Money Market"
-                      },
-                      "nav_performance": {
-                        "nav_date": "27 Oct 2017",
-                        "1d": "0.000",
-                        "mtd": "0.000",
-                        "1m": "0.000",
-                        "3m": "0.000",
-                        "6m": "0.000",
-                        "1y": "0.000",
-                        "3y": "0.000",
-                        "5y": "0.000",
-                        "ytd": "0.000",
-                        "cagr": "0.000",
-                        "all": "0.000"
-                      },
-                      "nav": {
-                        "nav_date": "27 Oct 2017",
-                        "nav_value": 1000
-                      }
+                      "is_allow_redemption": true,
+                      "is_allow_switchin": true,
+                      "is_allow_product_destination": true
                     }
                   ]
                 }
