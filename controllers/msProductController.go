@@ -183,7 +183,6 @@ func GetMsProductList(c echo.Context) error {
 
 	params["flag_enabled"] = "1"
 	params["rec_status"] = "1"
-	params["flag_enabled"] = "1"
 
 	var productDB []models.MsProduct
 	status, err = models.GetAllMsProduct(&productDB, limit, offset, params, noLimit)
@@ -202,7 +201,7 @@ func GetMsProductList(c echo.Context) error {
 	productData := make(map[string]models.MsProduct)
 	for _, product := range productDB {
 		_, ok := lib.Find(userProduct, strconv.FormatUint(product.ProductKey, 10))
-		if ((!ok && transaction == "switch") || (!ok && transaction == "sub") || (ok && transaction == "red") || transaction == "all") && product.ProductKey != except {
+		if ((transaction == "switch") || (!ok && transaction == "sub") || (ok && transaction == "red") || transaction == "all") && product.ProductKey != except {
 			if transaction == "switch" {
 				if product.FlagSwitchIn == 1 {
 					productData[strconv.FormatUint(product.ProductKey, 10)] = product
