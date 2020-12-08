@@ -314,8 +314,8 @@ func CreateTransaction(c echo.Context) error {
 	status, err = models.GetAllTrAccount(&trAccountDB, params)
 	if len(trAccountDB) > 0 {
 		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
-		if ((typeKeyStr == "1" || typeKeyStr == "4") && (trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag != 1) ||
-		(typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag != 1)) {
+		if (typeKeyStr == "1" || typeKeyStr == "4") && (trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag != 1) ||
+			(typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag != 1) {
 			log.Error("Account suspended")
 			return lib.CustomError(status, "Account suspended", "Account suspended")
 		}
@@ -478,7 +478,7 @@ func CreateTransaction(c echo.Context) error {
 			productBankAccount, _ := strconv.ParseUint(productBankAccountKey, 10, 64)
 			if productBankAccount > 0 {
 				paramsTransaction["prod_bankacc_key"] = productBankAccountKey
-			}else {
+			} else {
 				log.Error("Wrong input for parameter: product_bankacc_key")
 				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_bankacc_key", "Wrong input for parameter: product_bankacc_key")
 			}
@@ -499,7 +499,7 @@ func CreateTransaction(c echo.Context) error {
 		if err != nil {
 			log.Error(err.Error())
 			paramsTransaction["prod_bankacc_key"] = "1"
-		}else{
+		} else {
 			paramsTransaction["prod_bankacc_key"] = strconv.FormatUint(productBankDB[0].ProdBankaccKey, 10)
 		}
 	}
@@ -734,12 +734,22 @@ func GetTransactionList(c echo.Context) error {
 	var productIDs []string
 	var statusIDs []string
 	var typeIDs []string
+	var transKeyParent []string
+	var transSwInParentKey []string
 	var bankIDs []string
 	var navDates []string
 	switchout := make(map[uint64]models.TrTransaction)
 	for _, transaction := range transactionDB {
 		if transaction.TransTypeKey == 3 {
 			switchout[transaction.TransactionKey] = transaction
+			transSwInParentKey = append(transSwInParentKey, strconv.FormatUint(transaction.TransactionKey, 10))
+		}
+		if transaction.TransTypeKey == 4 {
+			if transaction.ParentKey != nil {
+				if _, ok := lib.Find(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10)); !ok {
+					transKeyParent = append(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10))
+				}
+			}
 		}
 		productIDs = append(productIDs, strconv.FormatUint(transaction.ProductKey, 10))
 		statusIDs = append(statusIDs, strconv.FormatUint(transaction.TransStatusKey, 10))
@@ -748,6 +758,32 @@ func GetTransactionList(c echo.Context) error {
 			bankIDs = append(bankIDs, strconv.FormatUint(*transaction.TransBankKey, 10))
 		}
 		navDates = append(navDates, "'"+transaction.NavDate+"'")
+	}
+
+	var transactionParentList []models.TrTransaction
+	if len(transKeyParent) > 0 {
+		_, err := models.GetTrTransactionIn(&transactionParentList, transKeyParent, "transaction_key")
+		if err == nil {
+			for _, tr := range transactionParentList {
+				if tr.TransTypeKey == 3 {
+					switchout[tr.TransactionKey] = tr
+				}
+				productIDs = append(productIDs, strconv.FormatUint(tr.ProductKey, 10))
+			}
+		}
+	}
+
+	var transactionSwInList []models.TrTransaction
+	if len(transSwInParentKey) > 0 {
+		_, err := models.GetTrTransactionIn(&transactionSwInList, transSwInParentKey, "parent_key")
+		if err == nil {
+			for _, trswin := range transactionSwInList {
+				if trswin.TransTypeKey == 4 {
+					transactionDB = append(transactionDB, trswin)
+				}
+				productIDs = append(productIDs, strconv.FormatUint(trswin.ProductKey, 10))
+			}
+		}
 	}
 
 	var productDB []models.MsProduct
