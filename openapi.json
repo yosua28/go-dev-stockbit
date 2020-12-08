@@ -1700,40 +1700,164 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "product_key": 1,
-                    "product_id": 5,
-                    "product_code": "BDLC",
-                    "product_name": "MNC DANA LANCAR",
-                    "product_name_alt": "DANA LANCAR",
-                    "min_sub_amount": 0,
-                    "is_new": false,
+                    "product_key": 2,
+                    "product_id": 11,
+                    "product_code": "BDM",
+                    "product_name": "MNC DANA SYARIAH",
+                    "product_name_alt": "Dana Syariah",
+                    "min_sub_amount": 100000,
+                    "min_red_amount": 100000,
+                    "min_red_unit": 0,
+                    "min_unit_after_red": 0,
+                    "prospectus_link": "https://www.mncasset.com/downloads/332-Prospektus-MNC-Dana-Syariah.pdf",
+                    "ffs_link": "https://www.mncasset.com/downloads/531-FFS_BDM_300720.pdf",
+                    "rec_image1": "https://devapi.mncasset.com/images/product/bdm.jpg",
+                    "flag_subscription": true,
+                    "flag_redemption": true,
+                    "flag_switch_out": true,
+                    "flag_switch_in": true,
+                    "fee_service": "0",
+                    "fee_transfer": "0",
+                    "invest_value": "",
+                    "red_suspend": false,
+                    "sub_suspend": false,
+                    "balance_unit": 0,
+                    "is_new": true,
+                    "tnc_is_new": "Saya dengan ini menyatakan bahwa transaksi Reksa Dana yang saya lakukan di PT MNC Asset Management ('MNCAM') selaku Manajer Investasi telah sesuai berdasarkan informasi dalam prospektus dan/atau pedoman informasi ringkas (fund fact sheet) Reksa Dana yang disampaikan oleh MNCAM, dan tidak terdapat dokumen penawaran Reksa Dana dalam bentuk lain yang ditawarkan dan/atau dijanjikan oleh MNCAM kepada saya. Saya memahami bahwa prospektus dan/atau pedoman informasi ringkas (fund fact sheet) Reksa Dana merupakan dokumen penawaran resmi dari Reksa Dana Dana Syariah yang dikelola oleh MNCAM",
+                    "currency": {
+                      "currency_key": 1,
+                      "code": "IDR",
+                      "symbol": "Rp",
+                      "name": "Indonesia Rupiah",
+                      "flag_base": 1
+                    },
+                    "bank_account": [
+                      {
+                        "prod_bankacc_key": 4,
+                        "bank_account_name": "REK SUB BDM",
+                        "bank_account_purpose": 269,
+                        "bank_account": {
+                          "bank_name": "BNI SYARIAH",
+                          "account_no": "0104109397",
+                          "account_holder_name": "REKSA DANA MNC DANA SYARIAH",
+                          "branch_name": "JAKARTA PUSAT"
+                        }
+                      },
+                      {
+                        "prod_bankacc_key": 5,
+                        "bank_account_name": "REK SUB BDM",
+                        "bank_account_purpose": 269,
+                        "bank_account": {
+                          "bank_name": "BANK MANDIRI",
+                          "account_no": "103-0006243261",
+                          "account_holder_name": "REKSA DANA MNC DANA SYARIAH",
+                          "branch_name": "CABANG JAKARTA GEDUNG BIMANTARA"
+                        }
+                      },
+                      {
+                        "prod_bankacc_key": 6,
+                        "bank_account_name": "REK SUB BDM",
+                        "bank_account_purpose": 269,
+                        "bank_account": {
+                          "bank_name": "BCA",
+                          "account_no": "458-2369368",
+                          "account_holder_name": "REKSA DANA MNC DANA SYARIAH",
+                          "branch_name": "BEJ"
+                        }
+                      }
+                    ],
+                    "product_fee": [
+                      {
+                        "fee_annotation": "<p>REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
+                        "fee_desc": "Ketentuan Fee yang akan tampil di Transaksi SUBSCRIPTION ",
+                        "fee_code": "FEE_SUB",
+                        "fee_type": 183,
+                        "flag_show_ontnc": 1,
+                        "fee_item": [
+                          {
+                            "item_seqno": 1,
+                            "row_max": 1,
+                            "principle_limit": 0,
+                            "fee_value": 0,
+                            "item_notes": "Tidak dikenakan biaya Subscription"
+                          }
+                        ]
+                      },
+                      {
+                        "fee_annotation": "<p>REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
+                        "fee_desc": "Ketentuan Fee yang akan tampil di Transaksi REDEMPTION ",
+                        "fee_code": "FEE_RED",
+                        "fee_type": 184,
+                        "flag_show_ontnc": 1,
+                        "fee_item": [
+                          {
+                            "item_seqno": 2,
+                            "row_max": 1,
+                            "principle_limit": 999999,
+                            "fee_value": 0,
+                            "item_notes": "Lebih dari 90 hari dikenakan biaya 0%"
+                          },
+                          {
+                            "item_seqno": 1,
+                            "row_max": 0,
+                            "principle_limit": 90,
+                            "fee_value": 0.5,
+                            "item_notes": "Kurang dari 90 hari dikenakan biaya 0.5%"
+                          },
+                          {
+                            "item_seqno": 2,
+                            "row_max": 1,
+                            "principle_limit": 999999,
+                            "fee_value": 0,
+                            "item_notes": "Lebih dari 90 hari dikenakan biaya 0%"
+                          },
+                          {
+                            "item_seqno": 1,
+                            "row_max": 0,
+                            "principle_limit": 90,
+                            "fee_value": 0.5,
+                            "item_notes": "Kurang dari 90 hari dikenakan biaya 0.5%"
+                          }
+                        ]
+                      },
+                      {
+                        "fee_annotation": "<p>A. SWITCH IN</p><ul style=\"list - style - type: disc; \"><li>Tidak dikenakan biaya Switch In</li><li>Minimal Investasi awal Rp.100,000</li><li>Minimal Top Up Rp.100,000</li><li>Batas waktu transaksi paling lambat pukul 13.00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses untuk hari bursa berikutnya.</li></ul><br/><p>B. SWITCH OUT</p><ul><li>&lt; 3 bulan, biaya Switch out 0.5%</li><li>&gt; 3 bulan, biaya Switch out 0%</li><li>Minimal Switch out Rp.100,000</li><li>Transfer antar Bank akan dikenakan Biaya</li></ul>",
+                        "fee_desc": "Ketentuan Fee yang akan tampil di Transaksi Switching ",
+                        "fee_code": "FEE_SWT",
+                        "fee_type": 185,
+                        "flag_show_ontnc": 1,
+                        "fee_item": null
+                      }
+                    ],
                     "nav_performance": {
-                      "nav_date": "21 Oct 2004",
-                      "1d": "0.000%",
-                      "mtd": "0.000%",
-                      "1m": "0.000%",
-                      "3m": "0.000%",
-                      "6m": "0.000%",
-                      "1y": "0.000%",
-                      "3y": "0.000%",
-                      "5y": "0.000%",
-                      "ytd": "0.000%",
-                      "cagr": "0.000%",
-                      "all": "0.000%"
+                      "nav_date": "2020-12-04 00:00:00.000000",
+                      "1d": "0.01%",
+                      "mtd": "-0.03%",
+                      "1m": "0.90%",
+                      "3m": "1.99%",
+                      "6m": "4.65%",
+                      "1y": "-6.46%",
+                      "3y": "2.48%",
+                      "5y": "20.83%",
+                      "ytd": "5.60%",
+                      "cagr": "7.25%",
+                      "all": "63.68%"
                     },
                     "nav": {
-                      "nav_date": "30 Dec 2010",
-                      "nav_value": 1000
+                      "nav_date": "2020-12-04 00:00:00",
+                      "nav_value": 2753.21
                     },
                     "custodian_bank": {
-                      "custodian_code": "ABNAMRO",
-                      "custodian_short_name": "Bank ABN Amro",
-                      "custodian_full_name": "Bank ABN Amro"
+                      "custodian_code": "BNIIB",
+                      "custodian_short_name": "Bank BNI",
+                      "custodian_full_name": "Bank BNI"
                     },
                     "risk_profile": {
+                      "risk_profile_key": 2,
                       "risk_code": "RendahMenengah",
-                      "risk_name": "Konservatif Moderate",
-                      "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi."
+                      "risk_name": "Moderat",
+                      "risk_desc": "Nasabah masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi lebih baik dibandingkan dengan produk regular perbankan.",
+                      "score": 0
                     }
                   }
                 }

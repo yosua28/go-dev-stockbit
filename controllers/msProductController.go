@@ -522,6 +522,7 @@ func GetMsProductData(c echo.Context) error {
 	var productBankDB []models.MsProductBankAccount
 	params = make(map[string]string)
 	params["product_key"] = strconv.FormatUint(product.ProductKey, 10)
+	params["bank_account_purpose"] = "269"
 	status, err = models.GetAllMsProductBankAccount(&productBankDB, params)
 	if err != nil {
 		log.Error(err.Error())
@@ -575,6 +576,7 @@ func GetMsProductData(c echo.Context) error {
 		for _, bank := range productBankDB {
 			if bank.BankAccountPurpose == 269 {
 				var data models.MsProductBankAccountInfo
+				data.ProdBankaccKey = bank.ProdBankaccKey
 				data.BankAccountName = bank.BankAccountName
 				data.BankAccountPurpose = bank.BankAccountPurpose
 				if bank.BankAccountKey != nil {
@@ -779,7 +781,7 @@ func GetMsProductData(c echo.Context) error {
 					data.TncIsNew = ""
 				} else {
 					str1 := scApp.AppConfigValue
-					res1 := strings.Replace(*str1, "#ProductName#", product.ProductName, 1)
+					res1 := strings.Replace(*str1, "#ProductName#", product.ProductNameAlt, 1)
 					data.TncIsNew = res1
 				}
 			}

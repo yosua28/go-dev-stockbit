@@ -10,6 +10,7 @@ import (
 )
 
 type MsProductBankAccountInfo struct {
+	ProdBankaccKey     uint64      `json:"prod_bankacc_key"`
 	BankAccountName    string      `json:"bank_account_name"`
 	BankAccountPurpose uint64      `json:"bank_account_purpose"`
 	BankAccount        BankAccount `json:"bank_account"`
@@ -70,7 +71,7 @@ type MsProductBankAccountTransactionInfo struct {
 	ProdBankaccKey uint64 `db:"prod_bankacc_key"      json:"prod_bankacc_key"`
 	BankName       string `db:"bank_name"             json:"bank_name"`
 	AccountNo      string `db:"account_no"            json:"account_no"`
-	AccountName    string  `db:"account_name"          json:"account_name"`
+	AccountName    string `db:"account_name"          json:"account_name"`
 }
 
 func GetAllMsProductBankAccount(c *[]MsProductBankAccount, params map[string]string) (int, error) {

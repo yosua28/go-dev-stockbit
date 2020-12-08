@@ -465,13 +465,6 @@ func CreateTransaction(c echo.Context) error {
 		}
 	}
 
-	status, err, transactionID := models.CreateTrTransaction(params)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed input data")
-	}
-
-	paramsTransaction["transaction_key"] = transactionID
 	productBankAccountKey := c.FormValue("product_bankacc_key")
 	if typeKeyStr == "1" {
 		if productBankAccountKey != "" {
@@ -491,11 +484,11 @@ func CreateTransaction(c echo.Context) error {
 		if typeKeyStr == "4" {
 			purpose = "269"
 		}
-		params := make(map[string]string)
-		params["bank_account_purpose"] = purpose
-		params["product_key"] = productKeyStr
+		paramsProBankAcc := make(map[string]string)
+		paramsProBankAcc["bank_account_purpose"] = purpose
+		paramsProBankAcc["product_key"] = productKeyStr
 		var productBankDB []models.MsProductBankAccount
-		status, err = models.GetAllMsProductBankAccount(&productBankDB, params)
+		status, err = models.GetAllMsProductBankAccount(&productBankDB, paramsProBankAcc)
 		if err != nil {
 			log.Error(err.Error())
 			paramsTransaction["prod_bankacc_key"] = "1"
@@ -503,6 +496,14 @@ func CreateTransaction(c echo.Context) error {
 			paramsTransaction["prod_bankacc_key"] = strconv.FormatUint(productBankDB[0].ProdBankaccKey, 10)
 		}
 	}
+
+	status, err, transactionID := models.CreateTrTransaction(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	paramsTransaction["transaction_key"] = transactionID
 
 	var customerBankDB []models.MsCustomerBankAccount
 	paramCustomerBank := make(map[string]string)
