@@ -1164,8 +1164,14 @@
                   "religion": {
                     "type": "integer"
                   },
+                  "religion_other": {
+                    "type": "string"
+                  },
                   "education": {
                     "type": "integer"
+                  },
+                  "education_other": {
+                    "type": "string"
                   },
                   "pic_ktp": {
                     "type": "file"
@@ -1176,11 +1182,17 @@
                   "job": {
                     "type": "integer"
                   },
+                  "job_other": {
+                    "type": "string"
+                  },
                   "company": {
                     "type": "string"
                   },
                   "position": {
                     "type": "integer"
+                  },
+                  "position_other": {
+                    "type": "string"
                   },
                   "company_address": {
                     "type": "string"
@@ -1188,14 +1200,23 @@
                   "business_field": {
                     "type": "integer"
                   },
+                  "business_field_other": {
+                    "type": "string"
+                  },
                   "annual_income": {
                     "type": "integer"
                   },
                   "fund_source": {
                     "type": "integer"
                   },
+                  "fund_source_other": {
+                    "type": "string"
+                  },
                   "objectives": {
                     "type": "integer"
+                  },
+                  "objectives_other": {
+                    "type": "string"
                   },
                   "corespondence": {
                     "type": "integer"
@@ -1206,8 +1227,14 @@
                   "relation_occupation": {
                     "type": "integer"
                   },
+                  "relation_occupation_other": {
+                    "type": "string"
+                  },
                   "relation_business_field": {
                     "type": "integer"
+                  },
+                  "relation_business_field_other": {
+                    "type": "string"
                   },
                   "mother_maiden_name": {
                     "type": "string"
@@ -1226,6 +1253,9 @@
                   },
                   "beneficial_relation": {
                     "type": "integer"
+                  },
+                  "beneficial_relation_other": {
+                    "type": "string"
                   },
                   "bank_key": {
                     "type": "integer"

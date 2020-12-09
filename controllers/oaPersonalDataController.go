@@ -23,6 +23,7 @@ import (
 func CreateOaPersonalData(c echo.Context) error {
 	var err error
 	params := make(map[string]string)
+	var bindVar [][]string
 
 	// Address ID Parameters
 	addressIDParams := make(map[string]string)
@@ -269,6 +270,15 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	religionOther := c.FormValue("religion_other")
+	if religionOther != "" {
+			var row []string
+			row = append(row, "1")
+			row = append(row, "0")
+			row = append(row, religionOther)
+			bindVar = append(bindVar, row)
+	}
+
 	education := c.FormValue("education")
 	if education == "" {
 		log.Error("Missing required parameter: education")
@@ -281,6 +291,15 @@ func CreateOaPersonalData(c echo.Context) error {
 			log.Error("Wrong input for parameter: education")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: education", "Wrong input for parameter: education")
 		}
+	}
+
+	educationOther := c.FormValue("education_other")
+	if educationOther != "" {
+			var row []string
+			row = append(row, "3")
+			row = append(row, "0")
+			row = append(row, educationOther)
+			bindVar = append(bindVar, row)
 	}
 
 	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10), 0755)
@@ -365,6 +384,15 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	jobOther := c.FormValue("job_other")
+	if jobOther != "" {
+			var row []string
+			row = append(row, "2")
+			row = append(row, "0")
+			row = append(row, jobOther)
+			bindVar = append(bindVar, row)
+	}
+
 	company := c.FormValue("company")
 	if company != "" {
 		params["occup_company"] = company
@@ -379,6 +407,15 @@ func CreateOaPersonalData(c echo.Context) error {
 			log.Error("Wrong input for parameter: position")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: position", "Wrong input for parameter: position")
 		}
+	}
+
+	positionOther := c.FormValue("position_other")
+	if positionOther != "" {
+			var row []string
+			row = append(row, "8")
+			row = append(row, "0")
+			row = append(row, positionOther)
+			bindVar = append(bindVar, row)
 	}
 
 	addressCompanyParams := make(map[string]string)
@@ -412,6 +449,15 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	businessFieldOther := c.FormValue("business_field_other")
+	if businessFieldOther != "" {
+			var row []string
+			row = append(row, "4")
+			row = append(row, "0")
+			row = append(row, businessFieldOther)
+			bindVar = append(bindVar, row)
+	}
+
 	annualIncome := c.FormValue("annual_income")
 	if annualIncome == "" {
 		log.Error("Missing required parameter: annual_income")
@@ -440,6 +486,15 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	fundSourceOther := c.FormValue("fund_source_other")
+	if fundSourceOther != "" {
+			var row []string
+			row = append(row, "5")
+			row = append(row, "0")
+			row = append(row, fundSourceOther)
+			bindVar = append(bindVar, row)
+	}
+
 	objectives := c.FormValue("objectives")
 	if objectives == "" {
 		log.Error("Missing required parameter: objectives")
@@ -452,6 +507,15 @@ func CreateOaPersonalData(c echo.Context) error {
 			log.Error("Wrong input for parameter: objectives")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: objectives", "Wrong input for parameter: objectives")
 		}
+	}
+
+	objectivesOther := c.FormValue("objectives_other")
+	if objectivesOther != "" {
+			var row []string
+			row = append(row, "6")
+			row = append(row, "0")
+			row = append(row, objectivesOther)
+			bindVar = append(bindVar, row)
 	}
 
 	corespondence := c.FormValue("corespondence")
@@ -489,6 +553,15 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	relationOccupationOther := c.FormValue("relation_occupation_other")
+	if relationOccupationOther != "" {
+			var row []string
+			row = append(row, "9")
+			row = append(row, "0")
+			row = append(row, relationOccupationOther)
+			bindVar = append(bindVar, row)
+	}
+
 	relationBusinessField := c.FormValue("relation_business_field")
 	if relationBusinessField != "" {
 		n, err := strconv.ParseUint(corespondence, 10, 64)
@@ -498,6 +571,15 @@ func CreateOaPersonalData(c echo.Context) error {
 			log.Error("Wrong input for parameter: relation_business_field")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: relation_business_field", "Wrong input for parameter: relation_business_field")
 		}
+	}
+
+	relationBusinessFieldOther := c.FormValue("relation_business_field_other")
+	if relationBusinessFieldOther != "" {
+			var row []string
+			row = append(row, "10")
+			row = append(row, "0")
+			row = append(row, relationBusinessFieldOther)
+			bindVar = append(bindVar, row)
 	}
 
 	MotherMaidenName := c.FormValue("mother_maiden_name")
@@ -554,6 +636,15 @@ func CreateOaPersonalData(c echo.Context) error {
 			log.Error("Wrong input for parameter: beneficial_relation")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: beneficial_relation", "Wrong input for parameter: beneficial_relation")
 		}
+	}
+
+	beneficialRelationOther := c.FormValue("beneficial_relation_other")
+	if beneficialRelationOther != "" {
+			var row []string
+			row = append(row, "7")
+			row = append(row, "0")
+			row = append(row, beneficialRelationOther)
+			bindVar = append(bindVar, row)
 	}
 
 	paramsBank := make(map[string]string)
@@ -634,6 +725,17 @@ func CreateOaPersonalData(c echo.Context) error {
 	if err != nil {
 		log.Error("Failed create personal data: " + err.Error())
 		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	var bindInterface []interface{}
+	for i := 0; i < len(bindVar); i++{
+		bindVar[i][1] = requestKey
+		bindInterface = append(bindInterface, bindVar[i])
+	}
+
+	status, err = models.CreateMultipleUdfValue(bindInterface)
+	if err != nil {
+		log.Error(err.Error())
 	}
 
 	// Send email
