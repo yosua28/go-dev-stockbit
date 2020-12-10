@@ -733,6 +733,7 @@ func GetTransactionList(c echo.Context) error {
 	}
 
 	var productIDs []string
+	var transKeyAll []string
 	var statusIDs []string
 	var typeIDs []string
 	var transKeyParent []string
@@ -743,15 +744,20 @@ func GetTransactionList(c echo.Context) error {
 	for _, transaction := range transactionDB {
 		if transaction.TransTypeKey == 3 {
 			switchout[transaction.TransactionKey] = transaction
-			// transSwInParentKey = append(transSwInParentKey, strconv.FormatUint(transaction.TransactionKey, 10))
+			transSwInParentKey = append(transSwInParentKey, strconv.FormatUint(transaction.TransactionKey, 10))
 		}
-		// if transaction.TransTypeKey == 4 {
-		// 	if transaction.ParentKey != nil {
-		// 		if _, ok := lib.Find(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10)); !ok {
-		// 			transKeyParent = append(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10))
-		// 		}
-		// 	}
-		// }
+
+		if transaction.TransTypeKey == 4 {
+			if transaction.ParentKey != nil {
+				if _, ok := lib.Find(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10)); !ok {
+					transKeyParent = append(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10))
+				}
+			}
+		}
+
+		if _, ok := lib.Find(transKeyAll, strconv.FormatUint(transaction.TransactionKey, 10)); !ok {
+			transKeyAll = append(transKeyAll, strconv.FormatUint(transaction.TransactionKey, 10))
+		}
 		productIDs = append(productIDs, strconv.FormatUint(transaction.ProductKey, 10))
 		statusIDs = append(statusIDs, strconv.FormatUint(transaction.TransStatusKey, 10))
 		typeIDs = append(typeIDs, strconv.FormatUint(transaction.TransTypeKey, 10))
@@ -775,12 +781,18 @@ func GetTransactionList(c echo.Context) error {
 	}
 
 	var transactionSwInList []models.TrTransaction
+	parentTrans := make(map[uint64]models.TrTransaction)
 	if len(transSwInParentKey) > 0 {
 		_, err := models.GetTrTransactionIn(&transactionSwInList, transSwInParentKey, "parent_key")
 		if err == nil {
 			for _, trswin := range transactionSwInList {
+				if trswin.ParentKey != nil {
+					parentTrans[*trswin.ParentKey] = trswin
+				}
 				if trswin.TransTypeKey == 4 {
-					transactionDB = append(transactionDB, trswin)
+					if _, ok := lib.Find(transKeyAll, strconv.FormatUint(trswin.TransactionKey, 10)); !ok {
+						transactionDB = append(transactionDB, trswin)
+					}
 				}
 				productIDs = append(productIDs, strconv.FormatUint(trswin.ProductKey, 10))
 			}
@@ -848,76 +860,158 @@ func GetTransactionList(c echo.Context) error {
 
 	var responseData []models.TrTransactionList
 	for _, transaction := range transactionDB {
-		// if transaction.TransTypeKey != 3 {
-		var data models.TrTransactionList
+		if trStatus == "process" {
+			if transaction.TransTypeKey != 3 {
+				var data models.TrTransactionList
 
-		data.TransactionKey = transaction.TransactionKey
-		if product, ok := pData[transaction.ProductKey]; ok {
-			data.ProductName = product.ProductNameAlt
-		}
-		if status, ok := sData[transaction.TransStatusKey]; ok {
-			data.TransStatus = *status.StatusCode
-		}
-		if typ, ok := tData[transaction.TransTypeKey]; ok {
-			data.TransType = *typ.TypeDescription
-		}
+				data.TransactionKey = transaction.TransactionKey
+				if product, ok := pData[transaction.ProductKey]; ok {
+					data.ProductName = product.ProductNameAlt
+				}
+				if status, ok := sData[transaction.TransStatusKey]; ok {
+					data.TransStatus = *status.StatusCode
+				}
+				if typ, ok := tData[transaction.TransTypeKey]; ok {
+					data.TransType = *typ.TypeDescription
+				}
 
-		strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
-		var navTrans models.TrNav
-		status, err = models.GetNavByProductKeyAndNavDate(&navTrans, strProductKey, transaction.NavDate)
-		if err == nil {
-			data.NavValue = navTrans.NavValue
-		} else {
-			data.NavValue = float32(0)
-		}
-		data.TransDate = transaction.TransDate
-		data.NavDate = transaction.NavDate
+				strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+				var navTrans models.TrNav
+				status, err = models.GetNavByProductKeyAndNavDate(&navTrans, strProductKey, transaction.NavDate)
+				if err == nil {
+					data.NavValue = navTrans.NavValue
+				} else {
+					data.NavValue = float32(0)
+				}
+				data.TransDate = transaction.TransDate
+				data.NavDate = transaction.NavDate
 
-		//cek transaction confirmation
-		var transactionConf models.TrTransactionConfirmation
-		strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
-		_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
-		if err != nil {
-			data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
-			data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
-		} else {
-			data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
-			data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
-		}
+				//cek transaction confirmation
+				var transactionConf models.TrTransactionConfirmation
+				strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+				_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
+				if err != nil {
+					data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
+					data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
+				} else {
+					data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
+					data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
+				}
 
-		data.TotalAmount = transaction.TotalAmount
-		if transaction.FileUploadDate != nil {
-			data.Uploaded = true
-			data.DateUploaded = transaction.FileUploadDate
-		} else {
-			if transaction.TransTypeKey == 1 {
-				data.Uploaded = false
-			} else {
-				data.Uploaded = true
+				data.TotalAmount = transaction.TotalAmount
+				if transaction.FileUploadDate != nil {
+					data.Uploaded = true
+					data.DateUploaded = transaction.FileUploadDate
+				} else {
+					if transaction.TransTypeKey == 1 {
+						data.Uploaded = false
+					} else {
+						data.Uploaded = true
+					}
+				}
+				if transaction.TransBankKey != nil {
+					if bank, ok := bData[*transaction.TransBankKey]; ok {
+						data.BankName = &bank.BankName
+						data.BankAccName = transaction.TransBankaccName
+						data.BankAccNo = transaction.TransBankAccNo
+					}
+				}
+				if transaction.TransTypeKey == 4 {
+					if product, ok := pData[transaction.ProductKey]; ok {
+						data.ProductIn = &product.ProductNameAlt
+					}
+					if transaction.ParentKey != nil {
+						if swot, ok := switchout[*transaction.ParentKey]; ok {
+							if product, ok := pData[swot.ProductKey]; ok {
+								data.ProductOut = &product.ProductNameAlt
+							}
+						}
+					}
+				}
+
+				responseData = append(responseData, data)
 			}
-		}
-		if transaction.TransBankKey != nil {
-			if bank, ok := bData[*transaction.TransBankKey]; ok {
-				data.BankName = &bank.BankName
-				data.BankAccName = transaction.TransBankaccName
-				data.BankAccNo = transaction.TransBankAccNo
-			}
-		}
-		if transaction.TransTypeKey == 4 {
+		} else {
+			var data models.TrTransactionList
+
+			data.TransactionKey = transaction.TransactionKey
 			if product, ok := pData[transaction.ProductKey]; ok {
-				data.ProductIn = &product.ProductNameAlt
+				data.ProductName = product.ProductNameAlt
 			}
-			if transaction.ParentKey != nil {
-				if swot, ok := switchout[*transaction.ParentKey]; ok {
-					if product, ok := pData[swot.ProductKey]; ok {
-						data.ProductOut = &product.ProductNameAlt
+			if status, ok := sData[transaction.TransStatusKey]; ok {
+				data.TransStatus = *status.StatusCode
+			}
+			if typ, ok := tData[transaction.TransTypeKey]; ok {
+				data.TransType = *typ.TypeDescription
+			}
+
+			strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+			var navTrans models.TrNav
+			status, err = models.GetNavByProductKeyAndNavDate(&navTrans, strProductKey, transaction.NavDate)
+			if err == nil {
+				data.NavValue = navTrans.NavValue
+			} else {
+				data.NavValue = float32(0)
+			}
+			data.TransDate = transaction.TransDate
+			data.NavDate = transaction.NavDate
+
+			//cek transaction confirmation
+			var transactionConf models.TrTransactionConfirmation
+			strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+			_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
+			if err != nil {
+				data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
+				data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
+			} else {
+				data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
+				data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
+			}
+
+			data.TotalAmount = transaction.TotalAmount
+			if transaction.FileUploadDate != nil {
+				data.Uploaded = true
+				data.DateUploaded = transaction.FileUploadDate
+			} else {
+				if transaction.TransTypeKey == 1 {
+					data.Uploaded = false
+				} else {
+					data.Uploaded = true
+				}
+			}
+			if transaction.TransBankKey != nil {
+				if bank, ok := bData[*transaction.TransBankKey]; ok {
+					data.BankName = &bank.BankName
+					data.BankAccName = transaction.TransBankaccName
+					data.BankAccNo = transaction.TransBankAccNo
+				}
+			}
+			if transaction.TransTypeKey == 4 {
+				if product, ok := pData[transaction.ProductKey]; ok {
+					data.ProductIn = &product.ProductNameAlt
+				}
+				if transaction.ParentKey != nil {
+					if swot, ok := switchout[*transaction.ParentKey]; ok {
+						if product, ok := pData[swot.ProductKey]; ok {
+							data.ProductOut = &product.ProductNameAlt
+						}
 					}
 				}
 			}
+			if transaction.TransTypeKey == 3 {
+				if product, ok := pData[transaction.ProductKey]; ok {
+					data.ProductOut = &product.ProductNameAlt
+				}
+				if trParent, ok := parentTrans[transaction.TransactionKey]; ok {
+					if product, ok := pData[trParent.ProductKey]; ok {
+						data.ProductIn = &product.ProductNameAlt
+					}
+				}
+			}
+			responseData = append(responseData, data)
 		}
-		responseData = append(responseData, data)
-		// }
 	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
