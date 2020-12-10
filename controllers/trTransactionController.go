@@ -743,15 +743,15 @@ func GetTransactionList(c echo.Context) error {
 	for _, transaction := range transactionDB {
 		if transaction.TransTypeKey == 3 {
 			switchout[transaction.TransactionKey] = transaction
-			transSwInParentKey = append(transSwInParentKey, strconv.FormatUint(transaction.TransactionKey, 10))
+			// transSwInParentKey = append(transSwInParentKey, strconv.FormatUint(transaction.TransactionKey, 10))
 		}
-		if transaction.TransTypeKey == 4 {
-			if transaction.ParentKey != nil {
-				if _, ok := lib.Find(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10)); !ok {
-					transKeyParent = append(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10))
-				}
-			}
-		}
+		// if transaction.TransTypeKey == 4 {
+		// 	if transaction.ParentKey != nil {
+		// 		if _, ok := lib.Find(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10)); !ok {
+		// 			transKeyParent = append(transKeyParent, strconv.FormatUint(*transaction.ParentKey, 10))
+		// 		}
+		// 	}
+		// }
 		productIDs = append(productIDs, strconv.FormatUint(transaction.ProductKey, 10))
 		statusIDs = append(statusIDs, strconv.FormatUint(transaction.TransStatusKey, 10))
 		typeIDs = append(typeIDs, strconv.FormatUint(transaction.TransTypeKey, 10))
