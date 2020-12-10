@@ -891,26 +891,26 @@ func GetTransactionList(c echo.Context) error {
 				strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
 				_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
 				if err != nil {
-					data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
-					data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
-				} else {
 					if transaction.TransTypeKey == 4 {
-						if product, ok := pData[transaction.ProductKey]; ok {
-							data.ProductIn = &product.ProductNameAlt
-						}
 						if transaction.ParentKey != nil {
 							if swot, ok := switchout[*transaction.ParentKey]; ok {
+								log.Println("HAHAHHAA")
 								data.TransUnit = float32(math.Floor(float64(swot.TransUnit)*100) / 100)
 								data.TransAmount = float32(math.Trunc(float64(swot.TransAmount)))
 							}
 						} else {
+							log.Println("qqqqqqqqqqqq")
 							data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
 							data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
 						}
 					} else {
-						data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
-						data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
+						log.Println("rrrrrrrrrr")
+						data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
+						data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
 					}
+				} else {
+					data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
+					data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
 				}
 
 				data.TotalAmount = transaction.TotalAmount
