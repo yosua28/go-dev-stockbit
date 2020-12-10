@@ -6,14 +6,15 @@ import (
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type TrTransactionSubRedmReportResponse struct {
 	SidNo             *string `json:"sid_no"`
 	FullName          string  `json:"full_name"`
-	TransAmount       float32 `json:"trans_amount"`
-	TransFeeAmount    float32 `json:"trans_fee_amount"`
-	TotalAmount       float32 `json:"total_amount"`
+	TransAmount       decimal.Decimal `json:"trans_amount"`
+	TransFeeAmount    decimal.Decimal `json:"trans_fee_amount"`
+	TotalAmount       decimal.Decimal `json:"total_amount"`
 	CustodianFullName *string `json:"custodian_full_name"`
 	TypeDescription   *string `json:"type_description"`
 }
@@ -21,9 +22,9 @@ type TrTransactionSubRedmReportResponse struct {
 type TrTransactionSubRedmReport struct {
 	SidNo             *string `db:"sid_no"                    json:"sid_no"`
 	FullName          string  `db:"full_name"                 json:"full_name"`
-	TransAmount       float32 `db:"trans_amount"              json:"trans_amount"`
-	TransFeeAmount    float32 `db:"trans_fee_amount"          json:"trans_fee_amount"`
-	TotalAmount       float32 `db:"total_amount"              json:"total_amount"`
+	TransAmount       decimal.Decimal `db:"trans_amount"              json:"trans_amount"`
+	TransFeeAmount    decimal.Decimal `db:"trans_fee_amount"          json:"trans_fee_amount"`
+	TotalAmount       decimal.Decimal `db:"total_amount"              json:"total_amount"`
 	CustodianFullName *string `db:"custodian_full_name"       json:"custodian_full_name"`
 	TypeDescription   *string `db:"type_description"          json:"type_description"`
 }

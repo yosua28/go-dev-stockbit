@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type TrBalance struct {
@@ -13,8 +15,8 @@ type TrBalance struct {
 	AcaKey            uint64   `db:"aca_key"                   json:"aca_key"`
 	TcKey             uint64   `db:"tc_key"                    json:"tc_key"`
 	BalanceDate       string   `db:"balance_date"              json:"balance_date"`
-	BalanceUnit       float32  `db:"balance_unit"              json:"balance_unit"`
-	AvgNav            *float32 `db:"avg_nav"                   json:"avg_nav"`
+	BalanceUnit       decimal.Decimal  `db:"balance_unit"              json:"balance_unit"`
+	AvgNav            *decimal.Decimal `db:"avg_nav"                   json:"avg_nav"`
 	TcKeyRed          *uint64  `db:"tc_key_red"                json:"tc_key_red"`
 	RecOrder          *uint64  `db:"rec_order"                 json:"rec_order"`
 	RecStatus         uint8    `db:"rec_status"                json:"rec_status"`
@@ -38,14 +40,14 @@ type TrBalance struct {
 type TrBalanceCustomerProduk struct {
 	BalanceKey     uint64  `db:"balance_key"               json:"balance_key"`
 	AcaKey         uint64  `db:"aca_key"                   json:"aca_key"`
-	BalanceUnit    float32 `db:"balance_unit"              json:"balance_unit"`
+	BalanceUnit    decimal.Decimal `db:"balance_unit"              json:"balance_unit"`
 	TcKey          uint64  `db:"tc_key"                    json:"tc_key"`
 	TransactionKey uint64  `db:"transaction_key"           json:"transaction_key"`
 	NavDate        string  `db:"nav_date"                  json:"nav_date"`
 }
 
 type AvgNav struct {
-	AvgNav *float32 `db:"avg_nav"                   json:"avg_nav"`
+	AvgNav *decimal.Decimal `db:"avg_nav"                   json:"avg_nav"`
 }
 
 func GetLastBalanceIn(c *[]TrBalance, acaKey []string) (int, error) {

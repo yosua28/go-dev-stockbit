@@ -5,6 +5,8 @@ import (
 	"database/sql"
 	"log"
 	"net/http"
+
+	"github.com/shopspring/decimal"
 )
 
 type TrTransactionFifo struct {
@@ -13,12 +15,12 @@ type TrTransactionFifo struct {
 	TransConfSubKey   uint64   `db:"trans_conf_sub_key"        json:"trans_conf_sub_key"`
 	SubAcaKey         *uint64  `db:"sub_aca_key"               json:"sub_aca_key"`
 	HoldingDays       *uint64  `db:"holding_days"              json:"holding_days"`
-	TransUnit         *float32 `db:"trans_unit"                json:"trans_unit"`
+	TransUnit         *decimal.Decimal `db:"trans_unit"                json:"trans_unit"`
 	FeeNavMode        *uint64  `db:"fee_nav_mode"              json:"fee_nav_mode"`
-	TransAmount       *float32 `db:"trans_amount"              json:"trans_amount"`
-	TransFeeAmount    *float32 `db:"trans_fee_amount"          json:"trans_fee_amount"`
-	TransFeeTax       *float32 `db:"trans_fee_tax"             json:"trans_fee_tax"`
-	TransNettAmount   *float32 `db:"trans_nett_amount"         json:"trans_nett_amount"`
+	TransAmount       *decimal.Decimal `db:"trans_amount"              json:"trans_amount"`
+	TransFeeAmount    *decimal.Decimal `db:"trans_fee_amount"          json:"trans_fee_amount"`
+	TransFeeTax       *decimal.Decimal `db:"trans_fee_tax"             json:"trans_fee_tax"`
+	TransNettAmount   *decimal.Decimal `db:"trans_nett_amount"         json:"trans_nett_amount"`
 	RecOrder          *uint64  `db:"rec_order"                 json:"rec_order"`
 	RecStatus         uint8    `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate    *string  `db:"rec_created_date"          json:"rec_created_date"`

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type MsProductFeeInfo struct {
@@ -30,9 +31,9 @@ type MsProductFee struct {
 	FeeDateThru       *string  `db:"fee_date_thru"         json:"fee_date_thru"`
 	FeeNominalType    *uint64  `db:"fee_nominal_type"      json:"fee_nominal_type"`
 	EnabledMinAmount  uint8    `db:"enabled_min_amount"    json:"enabled_min_amount"`
-	FeeMinAmount      *float64 `db:"fee_min_amount"        json:"fee_min_amount"`
+	FeeMinAmount      *decimal.Decimal `db:"fee_min_amount"        json:"fee_min_amount"`
 	EnabledMaxAmount  uint8    `db:"enabled_max_amount"    json:"enabled_max_amount"`
-	FeeMaxAmount      *float64 `db:"fee_max_amount"        json:"fee_max_amount"`
+	FeeMaxAmount      *decimal.Decimal `db:"fee_max_amount"        json:"fee_max_amount"`
 	FeeCalcMethod     *uint64  `db:"fee_calc_method"       json:"fee_calc_method"`
 	CalculationBaseon *uint64  `db:"calculation_baseon"    json:"calculation_baseon"`
 	PeriodHold        uint64   `db:"period_hold"           json:"period_hold"`
@@ -68,9 +69,9 @@ type MsProductFeeDetailAdmin struct {
 	FeeDateThru       *string                       `json:"fee_date_thru"`
 	FeeNominalType    *LookupTrans                  `json:"fee_nominal_type"`
 	EnabledMinAmount  bool                          `json:"enabled_min_amount"`
-	FeeMinAmount      *float64                      `json:"fee_min_amount"`
+	FeeMinAmount      *decimal.Decimal                      `json:"fee_min_amount"`
 	EnabledMaxAmount  bool                          `json:"enabled_max_amount"`
-	FeeMaxAmount      *float64                      `json:"fee_max_amount"`
+	FeeMaxAmount      *decimal.Decimal                      `json:"fee_max_amount"`
 	FeeCalcMethod     *LookupTrans                  `json:"fee_calc_method"`
 	CalculationBaseon *LookupTrans                  `json:"calculation_baseon"`
 	PeriodHold        uint64                        `json:"period_hold"`

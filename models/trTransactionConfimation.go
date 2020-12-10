@@ -7,18 +7,19 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"github.com/shopspring/decimal"
 )
 
 type TrTransactionConfirmation struct {
 	TcKey               uint64   `db:"tc_key"                    json:"tc_key"`
 	ConfirmDate         string   `db:"confirm_date"              json:"confirm_date"`
 	TransactionKey      uint64   `db:"transaction_key"           json:"transaction_key"`
-	ConfirmedAmount     float32  `db:"confirmed_amount"          json:"confirmed_amount"`
-	ConfirmedUnit       float32  `db:"confirmed_unit"            json:"confirmed_unit"`
-	AvgNav              *float32 `db:"avg_nav"                   json:"avg_nav"`
+	ConfirmedAmount     decimal.Decimal  `db:"confirmed_amount"          json:"confirmed_amount"`
+	ConfirmedUnit       decimal.Decimal  `db:"confirmed_unit"            json:"confirmed_unit"`
+	AvgNav              *decimal.Decimal `db:"avg_nav"                   json:"avg_nav"`
 	ConfirmResult       *uint64  `db:"confirm_result"            json:"confirm_result"`
-	ConfirmedAmountDiff float32  `db:"confirmed_amount_diff"     json:"confirmed_amount_diff"`
-	ConfirmedUnitDiff   float32  `db:"confirmed_unit_diff"       json:"confirmed_unit_diff"`
+	ConfirmedAmountDiff decimal.Decimal  `db:"confirmed_amount_diff"     json:"confirmed_amount_diff"`
+	ConfirmedUnitDiff   decimal.Decimal  `db:"confirmed_unit_diff"       json:"confirmed_unit_diff"`
 	ConfirmedRemarks    *string  `db:"confirmed_remarks"         json:"confirmed_remarks"`
 	ConfirmedReferences *string  `db:"confirmed_references"      json:"confirmed_references"`
 	RecOrder            *uint64  `db:"rec_order"                 json:"rec_order"`

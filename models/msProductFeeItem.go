@@ -7,13 +7,14 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type MsProductFeeItemInfo struct {
 	ItemSeqno      uint64  `json:"item_seqno"`
 	RowMax         uint8   `json:"row_max"`
-	PrincipleLimit float64 `json:"principle_limit"`
-	FeeValue       float64 `json:"fee_value"`
+	PrincipleLimit decimal.Decimal `json:"principle_limit"`
+	FeeValue       decimal.Decimal `json:"fee_value"`
 	ItemNotes      string  `json:"item_notes"`
 }
 
@@ -22,8 +23,8 @@ type MsProductFeeItem struct {
 	ProductFeeKey     uint64  `db:"product_fee_key"       json:"product_fee_key"`
 	ItemSeqno         uint64  `db:"item_seqno"            json:"item_seqno"`
 	RowMax            uint8   `db:"row_max"               json:"row_max"`
-	PrincipleLimit    float64 `db:"principle_limit"       json:"principle_limit"`
-	FeeValue          float64 `db:"fee_value"             json:"fee_value"`
+	PrincipleLimit    decimal.Decimal `db:"principle_limit"       json:"principle_limit"`
+	FeeValue          decimal.Decimal `db:"fee_value"             json:"fee_value"`
 	ItemNotes         *string `db:"item_notes"            json:"item_notes"`
 	RecOrder          *uint64 `db:"rec_order"             json:"rec_order"`
 	RecStatus         uint8   `db:"rec_status"            json:"rec_status"`
@@ -46,8 +47,8 @@ type MsProductFeeItem struct {
 
 type MsProductFeeItemDetailList struct {
 	ProductFeeItemKey uint64  `json:"product_fee_item_key"`
-	PrincipleLimit    float64 `json:"principle_limit"`
-	FeeValue          float64 `json:"fee_value"`
+	PrincipleLimit    decimal.Decimal `json:"principle_limit"`
+	FeeValue          decimal.Decimal `json:"fee_value"`
 	ItemNotes         *string `json:"item_notes"`
 }
 

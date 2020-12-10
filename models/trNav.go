@@ -6,22 +6,24 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type TrNavInfo struct {
 	NavDate  string  `json:"nav_date"`
-	NavValue float32 `json:"nav_value"`
+	NavValue decimal.Decimal `json:"nav_value"`
 }
 
 type TrNav struct {
 	NavKey            uint64  `db:"nav_key"                   json:"nav_key"`
 	ProductKey        uint64  `db:"product_key"               json:"product_key"`
 	NavDate           string  `db:"nav_date"                  json:"nav_date"`
-	NavValue          float32 `db:"nav_value"                 json:"nav_value"`
-	OriginalValue     float32 `db:"original_value"            json:"original_value"`
+	NavValue          decimal.Decimal `db:"nav_value"                 json:"nav_value"`
+	OriginalValue     decimal.Decimal `db:"original_value"            json:"original_value"`
 	NavStatus         uint64  `db:"nav_status"                json:"nav_status"`
-	ProdAumTotal      float32 `db:"prod_aum_total"            json:"prod_aum_total"`
-	ProdUnitTotal     float32 `db:"prod_unit_total"           json:"prod_unit_total"`
+	ProdAumTotal      decimal.Decimal `db:"prod_aum_total"            json:"prod_aum_total"`
+	ProdUnitTotal     decimal.Decimal `db:"prod_unit_total"           json:"prod_unit_total"`
 	PublishMode       uint64  `db:"publish_mode"              json:"publish_mode"`
 	RecOrder          *uint64 `db:"rec_order"                 json:"rec_order"`
 	RecStatus         uint8   `db:"rec_status"                json:"rec_status"`

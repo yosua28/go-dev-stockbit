@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type Portofolio struct {
@@ -51,16 +52,16 @@ type TrTransaction struct {
 	NavDate           string   `db:"nav_date"                  json:"nav_date"`
 	EntryMode         *uint64  `db:"entry_mode"                json:"entry_mode"`
 	TransCalcMethod   *uint64  `db:"trans_calc_method"         json:"trans_calc_method"`
-	TransAmount       float32  `db:"trans_amount"              json:"trans_amount"`
-	TransUnit         float32  `db:"trans_unit"                json:"trans_unit"`
-	TransUnitPercent  *float32 `db:"trans_unit_percent"        json:"trans_unit_percent"`
+	TransAmount       decimal.Decimal  `db:"trans_amount"              json:"trans_amount"`
+	TransUnit         decimal.Decimal  `db:"trans_unit"                json:"trans_unit"`
+	TransUnitPercent  *decimal.Decimal `db:"trans_unit_percent"        json:"trans_unit_percent"`
 	FlagRedemtAll     *uint8   `db:"flag_redempt_all"          json:"flag_redempt_all"`
 	FlagNewSub        *uint8   `db:"flag_newsub"               json:"flag_newsub"`
-	TransFeePercent   float32  `db:"trans_fee_percent"         json:"trans_fee_percent"`
-	TransFeeAmount    float32  `db:"trans_fee_amount"          json:"trans_fee_amount"`
-	ChargesFeeAmount  float32  `db:"charges_fee_amount"        json:"charges_fee_amount"`
-	ServicesFeeAmount float32  `db:"services_fee_amount"       json:"services_fee_amount"`
-	TotalAmount       float32  `db:"total_amount"              json:"total_amount"`
+	TransFeePercent   decimal.Decimal  `db:"trans_fee_percent"         json:"trans_fee_percent"`
+	TransFeeAmount    decimal.Decimal  `db:"trans_fee_amount"          json:"trans_fee_amount"`
+	ChargesFeeAmount  decimal.Decimal  `db:"charges_fee_amount"        json:"charges_fee_amount"`
+	ServicesFeeAmount decimal.Decimal  `db:"services_fee_amount"       json:"services_fee_amount"`
+	TotalAmount       decimal.Decimal  `db:"total_amount"              json:"total_amount"`
 	SettlementDate    *string  `db:"settlement_date"           json:"settlement_date"`
 	TransBankAccNo    *string  `db:"trans_bank_accno"          json:"trans_bank_accno"`
 	TransBankaccName  *string  `db:"trans_bankacc_name"        json:"trans_bankacc_name"`
@@ -84,12 +85,12 @@ type TrTransaction struct {
 	Check2Notes       *string  `db:"check2_notes"              json:"check2_notes"`
 	TrxRiskLevel      *uint64  `db:"trx_risk_level"            json:"trx_risk_level"`
 	ProceedDate       *string  `db:"proceed_date"              json:"proceed_date"`
-	ProceedAmount     *float32 `db:"proceed_amount"            json:"proceed_amount"`
+	ProceedAmount     *decimal.Decimal `db:"proceed_amount"            json:"proceed_amount"`
 	SentDate          *string  `db:"sent_date"                 json:"sent_date"`
 	SentReferences    *string  `db:"sent_references"           json:"sent_references"`
 	ConfirmedDate     *string  `db:"confirmed_date"            json:"confirmed_date"`
 	PostedDate        *string  `db:"posted_date"               json:"posted_date"`
-	PostedUnits       *float32 `db:"posted_units"              json:"posted_units"`
+	PostedUnits       *decimal.Decimal `db:"posted_units"              json:"posted_units"`
 	AcaKey            *uint64  `db:"aca_key"                   json:"aca_key"`
 	SettledDate       *string  `db:"settled_date"              json:"settled_date"`
 	BatchKey          *uint64  `db:"batch_key"                 json:"batch_key"`
@@ -119,10 +120,10 @@ type TrTransactionList struct {
 	TransDate      string  `json:"trans_date"`
 	TransType      string  `json:"trans_type"`
 	NavDate        string  `json:"nav_date"`
-	NavValue       float32 `json:"nav_value"`
-	TransAmount    float32 `json:"trans_amount,omitemtpy"`
-	TransUnit      float32 `json:"trans_unit,omitemtpy"`
-	TotalAmount    float32 `json:"total_amount"`
+	NavValue       decimal.Decimal `json:"nav_value"`
+	TransAmount    decimal.Decimal `json:"trans_amount,omitemtpy"`
+	TransUnit      decimal.Decimal `json:"trans_unit,omitemtpy"`
+	TotalAmount    decimal.Decimal `json:"total_amount"`
 	Uploaded       bool    `json:"uploaded"`
 	DateUploaded   *string `json:"date_uploaded"`
 	BankName       *string `json:"bank_name"`
@@ -142,9 +143,9 @@ type AdminTrTransactionList struct {
 	TransDate        string  `json:"trans_date"`
 	TransType        string  `json:"trans_type"`
 	NavDate          string  `json:"nav_date"`
-	TransAmount      float32 `json:"trans_amount"`
-	TransUnit        float32 `json:"trans_unit"`
-	TotalAmount      float32 `json:"total_amount"`
+	TransAmount      decimal.Decimal `json:"trans_amount"`
+	TransUnit        decimal.Decimal `json:"trans_unit"`
+	TotalAmount      decimal.Decimal `json:"total_amount"`
 	TransBankName    string  `json:"trans_bank_name"`
 	TransBankAccNo   *string `json:"trans_bank_accno"`
 	TransBankaccName *string `json:"trans_bankacc_name"`
@@ -168,16 +169,16 @@ type AdminTransactionDetail struct {
 	TrxCode                 *LookupTrans                         `json:"trx_code"`
 	NavDate                 string                               `json:"nav_date"`
 	EntryMode               *LookupTrans                         `json:"entry_mode"`
-	TransAmount             float32                              `json:"trans_amount"`
-	TransUnit               float32                              `json:"trans_unit"`
-	TransUnitPercent        *float32                             `json:"trans_unit_percent"`
+	TransAmount             decimal.Decimal                              `json:"trans_amount"`
+	TransUnit               decimal.Decimal                              `json:"trans_unit"`
+	TransUnitPercent        *decimal.Decimal                             `json:"trans_unit_percent"`
 	FlagRedemtAll           bool                                 `json:"flag_redempt_all"`
 	FlagNewSub              bool                                 `json:"flag_newsub"`
-	TransFeePercent         float32                              `json:"trans_fee_percent"`
-	TransFeeAmount          float32                              `json:"trans_fee_amount"`
-	ChargesFeeAmount        float32                              `json:"charges_fee_amount"`
-	ServicesFeeAmount       float32                              `json:"services_fee_amount"`
-	TotalAmount             float32                              `json:"total_amount"`
+	TransFeePercent         decimal.Decimal                              `json:"trans_fee_percent"`
+	TransFeeAmount          decimal.Decimal                              `json:"trans_fee_amount"`
+	ChargesFeeAmount        decimal.Decimal                              `json:"charges_fee_amount"`
+	ServicesFeeAmount       decimal.Decimal                              `json:"services_fee_amount"`
+	TotalAmount             decimal.Decimal                              `json:"total_amount"`
 	SettlementDate          *string                              `json:"settlement_date"`
 	TransBankAccNo          *string                              `json:"trans_bank_accno"`
 	TransBankaccName        *string                              `json:"trans_bankacc_name"`
@@ -191,12 +192,12 @@ type AdminTransactionDetail struct {
 	PaymentMethod           *LookupTrans                         `json:"payment_method"`
 	TrxRiskLevel            *LookupTrans                         `json:"trx_risk_level"`
 	ProceedDate             *string                              `json:"proceed_date"`
-	ProceedAmount           *float32                             `json:"proceed_amount"`
+	ProceedAmount           *decimal.Decimal                             `json:"proceed_amount"`
 	SentDate                *string                              `json:"sent_date"`
 	SentReferences          *string                              `json:"sent_references"`
 	ConfirmedDate           *string                              `json:"confirmed_date"`
 	PostedDate              *string                              `json:"posted_date"`
-	PostedUnits             *float32                             `json:"posted_units"`
+	PostedUnits             *decimal.Decimal                             `json:"posted_units"`
 	Aca                     *AcaTrans                            `json:"aca"`
 	SettledDate             *string                              `json:"settled_date"`
 	RecImage1               *string                              `json:"rec_image1"`
@@ -216,11 +217,11 @@ type DownloadFormatExcelList struct {
 	FullName        string   `json:"full_name"`
 	NavDate         string   `json:"nav_date"`
 	TransactionDate string   `json:"transaction_date"`
-	Units           float32  `json:"units"`
-	NetAmount       float32  `json:"net_amount"`
-	NavValue        *float32 `json:"nav_value"`
-	ApproveUnits    float32  `json:"approve_units"`
-	ApproveAmount   float32  `json:"approve_amount"`
+	Units           decimal.Decimal  `json:"units"`
+	NetAmount       decimal.Decimal  `json:"net_amount"`
+	NavValue        *decimal.Decimal `json:"nav_value"`
+	ApproveUnits    decimal.Decimal  `json:"approve_units"`
+	ApproveAmount   decimal.Decimal  `json:"approve_amount"`
 	Keterangan      string   `json:"keterangan"`
 	Result          string   `json:"result"`
 }
@@ -284,8 +285,8 @@ type AcaTrans struct {
 type TransactionConfirmation struct {
 	TcKey           uint64  `json:"tc_key"`
 	ConfirmDate     string  `json:"confirm_date"`
-	ConfirmedAmount float32 `json:"confirmed_amount"`
-	ConfirmedUnit   float32 `json:"confirmed_unit"`
+	ConfirmedAmount decimal.Decimal `json:"confirmed_amount"`
+	ConfirmedUnit   decimal.Decimal `json:"confirmed_unit"`
 }
 
 type ParamBatchTrTransaction struct {

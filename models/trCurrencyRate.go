@@ -5,13 +5,15 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type TrCurrencyRate struct {
 	CurrRateKey               uint64    `db:"curr_rate_key"             json:"curr_rate_key"`
 	RateDate                  string    `db:"rate_date"                 json:"rate_date"`
 	RateType                  uint64    `db:"rate_type"                 json:"rate_type"`
-	RateValue                 float32   `db:"rate_value"                json:"rate_value"`
+	RateValue                 decimal.Decimal   `db:"rate_value"                json:"rate_value"`
 	CurrencyKey               uint64    `db:"currency_key"              json:"currency_key"`
 	RecOrder                  *uint64   `db:"rec_order"                 json:"rec_order"`
 	RecStatus                 uint8     `db:"rec_status"                json:"rec_status"`

@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type MsRiskProfileInfo struct {
@@ -29,8 +30,8 @@ type MsRiskProfile struct {
 	RiskCode          string  `db:"risk_code"             json:"risk_code"`
 	RiskName          *string `db:"risk_name"             json:"risk_name"`
 	RiskDesc          *string `db:"risk_desc"             json:"risk_desc"`
-	MinScore          float32 `db:"min_score"             json:"min_score"`
-	MaxScore          float32 `db:"max_score"             json:"max_score"`
+	MinScore          decimal.Decimal `db:"min_score"             json:"min_score"`
+	MaxScore          decimal.Decimal `db:"max_score"             json:"max_score"`
 	MaxFlag           uint8   `db:"max_flag"              json:"max_flag"`
 	RecOrder          *uint64 `db:"rec_order"             json:"rec_order"`
 	RecStatus         uint8   `db:"rec_status"            json:"rec_status"`

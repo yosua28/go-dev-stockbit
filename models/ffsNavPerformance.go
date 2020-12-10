@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type FfsNavPerformanceInfo struct {
@@ -28,27 +30,27 @@ type FfsNavPerformance struct {
 	ProductKey        uint64  `db:"product_key"           json:"product_key"`
 	PeriodeKey        *uint64 `db:"periode_key"           json:"periode_key"`
 	NavDate           string  `db:"nav_date"              json:"nav_date"`
-	NavD0             float64 `db:"nav_d0"                json:"nav_d0"`
-	NavD1             float64 `db:"nav_d1"                json:"nav_d1"`
-	NavM0             float64 `db:"nav_m0"                json:"nav_m0"`
-	NavM1             float64 `db:"nav_m1"                json:"nav_m1"`
-	NavM3             float64 `db:"nav_m3"                json:"nav_m3"`
-	NavM6             float64 `db:"nav_m6"                json:"nav_m6"`
-	NavYtd            float64 `db:"nav_ytd"               json:"nav_ytd"`
-	Navy1             float64 `db:"nav_y1"                json:"nav_y1"`
-	Navy3             float64 `db:"nav_y3"                json:"nav_y3"`
-	Navy5             float64 `db:"nav_y5"                json:"nav_y5"`
-	PerformD1         float64 `db:"perform_d1"            json:"perform_d1"`
-	PerformMtd        float64 `db:"perform_mtd"           json:"perform_mtd"`
-	PerformM1         float64 `db:"perform_m1"            json:"perform_m1"`
-	PerformM3         float64 `db:"perform_m3"            json:"perform_m3"`
-	PerformM6         float64 `db:"perform_m6"            json:"perform_m6"`
-	PerformYtd        float64 `db:"perform_ytd"           json:"perform_ytd"`
-	PerformY1         float64 `db:"perform_y1"            json:"perform_y1"`
-	PerformY3         float64 `db:"perform_y3"            json:"perform_y3"`
-	PerformY5         float64 `db:"perform_y5"            json:"perform_y5"`
-	PerformCagr       float64 `db:"perform_cagr"          json:"perform_cagr"`
-	PerformAll        float64 `db:"perform_all"           json:"perform_all"`
+	NavD0             decimal.Decimal `db:"nav_d0"                json:"nav_d0"`
+	NavD1             decimal.Decimal `db:"nav_d1"                json:"nav_d1"`
+	NavM0             decimal.Decimal `db:"nav_m0"                json:"nav_m0"`
+	NavM1             decimal.Decimal `db:"nav_m1"                json:"nav_m1"`
+	NavM3             decimal.Decimal `db:"nav_m3"                json:"nav_m3"`
+	NavM6             decimal.Decimal `db:"nav_m6"                json:"nav_m6"`
+	NavYtd            decimal.Decimal `db:"nav_ytd"               json:"nav_ytd"`
+	Navy1             decimal.Decimal `db:"nav_y1"                json:"nav_y1"`
+	Navy3             decimal.Decimal `db:"nav_y3"                json:"nav_y3"`
+	Navy5             decimal.Decimal `db:"nav_y5"                json:"nav_y5"`
+	PerformD1         decimal.Decimal `db:"perform_d1"            json:"perform_d1"`
+	PerformMtd        decimal.Decimal `db:"perform_mtd"           json:"perform_mtd"`
+	PerformM1         decimal.Decimal `db:"perform_m1"            json:"perform_m1"`
+	PerformM3         decimal.Decimal `db:"perform_m3"            json:"perform_m3"`
+	PerformM6         decimal.Decimal `db:"perform_m6"            json:"perform_m6"`
+	PerformYtd        decimal.Decimal `db:"perform_ytd"           json:"perform_ytd"`
+	PerformY1         decimal.Decimal `db:"perform_y1"            json:"perform_y1"`
+	PerformY3         decimal.Decimal `db:"perform_y3"            json:"perform_y3"`
+	PerformY5         decimal.Decimal `db:"perform_y5"            json:"perform_y5"`
+	PerformCagr       decimal.Decimal `db:"perform_cagr"          json:"perform_cagr"`
+	PerformAll        decimal.Decimal `db:"perform_all"           json:"perform_all"`
 	RecOrder          *uint64 `db:"rec_order"             json:"rec_order"`
 	RecStatus         uint8   `db:"rec_status"            json:"rec_status"`
 	RecCreatedDate    *string `db:"rec_created_date"      json:"rec_created_date"`

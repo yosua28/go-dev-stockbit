@@ -1,11 +1,15 @@
 package models
 
+import(
+	"github.com/shopspring/decimal"
+)
+
 type FfsAllocSecurity struct {
 	AllocSecurityKey     uint64    `db:"alloc_security_key"   json:"alloc_security_key"`
 	ProductKey           uint64    `db:"product_key"          json:"product_key"`
 	PeriodeKey           uint64    `db:"periode_key"          json:"periode_key"`
 	SecurityKey          uint64    `db:"security_key"         json:"security_key"`
-	SecurityValue        float32   `db:"security_value"       json:"security_value"`
+	SecurityValue        decimal.Decimal   `db:"security_value"       json:"security_value"`
 	RecOrder             *uint64   `db:"rec_order"            json:"rec_order"`
 	RecStatus            uint8     `db:"rec_status"           json:"rec_status"`
 	RecCreatedDate       *string   `db:"rec_created_date"     json:"rec_created_date"`

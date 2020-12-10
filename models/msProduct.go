@@ -7,6 +7,8 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type MsProductList struct {
@@ -15,7 +17,7 @@ type MsProductList struct {
 	ProductCode               string                 `json:"product_code"`
 	ProductName               string                 `json:"product_name"`
 	ProductNameAlt            string                 `json:"product_name_alt"`
-	MinSubAmount              float32                `json:"min_sub_amount"`
+	MinSubAmount              decimal.Decimal                `json:"min_sub_amount"`
 	RecImage1                 string                 `json:"rec_image1"`
 	FundType                  *MsFundTypeInfo        `json:"fund_type,omitempty"`
 	NavPerformance            *FfsNavPerformanceInfo `json:"nav_performance,omitempty"`
@@ -45,10 +47,10 @@ type MsProductData struct {
 	ProductCode      string                     `json:"product_code"`
 	ProductName      string                     `json:"product_name"`
 	ProductNameAlt   string                     `json:"product_name_alt"`
-	MinSubAmount     float32                    `json:"min_sub_amount"`
-	MinRedAmount     float32                    `json:"min_red_amount"`
-	MinRedUnit       float32                    `json:"min_red_unit"`
-	MinUnitAfterRed  float32                    `json:"min_unit_after_red"`
+	MinSubAmount     decimal.Decimal                    `json:"min_sub_amount"`
+	MinRedAmount     decimal.Decimal                    `json:"min_red_amount"`
+	MinRedUnit       decimal.Decimal                    `json:"min_red_unit"`
+	MinUnitAfterRed  decimal.Decimal                    `json:"min_unit_after_red"`
 	ProspectusLink   string                     `json:"prospectus_link"`
 	FundFactSheet    string                     `json:"ffs_link"`
 	RecImage1        string                     `json:"rec_image1"`
@@ -61,7 +63,7 @@ type MsProductData struct {
 	InvestValue      string                     `json:"invest_value"`
 	RedSuspend       bool                       `json:"red_suspend"`
 	SubSuspend       bool                       `json:"sub_suspend"`
-	BalanceUnit      float32                    `json:"balance_unit"`
+	BalanceUnit      decimal.Decimal                    `json:"balance_unit"`
 	IsNew            bool                       `json:"is_new"`
 	TncIsNew         string                     `json:"tnc_is_new"`
 	Currency         MsCurrencyInfo             `json:"currency"`
@@ -94,21 +96,21 @@ type MsProduct struct {
 	InceptionDate         *string `db:"inception_date"          json:"inception_date"`
 	IsinCode              *string `db:"isin_code"               json:"isin_code"`
 	FlagSyariah           uint8   `db:"flag_syariah"            json:"flag_syariah"`
-	MaxSubFee             float32 `db:"max_sub_fee"             json:"max_sub_fee"`
-	MaxRedFee             float32 `db:"max_red_fee"             json:"max_red_fee"`
-	MaxSwiFee             float32 `db:"max_swi_fee"             json:"max_swi_fee"`
-	MinSubAmount          float32 `db:"min_sub_amount"          json:"min_sub_amount"`
-	MinRedAmount          float32 `db:"min_red_amount"          json:"min_red_amount"`
-	MinRedUnit            float32 `db:"min_red_unit"            json:"min_red_unit"`
-	MinUnitAfterRed       float32 `db:"min_unit_after_red"      json:"min_unit_after_red"`
-	ManagementFee         float32 `db:"management_fee"          json:"management_fee"`
-	CustodianFee          float32 `db:"custodian_fee"           json:"custodian_fee"`
+	MaxSubFee             decimal.Decimal `db:"max_sub_fee"             json:"max_sub_fee"`
+	MaxRedFee             decimal.Decimal `db:"max_red_fee"             json:"max_red_fee"`
+	MaxSwiFee             decimal.Decimal `db:"max_swi_fee"             json:"max_swi_fee"`
+	MinSubAmount          decimal.Decimal `db:"min_sub_amount"          json:"min_sub_amount"`
+	MinRedAmount          decimal.Decimal `db:"min_red_amount"          json:"min_red_amount"`
+	MinRedUnit            decimal.Decimal `db:"min_red_unit"            json:"min_red_unit"`
+	MinUnitAfterRed       decimal.Decimal `db:"min_unit_after_red"      json:"min_unit_after_red"`
+	ManagementFee         decimal.Decimal `db:"management_fee"          json:"management_fee"`
+	CustodianFee          decimal.Decimal `db:"custodian_fee"           json:"custodian_fee"`
 	CustodianKey          *uint64 `db:"custodian_key"           json:"custodian_key"`
-	OjkFee                float32 `db:"ojk_fee"                 json:"ojk_fee"`
-	ProductFeeAmount      float32 `db:"product_fee_amount"      json:"product_fee_amount"`
+	OjkFee                decimal.Decimal `db:"ojk_fee"                 json:"ojk_fee"`
+	ProductFeeAmount      decimal.Decimal `db:"product_fee_amount"      json:"product_fee_amount"`
 	OverwriteTransactFlag uint8   `db:"overwrite_transact_flag" json:"overwrite_transact_flag"`
 	OverwriteFeeFlag      uint8   `db:"overwrite_fee_flag"      json:"overwrite_fee_flag"`
-	OtherFeeAmount        float32 `db:"other_fee_amount"        json:"other_fee_amount"`
+	OtherFeeAmount        decimal.Decimal `db:"other_fee_amount"        json:"other_fee_amount"`
 	SettlementPeriod      *uint64 `db:"settlement_period"       json:"settlement_period"`
 	SinvestFundCode       *string `db:"sinvest_fund_code"       json:"sinvest_fund_code"`
 	FlagEnabled           uint8   `db:"flag_enabled"            json:"flag_enabled"`
@@ -208,21 +210,21 @@ type AdminMsProductDetail struct {
 	InceptionDate         *string                  `json:"inception_date"`
 	IsinCode              *string                  `json:"isin_code"`
 	FlagSyariah           bool                     `json:"flag_syariah"`
-	MaxSubFee             float32                  `json:"max_sub_fee"`
-	MaxRedFee             float32                  `json:"max_red_fee"`
-	MaxSwiFee             float32                  `json:"max_swi_fee"`
-	MinSubAmount          float32                  `json:"min_sub_amount"`
-	MinRedAmount          float32                  `json:"min_red_amount"`
-	MinRedUnit            float32                  `json:"min_red_unit"`
-	MinUnitAfterRed       float32                  `json:"min_unit_after_red"`
-	ManagementFee         float32                  `json:"management_fee"`
-	CustodianFee          float32                  `json:"custodian_fee"`
+	MaxSubFee             decimal.Decimal                  `json:"max_sub_fee"`
+	MaxRedFee             decimal.Decimal                  `json:"max_red_fee"`
+	MaxSwiFee             decimal.Decimal                  `json:"max_swi_fee"`
+	MinSubAmount          decimal.Decimal                  `json:"min_sub_amount"`
+	MinRedAmount          decimal.Decimal                  `json:"min_red_amount"`
+	MinRedUnit            decimal.Decimal                  `json:"min_red_unit"`
+	MinUnitAfterRed       decimal.Decimal                  `json:"min_unit_after_red"`
+	ManagementFee         decimal.Decimal                  `json:"management_fee"`
+	CustodianFee          decimal.Decimal                  `json:"custodian_fee"`
 	Custodian             *MsCustodianBankInfoList `json:"custodian"`
-	OjkFee                float32                  `json:"ojk_fee"`
-	ProductFeeAmount      float32                  `json:"product_fee_amount"`
+	OjkFee                decimal.Decimal                  `json:"ojk_fee"`
+	ProductFeeAmount      decimal.Decimal                  `json:"product_fee_amount"`
 	OverwriteTransactFlag bool                     `json:"overwrite_transact_flag"`
 	OverwriteFeeFlag      bool                     `json:"overwrite_fee_flag"`
-	OtherFeeAmount        float32                  `json:"other_fee_amount"`
+	OtherFeeAmount        decimal.Decimal                  `json:"other_fee_amount"`
 	SettlementPeriod      *uint64                  `json:"settlement_period"`
 	SinvestFundCode       *string                  `json:"sinvest_fund_code"`
 	FlagEnabled           bool                     `json:"flag_enabled"`

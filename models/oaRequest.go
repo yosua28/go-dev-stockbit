@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type OaRequest struct {
@@ -146,7 +147,7 @@ type Emergency struct {
 type RiskProfileQuiz struct {
 	RiskProfileQuizKey  uint64               `json:"risk_profile_quiz_key"`
 	QuizOptionUser      CmsQuizOptionsInfo   `json:"quiz_option_user"`
-	QuizOptionScoreUser float32              `json:"quiz_option_score_user"`
+	QuizOptionScoreUser decimal.Decimal              `json:"quiz_option_score_user"`
 	QuizQuestionKey     uint64               `json:"quiz_question_key"`
 	HeaderQuizName      string               `json:"header_quiz_name"`
 	QuizTitle           string               `json:"quiz_title"`

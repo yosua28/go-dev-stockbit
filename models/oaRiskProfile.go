@@ -7,6 +7,7 @@ import (
 	_ "strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type OaRiskProfile struct {
@@ -39,8 +40,8 @@ type AdminOaRiskProfile struct {
 	RiskCode         string  `db:"risk_code"                  json:"risk_code"`
 	RiskName         *string `db:"risk_name"                  json:"risk_name"`
 	RiskDesc         *string `db:"risk_desc"                  json:"risk_desc"`
-	MinScore         float32 `db:"min_score"                  json:"min_score"`
-	MaxScore         float32 `db:"max_score"                  json:"max_score"`
+	MinScore         decimal.Decimal `db:"min_score"                  json:"min_score"`
+	MaxScore         decimal.Decimal `db:"max_score"                  json:"max_score"`
 	ScoreResult      *uint64 `db:"score_result"               json:"score_result"`
 }
 

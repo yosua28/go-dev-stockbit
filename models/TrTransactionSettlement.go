@@ -1,11 +1,15 @@
 package models
 
+import(
+	"github.com/shopspring/decimal"
+)
+
 type TrTransactionSettlement struct{
 	SettlementKey             uint64    `db:"settlement_key"            json:"settlement_key"`
 	TransactionKey           *uint64    `db:"transaction_key"           json:"transaction_key"`
 	SettlePurposed            string    `db:"settle_purposed"           json:"settle_purposed"`
 	SettleDate                string    `db:"settle_date"               json:"settle_date"`
-	SettleNominal             float32   `db:"settle_nominal"            json:"settle_nominal"`
+	SettleNominal             decimal.Decimal   `db:"settle_nominal"            json:"settle_nominal"`
 	SettleStatus              uint64    `db:"settle_status"             json:"settle_status"`
 	SettleRealizedDate        string    `db:"settle_realize_date"       json:"settle_realize_date"`
 	SettleRemarks            *string    `db:"settle_remarks"            json:"settle_remarks"`

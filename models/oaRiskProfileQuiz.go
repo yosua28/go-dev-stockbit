@@ -8,6 +8,7 @@ import (
 
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 type ParamsRiskProfileQuiz struct {
@@ -47,7 +48,7 @@ type AdminOaRiskProfileQuiz struct {
 	RiskProfileQuizKey  uint64  `db:"risk_profile_quiz_key"      json:"risk_profile_quiz_key"`
 	QuizQuestionKey     uint64  `db:"quiz_question_key"          json:"quiz_question_key"`
 	QuizOptionKeyUser   uint64  `db:"quiz_option_key_user"       json:"quiz_option_key_user"`
-	QuizOptionScoreUser float32 `db:"quiz_option_score_user"     json:"quiz_option_score_user"`
+	QuizOptionScoreUser decimal.Decimal `db:"quiz_option_score_user"     json:"quiz_option_score_user"`
 	QuizTitle           string  `db:"quiz_title"                 json:"quiz_title"`
 	HeaderQuizName      *string `db:"header_quiz_name"           json:"header_quiz_name"`
 	HeaderQuizDesc      *string `db:"header_quiz_desc"           json:"header_quiz_desc"`

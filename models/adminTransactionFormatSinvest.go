@@ -5,6 +5,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/shopspring/decimal"
 )
 
 type TransactionFormatSinvest struct {
@@ -57,8 +59,8 @@ type SwitchTransaction struct {
 type DataTransactionParent struct {
 	TransactionKey  uint64  `db:"transaction_key"           json:"transaction_key"`
 	SinvestFundCode *string `db:"sinvest_fund_code"       json:"sinvest_fund_code"`
-	TransAmount     float32 `db:"trans_amount"              json:"trans_amount"`
-	TransUnit       float32 `db:"trans_unit"                json:"trans_unit"`
+	TransAmount     decimal.Decimal `db:"trans_amount"              json:"trans_amount"`
+	TransUnit       decimal.Decimal `db:"trans_unit"                json:"trans_unit"`
 	FlagRedemtAll   *uint8  `db:"flag_redempt_all"          json:"flag_redempt_all"`
 }
 

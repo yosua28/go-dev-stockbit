@@ -12,10 +12,12 @@ import (
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
+	"github.com/shopspring/decimal"
 )
 
 func DownloadTransactionFormatSinvest(c echo.Context) error {
 	errorAuth := initAuthFundAdmin()
+	zero := decimal.NewFromInt(0)
 	if errorAuth != nil {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
@@ -209,14 +211,14 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 
 			subred.AmountNominal = ""
 			if strTransTypeKey == "1" { //SUB
-				if trSubRed.TransAmount > 0 {
+				if trSubRed.TransAmount.Cmp(zero) == 1 {
 					strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
 					subred.AmountNominal = strTransAmount
 				} else {
 					subred.AmountNominal = "0"
 				}
 			} else {
-				if trSubRed.TransAmount > 0 {
+				if trSubRed.TransAmount.Cmp(zero) == 1 {
 					strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
 					subred.AmountNominal = strTransAmount
 				}
@@ -225,7 +227,7 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			subred.AmountUnit = ""
 			subred.AmountAllUnit = ""
 			if strTransTypeKey == "2" { //REDM
-				if trSubRed.TransUnit > 0 {
+				if trSubRed.TransUnit.Cmp(zero) == 1 {
 					strTransUnit := fmt.Sprintf("%.2f", trSubRed.TransUnit)
 					subred.AmountUnit = strTransUnit
 				} else {
@@ -240,7 +242,7 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			}
 
 			subred.FeeNominal = ""
-			if trSubRed.TransFeeAmount > 0 {
+			if trSubRed.TransFeeAmount.Cmp(zero) == 1 {
 				strFeeAmount := fmt.Sprintf("%.2f", trSubRed.TransFeeAmount)
 				subred.FeeNominal = strFeeAmount
 			}
@@ -248,7 +250,7 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			subred.FeeUnit = ""
 
 			subred.FeePercent = ""
-			if trSubRed.TransFeePercent > 0 {
+			if trSubRed.TransFeePercent.Cmp(zero) == 1 {
 				strFeePercent := fmt.Sprintf("%.2f", trSubRed.TransFeePercent)
 				subred.FeePercent = strFeePercent
 			}
@@ -341,11 +343,11 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 						swc.SwitchOutFundCode = *pt.SinvestFundCode
 					}
 
-					if pt.TransAmount > 0 {
+					if pt.TransAmount.Cmp(zero) == 1 {
 						strTransAmount := fmt.Sprintf("%.2f", pt.TransAmount)
 						swc.SwitchOutAmountNominal = strTransAmount
 					}
-					if pt.TransUnit > 0 {
+					if pt.TransUnit.Cmp(zero) == 1 {
 						strTransUnit := fmt.Sprintf("%.2f", pt.TransUnit)
 						swc.SwitchOutAmountUnit = strTransUnit
 					}
@@ -358,12 +360,12 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			}
 
 			swc.SwitchingFeeChargeFund = "1"
-			if trSwitch.ChargesFeeAmount > 0 {
+			if trSwitch.ChargesFeeAmount.Cmp(zero) == 1 {
 				swc.SwitchingFeeChargeFund = "2"
 			}
 
 			swc.FeeNominal = ""
-			if trSwitch.TransFeeAmount > 0 {
+			if trSwitch.TransFeeAmount.Cmp(zero) == 1 {
 				strFeeAmount := fmt.Sprintf("%.2f", trSwitch.TransFeeAmount)
 				swc.FeeNominal = strFeeAmount
 			}
@@ -371,7 +373,7 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			swc.FeeUnit = ""
 
 			swc.FeePercent = ""
-			if trSwitch.TransFeePercent > 0 {
+			if trSwitch.TransFeePercent.Cmp(zero) == 1 {
 				strFeePercent := fmt.Sprintf("%.2f", trSwitch.TransFeePercent)
 				swc.FeePercent = strFeePercent
 			}

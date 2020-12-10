@@ -23,6 +23,7 @@ import (
 	"github.com/leekchan/accounting"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
+	"github.com/shopspring/decimal"
 )
 
 func initAuthBranchEntryHoEntry() error {
@@ -2119,6 +2120,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 	var responseData []models.DownloadFormatExcelList
 
+	zero := decimal.NewFromInt(0)
+
 	err = os.MkdirAll(config.BasePath+"/transaksi_upload/confirmation/", 0755)
 	if err != nil {
 		log.Error(err.Error())
@@ -2196,36 +2199,36 @@ func UploadExcelConfirmation(c echo.Context) error {
 				data.TransactionDate = transactionDate
 
 				if units != "" {
-					if unitsFloat, err := strconv.ParseFloat(units, 64); err == nil {
-						data.Units = float32(unitsFloat)
+					if unitsFloat, err := decimal.NewFromString(units); err == nil {
+						data.Units = unitsFloat
 					}
 				}
 
 				if netAmount != "" {
-					if netAmountFloat, err := strconv.ParseFloat(netAmount, 64); err == nil {
-						data.NetAmount = float32(netAmountFloat)
+					if netAmountFloat, err := decimal.NewFromString(netAmount); err == nil {
+						data.NetAmount = netAmountFloat
 					}
 				}
 
 				if navValue != "" {
-					if navValueFloat, err := strconv.ParseFloat(navValue, 64); err == nil {
-						nav := float32(navValueFloat)
+					if navValueFloat, err := decimal.NewFromString(navValue); err == nil {
+						nav := navValueFloat
 						data.NavValue = &nav
 					}
 				}
 
-				var transUnitFifo float32
+				var transUnitFifo decimal.Decimal
 
 				if approveUnits != "" {
-					if approveUnitsFloat, err := strconv.ParseFloat(approveUnits, 64); err == nil {
-						data.ApproveUnits = float32(approveUnitsFloat)
+					if approveUnitsFloat, err := decimal.NewFromString(approveUnits); err == nil {
+						data.ApproveUnits = approveUnitsFloat
 						transUnitFifo = data.ApproveUnits
 					}
 				}
 
 				if approveAmount != "" {
-					if approveAmountFloat, err := strconv.ParseFloat(approveAmount, 64); err == nil {
-						data.ApproveAmount = float32(approveAmountFloat)
+					if approveAmountFloat, err := decimal.NewFromString(approveAmount); err == nil {
+						data.ApproveAmount = approveAmountFloat
 					}
 				}
 
@@ -2345,35 +2348,34 @@ func UploadExcelConfirmation(c echo.Context) error {
 				params["confirmed_unit"] = approveUnits
 				params["confirm_result"] = "208"
 
-				var approveUnitsFloat float32
-				approveUnitsFloat = 0
+				
+				approveUnitsFloat := decimal.NewFromInt(0)
 				if approveUnits != "" {
-					if appUnits, err := strconv.ParseFloat(approveUnits, 64); err == nil {
-						approveUnitsFloat = float32(appUnits)
+					if appUnits, err := decimal.NewFromString(approveUnits); err == nil {
+						approveUnitsFloat = appUnits
 					}
 				}
-				if transaction.TransUnit > approveUnitsFloat {
-					strTransUnit := fmt.Sprintf("%g", transaction.TransUnit-approveUnitsFloat)
+				if transaction.TransUnit.Cmp(approveUnitsFloat) == 1 {
+					strTransUnit := fmt.Sprintf("%g", transaction.TransUnit.Sub(approveUnitsFloat))
 					params["confirmed_unit_diff"] = strTransUnit
-				} else if transaction.TransUnit < approveUnitsFloat {
-					strTransUnit := fmt.Sprintf("%g", approveUnitsFloat-transaction.TransUnit)
+				} else if transaction.TransUnit.Cmp(approveUnitsFloat) == -1 {
+					strTransUnit := fmt.Sprintf("%g", approveUnitsFloat.Sub(transaction.TransUnit))
 					params["confirmed_unit_diff"] = strTransUnit
 				} else {
 					params["confirmed_unit_diff"] = "0"
 				}
 
-				var approveAmountFloat float32
-				approveAmountFloat = 0
+				approveAmountFloat := decimal.NewFromInt(0)
 				if approveUnits != "" {
-					if appAmount, err := strconv.ParseFloat(approveAmount, 64); err == nil {
-						approveAmountFloat = float32(appAmount)
+					if appAmount, err := decimal.NewFromString(approveAmount); err == nil {
+						approveAmountFloat = appAmount
 					}
 				}
-				if transaction.TransAmount > approveAmountFloat {
-					strTransAmount := fmt.Sprintf("%g", transaction.TransAmount-approveAmountFloat)
+				if transaction.TransAmount.Cmp(approveAmountFloat) == 1 {
+					strTransAmount := fmt.Sprintf("%g", transaction.TransAmount.Sub(approveAmountFloat))
 					params["confirmed_amount_diff"] = strTransAmount
-				} else if transaction.TransAmount < approveAmountFloat {
-					strTransAmount := fmt.Sprintf("%g", approveAmountFloat-transaction.TransAmount)
+				} else if transaction.TransAmount.Cmp(approveAmountFloat) == -1 {
+					strTransAmount := fmt.Sprintf("%g", approveAmountFloat.Sub(transaction.TransAmount))
 					params["confirmed_amount_diff"] = strTransAmount
 				} else {
 					params["confirmed_amount_diff"] = "0"
@@ -2394,8 +2396,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 					}
 				} else { //SUBS
 					if approveUnits != "" {
-						if approveUnitsFloat, err := strconv.ParseFloat(approveUnits, 64); err == nil {
-							avgNav := transaction.TotalAmount / float32(approveUnitsFloat)
+						if approveUnitsFloat, err := decimal.NewFromString(approveUnits); err == nil {
+							avgNav := transaction.TotalAmount.Div(approveUnitsFloat)
 							strAvgNav := fmt.Sprintf("%g", avgNav)
 							params["avg_nav"] = strAvgNav
 						}
@@ -2443,8 +2445,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 					paramsFifo["trans_unit"] = approveUnits
 					paramsFifo["fee_nav_mode"] = "207"
 
-					var transAmountFifo float32
-					transAmountFifo = transUnitFifo * trNav[0].NavValue
+					var transAmountFifo decimal.Decimal
+					transAmountFifo = transUnitFifo.Mul(trNav[0].NavValue)
 					strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
 					paramsFifo["trans_amount"] = strTransAmountFifo
 
@@ -2468,11 +2470,11 @@ func UploadExcelConfirmation(c echo.Context) error {
 								paramsFifo["trans_fee_amount"] = "0"
 								paramsFifo["trans_nett_amount"] = "0"
 							} else {
-								transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+								transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
 								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
 								paramsFifo["trans_fee_amount"] = strTransfeeamount
 
-								transnett := transAmountFifo + transfeeamount
+								transnett := transAmountFifo.Add(transfeeamount)
 								strTransnett := fmt.Sprintf("%g", transnett)
 								paramsFifo["trans_nett_amount"] = strTransnett
 							}
@@ -2482,11 +2484,11 @@ func UploadExcelConfirmation(c echo.Context) error {
 							paramsFifo["trans_nett_amount"] = "0"
 						}
 					} else {
-						transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+						transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
 						strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
 						paramsFifo["trans_fee_amount"] = strTransfeeamount
 
-						transnett := transAmountFifo + transfeeamount
+						transnett := transAmountFifo.Add(transfeeamount)
 						strTransnett := fmt.Sprintf("%g", transnett)
 						paramsFifo["trans_nett_amount"] = strTransnett
 					}
@@ -2505,22 +2507,22 @@ func UploadExcelConfirmation(c echo.Context) error {
 				if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM / switchout
 					sisaFifo := transUnitFifo
 					for _, trBalance := range trBalanceCustomer {
-						if sisaFifo > 0 {
-							var balanceUsed float32
+						if sisaFifo.Cmp(decimal.NewFromInt(0)) == 1 {
+							var balanceUsed decimal.Decimal
 
-							if trBalance.BalanceUnit > sisaFifo {
+							if trBalance.BalanceUnit.Cmp(sisaFifo) == 1 {
 								balanceUsed = sisaFifo
-								sisaFifo = 0
+								sisaFifo = zero
 							}
 
-							if trBalance.BalanceUnit < sisaFifo {
+							if trBalance.BalanceUnit.Cmp(sisaFifo) == -1 {
 								balanceUsed = trBalance.BalanceUnit
-								sisaFifo = sisaFifo - trBalance.BalanceUnit
+								sisaFifo = sisaFifo.Sub(trBalance.BalanceUnit)
 							}
 
 							if trBalance.BalanceUnit == sisaFifo {
 								balanceUsed = trBalance.BalanceUnit
-								sisaFifo = 0
+								sisaFifo = zero
 							}
 
 							paramsFifo := make(map[string]string)
@@ -2544,8 +2546,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 							paramsFifo["trans_unit"] = strUnitUsed
 							paramsFifo["fee_nav_mode"] = "207"
 
-							var transAmountFifo float32
-							transAmountFifo = transUnitFifo * trNav[0].NavValue
+							var transAmountFifo decimal.Decimal
+							transAmountFifo = transUnitFifo.Mul(trNav[0].NavValue)
 							strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
 							paramsFifo["trans_amount"] = strTransAmountFifo
 
@@ -2569,11 +2571,11 @@ func UploadExcelConfirmation(c echo.Context) error {
 										paramsFifo["trans_fee_amount"] = "0"
 										paramsFifo["trans_nett_amount"] = "0"
 									} else {
-										transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+										transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
 										strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
 										paramsFifo["trans_fee_amount"] = strTransfeeamount
 
-										transnett := transAmountFifo + transfeeamount
+										transnett := transAmountFifo.Add(transfeeamount)
 										strTransnett := fmt.Sprintf("%g", transnett)
 										paramsFifo["trans_nett_amount"] = strTransnett
 									}
@@ -2583,11 +2585,11 @@ func UploadExcelConfirmation(c echo.Context) error {
 									paramsFifo["trans_nett_amount"] = "0"
 								}
 							} else {
-								transfeeamount := (float32(feeItem.FeeValue) / 100) * transAmountFifo
+								transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
 								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
 								paramsFifo["trans_fee_amount"] = strTransfeeamount
 
-								transnett := transAmountFifo - transfeeamount
+								transnett := transAmountFifo.Sub(transfeeamount)
 								strTransnett := fmt.Sprintf("%g", transnett)
 								paramsFifo["trans_nett_amount"] = strTransnett
 							}
@@ -2629,6 +2631,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 func ProsesPosting(c echo.Context) error {
 	errorAuth := initAuthFundAdmin()
+
+	zero := decimal.NewFromInt(0)
 	if errorAuth != nil {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
@@ -2719,15 +2723,14 @@ func ProsesPosting(c echo.Context) error {
 
 		//calculate avg_nag tr_balance
 		//sum balance unit
-		var balanceUnitSum float32
-		balanceUnitSum = 0
+		
+		balanceUnitSum := zero
 		for _, trBalance := range trBalanceCustomer {
-			balanceUnitSum = balanceUnitSum + trBalance.BalanceUnit
+			balanceUnitSum = balanceUnitSum.Add(trBalance.BalanceUnit)
 		}
 
 		//avg nav balance last
-		var avgNavLast float32
-		avgNavLast = 0
+		avgNavLast := zero
 		var avgNav models.AvgNav
 		_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
 		if err == nil {
@@ -2736,12 +2739,12 @@ func ProsesPosting(c echo.Context) error {
 			}
 		}
 
-		variable1 := balanceUnitSum * avgNavLast
-		variable2 := transactionConf.ConfirmedUnit * *transactionConf.AvgNav
+		variable1 := balanceUnitSum.Mul(avgNavLast)
+		variable2 := transactionConf.ConfirmedUnit.Mul(*transactionConf.AvgNav)
 
-		balanceUnitSumAll := balanceUnitSum + transactionConf.ConfirmedUnit
+		balanceUnitSumAll := balanceUnitSum.Add(transactionConf.ConfirmedUnit)
 
-		countAvgNavBalance := (variable1 + variable2) / balanceUnitSumAll
+		countAvgNavBalance := variable1.Add(variable2).Div(balanceUnitSumAll)
 		strAvgNav := fmt.Sprintf("%g", countAvgNavBalance)
 		paramsBalance["avg_nav"] = strAvgNav
 		//end calculate avg_nag tr_balance
@@ -2756,8 +2759,7 @@ func ProsesPosting(c echo.Context) error {
 	if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM & SWOUT
 		sisaFifo := transactionConf.ConfirmedUnit
 		//avg nav balance last
-		var avgNavLast float32
-		avgNavLast = 0
+		avgNavLast := zero
 		var avgNav models.AvgNav
 		_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
 		if err == nil {
@@ -2768,22 +2770,22 @@ func ProsesPosting(c echo.Context) error {
 		strAvgNav := fmt.Sprintf("%g", avgNavLast)
 
 		for _, trBalance := range trBalanceCustomer {
-			if sisaFifo > 0 {
-				var sisaBalance float32
+			if sisaFifo.Cmp(zero) == 1 {
+				var sisaBalance decimal.Decimal
 
-				if trBalance.BalanceUnit > sisaFifo {
-					sisaBalance = trBalance.BalanceUnit - sisaFifo
-					sisaFifo = 0
+				if trBalance.BalanceUnit.Cmp(sisaFifo) == 1 {
+					sisaBalance = trBalance.BalanceUnit.Sub(sisaFifo)
+					sisaFifo = zero
 				}
 
-				if trBalance.BalanceUnit < sisaFifo {
-					sisaBalance = 0
-					sisaFifo = sisaFifo - trBalance.BalanceUnit
+				if trBalance.BalanceUnit.Cmp(sisaFifo) == -1 {
+					sisaBalance = zero
+					sisaFifo = sisaFifo.Sub(trBalance.BalanceUnit)
 				}
 
 				if trBalance.BalanceUnit == sisaFifo {
-					sisaBalance = 0
-					sisaFifo = 0
+					sisaBalance = zero
+					sisaFifo = zero
 				}
 
 				paramsBalance := make(map[string]string)

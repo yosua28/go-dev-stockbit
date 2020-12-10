@@ -1,5 +1,9 @@
 package models
 
+import(
+	"github.com/shopspring/decimal"
+)
+
 type MsAgentProduct struct {
 	AgentProductKey      uint64    `db:"aglic_key"              json:"aglic_key"`
 	BranchKey            uint64    `db:"branch_key"             json:"branch_key"`
@@ -7,25 +11,25 @@ type MsAgentProduct struct {
 	EffDate              *string    `db:"eff_date"              json:"eff_date"`
 	ProductNameSa        *string    `db:"product_name_sa"       json:"product_name_sa"`
 	HoldingPeriodDays    uint64    `db:"holding_period_days"    json:"holding_period_days"`
-	MgtFeeShareSa        float32   `db:"mgt_fee_share_sa"       json:"mgt_fee_share_sa"`
-	SubFeeShareSa        float32   `db:"sub_fee_share_sa"       json:"sub_fee_share_sa"`
-	RedFeeShareSa        float32   `db:"red_fee_share_sa"       json:"red_fee_share_sa"`
-	SwtotFeeShareSa      float32   `db:"swtot_fee_share_sa"     json:"swtot_fee_share_sa"`
-	SwtinFeeShareSa      float32   `db:"swtin_fee_share_sa"     json:"swtin_fee_share_sa"`
-	OjkFeeShareSa        float32   `db:"ojk_fee_share_sa"       json:"ojk_fee_share_sa"`
-	OtherFeeShareSa      float32   `db:"other_fee_share_sa"     json:"other_fee_share_sa"`
+	MgtFeeShareSa        decimal.Decimal   `db:"mgt_fee_share_sa"       json:"mgt_fee_share_sa"`
+	SubFeeShareSa        decimal.Decimal   `db:"sub_fee_share_sa"       json:"sub_fee_share_sa"`
+	RedFeeShareSa        decimal.Decimal   `db:"red_fee_share_sa"       json:"red_fee_share_sa"`
+	SwtotFeeShareSa      decimal.Decimal   `db:"swtot_fee_share_sa"     json:"swtot_fee_share_sa"`
+	SwtinFeeShareSa      decimal.Decimal   `db:"swtin_fee_share_sa"     json:"swtin_fee_share_sa"`
+	OjkFeeShareSa        decimal.Decimal   `db:"ojk_fee_share_sa"       json:"ojk_fee_share_sa"`
+	OtherFeeShareSa      decimal.Decimal   `db:"other_fee_share_sa"     json:"other_fee_share_sa"`
 	FlagEnabled          uint8     `db:"flag_enabled"           json:"flag_enabled"`
 	FlagSubscription     uint8     `db:"flag_subscription"      json:"flag_subscription"`
 	FlagRedemption       uint8     `db:"flag_redemption"        json:"flag_redemption"`
 	FlagSwitchOut        uint8     `db:"flag_switch_out"        json:"flag_switch_out"`
 	FlagSwitchIn         uint8     `db:"flag_switch_in"         json:"flag_switch_in"`
-	MaxSubFee            float32   `db:"max_sub_fee"            json:"max_sub_fee"`
-	MaxRedFee            float32   `db:"max_red_fee"            json:"max_red_fee"`
-	MaxSwiFee            float32   `db:"max_swi_fee"            json:"max_swi_fee"`
-	MinSubAmount         float32   `db:"min_sub_amount"         json:"min_sub_amount"`
-	MinRedAmount         float32   `db:"min_red_amount"         json:"min_red_amount"`
-	MinRedUnit           float32   `db:"min_red_unit"           json:"min_red_unit"`
-	MinUnitAfterRed      float32   `db:"min_unit_after_red"     json:"min_unit_after_red"`
+	MaxSubFee            decimal.Decimal   `db:"max_sub_fee"            json:"max_sub_fee"`
+	MaxRedFee            decimal.Decimal   `db:"max_red_fee"            json:"max_red_fee"`
+	MaxSwiFee            decimal.Decimal   `db:"max_swi_fee"            json:"max_swi_fee"`
+	MinSubAmount         decimal.Decimal   `db:"min_sub_amount"         json:"min_sub_amount"`
+	MinRedAmount         decimal.Decimal   `db:"min_red_amount"         json:"min_red_amount"`
+	MinRedUnit           decimal.Decimal   `db:"min_red_unit"           json:"min_red_unit"`
+	MinUnitAfterRed      decimal.Decimal   `db:"min_unit_after_red"     json:"min_unit_after_red"`
 	RecOrder             *uint64   `db:"rec_order"              json:"rec_order"`
 	RecStatus            uint8     `db:"rec_status"             json:"rec_status"`
 	RecCreatedDate       *string   `db:"rec_created_date"       json:"rec_created_date"`

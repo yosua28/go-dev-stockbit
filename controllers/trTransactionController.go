@@ -9,7 +9,6 @@ import (
 	"database/sql"
 	"fmt"
 	"html/template"
-	"math"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -20,9 +19,9 @@ import (
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 	"gopkg.in/gomail.v2"
+	"github.com/shopspring/decimal"
+	"github.com/leekchan/accounting"
 )
 
 func CreateTransaction(c echo.Context) error {
@@ -30,7 +29,7 @@ func CreateTransaction(c echo.Context) error {
 	var status int
 	params := make(map[string]string)
 	paramsTransaction := make(map[string]string)
-
+	zero := decimal.NewFromInt(0)
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")
 		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
@@ -73,8 +72,8 @@ func CreateTransaction(c echo.Context) error {
 	paramsAcc["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	paramsAcc["product_key"] = productKeyStr
 	paramsAcc["rec_status"] = "1"
-	var balanceUnit float32
-	var investValue float32
+	var balanceUnit decimal.Decimal
+	var investValue decimal.Decimal
 	var accDB []models.TrAccount
 	status, err = models.GetAllTrAccount(&accDB, paramsAcc)
 	if err != nil {
@@ -107,9 +106,9 @@ func CreateTransaction(c echo.Context) error {
 			}
 			if len(balanceDB) > 0 {
 				for _, balance := range balanceDB {
-					balanceUnit += balance.BalanceUnit
+					balanceUnit = balanceUnit.Add(balance.BalanceUnit)
 				}
-				investValue = float32(math.Trunc(float64(navDB[0].NavValue * balanceUnit)))
+				investValue = navDB[0].NavValue.Mul(balanceUnit)
 			}
 		}
 	}
@@ -165,25 +164,25 @@ func CreateTransaction(c echo.Context) error {
 	}
 
 	transUnitStr := c.FormValue("trans_unit")
-	var unitValue float64
+	var unitValue decimal.Decimal
 	if transUnitStr != "" {
-		unitValue, err = strconv.ParseFloat(transUnitStr, 64)
+		unitValue, err = decimal.NewFromString(transUnitStr)
 		if err != nil {
 			log.Error("Wrong input for parameter: trans_unit")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_unit", "Wrong input for parameter: trans_unit")
 		}
-		float := float32(unitValue)
+		
 		if typeKeyStr == "2" {
 			typeStr = "redemption"
-			if float > balanceUnit {
+			if unitValue.Cmp(balanceUnit) == 1 {
 				log.Error("unit redemp > balance")
 				return lib.CustomError(http.StatusBadRequest, "unit redemp > balance", "Jumlah unit yang di redem melebihi balance yang ada")
 			}
-			if float < product.MinRedUnit {
+			if unitValue.Cmp(product.MinRedUnit) == -1 {
 				log.Error("red unit < minimum red")
 				return lib.CustomError(http.StatusBadRequest, "red unit < minum red", "Minimum redemption untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinRedUnit)+"unit")
 			}
-			if (balanceUnit - float) < product.MinUnitAfterRed {
+			if balanceUnit.Sub(unitValue).Cmp(product.MinUnitAfterRed) == -1 {
 				log.Error("unit after redemption < minimum unit after red")
 				return lib.CustomError(http.StatusBadRequest, "unit after redemption < minimum unit after red", "Minumum unit setelah redemption untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinUnitAfterRed)+"unit")
 			}
@@ -195,28 +194,27 @@ func CreateTransaction(c echo.Context) error {
 
 	transAmountStr := c.FormValue("trans_amount")
 	if transAmountStr != "" {
-		value, err := strconv.ParseFloat(transAmountStr, 64)
+		value, err := decimal.NewFromString(transAmountStr)
 		if err != nil {
 			log.Error("Wrong input for parameter: trans_amount")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_amount", "Wrong input for parameter: trans_amount")
 		}
-		float := float32(value)
 		if typeKeyStr == "1" {
 			typeStr = "subscription"
-			if balanceUnit > 0 {
+			if balanceUnit.Cmp(zero) == 1 {
 				typeStr = "topup"
 			}
-			if float < product.MinSubAmount {
+			if value.Cmp(product.MinSubAmount) == -1 {
 				log.Error("sub amount < minimum sub")
 				return lib.CustomError(http.StatusBadRequest, "sub amount < minum sub", "Minumum subscription untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinSubAmount))
 			}
 		} else if typeKeyStr == "2" {
 			typeStr = "redemption"
-			if float > investValue {
+			if value.Cmp(investValue) == 1 {
 				log.Error("Amount redemp > invest value")
 				return lib.CustomError(http.StatusBadRequest, "amount redemp > invest value", "Jumlah redem melebihi total invest value untuk product ini")
 			}
-			if unitValue == 0 && float < product.MinRedAmount {
+			if unitValue == zero && value.Cmp(product.MinRedAmount) == -1 {
 				log.Error("red amount < minimum red")
 				return lib.CustomError(http.StatusBadRequest, "red amount < minimum red", "Minumum redemption untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinRedAmount))
 			}
@@ -674,6 +672,7 @@ func GetTransactionList(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
+	zero := decimal.NewFromInt(0)
 
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")
@@ -881,7 +880,7 @@ func GetTransactionList(c echo.Context) error {
 				if err == nil {
 					data.NavValue = navTrans.NavValue
 				} else {
-					data.NavValue = float32(0)
+					data.NavValue = zero
 				}
 				data.TransDate = transaction.TransDate
 				data.NavDate = transaction.NavDate
@@ -895,22 +894,22 @@ func GetTransactionList(c echo.Context) error {
 						if transaction.ParentKey != nil {
 							if swot, ok := switchout[*transaction.ParentKey]; ok {
 								log.Println("HAHAHHAA")
-								data.TransUnit = float32(math.Floor(float64(swot.TransUnit)*100) / 100)
-								data.TransAmount = float32(math.Trunc(float64(swot.TransAmount)))
+								data.TransUnit = swot.TransUnit.Truncate(2)
+								data.TransAmount = swot.TransAmount.Truncate(0)
 							}
 						} else {
 							log.Println("qqqqqqqqqqqq")
-							data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
-							data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
+							data.TransUnit = transactionConf.ConfirmedUnit.Truncate(2)
+							data.TransAmount = transactionConf.ConfirmedAmount.Truncate(0)
 						}
 					} else {
 						log.Println("rrrrrrrrrr")
-						data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
-						data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
+						data.TransUnit = transaction.TransUnit.Truncate(2)
+						data.TransAmount = transaction.TransAmount.Truncate(0)
 					}
 				} else {
-					data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
-					data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
+					data.TransUnit = transactionConf.ConfirmedUnit.Truncate(2)
+					data.TransAmount = transactionConf.ConfirmedAmount.Truncate(0)
 				}
 
 				data.TotalAmount = transaction.TotalAmount
@@ -966,7 +965,7 @@ func GetTransactionList(c echo.Context) error {
 			if err == nil {
 				data.NavValue = navTrans.NavValue
 			} else {
-				data.NavValue = float32(0)
+				data.NavValue = zero
 			}
 			data.TransDate = transaction.TransDate
 			data.NavDate = transaction.NavDate
@@ -976,11 +975,11 @@ func GetTransactionList(c echo.Context) error {
 			strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
 			_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTrKey)
 			if err != nil {
-				data.TransUnit = float32(math.Floor(float64(transaction.TransUnit)*100) / 100)
-				data.TransAmount = float32(math.Trunc(float64(transaction.TransAmount)))
+				data.TransUnit = transaction.TransUnit.Truncate(2)
+				data.TransAmount = transaction.TransAmount.Truncate(0)
 			} else {
-				data.TransUnit = float32(math.Floor(float64(transactionConf.ConfirmedUnit)*100) / 100)
-				data.TransAmount = float32(math.Trunc(float64(transactionConf.ConfirmedAmount)))
+				data.TransUnit = transactionConf.ConfirmedUnit.Truncate(2)
+				data.TransAmount = transactionConf.ConfirmedAmount.Truncate(0)
 			}
 
 			data.TotalAmount = transaction.TotalAmount
@@ -1302,9 +1301,9 @@ func SendEmailTransaction(c echo.Context) error {
 			fee := transaction.TransFeeAmount
 			data["Fee"] = fee
 			if tc, ok := tcData[transaction.TransactionKey]; ok {
-				data["Unit"] = math.Floor(float64(tc.ConfirmedUnit)*100) / 100
-				data["Amount"] = float32(math.Trunc(float64(tc.ConfirmedAmount)))
-				data["Total"] = float32(math.Trunc(float64(tc.ConfirmedAmount + fee)))
+				data["Unit"] = tc.ConfirmedUnit.Truncate(2)
+				data["Amount"] = tc.ConfirmedAmount.Truncate(0)
+				data["Total"] = tc.ConfirmedAmount.Add(fee).Truncate(0)
 			}
 			if nav, ok := nData[transaction.NavDate]; ok {
 				data["Nav"] = nav.NavValue
@@ -1415,15 +1414,15 @@ func SendEmailTransaction(c echo.Context) error {
 func mailTransaction(typ string, params map[string]string) error {
 	var err error
 	var mailTemp, subject string
+	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
 	mailParam := make(map[string]string)
-	p := message.NewPrinter(language.Indonesian)
 	if params["currency"] == "1" {
 		mailParam["Symbol"] = "Rp. "
 	} else if params["currency"] == "2" {
 		mailParam["Symbol"] = "$"
 	}
-	val, _ := strconv.ParseFloat(params["trans_fee_amount"], 64)
-	mailParam["Fee"] = p.Sprintf("%v", math.Trunc(val))
+	val, _ := decimal.NewFromString(params["trans_fee_amount"])
+	mailParam["Fee"] = ac0.FormatMoneyDecimal(val.Truncate(0))
 	if typ == "subscription" || typ == "topup" {
 		if _, ok := params["rec_image1"]; ok {
 			mailTemp = "index-" + typ + "-complete.html"
@@ -1508,8 +1507,8 @@ func mailTransaction(typ string, params map[string]string) error {
 		mailParam["Amount"] = fmt.Sprintf("%.2f", value)
 		mailParam["Str"] = " Unit"
 	} else {
-		val, _ := strconv.ParseFloat(params["trans_amount"], 64)
-		mailParam["Amount"] = p.Sprintf("%v", math.Trunc(val))
+		val, _ := decimal.NewFromString(params["trans_amount"])
+		mailParam["Amount"] = ac0.FormatMoneyDecimal(val)
 	}
 	var customer models.MsCustomer
 	_, err = models.GetMsCustomer(&customer, strconv.FormatUint(*lib.Profile.CustomerKey, 10))

@@ -1,11 +1,15 @@
 package models
 
+import(
+	"github.com/shopspring/decimal"
+)
+
 type FfsAllocInstrument struct {
 	AllocInstrumentKey   uint64    `db:"alloc_intrument_key"  json:"alloc_intrument_key"`
 	ProductKey           uint64    `db:"product_key"          json:"product_key"`
 	PeriodeKey           uint64    `db:"periode_key"          json:"periode_key"`
 	IntrumentKey         uint64    `db:"instrument_key"       json:"instrument_key"`
-	IntrumentValue       float32   `db:"instrument_value"     json:"instrument_value"`
+	IntrumentValue       decimal.Decimal   `db:"instrument_value"     json:"instrument_value"`
 	RecOrder             *uint64   `db:"rec_order"            json:"rec_order"`
 	RecStatus            uint8     `db:"rec_status"           json:"rec_status"`
 	RecCreatedDate       *string   `db:"rec_created_date"     json:"rec_created_date"`
