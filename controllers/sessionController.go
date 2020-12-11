@@ -888,6 +888,7 @@ func GetUserLogin(c echo.Context) error {
 
 	var responseData models.UserProfile
 	responseData.FullName = personalDataDB.FullName
+	responseData.CIF = customerDB.UnitHolderIDno
 	if customerDB.SidNo != nil {
 		responseData.SID = *customerDB.SidNo
 	}
