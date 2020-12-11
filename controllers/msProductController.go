@@ -333,13 +333,10 @@ func GetMsProductList(c echo.Context) error {
 			}
 			data.Nav = &nav
 
-			ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
-			// Amount:         ac.FormatMoney(transactionConf.ConfirmedAmount),
+			ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ",", Decimal: "."}
 
 			var perform models.FfsNavPerformanceInfo
 			if p, ok := pData[product.ProductKey]; ok {
-				// date, _ := time.Parse(layout, p.NavDate)
-				// perform.NavDate = date.Format(newLayout)
 				perform.NavDate = p.NavDate
 				perform.D1 = ac.FormatMoney(p.PerformD1) + `%`
 				perform.MTD = ac.FormatMoney(p.PerformMtd) + `%`
