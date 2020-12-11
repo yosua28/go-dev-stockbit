@@ -18,15 +18,16 @@ import (
 
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
+	"github.com/leekchan/accounting"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
-	"github.com/shopspring/decimal"
-	"github.com/leekchan/accounting"
 )
 
 func CreateTransaction(c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 	params := make(map[string]string)
 	paramsTransaction := make(map[string]string)
 	zero := decimal.NewFromInt(0)
@@ -171,7 +172,7 @@ func CreateTransaction(c echo.Context) error {
 			log.Error("Wrong input for parameter: trans_unit")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_unit", "Wrong input for parameter: trans_unit")
 		}
-		
+
 		if typeKeyStr == "2" {
 			typeStr = "redemption"
 			if unitValue.Cmp(balanceUnit) == 1 {
@@ -672,6 +673,7 @@ func GetTransactionList(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
+	decimal.MarshalJSONWithoutQuotes = true
 	zero := decimal.NewFromInt(0)
 
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
@@ -1121,6 +1123,7 @@ func SendEmailTransaction(c echo.Context) error {
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 	params := make(map[string]string)
 	trxHistory := make(map[string]interface{})
 	layout := "2006-01-02 15:04:05"
@@ -1414,6 +1417,7 @@ func SendEmailTransaction(c echo.Context) error {
 func mailTransaction(typ string, params map[string]string) error {
 	var err error
 	var mailTemp, subject string
+	decimal.MarshalJSONWithoutQuotes = true
 	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
 	mailParam := make(map[string]string)
 	if params["currency"] == "1" {

@@ -4,7 +4,6 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
-	"fmt"
 	"html/template"
 	"net/http"
 	"os"
@@ -13,14 +12,15 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
-	"github.com/shopspring/decimal"
 	"github.com/leekchan/accounting"
+	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetMsProductList(c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	zero := decimal.NewFromInt(0)
 	//Get parameter limit
@@ -297,7 +297,6 @@ func GetMsProductList(c echo.Context) error {
 			data.ProductName = product.ProductName
 			data.ProductNameAlt = product.ProductNameAlt
 			data.MinSubAmount = product.MinSubAmount
-			data.MinSubAmount = product.MinSubAmount
 
 			if product.RecImage1 != nil && *product.RecImage1 != "" {
 				data.RecImage1 = config.BaseUrl + "/images/product/" + *product.RecImage1
@@ -334,22 +333,25 @@ func GetMsProductList(c echo.Context) error {
 			}
 			data.Nav = &nav
 
+			ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
+			// Amount:         ac.FormatMoney(transactionConf.ConfirmedAmount),
+
 			var perform models.FfsNavPerformanceInfo
 			if p, ok := pData[product.ProductKey]; ok {
 				// date, _ := time.Parse(layout, p.NavDate)
 				// perform.NavDate = date.Format(newLayout)
 				perform.NavDate = p.NavDate
-				perform.D1 = fmt.Sprintf("%.2f", p.PerformD1) + `%`
-				perform.MTD = fmt.Sprintf("%.2f", p.PerformMtd) + `%`
-				perform.M1 = fmt.Sprintf("%.2f", p.PerformM1) + `%`
-				perform.M3 = fmt.Sprintf("%.2f", p.PerformM3) + `%`
-				perform.M6 = fmt.Sprintf("%.2f", p.PerformM6) + `%`
-				perform.Y1 = fmt.Sprintf("%.2f", p.PerformY1) + `%`
-				perform.Y3 = fmt.Sprintf("%.2f", p.PerformY3) + `%`
-				perform.Y5 = fmt.Sprintf("%.2f", p.PerformY5) + `%`
-				perform.YTD = fmt.Sprintf("%.2f", p.PerformYtd) + `%`
-				perform.CAGR = fmt.Sprintf("%.2f", p.PerformCagr) + `%`
-				perform.ALL = fmt.Sprintf("%.2f", p.PerformAll) + `%`
+				perform.D1 = ac.FormatMoney(p.PerformD1) + `%`
+				perform.MTD = ac.FormatMoney(p.PerformMtd) + `%`
+				perform.M1 = ac.FormatMoney(p.PerformM1) + `%`
+				perform.M3 = ac.FormatMoney(p.PerformM3) + `%`
+				perform.M6 = ac.FormatMoney(p.PerformM6) + `%`
+				perform.Y1 = ac.FormatMoney(p.PerformY1) + `%`
+				perform.Y3 = ac.FormatMoney(p.PerformY3) + `%`
+				perform.Y5 = ac.FormatMoney(p.PerformY5) + `%`
+				perform.YTD = ac.FormatMoney(p.PerformYtd) + `%`
+				perform.CAGR = ac.FormatMoney(p.PerformCagr) + `%`
+				perform.ALL = ac.FormatMoney(p.PerformAll) + `%`
 			}
 			data.NavPerformance = &perform
 
@@ -387,6 +389,8 @@ func GetMsProductData(c echo.Context) error {
 	var err error
 	var status int
 	var data models.MsProductData
+
+	decimal.MarshalJSONWithoutQuotes = true
 
 	keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
@@ -808,6 +812,8 @@ func Portofolio(c echo.Context) error {
 	var err error
 	var status int
 
+	decimal.MarshalJSONWithoutQuotes = true
+
 	ac2 := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
 	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
 
@@ -1170,6 +1176,7 @@ func ProductListMutasi(c echo.Context) error {
 	var err error
 	var status int
 	params := make(map[string]string)
+	decimal.MarshalJSONWithoutQuotes = true
 
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
 		log.Error("No customer found")

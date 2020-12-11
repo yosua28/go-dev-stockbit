@@ -5,14 +5,13 @@ import (
 	"api/lib"
 	"api/models"
 	"database/sql"
-	"fmt"
 	"net/http"
 	"strconv"
 	"time"
 
 	"github.com/labstack/echo"
-	log "github.com/sirupsen/logrus"
 	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 func DownloadTransactionFormatSinvest(c echo.Context) error {
@@ -22,6 +21,7 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
+	decimal.MarshalJSONWithoutQuotes = true
 	var err error
 	var status int
 	var offset uint64
@@ -212,15 +212,15 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			subred.AmountNominal = ""
 			if strTransTypeKey == "1" { //SUB
 				if trSubRed.TransAmount.Cmp(zero) == 1 {
-					strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
-					subred.AmountNominal = strTransAmount
+					// strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
+					subred.AmountNominal = trSubRed.TransAmount.String()
 				} else {
 					subred.AmountNominal = "0"
 				}
 			} else {
 				if trSubRed.TransAmount.Cmp(zero) == 1 {
-					strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
-					subred.AmountNominal = strTransAmount
+					// strTransAmount := fmt.Sprintf("%.2f", trSubRed.TransAmount)
+					subred.AmountNominal = trSubRed.TransAmount.String()
 				}
 			}
 
@@ -228,8 +228,8 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 			subred.AmountAllUnit = ""
 			if strTransTypeKey == "2" { //REDM
 				if trSubRed.TransUnit.Cmp(zero) == 1 {
-					strTransUnit := fmt.Sprintf("%.2f", trSubRed.TransUnit)
-					subred.AmountUnit = strTransUnit
+					// strTransUnit := fmt.Sprintf("%.2f", trSubRed.TransUnit)
+					subred.AmountUnit = trSubRed.TransUnit.String()
 				} else {
 					subred.AmountUnit = "0"
 				}
@@ -243,16 +243,16 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 
 			subred.FeeNominal = ""
 			if trSubRed.TransFeeAmount.Cmp(zero) == 1 {
-				strFeeAmount := fmt.Sprintf("%.2f", trSubRed.TransFeeAmount)
-				subred.FeeNominal = strFeeAmount
+				// strFeeAmount := fmt.Sprintf("%.2f", trSubRed.TransFeeAmount)
+				subred.FeeNominal = trSubRed.TransFeeAmount.String()
 			}
 
 			subred.FeeUnit = ""
 
 			subred.FeePercent = ""
 			if trSubRed.TransFeePercent.Cmp(zero) == 1 {
-				strFeePercent := fmt.Sprintf("%.2f", trSubRed.TransFeePercent)
-				subred.FeePercent = strFeePercent
+				// strFeePercent := fmt.Sprintf("%.2f", trSubRed.TransFeePercent)
+				subred.FeePercent = trSubRed.TransFeePercent.String()
 			}
 
 			subred.RedmPaymentACSequenceCode = "1"
@@ -344,12 +344,12 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 					}
 
 					if pt.TransAmount.Cmp(zero) == 1 {
-						strTransAmount := fmt.Sprintf("%.2f", pt.TransAmount)
-						swc.SwitchOutAmountNominal = strTransAmount
+						// strTransAmount := fmt.Sprintf("%.2f", pt.TransAmount)
+						swc.SwitchOutAmountNominal = pt.TransAmount.String()
 					}
 					if pt.TransUnit.Cmp(zero) == 1 {
-						strTransUnit := fmt.Sprintf("%.2f", pt.TransUnit)
-						swc.SwitchOutAmountUnit = strTransUnit
+						// strTransUnit := fmt.Sprintf("%.2f", pt.TransUnit)
+						swc.SwitchOutAmountUnit = pt.TransUnit.String()
 					}
 					if pt.FlagRedemtAll != nil {
 						if int(*pt.FlagRedemtAll) > 0 {
@@ -366,16 +366,16 @@ func DownloadTransactionFormatSinvest(c echo.Context) error {
 
 			swc.FeeNominal = ""
 			if trSwitch.TransFeeAmount.Cmp(zero) == 1 {
-				strFeeAmount := fmt.Sprintf("%.2f", trSwitch.TransFeeAmount)
-				swc.FeeNominal = strFeeAmount
+				// strFeeAmount := fmt.Sprintf("%.2f", trSwitch.TransFeeAmount)
+				swc.FeeNominal = trSwitch.TransFeeAmount.String()
 			}
 
 			swc.FeeUnit = ""
 
 			swc.FeePercent = ""
 			if trSwitch.TransFeePercent.Cmp(zero) == 1 {
-				strFeePercent := fmt.Sprintf("%.2f", trSwitch.TransFeePercent)
-				swc.FeePercent = strFeePercent
+				// strFeePercent := fmt.Sprintf("%.2f", trSwitch.TransFeePercent)
+				swc.FeePercent = trSwitch.TransFeePercent.String()
 			}
 
 			swc.SwitchInFundCode = ""

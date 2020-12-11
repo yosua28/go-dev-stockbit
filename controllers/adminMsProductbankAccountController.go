@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -180,6 +181,7 @@ func GetProductBankAccountDetailAdmin(c echo.Context) error {
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {

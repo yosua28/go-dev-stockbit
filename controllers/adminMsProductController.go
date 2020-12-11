@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -29,6 +30,7 @@ func GetListProductAdmin(c echo.Context) error {
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {
@@ -366,6 +368,7 @@ func GetListProductAdmin(c echo.Context) error {
 func GetProductDetailAdmin(c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {
@@ -670,6 +673,7 @@ func GetProductDetailAdmin(c echo.Context) error {
 
 func DeleteProductAdmin(c echo.Context) error {
 	var err error
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {
@@ -1377,6 +1381,7 @@ func CreateAdminMsProduct(c echo.Context) error {
 func UpdateAdminMsProduct(c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {
@@ -2056,6 +2061,7 @@ func GetListProductAdminDropdown(c echo.Context) error {
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	//Get parameter limit
 	limitStr := c.QueryParam("limit")

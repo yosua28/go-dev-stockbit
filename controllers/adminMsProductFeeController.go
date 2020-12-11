@@ -14,6 +14,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -156,6 +157,7 @@ func GetProductFeeDetailAdmin(c echo.Context) error {
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {
@@ -1151,6 +1153,8 @@ func UpdateAdminMsProductFeeItem(c echo.Context) error {
 	var err error
 	var status int
 
+	decimal.MarshalJSONWithoutQuotes = true
+
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
@@ -1385,6 +1389,7 @@ func DeleteAdminMsProductFeeItem(c echo.Context) error {
 
 func DetailAdminMsProductFeeItem(c echo.Context) error {
 	var err error
+	decimal.MarshalJSONWithoutQuotes = true
 
 	errorAuth := initAuthHoIt()
 	if errorAuth != nil {

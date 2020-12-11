@@ -1,14 +1,15 @@
 package controllers
 
 import (
-	"api/models"
 	"api/lib"
+	"api/models"
+	"fmt"
 	"net/http"
 	"strconv"
-	"fmt"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetCmsQuiz(c echo.Context) error {
@@ -19,7 +20,7 @@ func GetCmsQuiz(c echo.Context) error {
 	typeKey, _ := strconv.ParseUint(typeKeyStr, 10, 64)
 	if typeKey == 0 {
 		log.Error("Type should be number")
-		return lib.CustomError(http.StatusBadRequest,"Type should be number","Type should be number")
+		return lib.CustomError(http.StatusBadRequest, "Type should be number", "Type should be number")
 	}
 	params := make(map[string]string)
 	params["rec_status"] = "1"
@@ -87,12 +88,12 @@ func GetCmsQuiz(c echo.Context) error {
 		if option.QuizOptionDefault != nil {
 			data.QuizOptionDefault = *option.QuizOptionDefault
 		}
-		
+
 		optionData[option.QuizQuestionKey] = append(optionData[option.QuizQuestionKey], data)
 	}
 
 	var questionData []models.CmsQuizQuestionInfo
-	
+
 	for _, question := range questionDB {
 		var data models.CmsQuizQuestionInfo
 		data.QuizQuestionKey = question.QuizQuestionKey
@@ -110,13 +111,12 @@ func GetCmsQuiz(c echo.Context) error {
 		if opt, ok := optionData[question.QuizQuestionKey]; ok {
 			data.Options = &opt
 		}
-		
+
 		questionData = append(questionData, data)
 	}
-	
 
 	var responseData models.CmsQuizHeaderData
-	
+
 	responseData.QuizHeaderKey = header.QuizHeaderKey
 	if header.QuizName != nil {
 		responseData.QuizName = *header.QuizName
@@ -124,7 +124,7 @@ func GetCmsQuiz(c echo.Context) error {
 	if header.QuizDesc != nil {
 		responseData.QuizDesc = *header.QuizDesc
 	}
-	
+
 	responseData.Questions = &questionData
 
 	var response lib.Response
@@ -132,7 +132,7 @@ func GetCmsQuiz(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }
 
@@ -140,6 +140,7 @@ func PostQuizAnswer(c echo.Context) error {
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	m := echo.Map{}
 	if err := c.Bind(&m); err != nil {
@@ -151,7 +152,7 @@ func PostQuizAnswer(c echo.Context) error {
 	var bindVar []interface{}
 	var score uint64 = 0
 	for _, val := range data {
-		
+
 		var row []string
 		valueMap := val.(map[string]interface{})
 		row = append(row, requestKey)
@@ -163,7 +164,7 @@ func PostQuizAnswer(c echo.Context) error {
 		if err == nil {
 			score += s
 		}
-		bindVar = append(bindVar, row) 
+		bindVar = append(bindVar, row)
 	}
 
 	var riskProfile models.MsRiskProfile
@@ -196,13 +197,13 @@ func PostQuizAnswer(c echo.Context) error {
 	responseData.RiskCode = riskProfile.RiskCode
 	responseData.RiskName = riskProfile.RiskName
 	responseData.RiskDesc = riskProfile.RiskDesc
-	responseData.Score = score 
+	responseData.Score = score
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }

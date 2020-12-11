@@ -1,20 +1,22 @@
 package controllers
 
 import (
-	"api/models"
 	"api/lib"
+	"api/models"
 	"net/http"
 	"strconv"
 	"time"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetTrNavProduct(c echo.Context) error {
 	var err error
 	var status int
-	
+	decimal.MarshalJSONWithoutQuotes = true
+
 	productKeyStr := c.Param("product_key")
 	productKey, _ := strconv.ParseUint(productKeyStr, 10, 64)
 	if productKey == 0 {
@@ -24,7 +26,7 @@ func GetTrNavProduct(c echo.Context) error {
 	duration := c.Param("duration")
 	if duration == "" {
 		log.Error("Missing required parameters")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameters","Missing required parameters")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameters", "Missing required parameters")
 	}
 
 	layout := "2006-01-02"
@@ -49,23 +51,23 @@ func GetTrNavProduct(c echo.Context) error {
 			navDB = append(navDB, nav[n])
 			nav = nav[:n]
 		}
-	}else if duration == "m1" {
-		date2 = now.AddDate(0,-1,0).Format(layout) + " 00:00:00"
-	}else if duration == "m3" {
-		date2 = now.AddDate(0,-3,0).Format(layout) + " 00:00:00"
-	}else if duration == "y1" {
-		date2 = now.AddDate(-1,0,0).Format(layout) + " 00:00:00"
-	}else if duration == "y3" {
-		date2 = now.AddDate(-3,0,0).Format(layout) + " 00:00:00"
-	}else if duration == "y5" {
-		date2 = now.AddDate(-5,0,0).Format(layout) + " 00:00:00"
-	}else if duration == "ytd" {
+	} else if duration == "m1" {
+		date2 = now.AddDate(0, -1, 0).Format(layout) + " 00:00:00"
+	} else if duration == "m3" {
+		date2 = now.AddDate(0, -3, 0).Format(layout) + " 00:00:00"
+	} else if duration == "y1" {
+		date2 = now.AddDate(-1, 0, 0).Format(layout) + " 00:00:00"
+	} else if duration == "y3" {
+		date2 = now.AddDate(-3, 0, 0).Format(layout) + " 00:00:00"
+	} else if duration == "y5" {
+		date2 = now.AddDate(-5, 0, 0).Format(layout) + " 00:00:00"
+	} else if duration == "ytd" {
 		date2 = strconv.Itoa(now.Year()-1) + "-12-31 00:00:00"
-	}else if duration == "all" {
+	} else if duration == "all" {
 		date2 = "1970-01-01 00:00:00"
-	}else{
+	} else {
 		log.Error("Missing required parameters")
-		return lib.CustomError(http.StatusBadRequest,"Missing required parameters","Missing required parameters")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameters", "Missing required parameters")
 	}
 
 	if duration != "d1" {
@@ -78,14 +80,14 @@ func GetTrNavProduct(c echo.Context) error {
 			return lib.CustomError(http.StatusNotFound, "Data not found", "Data not found")
 		}
 	}
-	
+
 	var navData []models.TrNavInfo
 	for _, nav := range navDB {
 		var data models.TrNavInfo
 		date, _ := time.Parse("2006-01-02 15:04:05", nav.NavDate)
 		data.NavDate = date.Format("02 Jan 2006")
 		data.NavValue = nav.NavValue
-		
+
 		navData = append(navData, data)
 	}
 
@@ -94,6 +96,6 @@ func GetTrNavProduct(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = navData
-	
+
 	return c.JSON(http.StatusOK, response)
 }

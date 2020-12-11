@@ -27,6 +27,7 @@ import (
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
 	uuid "github.com/satori/go.uuid"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
 )
@@ -824,6 +825,7 @@ func ForgotPassword(c echo.Context) error {
 
 func GetUserLogin(c echo.Context) error {
 	var err error
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var oaRequestDB []models.OaRequest
 	params := make(map[string]string)

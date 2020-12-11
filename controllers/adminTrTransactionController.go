@@ -21,9 +21,9 @@ import (
 	"github.com/360EntSecGroup-Skylar/excelize"
 	"github.com/labstack/echo"
 	"github.com/leekchan/accounting"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
-	"github.com/shopspring/decimal"
 )
 
 func initAuthBranchEntryHoEntry() error {
@@ -170,6 +170,7 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	//Get parameter limit
 	limitStr := c.QueryParam("limit")
@@ -543,6 +544,7 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 func GetTransactionDetail(c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
@@ -1005,6 +1007,7 @@ func TransactionApprovalCompliance(c echo.Context) error {
 func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var roleKeyCs uint64
 	roleKeyCs = 11
@@ -1236,6 +1239,7 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	notes string, strTransTypeKey string, transaction models.TrTransaction,
 	userLogin models.ScUserLogin) {
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var subject string
 	var tpl bytes.Buffer
@@ -1322,6 +1326,8 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 		}
 	}
 
+	ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
+
 	dataReplace := struct {
 		FileUrl        string
 		Name           string
@@ -1350,9 +1356,9 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 		Time:           date.Format(timeLayout) + " WIB",
 		ProductName:    product.ProductNameAlt,
 		Symbol:         currencyDB.Symbol,
-		Amount:         fmt.Sprintf("%.2f", transaction.TransAmount),
-		Fee:            fmt.Sprintf("%.2f", transaction.TransFeeAmount),
-		RedmUnit:       fmt.Sprintf("%.2f", transaction.TransUnit),
+		Amount:         ac.FormatMoney(transaction.TransAmount),
+		Fee:            ac.FormatMoney(transaction.TransFeeAmount),
+		RedmUnit:       ac.FormatMoney(transaction.TransUnit),
 		BankName:       bankNameCus,
 		NoRek:          noRekCus,
 		NamaRek:        namaRekCus,
@@ -1498,6 +1504,7 @@ func UpdateNavDate(c echo.Context) error {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var err error
 	var status int
@@ -1925,6 +1932,7 @@ func GetFormatExcelDownloadList(c echo.Context) error {
 		log.Error("User Autorizer")
 		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 	}
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "7")
@@ -2117,6 +2125,7 @@ func GetFormatExcelDownloadList(c echo.Context) error {
 
 func UploadExcelConfirmation(c echo.Context) error {
 	var err error
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var responseData []models.DownloadFormatExcelList
 
@@ -2348,7 +2357,6 @@ func UploadExcelConfirmation(c echo.Context) error {
 				params["confirmed_unit"] = approveUnits
 				params["confirm_result"] = "208"
 
-				
 				approveUnitsFloat := decimal.NewFromInt(0)
 				if approveUnits != "" {
 					if appUnits, err := decimal.NewFromString(approveUnits); err == nil {
@@ -2356,11 +2364,11 @@ func UploadExcelConfirmation(c echo.Context) error {
 					}
 				}
 				if transaction.TransUnit.Cmp(approveUnitsFloat) == 1 {
-					strTransUnit := fmt.Sprintf("%g", transaction.TransUnit.Sub(approveUnitsFloat))
-					params["confirmed_unit_diff"] = strTransUnit
+					// strTransUnit := fmt.Sprintf("%g", transaction.TransUnit.Sub(approveUnitsFloat))
+					params["confirmed_unit_diff"] = transaction.TransUnit.Sub(approveUnitsFloat).String()
 				} else if transaction.TransUnit.Cmp(approveUnitsFloat) == -1 {
-					strTransUnit := fmt.Sprintf("%g", approveUnitsFloat.Sub(transaction.TransUnit))
-					params["confirmed_unit_diff"] = strTransUnit
+					// strTransUnit := fmt.Sprintf("%g", approveUnitsFloat.Sub(transaction.TransUnit))
+					params["confirmed_unit_diff"] = approveUnitsFloat.Sub(transaction.TransUnit).String()
 				} else {
 					params["confirmed_unit_diff"] = "0"
 				}
@@ -2372,11 +2380,11 @@ func UploadExcelConfirmation(c echo.Context) error {
 					}
 				}
 				if transaction.TransAmount.Cmp(approveAmountFloat) == 1 {
-					strTransAmount := fmt.Sprintf("%g", transaction.TransAmount.Sub(approveAmountFloat))
-					params["confirmed_amount_diff"] = strTransAmount
+					// strTransAmount := fmt.Sprintf("%g", transaction.TransAmount.Sub(approveAmountFloat))
+					params["confirmed_amount_diff"] = transaction.TransAmount.Sub(approveAmountFloat).String()
 				} else if transaction.TransAmount.Cmp(approveAmountFloat) == -1 {
-					strTransAmount := fmt.Sprintf("%g", approveAmountFloat.Sub(transaction.TransAmount))
-					params["confirmed_amount_diff"] = strTransAmount
+					// strTransAmount := fmt.Sprintf("%g", approveAmountFloat.Sub(transaction.TransAmount))
+					params["confirmed_amount_diff"] = approveAmountFloat.Sub(transaction.TransAmount).String()
 				} else {
 					params["confirmed_amount_diff"] = "0"
 				}
@@ -2398,8 +2406,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 					if approveUnits != "" {
 						if approveUnitsFloat, err := decimal.NewFromString(approveUnits); err == nil {
 							avgNav := transaction.TotalAmount.Div(approveUnitsFloat)
-							strAvgNav := fmt.Sprintf("%g", avgNav)
-							params["avg_nav"] = strAvgNav
+							// strAvgNav := fmt.Sprintf("%g", avgNav)
+							params["avg_nav"] = avgNav.String()
 						}
 					}
 				}
@@ -2447,8 +2455,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 					var transAmountFifo decimal.Decimal
 					transAmountFifo = transUnitFifo.Mul(trNav[0].NavValue)
-					strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
-					paramsFifo["trans_amount"] = strTransAmountFifo
+					// strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
+					paramsFifo["trans_amount"] = transAmountFifo.String()
 
 					var feeTypeStr string
 
@@ -2461,7 +2469,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 					var feeItem models.MsProductFeeItem
 
-					_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+					// _, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+					_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, transAmountFifo.String(), feeTypeStr)
 					if err != nil {
 						if err == sql.ErrNoRows {
 							_, err = models.GetMsProductFeeItemLastCalculateFifo(&feeItem, strProductKey, feeTypeStr)
@@ -2471,12 +2480,12 @@ func UploadExcelConfirmation(c echo.Context) error {
 								paramsFifo["trans_nett_amount"] = "0"
 							} else {
 								transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
-								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
-								paramsFifo["trans_fee_amount"] = strTransfeeamount
+								// strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+								paramsFifo["trans_fee_amount"] = transfeeamount.String()
 
 								transnett := transAmountFifo.Add(transfeeamount)
-								strTransnett := fmt.Sprintf("%g", transnett)
-								paramsFifo["trans_nett_amount"] = strTransnett
+								// strTransnett := fmt.Sprintf("%g", transnett)
+								paramsFifo["trans_nett_amount"] = transnett.String()
 							}
 						} else {
 							log.Error(err.Error())
@@ -2485,12 +2494,12 @@ func UploadExcelConfirmation(c echo.Context) error {
 						}
 					} else {
 						transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
-						strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
-						paramsFifo["trans_fee_amount"] = strTransfeeamount
+						// strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+						paramsFifo["trans_fee_amount"] = transfeeamount.String()
 
 						transnett := transAmountFifo.Add(transfeeamount)
-						strTransnett := fmt.Sprintf("%g", transnett)
-						paramsFifo["trans_nett_amount"] = strTransnett
+						// strTransnett := fmt.Sprintf("%g", transnett)
+						paramsFifo["trans_nett_amount"] = transnett.String()
 					}
 
 					paramsFifo["trans_fee_tax"] = "0"
@@ -2548,8 +2557,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 							var transAmountFifo decimal.Decimal
 							transAmountFifo = transUnitFifo.Mul(trNav[0].NavValue)
-							strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
-							paramsFifo["trans_amount"] = strTransAmountFifo
+							// strTransAmountFifo := fmt.Sprintf("%g", transAmountFifo)
+							paramsFifo["trans_amount"] = transAmountFifo.String()
 
 							var feeTypeStr string
 
@@ -2562,7 +2571,8 @@ func UploadExcelConfirmation(c echo.Context) error {
 
 							var feeItem models.MsProductFeeItem
 
-							_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+							// _, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, strTransAmountFifo, feeTypeStr)
+							_, err = models.GetMsProductFeeItemCalculateFifoWithLimit(&feeItem, strProductKey, transAmountFifo.String(), feeTypeStr)
 							if err != nil {
 								if err == sql.ErrNoRows {
 									_, err = models.GetMsProductFeeItemLastCalculateFifo(&feeItem, strProductKey, feeTypeStr)
@@ -2572,12 +2582,12 @@ func UploadExcelConfirmation(c echo.Context) error {
 										paramsFifo["trans_nett_amount"] = "0"
 									} else {
 										transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
-										strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
-										paramsFifo["trans_fee_amount"] = strTransfeeamount
+										// strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+										paramsFifo["trans_fee_amount"] = transfeeamount.String()
 
 										transnett := transAmountFifo.Add(transfeeamount)
-										strTransnett := fmt.Sprintf("%g", transnett)
-										paramsFifo["trans_nett_amount"] = strTransnett
+										// strTransnett := fmt.Sprintf("%g", transnett)
+										paramsFifo["trans_nett_amount"] = transnett.String()
 									}
 								} else {
 									log.Error(err.Error())
@@ -2586,12 +2596,12 @@ func UploadExcelConfirmation(c echo.Context) error {
 								}
 							} else {
 								transfeeamount := feeItem.FeeValue.Div(decimal.NewFromInt(100)).Mul(transAmountFifo)
-								strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
-								paramsFifo["trans_fee_amount"] = strTransfeeamount
+								// strTransfeeamount := fmt.Sprintf("%g", transfeeamount)
+								paramsFifo["trans_fee_amount"] = transfeeamount.String()
 
 								transnett := transAmountFifo.Sub(transfeeamount)
-								strTransnett := fmt.Sprintf("%g", transnett)
-								paramsFifo["trans_nett_amount"] = strTransnett
+								// strTransnett := fmt.Sprintf("%g", transnett)
+								paramsFifo["trans_nett_amount"] = transnett.String()
 							}
 
 							paramsFifo["trans_fee_tax"] = "0"
@@ -2715,7 +2725,7 @@ func ProsesPosting(c echo.Context) error {
 		balanceDate := t.Format(newlayout)
 
 		paramsBalance["balance_date"] = balanceDate + " 00:00:00"
-		paramsBalance["balance_unit"] = strTransUnit
+		paramsBalance["balance_unit"] = transactionConf.ConfirmedUnit.String()
 		paramsBalance["rec_order"] = "0"
 		paramsBalance["rec_status"] = "1"
 		paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
@@ -2723,7 +2733,7 @@ func ProsesPosting(c echo.Context) error {
 
 		//calculate avg_nag tr_balance
 		//sum balance unit
-		
+
 		balanceUnitSum := zero
 		for _, trBalance := range trBalanceCustomer {
 			balanceUnitSum = balanceUnitSum.Add(trBalance.BalanceUnit)
@@ -2919,6 +2929,7 @@ func sendEmailTransactionPosted(
 	userLogin models.ScUserLogin,
 	strCustomerKey string,
 	strTransTypeKey string) {
+	decimal.MarshalJSONWithoutQuotes = true
 
 	var subject string
 	var tpl bytes.Buffer

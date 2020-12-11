@@ -8,12 +8,14 @@ import (
 	"strconv"
 
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 )
 
 func AdminGetListMsRiskProfile(c echo.Context) error {
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 
 	//Get parameter limit
 	limitStr := c.QueryParam("limit")

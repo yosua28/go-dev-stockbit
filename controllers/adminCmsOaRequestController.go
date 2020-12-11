@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
+	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
 	"gopkg.in/gomail.v2"
 )
@@ -297,6 +298,7 @@ func GetOaRequestData(c echo.Context) error {
 	}
 	var err error
 	var status int
+	decimal.MarshalJSONWithoutQuotes = true
 	//Get parameter limit
 	keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
