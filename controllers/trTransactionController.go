@@ -313,12 +313,8 @@ func CreateTransaction(c echo.Context) error {
 	status, err = models.GetAllTrAccount(&trAccountDB, params)
 	if len(trAccountDB) > 0 {
 		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
-		if (typeKeyStr == "1" || typeKeyStr == "4") && (trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag != 1) ||
-			(typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag != 1) {
-			log.Error("Account suspended")
-			return lib.CustomError(status, "Account suspended", "Account suspended")
-		}
-		if (typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag != 1) {
+		if (typeKeyStr == "1" || typeKeyStr == "4") && (trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag == 1) ||
+			(typeKeyStr == "2" || typeKeyStr == "3") && (trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag == 1) {
 			log.Error("Account suspended")
 			return lib.CustomError(status, "Account suspended", "Account suspended")
 		}
@@ -371,20 +367,12 @@ func CreateTransaction(c echo.Context) error {
 	params["trx_code"] = "137"
 	params["trans_calc_method"] = "288"
 
-	i := 0
 	layout := "2006-01-02"
-	for {
-		now := time.Now().AddDate(0, 0, i)
-		var holiday []models.MsHoliday
-		getParams := make(map[string]string)
-		getParams["holiday_date"] = now.Format(layout) + " 00:00:00"
-		_, err = models.GetAllMsHoliday(&holiday, getParams)
-		if (err == nil && len(holiday) < 1) || err != nil {
-			params["nav_date"] = now.Format(layout) + " 00:00:00"
-			break
-		} else {
-			i++
-		}
+	now := time.Now()
+	params["nav_date"] = now.Format(layout) + " 00:00:00"
+	if (now.Hour() == 12 && now.Minute() > 0) || now.Hour() > 12 {
+		t, _ := time.Parse(layout, now.Format(layout))
+		params["nav_date"] = SettDate(t, int(1)) + " 00:00:00"
 	}
 
 	params["entry_mode"] = "140"
