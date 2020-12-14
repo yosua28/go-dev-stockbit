@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 type Portofolio struct {
@@ -38,119 +38,134 @@ type ProductPortofolio struct {
 }
 
 type TrTransaction struct {
-	TransactionKey    uint64   `db:"transaction_key"           json:"transaction_key"`
-	ParentKey         *uint64  `db:"parent_key"                json:"parent_key"`
-	IDTransaction     *uint64  `db:"id_transaction"            json:"id_transaction"`
-	BranchKey         *uint64  `db:"branch_key"                json:"branch_key"`
-	AgentKey          *uint64  `db:"agent_key"                 json:"agent_key"`
-	CustomerKey       uint64   `db:"customer_key"              json:"customer_key"`
-	ProductKey        uint64   `db:"product_key"               json:"product_key"`
-	TransStatusKey    uint64   `db:"trans_status_key"          json:"trans_status_key"`
-	TransDate         string   `db:"trans_date"                json:"trans_date"`
-	TransTypeKey      uint64   `db:"trans_type_key"            json:"trans_type_key"`
-	TrxCode           *uint64  `db:"trx_code"                  json:"trx_code"`
-	NavDate           string   `db:"nav_date"                  json:"nav_date"`
-	EntryMode         *uint64  `db:"entry_mode"                json:"entry_mode"`
-	TransCalcMethod   *uint64  `db:"trans_calc_method"         json:"trans_calc_method"`
+	TransactionKey    uint64           `db:"transaction_key"           json:"transaction_key"`
+	ParentKey         *uint64          `db:"parent_key"                json:"parent_key"`
+	IDTransaction     *uint64          `db:"id_transaction"            json:"id_transaction"`
+	BranchKey         *uint64          `db:"branch_key"                json:"branch_key"`
+	AgentKey          *uint64          `db:"agent_key"                 json:"agent_key"`
+	CustomerKey       uint64           `db:"customer_key"              json:"customer_key"`
+	ProductKey        uint64           `db:"product_key"               json:"product_key"`
+	TransStatusKey    uint64           `db:"trans_status_key"          json:"trans_status_key"`
+	TransDate         string           `db:"trans_date"                json:"trans_date"`
+	TransTypeKey      uint64           `db:"trans_type_key"            json:"trans_type_key"`
+	TrxCode           *uint64          `db:"trx_code"                  json:"trx_code"`
+	NavDate           string           `db:"nav_date"                  json:"nav_date"`
+	EntryMode         *uint64          `db:"entry_mode"                json:"entry_mode"`
+	TransCalcMethod   *uint64          `db:"trans_calc_method"         json:"trans_calc_method"`
 	TransAmount       decimal.Decimal  `db:"trans_amount"              json:"trans_amount"`
 	TransUnit         decimal.Decimal  `db:"trans_unit"                json:"trans_unit"`
 	TransUnitPercent  *decimal.Decimal `db:"trans_unit_percent"        json:"trans_unit_percent"`
-	FlagRedemtAll     *uint8   `db:"flag_redempt_all"          json:"flag_redempt_all"`
-	FlagNewSub        *uint8   `db:"flag_newsub"               json:"flag_newsub"`
+	FlagRedemtAll     *uint8           `db:"flag_redempt_all"          json:"flag_redempt_all"`
+	FlagNewSub        *uint8           `db:"flag_newsub"               json:"flag_newsub"`
 	TransFeePercent   decimal.Decimal  `db:"trans_fee_percent"         json:"trans_fee_percent"`
 	TransFeeAmount    decimal.Decimal  `db:"trans_fee_amount"          json:"trans_fee_amount"`
 	ChargesFeeAmount  decimal.Decimal  `db:"charges_fee_amount"        json:"charges_fee_amount"`
 	ServicesFeeAmount decimal.Decimal  `db:"services_fee_amount"       json:"services_fee_amount"`
 	TotalAmount       decimal.Decimal  `db:"total_amount"              json:"total_amount"`
-	SettlementDate    *string  `db:"settlement_date"           json:"settlement_date"`
-	TransBankAccNo    *string  `db:"trans_bank_accno"          json:"trans_bank_accno"`
-	TransBankaccName  *string  `db:"trans_bankacc_name"        json:"trans_bankacc_name"`
-	TransBankKey      *uint64  `db:"trans_bank_key"            json:"trans_bank_key"`
-	TransRemarks      *string  `db:"trans_remarks"             json:"trans_remarks"`
-	TransReferences   *string  `db:"trans_references"          json:"trans_references"`
-	PromoCode         *string  `db:"promo_code"                json:"promo_code"`
-	SalesCode         *string  `db:"sales_code"                json:"sales_code"`
-	RiskWaiver        uint8    `db:"risk_waiver"               json:"risk_waiver"`
-	AddtoAutoInvest   *uint8   `db:"addto_auto_invest"         json:"addto_auto_invest"`
-	TransSource       *uint64  `db:"trans_source"              json:"trans_source"`
-	FileUploadDate    *string  `db:"file_upload_date"          json:"file_upload_date"`
-	PaymentMethod     *uint64  `db:"payment_method"            json:"payment_method"`
-	Check1Date        *string  `db:"check1_date"               json:"check1_date"`
-	Check1Flag        *uint8   `db:"check1_flag"               json:"check1_flag"`
-	Check1References  *string  `db:"check1_references"         json:"check1_references"`
-	Check1Notes       *string  `db:"check1_notes"              json:"check1_notes"`
-	Check2Date        *string  `db:"check2_date"               json:"check2_date"`
-	Check2Flag        *uint8   `db:"check2_flag"               json:"check2_flag"`
-	Check2References  *string  `db:"check2_references"         json:"check2_references"`
-	Check2Notes       *string  `db:"check2_notes"              json:"check2_notes"`
-	TrxRiskLevel      *uint64  `db:"trx_risk_level"            json:"trx_risk_level"`
-	ProceedDate       *string  `db:"proceed_date"              json:"proceed_date"`
+	SettlementDate    *string          `db:"settlement_date"           json:"settlement_date"`
+	TransBankAccNo    *string          `db:"trans_bank_accno"          json:"trans_bank_accno"`
+	TransBankaccName  *string          `db:"trans_bankacc_name"        json:"trans_bankacc_name"`
+	TransBankKey      *uint64          `db:"trans_bank_key"            json:"trans_bank_key"`
+	TransRemarks      *string          `db:"trans_remarks"             json:"trans_remarks"`
+	TransReferences   *string          `db:"trans_references"          json:"trans_references"`
+	PromoCode         *string          `db:"promo_code"                json:"promo_code"`
+	SalesCode         *string          `db:"sales_code"                json:"sales_code"`
+	RiskWaiver        uint8            `db:"risk_waiver"               json:"risk_waiver"`
+	AddtoAutoInvest   *uint8           `db:"addto_auto_invest"         json:"addto_auto_invest"`
+	TransSource       *uint64          `db:"trans_source"              json:"trans_source"`
+	FileUploadDate    *string          `db:"file_upload_date"          json:"file_upload_date"`
+	PaymentMethod     *uint64          `db:"payment_method"            json:"payment_method"`
+	Check1Date        *string          `db:"check1_date"               json:"check1_date"`
+	Check1Flag        *uint8           `db:"check1_flag"               json:"check1_flag"`
+	Check1References  *string          `db:"check1_references"         json:"check1_references"`
+	Check1Notes       *string          `db:"check1_notes"              json:"check1_notes"`
+	Check2Date        *string          `db:"check2_date"               json:"check2_date"`
+	Check2Flag        *uint8           `db:"check2_flag"               json:"check2_flag"`
+	Check2References  *string          `db:"check2_references"         json:"check2_references"`
+	Check2Notes       *string          `db:"check2_notes"              json:"check2_notes"`
+	TrxRiskLevel      *uint64          `db:"trx_risk_level"            json:"trx_risk_level"`
+	ProceedDate       *string          `db:"proceed_date"              json:"proceed_date"`
 	ProceedAmount     *decimal.Decimal `db:"proceed_amount"            json:"proceed_amount"`
-	SentDate          *string  `db:"sent_date"                 json:"sent_date"`
-	SentReferences    *string  `db:"sent_references"           json:"sent_references"`
-	ConfirmedDate     *string  `db:"confirmed_date"            json:"confirmed_date"`
-	PostedDate        *string  `db:"posted_date"               json:"posted_date"`
+	SentDate          *string          `db:"sent_date"                 json:"sent_date"`
+	SentReferences    *string          `db:"sent_references"           json:"sent_references"`
+	ConfirmedDate     *string          `db:"confirmed_date"            json:"confirmed_date"`
+	PostedDate        *string          `db:"posted_date"               json:"posted_date"`
 	PostedUnits       *decimal.Decimal `db:"posted_units"              json:"posted_units"`
-	AcaKey            *uint64  `db:"aca_key"                   json:"aca_key"`
-	SettledDate       *string  `db:"settled_date"              json:"settled_date"`
-	BatchKey          *uint64  `db:"batch_key"                 json:"batch_key"`
-	RecOrder          *uint64  `db:"rec_order"                 json:"rec_order"`
-	RecStatus         uint8    `db:"rec_status"                json:"rec_status"`
-	RecCreatedDate    *string  `db:"rec_created_date"          json:"rec_created_date"`
-	RecCreatedBy      *string  `db:"rec_created_by"            json:"rec_created_by"`
-	RecModifiedDate   *string  `db:"rec_modified_date"         json:"rec_modified_date"`
-	RecModifiedBy     *string  `db:"rec_modified_by"           json:"rec_modified_by"`
-	RecImage1         *string  `db:"rec_image1"                json:"rec_image1"`
-	RecImage2         *string  `db:"rec_image2"                json:"rec_image2"`
-	RecApprovalStatus *uint8   `db:"rec_approval_status"       json:"rec_approval_status"`
-	RecApprovalStage  *uint64  `db:"rec_approval_stage"        json:"rec_approval_stage"`
-	RecApprovedDate   *string  `db:"rec_approved_date"         json:"rec_approved_date"`
-	RecApprovedBy     *string  `db:"rec_approved_by"           json:"rec_approved_by"`
-	RecDeletedDate    *string  `db:"rec_deleted_date"          json:"rec_deleted_date"`
-	RecDeletedBy      *string  `db:"rec_deleted_by"            json:"rec_deleted_by"`
-	RecAttributeID1   *string  `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
-	RecAttributeID2   *string  `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
-	RecAttributeID3   *string  `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+	AcaKey            *uint64          `db:"aca_key"                   json:"aca_key"`
+	SettledDate       *string          `db:"settled_date"              json:"settled_date"`
+	BatchKey          *uint64          `db:"batch_key"                 json:"batch_key"`
+	RecOrder          *uint64          `db:"rec_order"                 json:"rec_order"`
+	RecStatus         uint8            `db:"rec_status"                json:"rec_status"`
+	RecCreatedDate    *string          `db:"rec_created_date"          json:"rec_created_date"`
+	RecCreatedBy      *string          `db:"rec_created_by"            json:"rec_created_by"`
+	RecModifiedDate   *string          `db:"rec_modified_date"         json:"rec_modified_date"`
+	RecModifiedBy     *string          `db:"rec_modified_by"           json:"rec_modified_by"`
+	RecImage1         *string          `db:"rec_image1"                json:"rec_image1"`
+	RecImage2         *string          `db:"rec_image2"                json:"rec_image2"`
+	RecApprovalStatus *uint8           `db:"rec_approval_status"       json:"rec_approval_status"`
+	RecApprovalStage  *uint64          `db:"rec_approval_stage"        json:"rec_approval_stage"`
+	RecApprovedDate   *string          `db:"rec_approved_date"         json:"rec_approved_date"`
+	RecApprovedBy     *string          `db:"rec_approved_by"           json:"rec_approved_by"`
+	RecDeletedDate    *string          `db:"rec_deleted_date"          json:"rec_deleted_date"`
+	RecDeletedBy      *string          `db:"rec_deleted_by"            json:"rec_deleted_by"`
+	RecAttributeID1   *string          `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
+	RecAttributeID2   *string          `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
+	RecAttributeID3   *string          `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
 type TrTransactionList struct {
-	TransactionKey uint64  `json:"transaction_key"`
-	ProductName    string  `json:"product_name"`
-	TransStatus    string  `json:"trans_status"`
-	TransDate      string  `json:"trans_date"`
-	TransType      string  `json:"trans_type"`
-	NavDate        string  `json:"nav_date"`
+	TransactionKey uint64          `json:"transaction_key"`
+	ProductName    string          `json:"product_name"`
+	TransStatus    string          `json:"trans_status"`
+	TransDate      string          `json:"trans_date"`
+	TransType      string          `json:"trans_type"`
+	NavDate        string          `json:"nav_date"`
 	NavValue       decimal.Decimal `json:"nav_value"`
 	TransAmount    decimal.Decimal `json:"trans_amount,omitemtpy"`
 	TransUnit      decimal.Decimal `json:"trans_unit,omitemtpy"`
 	TotalAmount    decimal.Decimal `json:"total_amount"`
-	Uploaded       bool    `json:"uploaded"`
-	DateUploaded   *string `json:"date_uploaded"`
-	BankName       *string `json:"bank_name"`
-	BankAccNo      *string `json:"bank_accno"`
-	BankAccName    *string `json:"bankacc_name"`
-	ProductOut     *string `json:"product_name_out"`
-	ProductIn      *string `json:"product_name_in"`
+	Uploaded       bool            `json:"uploaded"`
+	DateUploaded   *string         `json:"date_uploaded"`
+	BankName       *string         `json:"bank_name"`
+	BankAccNo      *string         `json:"bank_accno"`
+	BankAccName    *string         `json:"bankacc_name"`
+	ProductOut     *string         `json:"product_name_out"`
+	ProductIn      *string         `json:"product_name_in"`
 }
 
 type AdminTrTransactionList struct {
-	TransactionKey   uint64  `json:"transaction_key"`
-	BranchName       string  `json:"branch_name"`
-	AgentName        string  `json:"agent_name"`
-	CustomerName     string  `json:"customer_name"`
-	ProductName      string  `json:"product_name"`
-	TransStatus      string  `json:"trans_status"`
-	TransDate        string  `json:"trans_date"`
-	TransType        string  `json:"trans_type"`
-	NavDate          string  `json:"nav_date"`
+	TransactionKey   uint64          `json:"transaction_key"`
+	BranchName       string          `json:"branch_name"`
+	AgentName        string          `json:"agent_name"`
+	CustomerName     string          `json:"customer_name"`
+	ProductName      string          `json:"product_name"`
+	TransStatus      string          `json:"trans_status"`
+	TransDate        string          `json:"trans_date"`
+	TransType        string          `json:"trans_type"`
+	NavDate          string          `json:"nav_date"`
 	TransAmount      decimal.Decimal `json:"trans_amount"`
 	TransUnit        decimal.Decimal `json:"trans_unit"`
 	TotalAmount      decimal.Decimal `json:"total_amount"`
-	TransBankName    string  `json:"trans_bank_name"`
-	TransBankAccNo   *string `json:"trans_bank_accno"`
-	TransBankaccName *string `json:"trans_bankacc_name"`
-	ProductOut       *string `json:"product_name_out"`
-	ProductIn        *string `json:"product_name_in"`
+	TransBankName    string          `json:"trans_bank_name"`
+	TransBankAccNo   *string         `json:"trans_bank_accno"`
+	TransBankaccName *string         `json:"trans_bankacc_name"`
+	ProductOut       *string         `json:"product_name_out"`
+	ProductIn        *string         `json:"product_name_in"`
+}
+
+type AdminTrTransactionInquiryList struct {
+	TransactionKey uint64          `json:"transaction_key"`
+	BranchName     string          `json:"branch_name"`
+	AgentName      string          `json:"agent_name"`
+	CustomerName   string          `json:"customer_name"`
+	ProductName    string          `json:"product_name"`
+	TransStatus    string          `json:"trans_status"`
+	TransDate      string          `json:"trans_date"`
+	TransType      string          `json:"trans_type"`
+	NavDate        string          `json:"nav_date"`
+	TransAmount    decimal.Decimal `json:"trans_amount"`
+	TransUnit      decimal.Decimal `json:"trans_unit"`
+	TotalAmount    decimal.Decimal `json:"total_amount"`
 }
 
 type CountData struct {
@@ -169,16 +184,16 @@ type AdminTransactionDetail struct {
 	TrxCode                 *LookupTrans                         `json:"trx_code"`
 	NavDate                 string                               `json:"nav_date"`
 	EntryMode               *LookupTrans                         `json:"entry_mode"`
-	TransAmount             decimal.Decimal                              `json:"trans_amount"`
-	TransUnit               decimal.Decimal                              `json:"trans_unit"`
-	TransUnitPercent        *decimal.Decimal                             `json:"trans_unit_percent"`
+	TransAmount             decimal.Decimal                      `json:"trans_amount"`
+	TransUnit               decimal.Decimal                      `json:"trans_unit"`
+	TransUnitPercent        *decimal.Decimal                     `json:"trans_unit_percent"`
 	FlagRedemtAll           bool                                 `json:"flag_redempt_all"`
 	FlagNewSub              bool                                 `json:"flag_newsub"`
-	TransFeePercent         decimal.Decimal                              `json:"trans_fee_percent"`
-	TransFeeAmount          decimal.Decimal                              `json:"trans_fee_amount"`
-	ChargesFeeAmount        decimal.Decimal                              `json:"charges_fee_amount"`
-	ServicesFeeAmount       decimal.Decimal                              `json:"services_fee_amount"`
-	TotalAmount             decimal.Decimal                              `json:"total_amount"`
+	TransFeePercent         decimal.Decimal                      `json:"trans_fee_percent"`
+	TransFeeAmount          decimal.Decimal                      `json:"trans_fee_amount"`
+	ChargesFeeAmount        decimal.Decimal                      `json:"charges_fee_amount"`
+	ServicesFeeAmount       decimal.Decimal                      `json:"services_fee_amount"`
+	TotalAmount             decimal.Decimal                      `json:"total_amount"`
 	SettlementDate          *string                              `json:"settlement_date"`
 	TransBankAccNo          *string                              `json:"trans_bank_accno"`
 	TransBankaccName        *string                              `json:"trans_bankacc_name"`
@@ -192,12 +207,12 @@ type AdminTransactionDetail struct {
 	PaymentMethod           *LookupTrans                         `json:"payment_method"`
 	TrxRiskLevel            *LookupTrans                         `json:"trx_risk_level"`
 	ProceedDate             *string                              `json:"proceed_date"`
-	ProceedAmount           *decimal.Decimal                             `json:"proceed_amount"`
+	ProceedAmount           *decimal.Decimal                     `json:"proceed_amount"`
 	SentDate                *string                              `json:"sent_date"`
 	SentReferences          *string                              `json:"sent_references"`
 	ConfirmedDate           *string                              `json:"confirmed_date"`
 	PostedDate              *string                              `json:"posted_date"`
-	PostedUnits             *decimal.Decimal                             `json:"posted_units"`
+	PostedUnits             *decimal.Decimal                     `json:"posted_units"`
 	Aca                     *AcaTrans                            `json:"aca"`
 	SettledDate             *string                              `json:"settled_date"`
 	RecImage1               *string                              `json:"rec_image1"`
@@ -211,19 +226,19 @@ type AdminTransactionDetail struct {
 }
 
 type DownloadFormatExcelList struct {
-	IDTransaction   uint64   `json:"id_transaction"`
-	IDCategory      string   `json:"id_category"`
-	ProductName     string   `json:"product_name"`
-	FullName        string   `json:"full_name"`
-	NavDate         string   `json:"nav_date"`
-	TransactionDate string   `json:"transaction_date"`
+	IDTransaction   uint64           `json:"id_transaction"`
+	IDCategory      string           `json:"id_category"`
+	ProductName     string           `json:"product_name"`
+	FullName        string           `json:"full_name"`
+	NavDate         string           `json:"nav_date"`
+	TransactionDate string           `json:"transaction_date"`
 	Units           decimal.Decimal  `json:"units"`
 	NetAmount       decimal.Decimal  `json:"net_amount"`
 	NavValue        *decimal.Decimal `json:"nav_value"`
 	ApproveUnits    decimal.Decimal  `json:"approve_units"`
 	ApproveAmount   decimal.Decimal  `json:"approve_amount"`
-	Keterangan      string   `json:"keterangan"`
-	Result          string   `json:"result"`
+	Keterangan      string           `json:"keterangan"`
+	Result          string           `json:"result"`
 }
 
 type BranchTrans struct {
@@ -283,8 +298,8 @@ type AcaTrans struct {
 	AgentName string `json:"agent_name"`
 }
 type TransactionConfirmation struct {
-	TcKey           uint64  `json:"tc_key"`
-	ConfirmDate     string  `json:"confirm_date"`
+	TcKey           uint64          `json:"tc_key"`
+	ConfirmDate     string          `json:"confirm_date"`
 	ConfirmedAmount decimal.Decimal `json:"confirmed_amount"`
 	ConfirmedUnit   decimal.Decimal `json:"confirmed_unit"`
 }

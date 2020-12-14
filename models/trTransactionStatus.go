@@ -32,6 +32,11 @@ type TrTransactionStatus struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"    json:"rec_attribute_id3"`
 }
 
+type TrTransactionStatusDropdown struct {
+	TransStatusKey uint64  `json:"trans_status_key"`
+	StatusCode     *string `json:"status_code"`
+}
+
 func GetMsTransactionStatusIn(c *[]TrTransactionStatus, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -57,6 +62,56 @@ func GetTrTransactionStatus(c *TrTransactionStatus, key string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetAllMsTransactionStatus(c *[]TrTransactionStatus, params map[string]string) (int, error) {
+	query := `SELECT
+              tr_transaction_status.*
+			  FROM tr_transaction_status
+			  WHERE tr_transaction_status.rec_status = 1`
+
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction_status."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

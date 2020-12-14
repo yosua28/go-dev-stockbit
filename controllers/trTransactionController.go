@@ -370,12 +370,12 @@ func CreateTransaction(c echo.Context) error {
 	layout := "2006-01-02"
 	now := time.Now()
 	nowString := now.Format(layout)
-	t, _ := time.Parse(layout, now.AddDate(0,0,-1).Format(layout))
+	t, _ := time.Parse(layout, now.AddDate(0, 0, -1).Format(layout))
 	dateBursa := SettDate(t, int(1))
 	if nowString == dateBursa && (now.Hour() == 12 && now.Minute() > 0) || now.Hour() > 12 {
 		t, _ := time.Parse(layout, dateBursa)
 		params["nav_date"] = SettDate(t, int(1)) + " 00:00:00"
-	}else{
+	} else {
 		params["nav_date"] = dateBursa + " 00:00:00"
 	}
 
