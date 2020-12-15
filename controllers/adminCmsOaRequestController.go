@@ -1297,7 +1297,36 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 
 		paramsCustomer := make(map[string]string)
 		paramsCustomer["id_customer"] = "0"
-		paramsCustomer["unit_holder_idno"] = "202010000001"
+
+		year, month, _ := time.Now().Date()
+
+		var customer models.MsCustomer
+		tahun := strconv.FormatUint(uint64(year), 10)
+		bulan := strconv.FormatUint(uint64(month), 10)
+		unitHolderLike := tahun + bulan
+		status, err = models.GetLastUnitHolder(&customer, unitHolderLike)
+		if err != nil {
+			paramsCustomer["unit_holder_idno"] = unitHolderLike + "000001"
+		} else {
+			dgt := customer.UnitHolderIDno[len(customer.UnitHolderIDno)-6:]
+			productKeyCek, _ := strconv.ParseUint(dgt, 10, 64)
+			hasil := strconv.FormatUint(productKeyCek+1, 10)
+			if len(hasil) == 1 {
+				hasil = "00000" + hasil
+			} else if len(hasil) == 2 {
+				hasil = "0000" + hasil
+			} else if len(hasil) == 3 {
+				hasil = "000" + hasil
+			} else if len(hasil) == 4 {
+				hasil = "00" + hasil
+			} else if len(hasil) == 5 {
+				hasil = "0" + hasil
+			}
+
+			resultData := unitHolderLike + hasil
+			paramsCustomer["unit_holder_idno"] = resultData
+		}
+
 		paramsCustomer["full_name"] = oapersonal.FullName
 		paramsCustomer["investor_type"] = "263"
 		paramsCustomer["customer_category"] = "265"
@@ -1429,7 +1458,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			sendEmailApproveOa(oapersonal.FullName, userData.UloginEmail)
 		}
 
-		//send email to fund admin
+		// send email to fund admin
 		paramsScLogin := make(map[string]string)
 		paramsScLogin["role_key"] = "13"
 		paramsScLogin["rec_status"] = "1"
@@ -1463,9 +1492,9 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				}
 			}
 		}
-		//end send email to fund admin
+		// end send email to fund admin
 
-		//insert into table ms_customer_bank_account
+		// insert into table ms_customer_bank_account
 		paramsCusBankAcc := make(map[string]string)
 		strBankAccKey := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
 		paramsCusBankAcc["customer_key"] = requestID

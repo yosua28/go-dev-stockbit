@@ -174,3 +174,17 @@ func GetMsCustomerByClientCode(c *MsCustomer, clientCode string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetLastUnitHolder(c *MsCustomer, value string) (int, error) {
+	query := `SELECT ms_customer.* FROM ms_customer 
+	WHERE ms_customer.unit_holder_idno LIKE '` + value + `%' AND ms_customer.rec_status = 1
+	ORDER BY unit_holder_idno DESC LIMIT 1`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
