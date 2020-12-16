@@ -72,12 +72,6 @@ func GetTransactionApprovalList(c echo.Context) error {
 		transStatusKey = append(transStatusKey, "4")
 	}
 
-	ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
-	aaa := ac.FormatMoney(83483895.35466)
-	log.Println(aaa)
-	log.Println(aaa)
-	log.Println(aaa)
-
 	return getListAdmin(transStatusKey, c, nil)
 }
 
