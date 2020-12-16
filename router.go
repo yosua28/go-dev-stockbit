@@ -220,6 +220,7 @@ func router() *echo.Echo {
 
 	//Admin NAV
 	admin.GET("/navlist", controllers.GetListTrNavAdmin).Name = "GetListTrNavAdmin"
+	admin.GET("/nav/:key", controllers.GetNavDetailAdmin).Name = "GetNavDetailAdmin"
 
 	return e
 }

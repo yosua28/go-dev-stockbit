@@ -56,6 +56,18 @@ type TrNavList struct {
 	PublishMode   *string `json:"publish_mode"`
 }
 
+type TrNavDetail struct {
+	NavKey        uint64          `json:"nav_key"`
+	Product       MsProductInfo   `json:"product"`
+	NavDate       string          `json:"nav_date"`
+	NavValue      decimal.Decimal `json:"nav_value"`
+	OriginalValue decimal.Decimal `json:"original_value"`
+	NavStatus     LookupTrans     `json:"nav_status"`
+	ProdAumTotal  decimal.Decimal `json:"prod_aum_total"`
+	ProdUnitTotal decimal.Decimal `json:"prod_unit_total"`
+	PublishMode   LookupTrans     `json:"publish_mode"`
+}
+
 func GetAllTrNav(c *[]TrNav, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               tr_nav.* FROM 
@@ -271,6 +283,18 @@ func GetAllTrNavCount(c *CountData, params map[string]string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrNavByKey(c *TrNav, key string) (int, error) {
+	query := `SELECT tr_nav.* FROM tr_nav WHERE tr_nav.nav_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

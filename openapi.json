@@ -14604,6 +14604,104 @@
           }
         }
       }
+    },
+    "/admin/nav/{key}": {
+      "get": {
+        "description": "Get Detail NAV (User Allowed : RoleKey 15)",
+        "tags": [
+          "Admin NAV"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "nav key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "nav_key": 2,
+                    "product": {
+                      "product_key": 1,
+                      "product_code": "BDLC",
+                      "product_name": "MNC DANA LANCAR",
+                      "product_name_alt": "Dana Lancar"
+                    },
+                    "nav_date": "31 Dec 2010",
+                    "nav_value": 1000,
+                    "original_value": 0,
+                    "nav_status": {
+                      "lookup_key": 231,
+                      "lkp_group_key": 51,
+                      "lkp_code": "1",
+                      "lkp_name": "ACTIVE (APPROVED)"
+                    },
+                    "prod_aum_total": 206865000000,
+                    "prod_unit_total": 206865000,
+                    "publish_mode": {
+                      "lookup_key": 236,
+                      "lkp_group_key": 53,
+                      "lkp_code": "1",
+                      "lkp_name": "PUBLISHED"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

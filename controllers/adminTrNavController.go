@@ -244,3 +244,114 @@ func GetListTrNavAdmin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetNavDetailAdmin(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	keyStr := c.Param("key")
+	key, err := strconv.ParseUint(keyStr, 10, 64)
+	if err == nil && key == 0 {
+		log.Error("Wrong input for parameter: nav_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var trNav models.TrNav
+	status, err = models.GetTrNavByKey(&trNav, keyStr)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var responseData models.TrNavDetail
+
+	var lookupIds []string
+
+	if _, ok := lib.Find(lookupIds, strconv.FormatUint(trNav.NavStatus, 10)); !ok {
+		lookupIds = append(lookupIds, strconv.FormatUint(trNav.NavStatus, 10))
+	}
+	if _, ok := lib.Find(lookupIds, strconv.FormatUint(trNav.PublishMode, 10)); !ok {
+		lookupIds = append(lookupIds, strconv.FormatUint(trNav.PublishMode, 10))
+	}
+
+	//gen lookup oa request
+	var lookupProduct []models.GenLookup
+	if len(lookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&lookupProduct, lookupIds, "lookup_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range lookupProduct {
+		gData[gen.LookupKey] = gen
+	}
+
+	keyProductStr := strconv.FormatUint(trNav.ProductKey, 10)
+	var product models.MsProduct
+	status, err = models.GetMsProduct(&product, keyProductStr)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	responseData.NavKey = trNav.NavKey
+
+	//set product
+	var pro models.MsProductInfo
+	pro.ProductKey = product.ProductKey
+	pro.ProductCode = product.ProductCode
+	pro.ProductName = product.ProductName
+	pro.ProductNameAlt = product.ProductNameAlt
+	responseData.Product = pro
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	date, err := time.Parse(layout, trNav.NavDate)
+	if err == nil {
+		responseData.NavDate = date.Format(newLayout)
+	}
+
+	responseData.NavValue = trNav.NavValue
+	responseData.OriginalValue = trNav.OriginalValue
+	responseData.NavValue = trNav.NavValue
+	responseData.ProdAumTotal = trNav.ProdAumTotal
+	responseData.ProdUnitTotal = trNav.ProdUnitTotal
+
+	if n, ok := gData[trNav.NavStatus]; ok {
+		var trc models.LookupTrans
+
+		trc.LookupKey = n.LookupKey
+		trc.LkpGroupKey = n.LkpGroupKey
+		trc.LkpCode = n.LkpCode
+		trc.LkpName = n.LkpName
+		responseData.NavStatus = trc
+	}
+
+	if n, ok := gData[trNav.PublishMode]; ok {
+		var trc models.LookupTrans
+
+		trc.LookupKey = n.LookupKey
+		trc.LkpGroupKey = n.LkpGroupKey
+		trc.LkpCode = n.LkpCode
+		trc.LkpName = n.LkpName
+		responseData.PublishMode = trc
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
