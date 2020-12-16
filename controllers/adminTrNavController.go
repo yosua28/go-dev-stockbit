@@ -355,3 +355,55 @@ func GetNavDetailAdmin(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func DeleteNavAdmin(c echo.Context) error {
+	var err error
+	decimal.MarshalJSONWithoutQuotes = true
+
+	errorAuth := initAuthHoIt()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+
+	params := make(map[string]string)
+
+	navKey := c.FormValue("nav_key")
+	if navKey == "" {
+		log.Error("Missing required parameter: nav_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_key", "Missing required parameter: nav_key")
+	}
+
+	navKeyCek, err := strconv.ParseUint(navKey, 10, 64)
+	if err == nil && navKeyCek > 0 {
+		params["nav_key"] = navKey
+	} else {
+		log.Error("Wrong input for parameter: nav_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_key", "Missing required parameter: nav_key")
+	}
+
+	var trNav models.TrNav
+	_, err = models.GetTrNavByKey(&trNav, navKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	status, err := models.UpdateTrNav(params)
+	if err != nil {
+		log.Error("Failed create request data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}

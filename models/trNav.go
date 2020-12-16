@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"log"
 	"net/http"
 	"strconv"
@@ -297,5 +298,43 @@ func GetTrNavByKey(c *TrNav, key string) (int, error) {
 		return http.StatusNotFound, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateTrNav(params map[string]string) (int, error) {
+	query := "UPDATE tr_nav SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "nav_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE nav_key = " + params["nav_key"]
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }
