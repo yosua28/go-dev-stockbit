@@ -14216,6 +14216,194 @@
           }
         }
       }
+    },
+    "/admin/transaction/inquiry/{key}": {
+      "get": {
+        "description": "Get All Transaction Inquiry (User Allowed : RoleKey 11, 12, 13)",
+        "tags": [
+          "Admin Transaction"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "transaction key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "transaction_key": 15,
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_code": "HO-1",
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_code": "303",
+                      "agent_name": "SALES MNC DUIT"
+                    },
+                    "customer": {
+                      "customer_key": 51,
+                      "full_name": "khair",
+                      "sid_no": "IDD0612K0234572",
+                      "unit_holder_idno": "202010000001"
+                    },
+                    "product": {
+                      "product_key": 9,
+                      "product_code": "MDSE",
+                      "product_name": "MNC DANA SYARIAH EKUITAS"
+                    },
+                    "trans_status": {
+                      "trans_status_key": 5,
+                      "status_code": "CHECKED_2",
+                      "status_description": "transaction has been approved by Compliance, and wait to proceed"
+                    },
+                    "trans_date": "02 Nov 2020",
+                    "trans_type": {
+                      "trans_type_key": 1,
+                      "type_code": "SUB",
+                      "type_description": "Subscription"
+                    },
+                    "trx_code": {
+                      "lookup_key": 137,
+                      "lkp_group_key": 30,
+                      "lkp_code": "BUY",
+                      "lkp_name": "BUY"
+                    },
+                    "nav_date": "23 Oct 2020",
+                    "entry_mode": {
+                      "lookup_key": 140,
+                      "lkp_group_key": 31,
+                      "lkp_code": "AMOUNT",
+                      "lkp_name": "Amount"
+                    },
+                    "trans_amount": 1000000,
+                    "trans_unit": 0,
+                    "trans_unit_percent": null,
+                    "flag_redempt_all": false,
+                    "flag_newsub": false,
+                    "trans_fee_percent": 0.5,
+                    "trans_fee_amount": 0,
+                    "charges_fee_amount": 3000,
+                    "services_fee_amount": 4000,
+                    "total_amount": 1007500,
+                    "settlement_date": "2020-10-23 00:00:00",
+                    "trans_bank_accno": null,
+                    "trans_bankacc_name": null,
+                    "trans_bank": null,
+                    "trans_remarks": "ninuninu",
+                    "trans_references": null,
+                    "promo_code": null,
+                    "sales_code": null,
+                    "risk_waiver": true,
+                    "file_upload_date": "2020-11-02 15:35:38",
+                    "payment_method": {
+                      "lookup_key": 284,
+                      "lkp_group_key": 68,
+                      "lkp_code": "0",
+                      "lkp_name": "Transfer"
+                    },
+                    "trx_risk_level": null,
+                    "proceed_date": null,
+                    "proceed_amount": null,
+                    "sent_date": null,
+                    "sent_references": null,
+                    "confirmed_date": null,
+                    "posted_date": null,
+                    "posted_units": null,
+                    "aca": {
+                      "aca_key": 8,
+                      "acc_key": 9,
+                      "agent_key": 1,
+                      "agent_code": "303",
+                      "agent_name": "SALES MNC DUIT"
+                    },
+                    "settled_date": null,
+                    "rec_image1": "https://devapi.mncasset.com/images/user/7100/transfer/ZJywvxeUvPoJCOOcX6A7.jpg",
+                    "rec_created_date": null,
+                    "rec_created_by": null,
+                    "transaction_confirmation": null,
+                    "product_bank_account": {
+                      "prod_bankacc_key": 56,
+                      "bank_name": "BANK MANDIRI",
+                      "account_no": "103-0006243329",
+                      "account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS"
+                    },
+                    "customer_bank_account": {
+                      "cust_bankacc_key": 1,
+                      "bank_name": "ABN AMRO",
+                      "account_no": "084551813",
+                      "account_name": "bsjsbshshs"
+                    },
+                    "is_enable_unposting": true,
+                    "message_enable_unposting": "",
+                    "transaction_confirmation_info": {
+                      "tc_key": 96,
+                      "confirm_date": "17 Dec 2020",
+                      "confirmed_amount": 8754.56,
+                      "confirmed_unit": 10.06,
+                      "confirmed_amount_diff": 8754.56,
+                      "confirmed_unit_diff": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

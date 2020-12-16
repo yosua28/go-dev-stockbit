@@ -138,6 +138,7 @@ func router() *echo.Echo {
 	admin.GET("/transactionlist/unposting", controllers.GetTransactionUnpostingList).Name = "GetTransactionUnpostingList"
 	admin.POST("/transactionapproval/unposting", controllers.ProsesUnposting).Name = "ProsesUnposting"
 	admin.GET("/transaction/inquirylist", controllers.DataTransaksiInquiry).Name = "DataTransaksiInquiry"
+	admin.GET("/transaction/inquiry/:key", controllers.DetailTransaksiInquiry).Name = "DetailTransaksiInquiry"
 
 	//Admin Transaction type
 	admin.GET("/transactiontypelist", controllers.GetTransactionType).Name = "GetTransactionType"
