@@ -222,6 +222,8 @@ func router() *echo.Echo {
 	admin.GET("/navlist", controllers.GetListTrNavAdmin).Name = "GetListTrNavAdmin"
 	admin.GET("/nav/:key", controllers.GetNavDetailAdmin).Name = "GetNavDetailAdmin"
 	admin.POST("/nav/delete", controllers.DeleteNavAdmin).Name = "DeleteNavAdmin"
+	admin.POST("/nav/create", controllers.CreateAdminTrNav).Name = "CreateAdminTrNav"
+	admin.POST("/nav/update", controllers.UpdateAdminTrNav).Name = "UpdateAdminTrNav"
 
 	return e
 }

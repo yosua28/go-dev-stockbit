@@ -14773,6 +14773,210 @@
           }
         }
       }
+    },
+    "/admin/nav/create": {
+      "post": {
+        "description": "Create NAV : role 15",
+        "tags": [
+          "Admin NAV"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "nav_date": {
+                    "type": "string",
+                    "example": "2020-12-17"
+                  },
+                  "nav_value": {
+                    "type": "number"
+                  },
+                  "original_value": {
+                    "type": "number"
+                  },
+                  "nav_status": {
+                    "type": "integer"
+                  },
+                  "prod_aum_total": {
+                    "type": "number"
+                  },
+                  "prod_unit_total": {
+                    "type": "number"
+                  },
+                  "publish_mode": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "product_key",
+                  "nav_date",
+                  "nav_value",
+                  "original_value",
+                  "nav_status",
+                  "prod_aum_total",
+                  "prod_unit_total",
+                  "publish_mode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/nav/update": {
+      "post": {
+        "description": "Update NAV : role 15",
+        "tags": [
+          "Admin NAV"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "nav_key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "nav_date": {
+                    "type": "string",
+                    "example": "2020-12-17"
+                  },
+                  "nav_value": {
+                    "type": "number"
+                  },
+                  "original_value": {
+                    "type": "number"
+                  },
+                  "nav_status": {
+                    "type": "integer"
+                  },
+                  "prod_aum_total": {
+                    "type": "number"
+                  },
+                  "prod_unit_total": {
+                    "type": "number"
+                  },
+                  "publish_mode": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "nav_key",
+                  "product_key",
+                  "nav_date",
+                  "nav_value",
+                  "original_value",
+                  "nav_status",
+                  "prod_aum_total",
+                  "prod_unit_total",
+                  "publish_mode"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
