@@ -153,7 +153,7 @@ func GetScUserMessage(c *ScUserMessage, key string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func UpdateScUserMessage(params map[string]string) (int, error) {
+func UpdateScUserMessage(params map[string]string, where map[string]string) (int, error) {
 	query := "UPDATE sc_user_message SET "
 	// Get params
 	i := 0
@@ -168,7 +168,24 @@ func UpdateScUserMessage(params map[string]string) (int, error) {
 			i++
 		}
 	}
-	query += " WHERE umessage_key = " + params["umessage_key"]
+
+	var whereClause []string
+	var condition string
+	for field, value := range where {
+		whereClause = append(whereClause, "sc_user_message."+field+" = '"+value+"'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	query += condition
 	log.Info(query)
 
 	tx, err := db.Db.Begin()

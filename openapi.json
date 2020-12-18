@@ -3610,10 +3610,24 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "action": {
+                    "type": "string",
+                    "enum": [
+                      "read",
+                      "delete"
+                    ]
+                  },
+                  "all": {
+                    "type": "integer",
+                    "enum": [
+                      0,
+                      1
+                    ]
+                  },
                   "key": {
                     "type": "integer"
                   },
-                  "read": {
+                  "value": {
                     "type": "integer",
                     "enum": [
                       0,
@@ -3622,8 +3636,9 @@
                   }
                 },
                 "required": [
-                  "key",
-                  "read"
+                  "action",
+                  "all",
+                  "value"
                 ]
               }
             }

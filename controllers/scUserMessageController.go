@@ -155,45 +155,63 @@ func GetMessageData(c echo.Context) error {
 func PatchMessage(c echo.Context) error {
 	var err error
 	var status int
+	params := make(map[string]string)
+	where := make(map[string]string)
 
-	keyStr := c.FormValue("key")
-	if keyStr != "" {
-		key, err := strconv.ParseUint(keyStr, 10, 64)
-		if err != nil {
-			log.Error("Wrong value for parameter: key")
-			return lib.CustomError(http.StatusBadRequest, "Wrong value for parameter: key", "Wrong value for parameter: key")
+	action := c.FormValue("action")
+	if action != "" {
+		value := c.FormValue("value")
+		if !(value == "0" || value == "1") {
+			log.Error("Missing required parameter: value")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: value", "Missing required parameter: value")
 		}
-		if key == 0 {
-			return lib.CustomError(http.StatusNotFound)
+		if action == "read" {
+			params["flag_read"] = value
+		} else if action == "delete" {
+			params["flag_archieved"] = value
+		} else {
+			return lib.CustomError(http.StatusBadRequest)
 		}
 	} else {
-		log.Error("Missing required parameter: key")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+		log.Error("Missing required parameter: action")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: action", "Missing required parameter: action")
 	}
 
-	read := c.FormValue("read")
-	if !(read == "0" || read == "1") {
-		log.Error("Missing required parameter: read")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: read", "Missing required parameter: read")
+	all := c.FormValue("all")
+	if all == "0" {
+		keyStr := c.FormValue("key")
+		if keyStr != "" {
+			key, err := strconv.ParseUint(keyStr, 10, 64)
+			if err != nil {
+				log.Error("Wrong value for parameter: key")
+				return lib.CustomError(http.StatusBadRequest, "Wrong value for parameter: key", "Wrong value for parameter: key")
+			}
+			if key == 0 {
+				return lib.CustomError(http.StatusNotFound)
+			}
+			var message models.ScUserMessage
+			status, err = models.GetScUserMessage(&message, keyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Message not found")
+			}
+			if message.UmessageRecipientKey != lib.Profile.UserID {
+				log.Error("Message not found")
+				return lib.CustomError(status, "Message not found", "Message not found")
+			}
+			where["umessage_key"] = keyStr
+		} else {
+			log.Error("Missing required parameter: key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+		}
+	} else if all == "1" {
+		where["umessage_recipient_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	} else {
+		log.Error("Wrong input for parameter: all")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: all", "Wrong input for parameter: all")
 	}
 
-	var message models.ScUserMessage
-	status, err = models.GetScUserMessage(&message, keyStr)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Message not found")
-	}
-
-	if message.UmessageRecipientKey != lib.Profile.UserID {
-		log.Error("Message not found")
-		return lib.CustomError(status, "Message not found", "Message not found")
-	}
-
-	params := make(map[string]string)
-	params["umessage_key"] = keyStr
-	params["flag_read"] = read
-
-	status, err = models.UpdateScUserMessage(params)
+	status, err = models.UpdateScUserMessage(params, where)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed update data")
