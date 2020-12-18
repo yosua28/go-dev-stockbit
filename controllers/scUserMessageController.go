@@ -5,6 +5,7 @@ import (
 	"api/models"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -18,8 +19,8 @@ func GetMessageList(c echo.Context) error {
 	params["umessage_recipient_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["rec_status"] = "1"
 	params["flag_archieved"] = "0"
-	params["orderType"] = "ASC"
-	params["orderBy"] = "flag_read"
+	params["orderType"] = "DESC"
+	params["orderBy"] = "umessage_receipt_date"
 	var messageDB []models.ScUserMessage
 	status, err = models.GetAllScUserMessage(&messageDB, params)
 	if err != nil {
@@ -228,6 +229,103 @@ func GetCountMessageData(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = count
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func ArchiveMessage(c echo.Context) error {
+	var err error
+	var status int
+
+	keyStr := c.FormValue("key")
+	if keyStr != "" {
+		key, err := strconv.ParseUint(keyStr, 10, 64)
+		if err != nil {
+			log.Error("Wrong value for parameter: key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong value for parameter: key", "Wrong value for parameter: key")
+		}
+		if key == 0 {
+			return lib.CustomError(http.StatusNotFound)
+		}
+	} else {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusNotFound, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var message models.ScUserMessage
+	status, err = models.GetScUserMessage(&message, keyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Notifikaasi tidak ditemukan")
+	}
+
+	if message.UmessageRecipientKey != lib.Profile.UserID {
+		log.Error("Notifikaasi tidak ditemukan")
+		return lib.CustomError(http.StatusBadRequest, "Notifikaasi tidak ditemukan", "Notifikaasi tidak ditemukan")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	params := make(map[string]string)
+	params["umessage_key"] = keyStr
+	params["flag_archieved"] = "1"
+	params["rec_modified_by"] = strIDUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	status, err = models.UpdateScUserMessage(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed update data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func ArchiveAllMessage(c echo.Context) error {
+	var err error
+	var status int
+
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	params := make(map[string]string)
+	params["umessage_recipient_key"] = strIDUserLogin
+	params["rec_status"] = "1"
+	params["flag_archieved"] = "0"
+
+	var countData models.CountData
+	_, err = models.GetCountUserMessage(&countData, params)
+	if err != nil {
+		log.Error("Notifikaasi tidak ditemukan")
+		return lib.CustomError(http.StatusNotFound, "Notifikaasi tidak ditemukan", "Notifikaasi tidak ditemukan")
+	}
+
+	if countData.CountData == 0 {
+		log.Error("Notifikaasi tidak ditemukan")
+		return lib.CustomError(http.StatusNotFound, "Notifikaasi tidak ditemukan", "Notifikaasi tidak ditemukan")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	paramsUpdate := make(map[string]string)
+	paramsUpdate["flag_archieved"] = "1"
+	paramsUpdate["rec_modified_by"] = strIDUserLogin
+	paramsUpdate["rec_modified_date"] = time.Now().Format(dateLayout)
+
+	status, err = models.UpdateScUserMessageByField(paramsUpdate, "umessage_recipient_key", strIDUserLogin)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed update data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
 
 	return c.JSON(http.StatusOK, response)
 }
