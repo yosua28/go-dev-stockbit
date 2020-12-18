@@ -162,7 +162,7 @@ func UpdateScUserMessage(params map[string]string, where map[string]string) (int
 
 			query += key + " = '" + value + "'"
 
-			if (len(params) - 2) > i {
+			if (len(params) - 1) > i {
 				query += ", "
 			}
 			i++
