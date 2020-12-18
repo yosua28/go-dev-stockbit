@@ -126,7 +126,7 @@ func GetAllScUserMessage(c *[]ScUserMessage, params map[string]string) (int, err
 		if orderType, present = params["orderType"]; present == true {
 			condition += " " + orderType
 		}
-		condition += " , umessage_receipt_date DESC"
+		// condition += " , umessage_receipt_date DESC"
 	}
 	query += condition
 
@@ -243,5 +243,40 @@ func GetCountUserMessage(c *CountData, params map[string]string) (int, error) {
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateScUserMessageByField(params map[string]string, field string, value string) (int, error) {
+	query := "UPDATE sc_user_message SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " = " + value
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
 	return http.StatusOK, nil
 }
