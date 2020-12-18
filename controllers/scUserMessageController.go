@@ -211,7 +211,10 @@ func PatchMessage(c echo.Context) error {
 		log.Error("Wrong input for parameter: all")
 		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: all", "Wrong input for parameter: all")
 	}
-
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_modified_by"] = strIDUserLogin
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
 	status, err = models.UpdateScUserMessage(params, where)
 	if err != nil {
 		log.Error(err.Error())
@@ -285,12 +288,13 @@ func ArchiveMessage(c echo.Context) error {
 	dateLayout := "2006-01-02 15:04:05"
 	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
 	params := make(map[string]string)
-	params["umessage_key"] = keyStr
+	where := make(map[string]string)
+	where["umessage_key"] = keyStr
 	params["flag_archieved"] = "1"
 	params["rec_modified_by"] = strIDUserLogin
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 
-	status, err = models.UpdateScUserMessage(params)
+	status, err = models.UpdateScUserMessage(params, where)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed update data")
