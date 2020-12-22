@@ -227,6 +227,9 @@ func router() *echo.Echo {
 	admin.POST("/nav/create", controllers.CreateAdminTrNav).Name = "CreateAdminTrNav"
 	admin.POST("/nav/update", controllers.UpdateAdminTrNav).Name = "UpdateAdminTrNav"
 
+	//Admin NAV
+	admin.GET("/menu", controllers.GetListMenuLogin).Name = "GetListMenuLogin"
+
 	return e
 }
 
