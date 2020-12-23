@@ -75,3 +75,27 @@ func AdminGetEndpointNewInUpdateRole(c *[]ScEndpoint, roleKey string, menuIds []
 
 	return http.StatusOK, nil
 }
+
+func CheckAllowedEndpoint(c *CountData, roleKey string, endpoint string) (int, error) {
+	query := `SELECT
+                COUNT(en.endpoint_key) AS count_data
+			  FROM sc_endpoint AS en
+			  LEFT JOIN sc_endpoint_auth AS au ON au.endpoint_key = en.endpoint_key
+			  WHERE en.rec_status = 1 AND (au.rec_status = 1 OR au.rec_status IS NULL)`
+
+	if roleKey != "" {
+		query += " AND (au.role_key = '" + roleKey + "' OR en.menu_key IS NULL) AND en.endpoint_uri = '" + endpoint + "'"
+	} else {
+		query += " AND en.menu_key IS NULL AND en.endpoint_uri = '" + endpoint + "'"
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

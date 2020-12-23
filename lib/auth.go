@@ -79,6 +79,28 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			}
 
 			user := userLogin[0]
+
+			//check allowed endpoint
+			isCheckAllowedEndpoint := false //kondisi check / tidak check
+			if isCheckAllowedEndpoint {
+				strRoleKey := ""
+				if user.RoleKey != nil && *user.RoleKey > 0 {
+					strRoleKey = strconv.FormatUint(*user.RoleKey, 10)
+				}
+				if strRoleKey != "1" { //selain user mobile
+					var countData models.CountData
+					_, err = models.CheckAllowedEndpoint(&countData, strRoleKey, c.Path())
+					if err != nil {
+						log.Error("Error Check Allowed Endpoint")
+						return CustomError(http.StatusForbidden, "Forbidden", "Error Check Allowed Endpoint")
+					}
+					if int(countData.CountData) < 1 {
+						log.Error("Action Not Allowed")
+						return CustomError(http.StatusForbidden, "Forbidden", "Action Not Allowed")
+					}
+				}
+			}
+
 			if user.RoleKey != nil && *user.RoleKey > 0 {
 				Profile.RoleKey = *user.RoleKey
 				paramsRole := make(map[string]string)
