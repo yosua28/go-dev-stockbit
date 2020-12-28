@@ -86,26 +86,19 @@ func GetListProductBankAccountAdmin(c echo.Context) error {
 			orderByJoin = "pba.prod_bankacc_key"
 			if orderBy == "prod_bankacc_key" {
 				orderByJoin = "pba.prod_bankacc_key"
-			}
-			if orderBy == "product_code" {
+			} else if orderBy == "product_code" {
 				orderByJoin = "p.product_code"
-			}
-			if orderBy == "product_name_alt" {
+			} else if orderBy == "product_name_alt" {
 				orderByJoin = "p.product_name_alt"
-			}
-			if orderBy == "bank_account_name" {
+			} else if orderBy == "bank_account_name" {
 				orderByJoin = "pba.bank_account_name"
-			}
-			if orderBy == "bank_account_purpose" {
+			} else if orderBy == "bank_account_purpose" {
 				orderByJoin = "bank_account_purpose.lkp_name"
-			}
-			if orderBy == "bank_fullname" {
+			} else if orderBy == "bank_fullname" {
 				orderByJoin = "bank.bank_fullname"
-			}
-			if orderBy == "account_no" {
+			} else if orderBy == "account_no" {
 				orderByJoin = "ba.account_no"
-			}
-			if orderBy == "account_holder_name" {
+			} else if orderBy == "account_holder_name" {
 				orderByJoin = "ba.account_holder_name"
 			}
 

@@ -62,6 +62,18 @@ type MsCustomer struct {
 	RecAttributeID3        *string `db:"rec_attribute_id3"           json:"rec_attribute_id3"`
 }
 
+type CustomerIndividuInquiry struct {
+	CustomerKey      uint64 `db:"customer_key"                json:"customer_key"`
+	Cif              string `db:"cif"                         json:"cif"`
+	FullName         string `db:"full_name"                   json:"full_name"`
+	DateBirth        string `db:"date_birth"                  json:"date_birth"`
+	IDcardNo         string `db:"ktp"                         json:"ktp"`
+	PhoneMobile      string `db:"phone_mobile"                json:"phone_mobile"`
+	SidNo            string `db:"sid"                         json:"sid"`
+	CifSuspendFlag   string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
+	MotherMaidenName string `db:"mother_maiden_name"          json:"mother_maiden_name"`
+}
+
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -184,6 +196,124 @@ func GetLastUnitHolder(c *MsCustomer, value string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint64, offset uint64, params map[string]string, paramsLike map[string]string, nolimit bool) (int, error) {
+	query := `SELECT 
+				c.customer_key AS customer_key, 
+				c.unit_holder_idno AS cif, 
+				c.full_name AS full_name, 
+				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
+				pd.idcard_no AS ktp, 
+				pd.phone_mobile AS phone_mobile, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag, 
+				pd.mother_maiden_name AS mother_maiden_name  
+			FROM ms_customer AS c
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetAllCustomerIndividuInquery(c *CountData, params map[string]string, paramsLike map[string]string) (int, error) {
+	query := `SELECT 
+				count(c.customer_key) AS count_data 
+			FROM ms_customer AS c
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1`
+
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

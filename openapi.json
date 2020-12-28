@@ -15231,6 +15231,200 @@
           }
         }
       }
+    },
+    "/admin/customer/individu/list": {
+      "get": {
+        "description": "Get All Customer Individu",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "cif",
+                "full_name",
+                "sid",
+                "date_birth",
+                "customer_key",
+                "phone_mobile",
+                "cif_suspend_flag",
+                "mother_maiden_name",
+                "ktp"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "cif",
+            "in": "query",
+            "description": "cif filter with opration like",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "full_name",
+            "in": "query",
+            "description": "full_name filter with opration like",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "date_birth",
+            "in": "query",
+            "description": "date_birth filter with opration like",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "23-12-2020"
+            }
+          },
+          {
+            "name": "ktp",
+            "in": "query",
+            "description": "ktp filter with opration like",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "mother_maiden_name",
+            "in": "query",
+            "description": "mother_maiden_name filter with opration like",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "customer_key": 230,
+                      "cif": "202012000007",
+                      "full_name": "adsadasdas",
+                      "date_birth": "01 August 1980",
+                      "ktp": "3171040000000003",
+                      "phone_mobile": "081318696023",
+                      "sid": "",
+                      "cif_suspend_flag": "Tidak",
+                      "mother_maiden_name": "asdasdas"
+                    },
+                    {
+                      "customer_key": 229,
+                      "cif": "202012000006",
+                      "full_name": "Muhammad khair",
+                      "date_birth": "01 August 1980",
+                      "ktp": "3171040404040003",
+                      "phone_mobile": "081318696023",
+                      "sid": "",
+                      "cif_suspend_flag": "Tidak",
+                      "mother_maiden_name": "sadasdasd"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

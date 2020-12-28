@@ -230,6 +230,9 @@ func router() *echo.Echo {
 	//Admin NAV
 	admin.GET("/menu", controllers.GetListMenuLogin).Name = "GetListMenuLogin"
 
+	//Admin Customer
+	admin.GET("/customer/individu/list", controllers.GetListCustomerIndividuInquiry).Name = "GetListCustomerIndividuInquiry"
+
 	return e
 }
 
