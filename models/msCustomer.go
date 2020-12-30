@@ -74,6 +74,16 @@ type CustomerIndividuInquiry struct {
 	MotherMaidenName string `db:"mother_maiden_name"          json:"mother_maiden_name"`
 }
 
+type CustomerInstituionInquiry struct {
+	CustomerKey    uint64 `db:"customer_key"                json:"customer_key"`
+	Cif            string `db:"cif"                         json:"cif"`
+	FullName       string `db:"full_name"                   json:"full_name"`
+	Npwp           string `db:"npwp"                         json:"npwp"`
+	Institusion    string `db:"institution"                json:"institution"`
+	SidNo          string `db:"sid"                         json:"sid"`
+	CifSuspendFlag string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
+}
+
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -282,6 +292,122 @@ func CountAdminGetAllCustomerIndividuInquery(c *CountData, params map[string]str
 			FROM ms_customer AS c
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
 			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1`
+
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllCustomerInstitutionInquery(c *[]CustomerInstituionInquiry, limit uint64, offset uint64, params map[string]string, paramsLike map[string]string, nolimit bool) (int, error) {
+	query := `SELECT 
+				c.customer_key AS customer_key, 
+				c.unit_holder_idno AS cif, 
+				c.full_name AS full_name, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag, 
+				pd.npwp_no AS npwp, 
+				pd.insti_full_name AS institution 
+			FROM ms_customer AS c
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetAllCustomerInstitutionInquery(c *CountData, params map[string]string, paramsLike map[string]string) (int, error) {
+	query := `SELECT 
+				count(c.customer_key) AS count_data 
+			FROM ms_customer AS c
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
 			WHERE c.rec_status = 1`
 
 	var whereClause []string
