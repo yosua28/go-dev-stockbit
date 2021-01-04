@@ -7,8 +7,8 @@ import (
 	"strconv"
 	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 type OaRequest struct {
@@ -147,7 +147,7 @@ type Emergency struct {
 type RiskProfileQuiz struct {
 	RiskProfileQuizKey  uint64               `json:"risk_profile_quiz_key"`
 	QuizOptionUser      CmsQuizOptionsInfo   `json:"quiz_option_user"`
-	QuizOptionScoreUser decimal.Decimal              `json:"quiz_option_score_user"`
+	QuizOptionScoreUser decimal.Decimal      `json:"quiz_option_score_user"`
 	QuizQuestionKey     uint64               `json:"quiz_question_key"`
 	HeaderQuizName      string               `json:"header_quiz_name"`
 	QuizTitle           string               `json:"quiz_title"`
@@ -159,6 +159,14 @@ type AdminTransactionBankInfo struct {
 	SwiftCode         *string `db:"swift_code"            json:"swift_code"`
 	BiMemberCode      *string `db:"bi_member_code"        json:"bi_member_code"`
 	CustomerAccountNo string  `db:"customer_account_no"   json:"customer_account_no"`
+}
+
+type OaCustomer struct {
+	OaRequestKey uint64 `db:"oa_request_key"   json:"oa_request_key"`
+	Jenis        string `db:"jenis"            json:"jenis"`
+	String       string `db:"tahun"            json:"tahun"`
+	TglPengajuan string `db:"tgl_pengajuan"    json:"tgl_pengajuan"`
+	StatusOa     string `db:"status_oa"        json:"status_oa"`
 }
 
 func CreateOaRequest(params map[string]string) (int, error, string) {
@@ -660,5 +668,28 @@ func UpdateOaRequestByFieldIn(params map[string]string, value []string, field st
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func AdminGetAllOaByCustomerKey(c *[]OaCustomer, customerKey string) (int, error) {
+	query := `SELECT 
+				o.oa_request_key AS oa_request_key,
+				g.lkp_name AS jenis,
+				YEAR(o.oa_entry_start) AS tahun,
+				DATE_FORMAT(o.oa_entry_end, '%d %M %Y') AS tgl_pengajuan,
+				s.lkp_name AS status_oa 
+			FROM oa_request AS o 
+			LEFT JOIN gen_lookup AS g ON g.lookup_key = o.oa_request_type
+			LEFT JOIN gen_lookup AS s ON s.lookup_key = o.oa_status 
+			WHERE o.rec_status = 1 AND o.customer_key = ` + customerKey
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

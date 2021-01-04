@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
 	"math"
 	"net/http"
 	"strconv"
@@ -327,6 +328,86 @@ func GetListCustomerInstitutionInquiry(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Pagination = pagination
 	response.Data = customers
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetDetailCustomerIndividu(c echo.Context) error {
+	var err error
+
+	keyStr := c.Param("key")
+	if keyStr == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var customer models.CustomerIndividuInquiry
+	_, err = models.AdminGetHeaderCustomerIndividu(&customer, keyStr)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oaCustomer []models.OaCustomer
+	_, err = models.AdminGetAllOaByCustomerKey(&oaCustomer, keyStr)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(http.StatusNotFound)
+		}
+	}
+
+	var responseData models.DetailCustomerIndividuInquiry
+	responseData.Header = customer
+	responseData.PersonalData = &oaCustomer
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetDetailCustomerInstitution(c echo.Context) error {
+	var err error
+
+	keyStr := c.Param("key")
+	if keyStr == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var customer models.CustomerInstituionInquiry
+	_, err = models.AdminGetHeaderCustomerInstitution(&customer, keyStr)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oaCustomer []models.OaCustomer
+	_, err = models.AdminGetAllOaByCustomerKey(&oaCustomer, keyStr)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(http.StatusNotFound)
+		}
+	}
+
+	var responseData models.DetailCustomerInstitutionInquiry
+	responseData.Header = customer
+	responseData.PersonalData = &oaCustomer
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 }

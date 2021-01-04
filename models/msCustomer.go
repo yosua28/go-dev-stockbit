@@ -84,6 +84,16 @@ type CustomerInstituionInquiry struct {
 	CifSuspendFlag string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
 }
 
+type DetailCustomerIndividuInquiry struct {
+	Header       CustomerIndividuInquiry `json:"header"`
+	PersonalData *[]OaCustomer           `json:"personal_data"`
+}
+
+type DetailCustomerInstitutionInquiry struct {
+	Header       CustomerInstituionInquiry `json:"header"`
+	PersonalData *[]OaCustomer             `json:"personal_data"`
+}
+
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -434,6 +444,69 @@ func CountAdminGetAllCustomerInstitutionInquery(c *CountData, params map[string]
 		}
 	}
 
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, customerKey string) (int, error) {
+	query := `SELECT 
+				c.customer_key AS customer_key, 
+				c.unit_holder_idno AS cif, 
+				c.full_name AS full_name, 
+				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
+				pd.idcard_no AS ktp, 
+				pd.phone_mobile AS phone_mobile, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag, 
+				pd.mother_maiden_name AS mother_maiden_name  
+			FROM ms_customer AS c
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1 AND c.investor_type = 263 AND c.customer_key = ` + customerKey
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetHeaderCustomerInstitution(c *CustomerInstituionInquiry, customerKey string) (int, error) {
+	query := `SELECT 
+				c.customer_key AS customer_key, 
+				c.unit_holder_idno AS cif, 
+				c.full_name AS full_name, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag, 
+				pd.npwp_no AS npwp, 
+				pd.insti_full_name AS institution 
+			FROM ms_customer AS c
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1 AND c.investor_type = 264 AND c.customer_key = ` + customerKey
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)

@@ -233,6 +233,8 @@ func router() *echo.Echo {
 	//Admin Customer
 	admin.GET("/customer/individu/list", controllers.GetListCustomerIndividuInquiry).Name = "GetListCustomerIndividuInquiry"
 	admin.GET("/customer/institution/list", controllers.GetListCustomerInstitutionInquiry).Name = "GetListCustomerInstitutionInquiry"
+	admin.GET("/customer/individu/:key", controllers.GetDetailCustomerIndividu).Name = "GetDetailCustomerIndividu"
+	admin.GET("/customer/institution/:key", controllers.GetDetailCustomerInstitution).Name = "GetDetailCustomerInstitution"
 
 	return e
 }
