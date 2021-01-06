@@ -78,8 +78,8 @@ type CustomerInstituionInquiry struct {
 	CustomerKey    uint64 `db:"customer_key"                json:"customer_key"`
 	Cif            string `db:"cif"                         json:"cif"`
 	FullName       string `db:"full_name"                   json:"full_name"`
-	Npwp           string `db:"npwp"                         json:"npwp"`
-	Institusion    string `db:"institution"                json:"institution"`
+	Npwp           string `db:"npwp"                        json:"npwp"`
+	Institusion    string `db:"institution"                 json:"institution"`
 	SidNo          string `db:"sid"                         json:"sid"`
 	CifSuspendFlag string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
 }
@@ -92,6 +92,41 @@ type DetailCustomerIndividuInquiry struct {
 type DetailCustomerInstitutionInquiry struct {
 	Header       CustomerInstituionInquiry `json:"header"`
 	PersonalData *[]OaCustomer             `json:"personal_data"`
+}
+
+type DetailCustomerInquiryResponse struct {
+	Header       DetailHeaderCustomerInquiry `json:"header"`
+	PersonalData *[]OaCustomer               `json:"personal_data"`
+}
+
+type DetailCustomerInquiry struct {
+	InvestorType     string  `db:"investor_type"               json:"investor_type"`
+	CustomerKey      uint64  `db:"customer_key"                json:"customer_key"`
+	Cif              string  `db:"cif"                         json:"cif"`
+	FullName         string  `db:"full_name"                   json:"full_name"`
+	DateBirth        *string `db:"date_birth"                  json:"date_birth"`
+	IDcardNo         *string `db:"ktp"                         json:"ktp"`
+	PhoneMobile      *string `db:"phone_mobile"                json:"phone_mobile"`
+	SidNo            string  `db:"sid"                         json:"sid"`
+	CifSuspendFlag   string  `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
+	MotherMaidenName *string `db:"mother_maiden_name"          json:"mother_maiden_name"`
+	Npwp             *string `db:"npwp"                        json:"npwp"`
+	Institusion      *string `db:"institution"                 json:"institution"`
+}
+
+type DetailHeaderCustomerInquiry struct {
+	InvestorType     string  `json:"investor_type"`
+	CustomerKey      uint64  `json:"customer_key"`
+	Cif              string  `json:"cif"`
+	FullName         string  `json:"full_name"`
+	DateBirth        *string `json:"date_birth,omitempty"`
+	IDcardNo         *string `json:"ktp,omitempty"`
+	PhoneMobile      *string `json:"phone_mobile,omitempty"`
+	SidNo            string  `json:"sid"`
+	CifSuspendFlag   string  `json:"cif_suspend_flag"`
+	MotherMaidenName *string `json:"mother_maiden_name,omitempty"`
+	Npwp             *string `json:"npwp,omitempty"`
+	Institusion      *string `json:"institution,omitempty"`
 }
 
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
@@ -238,8 +273,10 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
 				pd.mother_maiden_name AS mother_maiden_name  
-			FROM ms_customer AS c
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			FROM ms_customer AS c 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
+			AS t2 ON c.customer_key = t2.customer_key
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
 			WHERE c.rec_status = 1`
 	var present bool
@@ -354,8 +391,10 @@ func AdminGetAllCustomerInstitutionInquery(c *[]CustomerInstituionInquiry, limit
 				END) AS cif_suspend_flag, 
 				pd.npwp_no AS npwp, 
 				pd.insti_full_name AS institution 
-			FROM ms_customer AS c
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			FROM ms_customer AS c 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
+			AS t2 ON c.customer_key = t2.customer_key
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
 			WHERE c.rec_status = 1`
 	var present bool
@@ -472,8 +511,10 @@ func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, customerKey stri
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
 				pd.mother_maiden_name AS mother_maiden_name  
-			FROM ms_customer AS c
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			FROM ms_customer AS c 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
+			AS t2 ON c.customer_key = t2.customer_key
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
 			WHERE c.rec_status = 1 AND c.investor_type = 263 AND c.customer_key = ` + customerKey
 
@@ -503,10 +544,50 @@ func AdminGetHeaderCustomerInstitution(c *CustomerInstituionInquiry, customerKey
 				END) AS cif_suspend_flag, 
 				pd.npwp_no AS npwp, 
 				pd.insti_full_name AS institution 
-			FROM ms_customer AS c
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
+			FROM ms_customer AS c 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
+			AS t2 ON c.customer_key = t2.customer_key
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
 			WHERE c.rec_status = 1 AND c.investor_type = 264 AND c.customer_key = ` + customerKey
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetHeaderDetailCustomer(c *DetailCustomerInquiry, customerKey string) (int, error) {
+	query := `SELECT 
+				c.investor_type AS investor_type,
+				c.customer_key AS customer_key, 
+				c.unit_holder_idno AS cif, 
+				c.full_name AS full_name, 
+				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
+				pd.idcard_no AS ktp, 
+				pd.phone_mobile AS phone_mobile, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag, 
+				pd.mother_maiden_name AS mother_maiden_name,
+				id.npwp_no AS npwp, 
+				id.insti_full_name AS institution   
+			FROM ms_customer AS c
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
+			AS t2 ON c.customer_key = t2.customer_key
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
+			LEFT JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN oa_institution_data AS id ON id.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1 AND c.customer_key = ` + customerKey
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)

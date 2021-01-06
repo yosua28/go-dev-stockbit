@@ -15764,6 +15764,93 @@
           }
         }
       }
+    },
+    "/admin/customer/detail/{key}": {
+      "get": {
+        "description": "Get Customer Detail",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "customer key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "header": {
+                      "investor_type": "263",
+                      "customer_key": 52,
+                      "cif": "202010000001",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "date_birth": "06 January 1979",
+                      "ktp": "3175074601790009",
+                      "phone_mobile": "087877991679",
+                      "sid": "",
+                      "cif_suspend_flag": "Tidak",
+                      "mother_maiden_name": "Yati"
+                    },
+                    "personal_data": [
+                      {
+                        "oa_request_key": 55,
+                        "jenis": "NEW",
+                        "tahun": "2020",
+                        "tgl_pengajuan": "26 November 2020",
+                        "status_oa": "CUSTOMER_BUILD"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

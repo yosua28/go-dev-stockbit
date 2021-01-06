@@ -411,3 +411,64 @@ func GetDetailCustomerInstitution(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetDetailCustomerInquiry(c echo.Context) error {
+	var err error
+
+	keyStr := c.Param("key")
+	if keyStr == "" {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var customer models.DetailCustomerInquiry
+	_, err = models.AdminGetHeaderDetailCustomer(&customer, keyStr)
+	if err != nil {
+		log.Println("hahahahha")
+		return lib.CustomError(http.StatusNotFound)
+		log.Println("hahahahha")
+	}
+
+	var customerHeader models.DetailHeaderCustomerInquiry
+
+	customerHeader.InvestorType = customer.InvestorType
+	customerHeader.CustomerKey = customer.CustomerKey
+	customerHeader.Cif = customer.Cif
+	customerHeader.FullName = customer.FullName
+	customerHeader.SidNo = customer.SidNo
+	customerHeader.CifSuspendFlag = customer.CifSuspendFlag
+
+	if customer.InvestorType == "263" {
+		customerHeader.DateBirth = customer.DateBirth
+		customerHeader.IDcardNo = customer.IDcardNo
+		customerHeader.PhoneMobile = customer.PhoneMobile
+		customerHeader.MotherMaidenName = customer.MotherMaidenName
+	} else {
+		customerHeader.Npwp = customer.Npwp
+		customerHeader.Institusion = customer.Institusion
+	}
+
+	var oaCustomer []models.OaCustomer
+	_, err = models.AdminGetAllOaByCustomerKey(&oaCustomer, keyStr)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(http.StatusNotFound)
+		}
+	}
+
+	var responseData models.DetailCustomerInquiryResponse
+	responseData.Header = customerHeader
+	responseData.PersonalData = &oaCustomer
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
