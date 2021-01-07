@@ -430,9 +430,7 @@ func GetDetailCustomerInquiry(c echo.Context) error {
 	var customer models.DetailCustomerInquiry
 	_, err = models.AdminGetHeaderDetailCustomer(&customer, keyStr)
 	if err != nil {
-		log.Println("hahahahha")
 		return lib.CustomError(http.StatusNotFound)
-		log.Println("hahahahha")
 	}
 
 	var customerHeader models.DetailHeaderCustomerInquiry
@@ -1155,9 +1153,14 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 
 	//set customer
 	var customer models.CustomerDetailPersonalData
-	_, err = models.GetCustomerDetailPersonalData(&customer, keyStr)
+	strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+	_, err = models.GetCustomerDetailPersonalData(&customer, strCustomerKey)
 	if err == nil {
 		responseData.Customer = &customer
+	}
+
+	if customer.InvestorType != "263" { //individu
+		return lib.CustomError(http.StatusNotFound)
 	}
 
 	//mapping user approval

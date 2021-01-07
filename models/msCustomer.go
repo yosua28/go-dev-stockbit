@@ -130,6 +130,7 @@ type DetailHeaderCustomerInquiry struct {
 }
 
 type CustomerDetailPersonalData struct {
+	InvestorType   string `db:"investor_type"         json:"investor_type"`
 	CustomerKey    uint64 `db:"customer_key"         json:"customer_key"`
 	Cif            string `db:"cif"                  json:"cif"`
 	FullName       string `db:"full_name"            json:"full_name"`
@@ -609,6 +610,7 @@ func AdminGetHeaderDetailCustomer(c *DetailCustomerInquiry, customerKey string) 
 
 func GetCustomerDetailPersonalData(c *CustomerDetailPersonalData, customerKey string) (int, error) {
 	query := `SELECT 
+				c.investor_type AS investor_type, 
 				c.customer_key AS customer_key, 
 				c.unit_holder_idno AS cif, 
 				c.full_name AS full_name, 
