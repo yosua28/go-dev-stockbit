@@ -585,6 +585,12 @@ func Login(c echo.Context) error {
 	}
 	log.Info(data)
 
+	//cek token notif
+	hahatest := c.FormValue("token")
+	if hahatest != "" {
+		CreateNotification(hahatest)
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
