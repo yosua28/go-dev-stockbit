@@ -169,6 +169,68 @@ type OaCustomer struct {
 	StatusOa     string `db:"status_oa"        json:"status_oa"`
 }
 
+type DetailPersonalDataCustomerIndividu struct {
+	OaRequestKey        uint64                      `json:"oa_request_key"`
+	OaRequestType       *string                     `json:"oa_request_type"`
+	OaRiskLevel         *string                     `json:"oa_risk_level"`
+	OaEntryStart        string                      `json:"oa_entry_start"`
+	OaEntryEnd          string                      `json:"oa_entry_end"`
+	Oastatus            string                      `json:"oa_status"`
+	EmailAddress        string                      `json:"email_address"`
+	PhoneNumber         string                      `json:"phone_mobile"`
+	DateBirth           string                      `json:"date_birth"`
+	FullName            string                      `json:"full_name"`
+	IDCardNo            string                      `json:"idcard_no"`
+	Nationality         *string                     `json:"nationality"`
+	Gender              *string                     `json:"gender"`
+	PlaceBirth          string                      `json:"place_birth"`
+	MaritalStatus       *string                     `json:"marital_status"`
+	PhoneHome           string                      `json:"phone_home"`
+	Religion            *string                     `json:"religion"`
+	Education           *string                     `json:"education"`
+	PicKtp              *string                     `json:"pic_ktp"`
+	PicSelfie           *string                     `json:"pic_selfie"`
+	PicSelfieKtp        *string                     `json:"pic_selfie_ktp"`
+	OccupJob            *string                     `json:"occup_job"`
+	OccupCompany        *string                     `json:"occup_company"`
+	OccupPosition       *string                     `json:"occup_position"`
+	OccupPhone          *string                     `json:"occup_phone"`
+	OccupWebURL         *string                     `json:"occup_web_url"`
+	AnnualIncome        *string                     `json:"annual_income"`
+	SourceofFund        *string                     `json:"sourceof_fund"`
+	InvesmentObjectives *string                     `json:"invesment_objectives"`
+	Correspondence      *string                     `json:"correspondence"`
+	MotherMaidenName    string                      `json:"mother_maiden_name"`
+	BeneficialRelation  *string                     `json:"beneficial_relation"`
+	BeneficialFullName  *string                     `json:"beneficial_full_name"`
+	OccupBusinessFields *string                     `json:"occup_business_fields"`
+	IDcardAddress       Address                     `json:"idcard_address"`
+	DomicileAddress     Address                     `json:"domicile_address"`
+	OccupAddressKey     Address                     `json:"occup_address_key"`
+	BankAccount         BankAccount                 `json:"bank_account"`
+	Relation            Relation                    `json:"relation"`
+	Emergency           Emergency                   `json:"emergency"`
+	RiskProfile         []AdminOaRiskProfile        `json:"risk_profile"`
+	RiskProfileQuiz     []RiskProfileQuiz           `json:"risk_profile_quiz"`
+	FirstName           *string                     `json:"first_name"`
+	MiddleName          *string                     `json:"middle_name"`
+	LastName            *string                     `json:"last_name"`
+	ClientCode          *string                     `json:"client_code"`
+	TinNumber           *string                     `json:"tin_number"`
+	TinIssuanceDate     *string                     `json:"tin_issuance_date"`
+	TinIssuanceCountry  *string                     `json:"tin_issuance_country"`
+	FatcaStatus         *string                     `json:"fatca_status"`
+	Customer            *CustomerDetailPersonalData `json:"customer"`
+	ApproveCS           *ApprovalData               `json:"approve_cs"`
+	ApproveKYC          *ApprovalData               `json:"approve_kyc"`
+}
+
+type ApprovalData struct {
+	ApproveUser  string  `json:"approve_user"`
+	ApproveDate  *string `json:"approve_date"`
+	ApproveNotes *string `json:"approve_notes"`
+}
+
 func CreateOaRequest(params map[string]string) (int, error, string) {
 	query := "INSERT INTO oa_request"
 	// Get params

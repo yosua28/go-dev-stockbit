@@ -129,6 +129,14 @@ type DetailHeaderCustomerInquiry struct {
 	Institusion      *string `json:"institution,omitempty"`
 }
 
+type CustomerDetailPersonalData struct {
+	CustomerKey    uint64 `db:"customer_key"         json:"customer_key"`
+	Cif            string `db:"cif"                  json:"cif"`
+	FullName       string `db:"full_name"            json:"full_name"`
+	SidNo          string `db:"sid"                  json:"sid"`
+	CifSuspendFlag string `db:"cif_suspend_flag"     json:"cif_suspend_flag"`
+}
+
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -588,6 +596,37 @@ func AdminGetHeaderDetailCustomer(c *DetailCustomerInquiry, customerKey string) 
 			LEFT JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
 			LEFT JOIN oa_institution_data AS id ON id.oa_request_key = r.oa_request_key
 			WHERE c.rec_status = 1 AND c.customer_key = ` + customerKey
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetCustomerDetailPersonalData(c *CustomerDetailPersonalData, customerKey string) (int, error) {
+	query := `SELECT 
+				c.customer_key AS customer_key, 
+				c.unit_holder_idno AS cif, 
+				c.full_name AS full_name, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag
+			FROM ms_customer AS c 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
+			AS t2 ON c.customer_key = t2.customer_key
+			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			WHERE c.rec_status = 1 AND c.customer_key = ` + customerKey
+
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)

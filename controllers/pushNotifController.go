@@ -24,10 +24,12 @@ func CreateNotification(token string) {
 		Notification: fcm.Notification{
 			Title: "Hello",
 			Body:  "World",
+			Sound: "default",
+			Badge: "3",
 		},
 	})
 	if err != nil {
-		log.Fatal(err)
+		log.Println(err)
 	}
 	fmt.Println("Status Code   :", response.StatusCode)
 	fmt.Println("Success       :", response.Success)
