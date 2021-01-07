@@ -585,12 +585,6 @@ func Login(c echo.Context) error {
 	}
 	log.Info(data)
 
-	//cek token notif
-	hahatest := c.FormValue("token")
-	if hahatest != "" {
-		CreateNotification(hahatest)
-	}
-
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -727,6 +721,13 @@ func ResendVerification(c echo.Context) error {
 func ForgotPassword(c echo.Context) error {
 	var err error
 	var status int
+
+	//cek token notif
+	hahatest := c.FormValue("token")
+	if hahatest != "" {
+		CreateNotification(hahatest)
+	}
+
 	// Check parameters
 	email := c.FormValue("email")
 	if email == "" {
