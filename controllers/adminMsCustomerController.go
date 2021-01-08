@@ -82,7 +82,7 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 			var orderByJoin string
 			orderByJoin = "c.customer_key"
 			if orderBy == "cif" {
-				orderByJoin = "c.cif"
+				orderByJoin = "c.unit_holder_idno"
 			} else if orderBy == "full_name" {
 				orderByJoin = "c.full_name"
 			} else if orderBy == "sid" {
@@ -120,7 +120,7 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 
 	cif := c.QueryParam("cif")
 	if cif != "" {
-		paramsLike["c.cif"] = cif
+		paramsLike["c.unit_holder_idno"] = cif
 	}
 	fullname := c.QueryParam("full_name")
 	if fullname != "" {
@@ -246,7 +246,7 @@ func GetListCustomerInstitutionInquiry(c echo.Context) error {
 			var orderByJoin string
 			orderByJoin = "c.customer_key"
 			if orderBy == "cif" {
-				orderByJoin = "c.cif"
+				orderByJoin = "c.unit_holder_idno"
 			} else if orderBy == "full_name" {
 				orderByJoin = "c.full_name"
 			} else if orderBy == "sid" {
@@ -282,7 +282,7 @@ func GetListCustomerInstitutionInquiry(c echo.Context) error {
 
 	cif := c.QueryParam("cif")
 	if cif != "" {
-		paramsLike["c.cif"] = cif
+		paramsLike["c.unit_holder_idno"] = cif
 	}
 	fullname := c.QueryParam("full_name")
 	if fullname != "" {
