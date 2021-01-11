@@ -322,6 +322,16 @@ type ProductCheckAllowRedmSwtching struct {
 	ProductKey uint64 `db:"product_key"             json:"product_key"`
 }
 
+type TransactionCustomerHistory struct {
+	NavDate     string  `db:"nav_date"          json:"nav_date"`
+	ProductKey  uint64  `db:"product_key"       json:"product_key"`
+	CustomerKey uint64  `db:"customer_key"      json:"customer_key"`
+	ProductName string  `db:"product_name"      json:"product_name"`
+	FullName    string  `db:"full_name"         json:"full_name"`
+	Cif         *string `db:"cif"               json:"cif"`
+	Sid         *string `db:"sid"               json:"sid"`
+}
+
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
 	params map[string]string, valueIn []string, fieldIn string, isAll bool) (int, error) {
 	query := `SELECT
@@ -851,6 +861,156 @@ func CheckProductAllowRedmOrSwitching(c *[]ProductCheckAllowRedmSwtching, custom
 	// Main query
 	log.Println(query)
 	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetTransactionCustomerHistory(c *[]TransactionCustomerHistory, limit uint64, offset uint64, params map[string]string, paramsLike map[string]string, nolimit bool) (int, error) {
+	query := `SELECT 
+				c.customer_key AS customer_key,
+				p.product_key AS product_key,
+				DATE_FORMAT(t.nav_date, '%d %M %Y') AS nav_date,
+				p.product_name_alt AS product_name,
+				c.full_name AS full_name,
+				c.unit_holder_idno AS cif,
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid 
+			FROM tr_transaction AS t 
+			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
+			INNER JOIN ms_customer AS c ON c.customer_key = t.customer_key 
+			INNER JOIN ms_product AS p ON t.product_key = p.product_key
+			WHERE t.trans_status_key = 9 AND t.rec_status = 1 AND tc.rec_status = 1`
+
+	var present bool
+	var whereClause []string
+	var condition string
+	var conditionOrder string
+	dateFrom := ""
+	dateTo := ""
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType" || field == "dateFrom" || field == "dateTo") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+		if field == "dateFrom" {
+			dateFrom = value
+		}
+		if field == "dateTo" {
+			dateTo = value
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	if (dateFrom != "") && (dateTo != "") {
+		query += " AND (t.nav_date BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	query += " GROUP BY t.customer_key, t.product_key"
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		conditionOrder += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			conditionOrder += " " + orderType
+		}
+	}
+	query += conditionOrder
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminCountTransactionCustomerHistory(c *CountData, params map[string]string, paramsLike map[string]string) (int, error) {
+	query := `SELECT 
+				count(t.transaction_key) AS count_data 
+			FROM tr_transaction AS t 
+			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
+			INNER JOIN ms_customer AS c ON c.customer_key = t.customer_key 
+			INNER JOIN ms_product AS p ON t.product_key = p.product_key
+			WHERE t.trans_status_key = 9 AND t.rec_status = 1 AND tc.rec_status = 1`
+
+	var whereClause []string
+	var condition string
+	dateFrom := ""
+	dateTo := ""
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType" || field == "dateFrom" || field == "dateTo") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+		if field == "dateFrom" {
+			dateFrom = value
+		}
+		if field == "dateTo" {
+			dateTo = value
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	if (dateFrom != "") && (dateTo != "") {
+		query += " AND (t.nav_date BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	query += " GROUP BY t.customer_key, t.product_key"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
