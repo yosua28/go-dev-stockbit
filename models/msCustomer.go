@@ -138,6 +138,11 @@ type CustomerDetailPersonalData struct {
 	CifSuspendFlag string `db:"cif_suspend_flag"     json:"cif_suspend_flag"`
 }
 
+type CustomerDropdown struct {
+	CustomerKey string `db:"customer_key"   json:"customer_key"`
+	Name        string `db:"name"           json:"name"`
+}
+
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -632,6 +637,64 @@ func GetCustomerDetailPersonalData(c *CustomerDetailPersonalData, customerKey st
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetCustomerDropdown(c *[]CustomerDropdown, params map[string]string, paramsLike map[string]string) (int, error) {
+
+	query := `SELECT 
+				c.customer_key as customer_key,
+				CONCAT(c.unit_holder_idno, " - ", c.full_name) AS name 
+			FROM ms_customer AS c
+			INNER JOIN sc_user_login AS l ON l.customer_key = c.customer_key 
+			INNER JOIN sc_user_dept AS d ON d.user_dept_key = l.user_dept_key 
+			WHERE c.rec_status = 1 AND l.rec_status = 1 AND c.investor_type IN (263, 264)`
+
+	var present bool
+	var condition string
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err

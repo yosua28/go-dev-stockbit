@@ -240,6 +240,8 @@ func router() *echo.Echo {
 
 	//Admin Transaction Report
 	admin.GET("/report/transactionhistorylist", controllers.GetTransactionHistory).Name = "GetTransactionHistory"
+	admin.GET("/customer/dropdown", controllers.GetListCustomerDropDown).Name = "GetListCustomerDropDown"
+	admin.GET("/report/transactionhistory/:param", controllers.GetDetailCustomerProduct).Name = "GetDetailCustomerProduct"
 
 	return e
 }

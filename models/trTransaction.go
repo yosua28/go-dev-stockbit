@@ -323,13 +323,41 @@ type ProductCheckAllowRedmSwtching struct {
 }
 
 type TransactionCustomerHistory struct {
-	NavDate     string  `db:"nav_date"          json:"nav_date"`
-	ProductKey  uint64  `db:"product_key"       json:"product_key"`
-	CustomerKey uint64  `db:"customer_key"      json:"customer_key"`
 	ProductName string  `db:"product_name"      json:"product_name"`
 	FullName    string  `db:"full_name"         json:"full_name"`
 	Cif         *string `db:"cif"               json:"cif"`
 	Sid         *string `db:"sid"               json:"sid"`
+	ParamDetail *string `db:"param_detail"      json:"param_detail"`
+}
+
+type TransactionConsumenProduct struct {
+	TransactionKey  uint64          `db:"transaction_key"     json:"transaction_key"`
+	TransTypeKey    uint64          `db:"trans_type_key"      json:"trans_type_key"`
+	NavDate         string          `db:"nav_date"            json:"nav_date"`
+	TypeDescription string          `db:"type_description"    json:"type_description"`
+	NavValue        decimal.Decimal `db:"nav_value"            json:"nav_value"`
+	Unit            decimal.Decimal `db:"unit"                json:"unit"`
+	GrossAmount     decimal.Decimal `db:"gross_amount"        json:"gross_amount"`
+	FeeAmount       decimal.Decimal `db:"fee_amount"          json:"fee_amount"`
+	NetAmount       decimal.Decimal `db:"net_amount"          json:"net_amount"`
+}
+
+type DataDetailTransaksiCustomerProduct struct {
+	DataTransaksi     DetailHeaderTransaksiCustomer `json:"data_transaksi"`
+	DetailTransaksi   *[]TransactionConsumenProduct `json:"detail_transaksi"`
+	CountSubscription decimal.Decimal               `json:"total_subscription"`
+	CountRedemption   decimal.Decimal               `json:"total_redemption"`
+	CountNetSub       decimal.Decimal               `json:"total_netsub"`
+}
+
+type DetailHeaderTransaksiCustomer struct {
+	UnitHolder  string `db:"unit_holder"          json:"unit_holder"`
+	FullName    string `db:"full_name"            json:"full_name"`
+	Sid         string `db:"sid"                  json:"sid"`
+	IfuaNo      string `db:"ifua_no"              json:"ifua_no"`
+	NavDateFrom string `db:"nav_date_from"        json:"nav_date_from"`
+	NavDateTo   string `db:"nav_date_to"          json:"nav_date_to"`
+	ProductName string `db:"product_name"         json:"product_name"`
 }
 
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
@@ -870,30 +898,10 @@ func CheckProductAllowRedmOrSwitching(c *[]ProductCheckAllowRedmSwtching, custom
 }
 
 func AdminGetTransactionCustomerHistory(c *[]TransactionCustomerHistory, limit uint64, offset uint64, params map[string]string, paramsLike map[string]string, nolimit bool) (int, error) {
-	query := `SELECT 
-				c.customer_key AS customer_key,
-				p.product_key AS product_key,
-				DATE_FORMAT(t.nav_date, '%d %M %Y') AS nav_date,
-				p.product_name_alt AS product_name,
-				c.full_name AS full_name,
-				c.unit_holder_idno AS cif,
-				(CASE
-					WHEN c.sid_no IS NULL THEN ""
-					ELSE c.sid_no
-				END) AS sid 
-			FROM tr_transaction AS t 
-			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
-			INNER JOIN ms_customer AS c ON c.customer_key = t.customer_key 
-			INNER JOIN ms_product AS p ON t.product_key = p.product_key
-			WHERE t.trans_status_key = 9 AND t.rec_status = 1 AND tc.rec_status = 1`
-
-	var present bool
-	var whereClause []string
-	var condition string
-	var conditionOrder string
 	dateFrom := ""
 	dateTo := ""
 
+	var whereClause []string
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType" || field == "dateFrom" || field == "dateTo") {
 			whereClause = append(whereClause, field+" = '"+value+"'")
@@ -905,6 +913,25 @@ func AdminGetTransactionCustomerHistory(c *[]TransactionCustomerHistory, limit u
 			dateTo = value
 		}
 	}
+
+	query := `SELECT 
+				p.product_name_alt AS product_name,
+				c.full_name AS full_name,
+				c.unit_holder_idno AS cif,
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				TO_BASE64(CONCAT(c.customer_key, ",", p.product_key, ",", "` + dateFrom + `", ",", "` + dateTo + `")) AS param_detail 
+			FROM tr_transaction AS t 
+			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
+			INNER JOIN ms_customer AS c ON c.customer_key = t.customer_key 
+			INNER JOIN ms_product AS p ON t.product_key = p.product_key
+			WHERE t.trans_status_key = 9 AND t.rec_status = 1 AND tc.rec_status = 1`
+
+	var present bool
+	var condition string
+	var conditionOrder string
 
 	for fieldLike, valueLike := range paramsLike {
 		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
@@ -1007,6 +1034,143 @@ func AdminCountTransactionCustomerHistory(c *CountData, params map[string]string
 	query += condition
 
 	query += " GROUP BY t.customer_key, t.product_key"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetTransactionConsumenProduct(c *[]TransactionConsumenProduct, params map[string]string, paramsLike map[string]string, dateFrom string, dateTo string) (int, error) {
+	query := `SELECT 
+				t.transaction_key as transaction_key,
+				t.trans_type_key as trans_type_key,
+				DATE_FORMAT(t.nav_date, '%d %M %Y') AS nav_date, 
+				ty.type_description as type_description,
+				nav.nav_value as nav_value,
+				tc.confirmed_unit as unit,
+				(CASE
+					WHEN t.total_amount IS NULL OR t.total_amount = 0 THEN tc.confirmed_amount
+					ELSE t.total_amount
+				END) AS gross_amount,
+				(t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) AS fee_amount, 
+				(CASE
+					WHEN t.total_amount IS NULL OR t.total_amount = 0 THEN tc.confirmed_amount - (t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount)
+					ELSE (t.total_amount - (t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount))
+				END) AS net_amount 
+			FROM tr_transaction AS t 
+			INNER JOIN tr_transaction_confirmation AS tc ON t.transaction_key = tc.transaction_key
+			INNER JOIN tr_nav AS nav ON t.nav_date = nav.nav_date AND t.product_key = nav.product_key 
+			INNER JOIN tr_transaction_type AS ty ON ty.trans_type_key = t.trans_type_key
+			WHERE t.rec_status = 1 AND tc.rec_status = 1 AND t.trans_status_key = 9 `
+
+	query += " AND (t.nav_date BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+
+	var present bool
+	var condition string
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetDetailHeaderTransaksiCustomer(c *DetailHeaderTransaksiCustomer, dateFrom string, dateTo string, params map[string]string) (int, error) {
+	query := `SELECT
+				c.unit_holder_idno AS unit_holder,
+				c.full_name AS full_name,
+				(CASE
+					WHEN c.sid_no IS NULL THEN ""
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN a.ifua_no IS NULL THEN ""
+					ELSE a.ifua_no
+				END) AS ifua_no, 
+				DATE_FORMAT("` + dateFrom + `", '%d %M %Y') AS nav_date_from,
+				DATE_FORMAT("` + dateTo + `", '%d %M %Y') AS nav_date_to, 
+				CONCAT(p.product_code, " - ", p.product_name_alt) AS product_name  
+			FROM tr_account AS a 
+			INNER JOIN ms_customer AS c ON c.customer_key = a.customer_key
+			INNER JOIN ms_product AS p ON p.product_key = a.product_key
+			INNER JOIN sc_user_login AS l ON l.customer_key = c.customer_key 
+			INNER JOIN sc_user_dept AS d ON d.user_dept_key = l.user_dept_key 
+			WHERE a.rec_status = 1 AND c.rec_status = 1 `
+
+	var present bool
+	var condition string
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
 
 	// Main query
 	log.Println(query)

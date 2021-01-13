@@ -4,9 +4,12 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
+	b64 "encoding/base64"
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -70,6 +73,20 @@ func GetTransactionHistory(c echo.Context) error {
 	}
 
 	params := make(map[string]string)
+
+	//if user admin role 7 branch
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	if lib.Profile.RoleKey == roleKeyBranchEntry {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["t.branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
 
 	productkey := c.QueryParam("product_key")
 	if productkey != "" {
@@ -194,6 +211,195 @@ func GetTransactionHistory(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Pagination = pagination
 	response.Data = transaksi
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetListCustomerDropDown(c echo.Context) error {
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	//if user admin role 7 branch
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	if lib.Profile.RoleKey == roleKeyBranchEntry {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["d.branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
+
+	paramsLike := make(map[string]string)
+
+	customername := c.QueryParam("customer_name")
+	if customername != "" {
+		paramsLike["c.full_name"] = customername
+	}
+
+	var customer []models.CustomerDropdown
+
+	status, err = models.GetCustomerDropdown(&customer, params, paramsLike)
+
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(customer) < 1 {
+		log.Error("Customer not found")
+		return lib.CustomError(http.StatusNotFound, "Customer not found", "Customer not found")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = customer
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetDetailCustomerProduct(c echo.Context) error {
+
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	params := make(map[string]string)
+	paramsList := make(map[string]string)
+	paramsLike := make(map[string]string)
+
+	param := c.Param("param")
+	if param == "" {
+		log.Error("Wrong input for parameter param")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter param", "Wrong input for parameter param")
+	}
+
+	raw, err := b64.StdEncoding.DecodeString(strings.Replace(param, "%3D", "=", 3))
+
+	if err != nil {
+		log.Error("Wrong input for parameter param")
+		return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter param", "Wrong input for parameter param")
+	}
+
+	s := strings.Split(string(raw), ",")
+
+	var customerKey string
+	var productKey string
+	var dateFrom string
+	var dateTo string
+
+	for idx, value := range s {
+		is := strings.TrimSpace(value)
+		if is != "" {
+			if idx == 0 {
+				customerKey = value
+			}
+			if idx == 1 {
+				productKey = value
+			}
+			if idx == 2 {
+				dateFrom = value
+			}
+			if idx == 3 {
+				dateTo = value
+			}
+		} else {
+			log.Error("Wrong input for parameter param")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter param", "Wrong input for parameter param")
+			break
+		}
+	}
+
+	params["a.customer_key"] = customerKey
+	params["a.product_key"] = productKey
+
+	paramsList["t.customer_key"] = customerKey
+	paramsList["t.product_key"] = productKey
+	paramsList["orderBy"] = "t.transaction_key"
+	paramsList["orderType"] = "ASC"
+
+	//if user admin role 7 branch
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	if lib.Profile.RoleKey == roleKeyBranchEntry {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["d.branch_key"] = strBranchKey
+			paramsList["t.branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
+
+	//get header detail
+	var header models.DetailHeaderTransaksiCustomer
+	status, err = models.AdminGetDetailHeaderTransaksiCustomer(&header, dateFrom, dateTo, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, "Failed get data", "Failed get data")
+	}
+
+	var listTransaksi []models.TransactionConsumenProduct
+	status, err = models.AdminGetTransactionConsumenProduct(&listTransaksi, paramsList, paramsLike, dateFrom, dateTo)
+
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	var totalSubs decimal.Decimal
+	var totalRedm decimal.Decimal
+	var totalNetSub decimal.Decimal
+
+	var trFormaterList []models.TransactionConsumenProduct
+	for _, tr := range listTransaksi {
+		var trFormater models.TransactionConsumenProduct
+		trFormater.TransactionKey = tr.TransactionKey
+		trFormater.TransTypeKey = tr.TransTypeKey
+		trFormater.NavDate = tr.NavDate
+		trFormater.TypeDescription = tr.TypeDescription
+		trFormater.NavValue = tr.NavValue.Truncate(2)
+		trFormater.Unit = tr.Unit.Truncate(2)
+		trFormater.GrossAmount = tr.GrossAmount.Truncate(0)
+		trFormater.FeeAmount = tr.FeeAmount.Truncate(0)
+		trFormater.NetAmount = tr.NetAmount.Truncate(0)
+		trFormaterList = append(trFormaterList, trFormater)
+
+		if (trFormater.TransTypeKey) == 1 || (trFormater.TransTypeKey == 4) {
+			totalSubs = totalSubs.Add(tr.NetAmount).Truncate(0)
+		}
+
+		if (trFormater.TransTypeKey) == 2 || (trFormater.TransTypeKey == 3) {
+			totalRedm = totalRedm.Add(tr.NetAmount).Truncate(0)
+		}
+
+	}
+
+	totalNetSub = totalSubs.Sub(totalRedm).Truncate(0)
+
+	var result models.DataDetailTransaksiCustomerProduct
+	result.DataTransaksi = header
+	result.DetailTransaksi = &trFormaterList
+	result.CountSubscription = totalSubs
+	result.CountRedemption = totalRedm
+	result.CountNetSub = totalNetSub
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = result
 
 	return c.JSON(http.StatusOK, response)
 }

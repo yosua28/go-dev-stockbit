@@ -16384,24 +16384,271 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "nav_date": "26 November 2020",
-                      "product_key": 5,
-                      "customer_key": 55,
-                      "product_name": "Dana Ekuitas",
-                      "full_name": "Annafrid MP Nikijuluw",
+                      "product_name": "Dana Syariah Ekuitas",
+                      "full_name": "khair",
                       "cif": "202010000001",
-                      "sid": ""
+                      "sid": "IDD0612K0234572",
+                      "param_detail": "NTEsOSwyMDIwLTA5LTA5LDIwMjAtMTItMzA="
                     },
                     {
-                      "nav_date": "02 December 2020",
-                      "product_key": 9,
-                      "customer_key": 55,
-                      "product_name": "Dana Syariah Ekuitas",
-                      "full_name": "Annafrid MP Nikijuluw",
+                      "product_name": "Smart Equity Fund",
+                      "full_name": "khair",
                       "cif": "202010000001",
-                      "sid": ""
+                      "sid": "IDD0612K0234572",
+                      "param_detail": "NTEsMjIsMjAyMC0wOS0wOSwyMDIwLTEyLTMw"
                     }
                   ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/customer/dropdown": {
+      "get": {
+        "description": "Get All Customer Dropdown",
+        "tags": [
+          "Admin Transaction Report"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_name",
+            "in": "query",
+            "description": "customer_name filter with operator like",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "customer_key": "13",
+                      "name": "201103000200 - BASUKI SETIONO"
+                    },
+                    {
+                      "customer_key": "14",
+                      "name": "201103001134 - LENNY TRIANA"
+                    },
+                    {
+                      "customer_key": "40",
+                      "name": "202010000001 - Aldy Yoga yuyu"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/report/transactionhistory/{param}": {
+      "get": {
+        "description": "Get Detail Customer Product",
+        "tags": [
+          "Admin Transaction Report"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "param",
+            "in": "path",
+            "description": "param get",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "data_transaksi": {
+                      "unit_holder": "202010000001",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "sid": "",
+                      "ifua_no": "",
+                      "nav_date_from": "01 September 2020",
+                      "nav_date_to": "30 December 2020",
+                      "product_name": "BBE - Dana Ekuitas"
+                    },
+                    "detail_transaksi": [
+                      {
+                        "transaction_key": 95,
+                        "trans_type_key": 1,
+                        "nav_date": "26 November 2020",
+                        "type_description": "Subscription",
+                        "nav_value": 2668.75,
+                        "unit": 18735.32,
+                        "gross_amount": 51500000,
+                        "fee_amount": 1500000,
+                        "net_amount": 50000000
+                      },
+                      {
+                        "transaction_key": 98,
+                        "trans_type_key": 2,
+                        "nav_date": "26 November 2020",
+                        "type_description": "Redemption",
+                        "nav_value": 2668.75,
+                        "unit": 2000,
+                        "gross_amount": 3000,
+                        "fee_amount": 1000,
+                        "net_amount": 2000
+                      },
+                      {
+                        "transaction_key": 115,
+                        "trans_type_key": 2,
+                        "nav_date": "01 December 2020",
+                        "type_description": "Redemption",
+                        "nav_value": 2623.94,
+                        "unit": 333.85,
+                        "gross_amount": 1341078,
+                        "fee_amount": 447026,
+                        "net_amount": 894052
+                      },
+                      {
+                        "transaction_key": 130,
+                        "trans_type_key": 2,
+                        "nav_date": "04 December 2020",
+                        "type_description": "Redemption",
+                        "nav_value": 2650.26,
+                        "unit": 10000,
+                        "gross_amount": 15000000,
+                        "fee_amount": 0,
+                        "net_amount": 15000000
+                      },
+                      {
+                        "transaction_key": 141,
+                        "trans_type_key": 3,
+                        "nav_date": "07 December 2020",
+                        "type_description": "Switch Out",
+                        "nav_value": 2687.26,
+                        "unit": 3125,
+                        "gross_amount": 5000000,
+                        "fee_amount": 0,
+                        "net_amount": 5000000
+                      },
+                      {
+                        "transaction_key": 162,
+                        "trans_type_key": 3,
+                        "nav_date": "10 December 2020",
+                        "type_description": "Switch Out",
+                        "nav_value": 2700,
+                        "unit": 1000,
+                        "gross_amount": 2700000,
+                        "fee_amount": 0,
+                        "net_amount": 2700000
+                      },
+                      {
+                        "transaction_key": 164,
+                        "trans_type_key": 2,
+                        "nav_date": "10 December 2020",
+                        "type_description": "Redemption",
+                        "nav_value": 2700,
+                        "unit": 2000,
+                        "gross_amount": 2000,
+                        "fee_amount": 0,
+                        "net_amount": 2000
+                      }
+                    ],
+                    "total_subscription": 50000000,
+                    "total_redemption": 23598052,
+                    "total_netsub": 26401948
+                  }
                 }
               }
             }
