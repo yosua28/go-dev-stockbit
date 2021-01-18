@@ -403,3 +403,318 @@ func GetDetailCustomerProduct(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetBankProductTransaction(c echo.Context) error {
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	//product_key
+	productKey := c.QueryParam("product_key")
+	if productKey == "" {
+		log.Error("Wrong input for parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+	productKeyCek, err := strconv.ParseUint(productKey, 10, 64)
+	if err == nil && productKeyCek > 0 {
+		params["t.product_key"] = productKey
+	} else {
+		log.Error("Wrong input for parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	//nav_date
+	navdate := c.QueryParam("nav_date")
+	if navdate == "" {
+		log.Error("Wrong input for parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+	params["t.nav_date"] = navdate
+
+	//trans_type
+	transtype := c.QueryParam("trans_type")
+	if transtype == "" {
+		log.Error("Wrong input for parameter: trans_type")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_type", "Missing required parameter: trans_type")
+	}
+	if (transtype == "1") || (transtype == "2") {
+		params["t.trans_type_key"] = transtype
+	} else {
+		log.Error("Wrong input for parameter: trans_type")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_type", "Missing required parameter: trans_type")
+	}
+
+	var bankTransaction []models.BankProductTransactionReport
+	status, err = models.AdminGetBankProductTransactionReport(&bankTransaction, params)
+
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	if len(bankTransaction) < 1 {
+		log.Error("Bank not found")
+		return lib.CustomError(http.StatusNotFound, "Bank not found", "Bank not found")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = bankTransaction
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetTransactionReportSubscribeDaily(c echo.Context) error {
+	return getResultReportDaily("1", c)
+}
+
+func GetTransactionReportRedemptionDaily(c echo.Context) error {
+	return getResultReportDaily("2", c)
+}
+
+func getResultReportDaily(trans_type string, c echo.Context) error {
+	var err error
+	decimal.MarshalJSONWithoutQuotes = true
+
+	params := make(map[string]string)
+
+	//product_key
+	productKey := c.QueryParam("product_key")
+	if productKey == "" {
+		log.Error("Wrong input for parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+	productKeyCek, err := strconv.ParseUint(productKey, 10, 64)
+	if err == nil && productKeyCek > 0 {
+		params["t.product_key"] = productKey
+	} else {
+		log.Error("Wrong input for parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	//nav_date
+	navdate := c.QueryParam("nav_date")
+	if navdate == "" {
+		log.Error("Wrong input for parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+	params["t.nav_date"] = navdate
+
+	//prod_bankacc_key
+	prodbankacckey := c.QueryParam("prod_bankacc_key")
+	if prodbankacckey == "" {
+		log.Error("Wrong input for parameter: prod_bankacc_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: prod_bankacc_key", "Missing required parameter: prod_bankacc_key")
+	}
+	prodbankacckeyCek, err := strconv.ParseUint(prodbankacckey, 10, 64)
+	if err == nil && prodbankacckeyCek > 0 {
+		params["ba.prod_bankacc_key"] = prodbankacckey
+	} else {
+		log.Error("Wrong input for parameter: prod_bankacc_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: prod_bankacc_key", "Missing required parameter: prod_bankacc_key")
+	}
+
+	params["t.trans_type_key"] = trans_type
+
+	//Get parameter limit
+	limitStr := c.QueryParam("limit")
+	var limit uint64
+	if limitStr != "" {
+		limit, err = strconv.ParseUint(limitStr, 10, 64)
+		if err == nil {
+			if (limit == 0) || (limit > config.LimitQuery) {
+				limit = config.LimitQuery
+			}
+		} else {
+			log.Error("Limit should be number")
+			return lib.CustomError(http.StatusBadRequest, "Limit should be number", "Limit should be number")
+		}
+	} else {
+		limit = config.LimitQuery
+	}
+	// Get parameter page
+	pageStr := c.QueryParam("page")
+	var page uint64
+	if pageStr != "" {
+		page, err = strconv.ParseUint(pageStr, 10, 64)
+		if err == nil {
+			if page == 0 {
+				page = 1
+			}
+		} else {
+			log.Error("Page should be number")
+			return lib.CustomError(http.StatusBadRequest, "Page should be number", "Page should be number")
+		}
+	} else {
+		page = 1
+	}
+	var offset uint64
+	if page > 1 {
+		offset = limit * (page - 1)
+	}
+
+	noLimitStr := c.QueryParam("nolimit")
+	var noLimit bool
+	if noLimitStr != "" {
+		noLimit, err = strconv.ParseBool(noLimitStr)
+		if err != nil {
+			log.Error("Nolimit parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "Nolimit parameter should be true/false", "Nolimit parameter should be true/false")
+		}
+	} else {
+		noLimit = false
+	}
+
+	items := []string{"transaction_key", "nav_date", "full_name"}
+	orderBy := c.QueryParam("order_by")
+	if orderBy != "" {
+		_, found := lib.Find(items, orderBy)
+		if found {
+
+			var orderByJoin string
+			orderByJoin = "t.transaction_key"
+			if orderBy == "transaction_key" {
+				orderByJoin = "t.transaction_key"
+			} else if orderBy == "nav_date" {
+				orderByJoin = "t.nav_date"
+			} else if orderBy == "full_name" {
+				orderByJoin = "c.full_name"
+			}
+
+			params["orderBy"] = orderByJoin
+			params["orderBy"] = orderBy
+			orderType := c.QueryParam("order_type")
+			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
+				params["orderType"] = orderType
+			}
+		} else {
+			log.Error("Wrong input for parameter order_by")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
+		}
+	} else {
+		params["orderBy"] = "t.transaction_key"
+		params["orderType"] = "ASC"
+	}
+
+	//get data header
+	var header models.HeaderDailySubsRedmBatchForm
+	_, err = models.AdminGetHeaderDailySubsRedmBatchForm(&header, params)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, "Failed get data", "Failed get data")
+		}
+	}
+
+	//get data list
+	var datas []models.DailySubsRedmBatchForm
+	_, err = models.AdminGetDailySubsRedmBatchForm(&datas, limit, offset, params, noLimit)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, "Failed get data", "Failed get data")
+		}
+	}
+
+	var totalUnits decimal.Decimal
+	var totalAmount decimal.Decimal
+	var totalFeeAmount decimal.Decimal
+	var totalNetSub decimal.Decimal
+
+	var responseData []models.ResponseDailySubsRedmBatchForm
+	for _, tr := range datas {
+
+		var trFormater models.ResponseDailySubsRedmBatchForm
+		trFormater.Sid = tr.Sid
+		trFormater.IfuaNo = tr.IfuaNo
+		trFormater.AccountNo = tr.AccountNo
+		trFormater.UnitHolderIDNo = tr.UnitHolderIDNo
+		trFormater.FullName = tr.FullName
+		trFormater.Amount = tr.Amount.Truncate(0)
+		trFormater.FeeAmount = tr.FeeAmount.Truncate(0)
+		trFormater.NettAmount = tr.NettAmount.Truncate(0)
+		trFormater.BankFullName = tr.BankFullName
+		trFormater.NoRekening = tr.NoRekening
+		trFormater.TypeDescription = tr.TypeDescription
+
+		if trans_type == "2" {
+			unit := tr.Unit.Truncate(2)
+			trFormater.Unit = &unit
+
+			note1 := "SWOT - 20 December 2020 - BDLC"
+			trFormater.Notes1 = &note1
+
+			note2 := "Unit : 200"
+			trFormater.Notes2 = &note2
+
+			note3 := "Amount : 1.000.000"
+			trFormater.Notes3 = &note3
+
+			if tr.PaymentDate != nil {
+				trFormater.PaymentDate = tr.PaymentDate
+			} else {
+				paymentdate := ""
+				trFormater.PaymentDate = &paymentdate
+			}
+
+		}
+
+		responseData = append(responseData, trFormater)
+
+		//count
+		totalAmount = totalAmount.Add(tr.Amount).Truncate(0)
+		totalFeeAmount = totalFeeAmount.Add(tr.FeeAmount).Truncate(0)
+		totalNetSub = totalNetSub.Add(tr.NettAmount).Truncate(0)
+
+		if trans_type == "2" { //REDM
+			totalUnits = totalUnits.Add(tr.Amount).Truncate(0)
+		}
+
+	}
+
+	//get count
+	var responseCount models.CountNominal
+	if trans_type == "2" {
+		responseCount.CountUnit = &totalUnits
+	}
+	responseCount.CountAmount = totalAmount
+	responseCount.CountFeeAmount = totalFeeAmount
+	responseCount.CountNettAmount = totalNetSub
+
+	var result models.ResponseDailySubscriptionBatchForm
+	result.Header = header
+	result.Data = &responseData
+	result.Count = responseCount
+
+	var countData models.CountData
+	var pagination int
+	if limit > 0 {
+		status, err := models.AdminCountDailySubsRedmBatchForm(&countData, params)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) < int(limit) {
+			pagination = 1
+		} else {
+			calc := math.Ceil(float64(countData.CountData) / float64(limit))
+			pagination = int(calc)
+		}
+	} else {
+		pagination = 1
+	}
+
+	var response lib.ResponseWithPagination
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Pagination = pagination
+	response.Data = result
+
+	return c.JSON(http.StatusOK, response)
+}

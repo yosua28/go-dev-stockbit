@@ -121,8 +121,8 @@ type TrTransactionList struct {
 	TransType      string          `json:"trans_type"`
 	NavDate        string          `json:"nav_date"`
 	NavValue       decimal.Decimal `json:"nav_value"`
-	TransAmount    decimal.Decimal `json:"trans_amount,omitemtpy"`
-	TransUnit      decimal.Decimal `json:"trans_unit,omitemtpy"`
+	TransAmount    decimal.Decimal `json:"trans_amount,omitempty"`
+	TransUnit      decimal.Decimal `json:"trans_unit,omitempty"`
 	TotalAmount    decimal.Decimal `json:"total_amount"`
 	Uploaded       bool            `json:"uploaded"`
 	DateUploaded   *string         `json:"date_uploaded"`
