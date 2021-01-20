@@ -66,6 +66,13 @@ type ResponseDailySubsRedmBatchForm struct {
 	Notes3          *string          `json:"notes_3,omitempty"`
 }
 
+type NotesRedemption struct {
+	Note1  *string         `db:"note1"           json:"note1"`
+	Unit   decimal.Decimal `db:"unit"            json:"unit"`
+	Amount decimal.Decimal `db:"amount"          json:"amount"`
+	Note3  *string         `db:"note3"           json:"note3"`
+}
+
 func AdminGetHeaderDailySubsRedmBatchForm(c *HeaderDailySubsRedmBatchForm, params map[string]string) (int, error) {
 	query := `SELECT 
 			p.product_name_alt AS product_name,
@@ -295,6 +302,58 @@ func AdminGetBankProductTransactionReport(c *[]BankProductTransactionReport, par
 	// Main query
 	log.Println(query)
 	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetNotesRedemption(c *NotesRedemption, customerKey string, productKey string, navDate string) (int, error) {
+	query := `SELECT 
+				CONCAT(ty.type_code,' - ', DATE_FORMAT(t.nav_date, '%d %M %Y'), ' - ', p.product_code) AS note1,
+				(CASE
+					WHEN t.trans_unit IS NULL OR t.trans_unit = 0 THEN 
+						(CASE
+							WHEN tc.tc_key IS NOT NULL THEN tc.confirmed_unit
+							ELSE 0
+						END)
+					ELSE t.trans_unit
+				END) AS unit,
+				(CASE
+					WHEN t.trans_amount IS NULL OR t.trans_amount = 0 THEN 
+						(CASE
+							WHEN tc.tc_key IS NOT NULL THEN tc.confirmed_amount
+							ELSE 0
+						END)
+					ELSE t.trans_amount
+				END) AS amount,
+				CONCAT('SettDate : ', DATE_FORMAT(t.settlement_date, '%d %M %Y')) AS note3 
+			FROM tr_transaction AS t 
+			LEFT JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
+			LEFT JOIN tr_transaction_type AS ty ON ty.trans_type_key = t.trans_type_key 
+			INNER JOIN ms_product AS p ON p.product_key = t.product_key
+			WHERE t.rec_status = 1 AND t.trans_type_key = 3 AND t.trans_status_key != 3 AND 
+			t.transaction_key = 
+			(
+				SELECT parent_key FROM tr_transaction 
+				WHERE rec_status = 1 
+				AND nav_date < '` + navDate + `' AND trans_type_key = 4 AND customer_key = '` + customerKey + `' AND product_key = '` + productKey + `' 
+				ORDER BY transaction_key DESC LIMIT 1
+			)
+			AND DATE_ADD(t.nav_date, INTERVAL 
+				(SELECT pr.settlement_period
+				FROM tr_transaction AS tr
+				INNER JOIN ms_product AS pr ON pr.product_key = tr.product_key
+				WHERE tr.rec_status = 1 AND tr.nav_date < '` + navDate + `' AND tr.trans_type_key = 4 
+				AND tr.customer_key = '` + customerKey + `' AND tr.product_key = '` + productKey + `' 
+				ORDER BY tr.transaction_key DESC LIMIT 1) DAY) > '` + navDate + `' 
+			ORDER BY t.transaction_key DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err

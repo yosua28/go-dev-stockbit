@@ -646,14 +646,18 @@ func getResultReportDaily(trans_type string, c echo.Context) error {
 			unit := tr.Unit.Truncate(2)
 			trFormater.Unit = &unit
 
-			note1 := "SWOT - 20 December 2020 - BDLC"
-			trFormater.Notes1 = &note1
+			var noteRedm models.NotesRedemption
+			_, err = models.AdminGetNotesRedemption(&noteRedm, tr.CustomerKey, tr.ProductKey, navdate)
+			if err == nil {
 
-			note2 := "Unit : 200"
-			trFormater.Notes2 = &note2
+				trFormater.Notes1 = noteRedm.Note1
 
-			note3 := "Amount : 1.000.000"
-			trFormater.Notes3 = &note3
+				note2 := "Unit : " + noteRedm.Unit.Truncate(2).String() + "  -  Amount : " + noteRedm.Amount.Truncate(2).String()
+				trFormater.Notes2 = &note2
+
+				trFormater.Notes3 = noteRedm.Note3
+
+			}
 
 			if tr.PaymentDate != nil {
 				trFormater.PaymentDate = tr.PaymentDate
