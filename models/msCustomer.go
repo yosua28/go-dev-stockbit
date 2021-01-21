@@ -680,17 +680,21 @@ func GetCustomerDropdown(c *[]CustomerDropdown, params map[string]string, params
 		}
 	}
 
+	query += condition
+	query += " GROUP BY c.customer_key"
+
 	// Check order by
 	var orderBy string
 	var orderType string
+	var conditionOrder string
 	if orderBy, present = params["orderBy"]; present == true {
-		condition += " ORDER BY " + orderBy
+		conditionOrder += " ORDER BY " + orderBy
 		if orderType, present = params["orderType"]; present == true {
-			condition += " " + orderType
+			conditionOrder += " " + orderType
 		}
 	}
 
-	query += condition
+	query += conditionOrder
 
 	// Main query
 	log.Println(query)
