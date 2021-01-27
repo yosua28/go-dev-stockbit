@@ -77,7 +77,7 @@ type NotesRedemption struct {
 
 func AdminGetHeaderDailySubsRedmBatchForm(c *HeaderDailySubsRedmBatchForm, params map[string]string) (int, error) {
 	query := `SELECT 
-			concat("` + config.BasePath + `", "/images/main/report_logo_mnc.jpg") AS logo,
+			concat("` + config.BasePath + `", "/images/mail/report_logo_mnc.jpg") AS logo,
 			p.product_name_alt AS product_name,
 			DATE_FORMAT(t.nav_date, '%d %M %Y') AS trade_date,
 			batch.batch_display_no AS reference_no,

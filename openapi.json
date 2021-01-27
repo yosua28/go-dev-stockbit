@@ -16902,7 +16902,7 @@
                   "pagination": 1,
                   "data": {
                     "header": {
-                      "logo": "/var/www/html/images/main/report_logo_mnc.jpg",
+                      "logo": "/var/www/html/images/mail/report_logo_mnc.jpg",
                       "product_name": "Dana Ekuitas",
                       "no_rek_product": "0206.01.002705.30.1",
                       "trade_date": "11 December 2020",
@@ -17078,7 +17078,7 @@
                   "pagination": 1,
                   "data": {
                     "header": {
-                      "logo": "/var/www/html/images/main/report_logo_mnc.jpg",
+                      "logo": "/var/www/html/images/mail/report_logo_mnc.jpg",
                       "product_name": "Dana Ekuitas",
                       "no_rek_product": "0206.01.002706.30.7",
                       "trade_date": "11 December 2020",
