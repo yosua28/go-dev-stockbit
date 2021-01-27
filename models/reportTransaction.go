@@ -1,6 +1,7 @@
 package models
 
 import (
+	"api/config"
 	"api/db"
 	"net/http"
 	"strconv"
@@ -16,6 +17,7 @@ type ResponseDailySubscriptionBatchForm struct {
 }
 
 type HeaderDailySubsRedmBatchForm struct {
+	Logo            string `db:"logo"                json:"logo"`
 	ProductName     string `db:"product_name"        json:"product_name"`
 	NoRekProduct    string `db:"no_rek_product"      json:"no_rek_product"`
 	TradeDate       string `db:"trade_date"          json:"trade_date"`
@@ -75,6 +77,7 @@ type NotesRedemption struct {
 
 func AdminGetHeaderDailySubsRedmBatchForm(c *HeaderDailySubsRedmBatchForm, params map[string]string) (int, error) {
 	query := `SELECT 
+			concat("` + config.BasePath + `", "/images/main/report_logo_mnc.jpg") AS logo,
 			p.product_name_alt AS product_name,
 			DATE_FORMAT(t.nav_date, '%d %M %Y') AS trade_date,
 			batch.batch_display_no AS reference_no,
