@@ -7,7 +7,7 @@ import (
 	"github.com/maddevsio/fcm"
 )
 
-func CreateNotification(token string) {
+func CreateNotification(token string, title string, body string) {
 	data := map[string]string{
 		"msg": "Hello World1",
 		"sum": "Happy Day",
@@ -18,22 +18,29 @@ func CreateNotification(token string) {
 	c := fcm.NewFCM(serverKey)
 	response, err := c.Send(fcm.Message{
 		Data:             data,
-		RegistrationIDs:  []string{token},
+		RegistrationIDs:  []string{"/topics/dev-all"},
 		ContentAvailable: true,
 		Priority:         fcm.PriorityHigh,
 		Notification: fcm.Notification{
-			Title: "Hello",
-			Body:  "World",
+			Title: title,
+			Body:  body,
 			Sound: "default",
 			Badge: "3",
 		},
 	})
 	if err != nil {
+		log.Println("------------------")
 		log.Println(err)
+		log.Println("------------------")
 	}
+	log.Println("------------------")
+	log.Println(err)
+	log.Println(response)
+	log.Println("------------------")
 	fmt.Println("Status Code   :", response.StatusCode)
 	fmt.Println("Success       :", response.Success)
 	fmt.Println("Fail          :", response.Fail)
 	fmt.Println("Canonical_ids :", response.CanonicalIDs)
 	fmt.Println("Topic MsgId   :", response.MsgID)
+	fmt.Println("Topic Error   :", response.RetryAfter)
 }

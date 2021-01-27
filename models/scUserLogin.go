@@ -2,6 +2,7 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"net/http"
 	"strconv"
 	"strings"
@@ -600,4 +601,37 @@ func GetAllScUserLoginByNameOrEmail(c *[]ScUserLogin, limit uint64, offset uint6
 	}
 
 	return http.StatusOK, nil
+}
+
+func CreateScUserLoginReturnKey(params map[string]string) (int, error, string) {
+	query := "INSERT INTO sc_user_login"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err, "0"
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err, "0"
+	}
+	lastID, _ := ret.LastInsertId()
+	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }

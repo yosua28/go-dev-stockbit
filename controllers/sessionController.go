@@ -7,7 +7,6 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"crypto/tls"
-	"database/sql"
 	_ "encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -723,11 +722,11 @@ func ForgotPassword(c echo.Context) error {
 	var status int
 
 	//cek token notif
-	hahatest := c.FormValue("token")
-	log.Println("token notif : " + hahatest)
-	if hahatest != "" {
-		CreateNotification(hahatest)
-	}
+	// hahatest := c.FormValue("token")
+	// log.Println("token notif : " + hahatest)
+	// if hahatest != "" {
+	// 	CreateNotification(hahatest)
+	// }
 
 	// Check parameters
 	email := c.FormValue("email")
@@ -1099,46 +1098,47 @@ func ChangePassword(c echo.Context) error {
 	}
 
 	var customer models.MsCustomer
-	strCustomerKey := strconv.FormatUint(*accountData.CustomerKey, 10)
-	status, err = models.GetMsCustomer(&customer, strCustomerKey)
-	if err == nil {
-		var tpl bytes.Buffer
-		if err := t.Execute(&tpl,
-			struct {
-				Name    string
-				FileUrl string
-			}{
-				Name:    customer.FullName,
-				FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-			log.Println(err)
-		}
 
-		result := tpl.String()
+	fullnameuser := accountData.UloginFullName
 
-		mailer := gomail.NewMessage()
-		mailer.SetHeader("From", config.EmailFrom)
-		mailer.SetHeader("To", accountData.UloginEmail)
-		mailer.SetHeader("Subject", "[MNC Duit] Berhasil Merubah Kata Sandi")
-		mailer.SetBody("text/html", result)
-		dialer := gomail.NewDialer(
-			config.EmailSMTPHost,
-			int(config.EmailSMTPPort),
-			config.EmailFrom,
-			config.EmailFromPassword,
-		)
-		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-		err = dialer.DialAndSend(mailer)
-		if err != nil {
-			log.Error(err)
-		}
-		log.Info("Email sent")
-	} else {
-		if err != sql.ErrNoRows {
-			log.Error(err.Error())
-			return lib.CustomError(status, err.Error(), "Failed get data")
+	if accountData.CustomerKey != nil {
+		strCustomerKey := strconv.FormatUint(*accountData.CustomerKey, 10)
+		status, err = models.GetMsCustomer(&customer, strCustomerKey)
+		if err == nil {
+			fullnameuser = customer.FullName
 		}
 	}
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl,
+		struct {
+			Name    string
+			FileUrl string
+		}{
+			Name:    fullnameuser,
+			FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", accountData.UloginEmail)
+	mailer.SetHeader("Subject", "[MNC Duit] Berhasil Merubah Kata Sandi")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+	}
+	log.Info("Email sent")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

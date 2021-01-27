@@ -16704,7 +16704,7 @@
             "name": "product_key",
             "in": "query",
             "description": "product_key filter",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "number"
             }
@@ -16723,7 +16723,7 @@
             "name": "trans_type",
             "in": "query",
             "description": "trans_type filter, (1 for Subscripe. 2 for Redemption)",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "number",
               "enum": [
@@ -16809,7 +16809,7 @@
             "name": "product_key",
             "in": "query",
             "description": "product_key filter",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "number"
             }
@@ -16828,7 +16828,7 @@
             "name": "prod_bankacc_key",
             "in": "query",
             "description": "prod_bankacc_key filter",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "number"
             }
@@ -16984,7 +16984,7 @@
             "name": "product_key",
             "in": "query",
             "description": "product_key filter",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "number"
             }
@@ -17003,7 +17003,7 @@
             "name": "prod_bankacc_key",
             "in": "query",
             "description": "prod_bankacc_key filter",
-            "required": false,
+            "required": true,
             "schema": {
               "type": "number"
             }
@@ -17143,6 +17143,261 @@
             "content": {
               "text/plain": {
                 "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/customer/create": {
+      "post": {
+        "description": "Create Customer Individu",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "password": {
+                    "type": "string"
+                  },
+                  "conf_password": {
+                    "type": "string"
+                  },
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "nationality": {
+                    "type": "integer"
+                  },
+                  "idcard_no": {
+                    "type": "string"
+                  },
+                  "gender": {
+                    "type": "integer"
+                  },
+                  "place_birth": {
+                    "type": "string"
+                  },
+                  "date_birth": {
+                    "type": "string",
+                    "example": "2017-10-30"
+                  },
+                  "marital_status": {
+                    "type": "integer"
+                  },
+                  "address_id": {
+                    "type": "string"
+                  },
+                  "kabupaten_id": {
+                    "type": "integer"
+                  },
+                  "kecamatan_id": {
+                    "type": "integer"
+                  },
+                  "postal_id": {
+                    "type": "string"
+                  },
+                  "address_domicile": {
+                    "type": "string"
+                  },
+                  "kabupaten_domicile": {
+                    "type": "integer"
+                  },
+                  "kecamatan_domicile": {
+                    "type": "integer"
+                  },
+                  "postal_domicile": {
+                    "type": "string"
+                  },
+                  "phone_home": {
+                    "type": "string"
+                  },
+                  "religion": {
+                    "type": "integer"
+                  },
+                  "education": {
+                    "type": "integer"
+                  },
+                  "pic_ktp": {
+                    "type": "file"
+                  },
+                  "pic_selfie_ktp": {
+                    "type": "file"
+                  },
+                  "job": {
+                    "type": "integer"
+                  },
+                  "company": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "integer"
+                  },
+                  "company_address": {
+                    "type": "string"
+                  },
+                  "business_field": {
+                    "type": "integer"
+                  },
+                  "annual_income": {
+                    "type": "integer"
+                  },
+                  "fund_source": {
+                    "type": "integer"
+                  },
+                  "objectives": {
+                    "type": "integer"
+                  },
+                  "corespondence": {
+                    "type": "integer"
+                  },
+                  "mother_maiden_name": {
+                    "type": "string"
+                  },
+                  "relation_name": {
+                    "type": "string"
+                  },
+                  "relation_occupation": {
+                    "type": "integer"
+                  },
+                  "relation_business_field": {
+                    "type": "integer"
+                  },
+                  "emergency_name": {
+                    "type": "string"
+                  },
+                  "emergency_relation": {
+                    "type": "integer"
+                  },
+                  "emergency_phone": {
+                    "type": "string"
+                  },
+                  "beneficial_relation": {
+                    "type": "integer"
+                  },
+                  "beneficial_name": {
+                    "type": "string"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  },
+                  "quiz_option": {
+                    "type": "string",
+                    "example": "10,13,15,29,22,24"
+                  }
+                },
+                "required": [
+                  "email",
+                  "phone",
+                  "password",
+                  "conf_password",
+                  "full_name",
+                  "nationality",
+                  "idcard_no",
+                  "gender",
+                  "place_birth",
+                  "date_birth",
+                  "marital_status",
+                  "address_id",
+                  "kabupaten_id",
+                  "kecamatan_id",
+                  "postal_id",
+                  "address_domicile",
+                  "kabupaten_domicile",
+                  "kecamatan_domicile",
+                  "postal_domicile",
+                  "phone_home",
+                  "religion",
+                  "education",
+                  "pic_ktp",
+                  "pic_selfie_ktp",
+                  "job",
+                  "company",
+                  "position",
+                  "company_address",
+                  "business_field",
+                  "annual_income",
+                  "fund_source",
+                  "objectives",
+                  "corespondence",
+                  "mother_maiden_name",
+                  "relation_name",
+                  "relation_occupation",
+                  "relation_business_field",
+                  "emergency_name",
+                  "emergency_relation",
+                  "emergency_phone",
+                  "beneficial_relation",
+                  "beneficial_name",
+                  "bank_key",
+                  "account_no",
+                  "account_name",
+                  "branch_name",
+                  "quiz_option"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "risk_profile_key": 0,
+                    "risk_code": "Tinggi",
+                    "risk_name": "Agresif",
+                    "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
+                    "score": 70
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
               }
             }
           }
