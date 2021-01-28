@@ -291,6 +291,52 @@ func GetOaRequestList(c echo.Context) error {
 }
 
 func GetOaRequestData(c echo.Context) error {
+	keyStr := c.Param("key")
+	return ResultOaRequestData(keyStr, c, false)
+}
+
+func GetLastHistoryOaRequestData(c echo.Context) error {
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oareq models.OaRequest
+	status, err := models.GetOaRequest(&oareq, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var lastKeyStr string
+
+	if oareq.OaRequestType == nil {
+		log.Error("OA Request Type Null")
+		return lib.CustomError(http.StatusBadRequest)
+	} else if *oareq.OaRequestType == 127 { //NEW error tidak ada history
+		log.Error("OA Request Type NEW harusnya UPDATE")
+		return lib.CustomError(http.StatusBadRequest)
+	} else if *oareq.OaRequestType == 128 {
+		if oareq.CustomerKey == nil { //Error jika belum jadi customer
+			return lib.CustomError(http.StatusBadRequest)
+		}
+		var lastHistoryOareq models.OaRequestKeyLastHistory
+		customerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+		status, err := models.AdminGetLastHistoryOaRequest(&lastHistoryOareq, customerKey, keyStr)
+		if err != nil {
+			return lib.CustomError(status)
+		}
+		lastKeyStr = strconv.FormatUint(lastHistoryOareq.OaRequestKey, 10)
+	}
+
+	if lastKeyStr == "" {
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	return ResultOaRequestData(lastKeyStr, c, true)
+}
+
+func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 	errorAuth := initAuthCsKycFundAdmin()
 	if errorAuth != nil {
 		log.Error("User Autorizer")
@@ -300,7 +346,7 @@ func GetOaRequestData(c echo.Context) error {
 	var status int
 	decimal.MarshalJSONWithoutQuotes = true
 	//Get parameter limit
-	keyStr := c.Param("key")
+	// keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
 	if key == 0 {
 		return lib.CustomError(http.StatusNotFound)
@@ -324,27 +370,33 @@ func GetOaRequestData(c echo.Context) error {
 	strOaKey := strconv.FormatUint(*oareq.Oastatus, 10)
 
 	if lib.Profile.RoleKey == roleKeyCs {
-		oaStatusCs := strconv.FormatUint(uint64(258), 10)
-		if strOaKey != oaStatusCs {
-			log.Error("User Autorizer")
-			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		if isHistory == false {
+			oaStatusCs := strconv.FormatUint(uint64(258), 10)
+			if strOaKey != oaStatusCs {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
 		}
 	}
 
 	if lib.Profile.RoleKey == roleKeyKyc {
-		oaStatusKyc := strconv.FormatUint(uint64(259), 10)
-		if strOaKey != oaStatusKyc {
-			log.Error("User Autorizer")
-			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		if isHistory == false {
+			oaStatusKyc := strconv.FormatUint(uint64(259), 10)
+			if strOaKey != oaStatusKyc {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
 		}
 	}
 
 	if lib.Profile.RoleKey == roleKeyFundAdmin {
-		oaStatusFundAdmin1 := strconv.FormatUint(uint64(260), 10)
-		oaStatusFundAdmin2 := strconv.FormatUint(uint64(261), 10)
-		if (strOaKey != oaStatusFundAdmin1) && (strOaKey != oaStatusFundAdmin2) {
-			log.Error("User Autorizer")
-			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		if isHistory == false {
+			oaStatusFundAdmin1 := strconv.FormatUint(uint64(260), 10)
+			oaStatusFundAdmin2 := strconv.FormatUint(uint64(261), 10)
+			if (strOaKey != oaStatusFundAdmin1) && (strOaKey != oaStatusFundAdmin2) {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
 		}
 	}
 
@@ -692,11 +744,16 @@ func GetOaRequestData(c echo.Context) error {
 					for _, city := range cityList {
 						cityData[city.CityKey] = city
 					}
-					if c, ok := cityData[*p.KabupatenKey]; ok {
-						responseData.IDcardAddress.Kabupaten = &c.CityName
+					if p.KabupatenKey != nil {
+						if c, ok := cityData[*p.KabupatenKey]; ok {
+							responseData.IDcardAddress.Kabupaten = &c.CityName
+						}
 					}
-					if c, ok := cityData[*p.KecamatanKey]; ok {
-						responseData.IDcardAddress.Kecamatan = &c.CityName
+
+					if p.KecamatanKey != nil {
+						if c, ok := cityData[*p.KecamatanKey]; ok {
+							responseData.IDcardAddress.Kecamatan = &c.CityName
+						}
 					}
 				}
 			}

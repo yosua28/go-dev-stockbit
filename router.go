@@ -105,6 +105,7 @@ func router() *echo.Echo {
 	admin.GET("/oarequestlist/dotransaction", controllers.GetOaRequestListDoTransaction).Name = "GetOaRequestListDoTransaction"
 	admin.GET("/downloadformatsinvest", controllers.DownloadOaRequestFormatSinvest).Name = "DownloadOaRequestFormatSinvest"
 	admin.POST("/uploadformatsinvest", controllers.UploadOaRequestFormatSinvest).Name = "UploadOaRequestFormatSinvest"
+	admin.GET("/oarequestdata/lasthistory/:key", controllers.GetLastHistoryOaRequestData).Name = "GetLastHistoryOaRequestData"
 
 	//Admin Post
 	admin.GET("/posts", controllers.GetAdminCmsPostList).Name = "GetAdminCmsPostList"

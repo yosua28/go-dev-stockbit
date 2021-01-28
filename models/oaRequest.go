@@ -755,3 +755,26 @@ func AdminGetAllOaByCustomerKey(c *[]OaCustomer, customerKey string) (int, error
 
 	return http.StatusOK, nil
 }
+
+type OaRequestKeyLastHistory struct {
+	OaRequestKey uint64 `db:"oa_request_key"             json:"oa_request_key"`
+}
+
+func AdminGetLastHistoryOaRequest(c *OaRequestKeyLastHistory, customerKey string, oaRequestNew string) (int, error) {
+	query := `SELECT 
+			 o.oa_request_key as oa_request_key  
+			FROM oa_request AS o
+			WHERE o.rec_status = 1 AND o.customer_key = ` + customerKey + ` 
+			AND o.rec_order IS NOT NULL AND o.oa_request_key < ` + oaRequestNew + `
+			ORDER BY rec_order DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
