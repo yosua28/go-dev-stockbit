@@ -39,6 +39,10 @@ type MsCustomerBankAccountInfo struct {
 	BranchName     *string `db:"branch_name"           json:"branch_name"`
 }
 
+type CheckBankAccountPengkinianData struct {
+	CustBankaccKey uint64 `db:"cust_bankacc_key"      json:"cust_bankacc_key"`
+}
+
 func CreateMsCustomerBankAccount(params map[string]string) (int, error) {
 	query := "INSERT INTO ms_customer_bank_account"
 	// Get params
@@ -154,6 +158,27 @@ func GetAllMsCustomerBankAccount(c *[]MsCustomerBankAccount, params map[string]s
 	// Main query
 	log.Println(query)
 	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CheckMsBankAccountPengkinianData(c *CheckBankAccountPengkinianData, customerKey string, bankAccNew string, bankKey string,
+	noRek string, nameRek string) (int, error) {
+	query := `SELECT 
+				cba.cust_bankacc_key 
+			FROM ms_customer_bank_account AS cba 
+			INNER JOIN ms_bank_account AS ba ON ba.bank_account_key = cba.bank_account_key
+			WHERE cba.customer_key = ` + customerKey + ` AND cba.bank_account_key != ` + bankAccNew + `
+			AND ba.bank_key = ` + bankKey + ` AND ba.account_no = '` + noRek + `' AND ba.account_holder_name = '` + nameRek + `' 
+			limit 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err

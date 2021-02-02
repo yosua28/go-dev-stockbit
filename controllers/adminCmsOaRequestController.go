@@ -1331,6 +1331,23 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 
 	tx, err := db.Db.Begin()
 
+	//cek rec order
+	if oareq.CustomerKey == nil {
+		params["rec_order"] = "0"
+	} else {
+		params["rec_order"] = "0"
+
+		var lastHistoryOareq models.OaRequestKeyLastHistory
+		customerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+		_, err := models.AdminGetLastHistoryOaRequest(&lastHistoryOareq, customerKey, oarequestkey)
+		if err == nil {
+			if lastHistoryOareq.RecOrder != nil {
+				lastOrder := *lastHistoryOareq.RecOrder + 1
+				params["rec_order"] = strconv.FormatUint(lastOrder, 10)
+			}
+		}
+	}
+
 	//update oa request
 	_, err = models.UpdateOaRequest(params)
 	if err != nil {
@@ -1341,8 +1358,6 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	log.Info("Success update approved Compliance Transaction")
 
 	if oastatus == "260" {
-
-		//create customer
 		var oapersonal models.OaPersonalData
 		strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
 		status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
@@ -1352,227 +1367,295 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			return lib.CustomError(status, err.Error(), "Personal data not found")
 		}
 
-		paramsCustomer := make(map[string]string)
-		paramsCustomer["id_customer"] = "0"
+		if oareq.CustomerKey == nil { //NEW OA
+			//create customer
 
-		year, month, _ := time.Now().Date()
+			paramsCustomer := make(map[string]string)
+			paramsCustomer["id_customer"] = "0"
 
-		var customer models.MsCustomer
-		tahun := strconv.FormatUint(uint64(year), 10)
-		bulan := strconv.FormatUint(uint64(month), 10)
-		unitHolderLike := tahun + bulan
-		status, err = models.GetLastUnitHolder(&customer, unitHolderLike)
-		if err != nil {
-			paramsCustomer["unit_holder_idno"] = unitHolderLike + "000001"
-		} else {
-			dgt := customer.UnitHolderIDno[len(customer.UnitHolderIDno)-6:]
-			productKeyCek, _ := strconv.ParseUint(dgt, 10, 64)
-			hasil := strconv.FormatUint(productKeyCek+1, 10)
-			if len(hasil) == 1 {
-				hasil = "00000" + hasil
-			} else if len(hasil) == 2 {
-				hasil = "0000" + hasil
-			} else if len(hasil) == 3 {
-				hasil = "000" + hasil
-			} else if len(hasil) == 4 {
-				hasil = "00" + hasil
-			} else if len(hasil) == 5 {
-				hasil = "0" + hasil
+			year, month, _ := time.Now().Date()
+
+			var customer models.MsCustomer
+			tahun := strconv.FormatUint(uint64(year), 10)
+			bulan := strconv.FormatUint(uint64(month), 10)
+			unitHolderLike := tahun + bulan
+			status, err = models.GetLastUnitHolder(&customer, unitHolderLike)
+			if err != nil {
+				paramsCustomer["unit_holder_idno"] = unitHolderLike + "000001"
+			} else {
+				dgt := customer.UnitHolderIDno[len(customer.UnitHolderIDno)-6:]
+				productKeyCek, _ := strconv.ParseUint(dgt, 10, 64)
+				hasil := strconv.FormatUint(productKeyCek+1, 10)
+				if len(hasil) == 1 {
+					hasil = "00000" + hasil
+				} else if len(hasil) == 2 {
+					hasil = "0000" + hasil
+				} else if len(hasil) == 3 {
+					hasil = "000" + hasil
+				} else if len(hasil) == 4 {
+					hasil = "00" + hasil
+				} else if len(hasil) == 5 {
+					hasil = "0" + hasil
+				}
+
+				resultData := unitHolderLike + hasil
+				paramsCustomer["unit_holder_idno"] = resultData
 			}
 
-			resultData := unitHolderLike + hasil
-			paramsCustomer["unit_holder_idno"] = resultData
-		}
+			paramsCustomer["full_name"] = oapersonal.FullName
+			paramsCustomer["investor_type"] = "263"
+			paramsCustomer["customer_category"] = "265"
+			paramsCustomer["cif_suspend_flag"] = "0"
+			paramsCustomer["openacc_branch_key"] = "1"
+			paramsCustomer["openacc_agent_key"] = "1"
+			paramsCustomer["openacc_date"] = time.Now().Format(dateLayout)
+			paramsCustomer["flag_employee"] = "0"
+			paramsCustomer["flag_group"] = "0"
+			paramsCustomer["merging_flag"] = "0"
+			paramsCustomer["rec_status"] = "1"
+			paramsCustomer["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsCustomer["rec_created_by"] = strKey
 
-		paramsCustomer["full_name"] = oapersonal.FullName
-		paramsCustomer["investor_type"] = "263"
-		paramsCustomer["customer_category"] = "265"
-		paramsCustomer["cif_suspend_flag"] = "0"
-		paramsCustomer["openacc_branch_key"] = "1"
-		paramsCustomer["openacc_agent_key"] = "1"
-		paramsCustomer["openacc_date"] = time.Now().Format(dateLayout)
-		paramsCustomer["flag_employee"] = "0"
-		paramsCustomer["flag_group"] = "0"
-		paramsCustomer["merging_flag"] = "0"
-		paramsCustomer["rec_status"] = "1"
-		paramsCustomer["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsCustomer["rec_created_by"] = strKey
+			sliceName := strings.Fields(oapersonal.FullName)
 
-		sliceName := strings.Fields(oapersonal.FullName)
-
-		if len(sliceName) > 0 {
-			paramsCustomer["first_name"] = sliceName[0]
-			if len(sliceName) > 1 {
-				paramsCustomer["middle_name"] = sliceName[1]
-				if len(sliceName) > 2 {
-					lastName := strings.Join(sliceName[2:len(sliceName)], " ")
-					paramsCustomer["last_name"] = lastName
+			if len(sliceName) > 0 {
+				paramsCustomer["first_name"] = sliceName[0]
+				if len(sliceName) > 1 {
+					paramsCustomer["middle_name"] = sliceName[1]
+					if len(sliceName) > 2 {
+						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
+						paramsCustomer["last_name"] = lastName
+					}
 				}
 			}
-		}
 
-		strNationality := strconv.FormatUint(oapersonal.Nationality, 10)
-		if strNationality == "97" {
-			paramsCustomer["fatca_status"] = "278"
-		} else if strNationality == "225" {
-			paramsCustomer["fatca_status"] = "279"
-		} else {
-			paramsCustomer["fatca_status"] = "280"
-		}
+			strNationality := strconv.FormatUint(oapersonal.Nationality, 10)
+			if strNationality == "97" {
+				paramsCustomer["fatca_status"] = "278"
+			} else if strNationality == "225" {
+				paramsCustomer["fatca_status"] = "279"
+			} else {
+				paramsCustomer["fatca_status"] = "280"
+			}
 
-		status, err, requestID := models.CreateMsCustomer(paramsCustomer)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error create customer")
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
-		request, err := strconv.ParseUint(requestID, 10, 64)
-		if request == 0 {
-			tx.Rollback()
-			log.Error("Failed create customer")
-			return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
-		}
+			status, err, requestID := models.CreateMsCustomer(paramsCustomer)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error create customer")
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
+			request, err := strconv.ParseUint(requestID, 10, 64)
+			if request == 0 {
+				tx.Rollback()
+				log.Error("Failed create customer")
+				return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+			}
 
-		paramOaUpdate := make(map[string]string)
-		paramOaUpdate["customer_key"] = requestID
-		paramOaUpdate["oa_request_key"] = oarequestkey
+			paramOaUpdate := make(map[string]string)
+			paramOaUpdate["customer_key"] = requestID
+			paramOaUpdate["oa_request_key"] = oarequestkey
 
-		_, err = models.UpdateOaRequest(paramOaUpdate)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error update oa request")
-			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
-		}
+			_, err = models.UpdateOaRequest(paramOaUpdate)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error update oa request")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
 
-		//create user message
-		paramsUserMessage := make(map[string]string)
-		paramsUserMessage["umessage_type"] = "245"
-		if oareq.UserLoginKey != nil {
-			strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
-			paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
-		} else {
-			paramsUserMessage["umessage_recipient_key"] = "0"
-		}
-		paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["flag_read"] = "0"
-		paramsUserMessage["umessage_sender_key"] = strKey
-		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["flag_sent"] = "1"
-		paramsUserMessage["umessage_subject"] = "Selamat! Pembukaan Rekening telah Disetujui"
-		paramsUserMessage["umessage_body"] = "Saat ini akun kamu sudah aktif dan bisa melakukan transaksi. Yuk mulai investasi sekarang juga."
-		paramsUserMessage["umessage_category"] = "248"
-		paramsUserMessage["flag_archieved"] = "0"
-		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["rec_status"] = "1"
-		paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["rec_created_by"] = strKey
+			//create user message
+			paramsUserMessage := make(map[string]string)
+			paramsUserMessage["umessage_type"] = "245"
+			if oareq.UserLoginKey != nil {
+				strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
+				paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+			} else {
+				paramsUserMessage["umessage_recipient_key"] = "0"
+			}
+			paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_read"] = "0"
+			paramsUserMessage["umessage_sender_key"] = strKey
+			paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_sent"] = "1"
+			paramsUserMessage["umessage_subject"] = "Selamat! Pembukaan Rekening telah Disetujui"
+			paramsUserMessage["umessage_body"] = "Saat ini akun kamu sudah aktif dan bisa melakukan transaksi. Yuk mulai investasi sekarang juga."
+			paramsUserMessage["umessage_category"] = "248"
+			paramsUserMessage["flag_archieved"] = "0"
+			paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_status"] = "1"
+			paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_created_by"] = strKey
 
-		status, err = models.CreateScUserMessage(paramsUserMessage)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error create user message")
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
+			status, err = models.CreateScUserMessage(paramsUserMessage)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error create user message")
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
 
-		//update sc user login
-		paramsUserLogin := make(map[string]string)
-		paramsUserLogin["customer_key"] = requestID
-		paramsUserLogin["rec_modified_date"] = time.Now().Format(dateLayout)
-		paramsUserLogin["rec_modified_by"] = strKey
-		paramsUserLogin["role_key"] = "1"
-		strUserLoginKeyOa := strconv.FormatUint(*oareq.UserLoginKey, 10)
-		paramsUserLogin["user_login_key"] = strUserLoginKeyOa
-		_, err = models.UpdateScUserLogin(paramsUserLogin)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error update oa request")
-			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
-		}
+			//update sc user login
+			paramsUserLogin := make(map[string]string)
+			paramsUserLogin["customer_key"] = requestID
+			paramsUserLogin["rec_modified_date"] = time.Now().Format(dateLayout)
+			paramsUserLogin["rec_modified_by"] = strKey
+			paramsUserLogin["role_key"] = "1"
+			strUserLoginKeyOa := strconv.FormatUint(*oareq.UserLoginKey, 10)
+			paramsUserLogin["user_login_key"] = strUserLoginKeyOa
+			_, err = models.UpdateScUserLogin(paramsUserLogin)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error update oa request")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
 
-		//create agent customer
-		paramsAgentCustomer := make(map[string]string)
-		paramsAgentCustomer["customer_key"] = requestID
-		paramsAgentCustomer["agent_key"] = "1"
-		paramsAgentCustomer["rec_status"] = "1"
-		paramsAgentCustomer["eff_date"] = time.Now().Format(dateLayout)
-		paramsAgentCustomer["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsAgentCustomer["rec_created_by"] = strKey
-		status, err = models.CreateMsAgentCustomer(paramsAgentCustomer)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error create agent customer")
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
+			//create agent customer
+			paramsAgentCustomer := make(map[string]string)
+			paramsAgentCustomer["customer_key"] = requestID
+			paramsAgentCustomer["agent_key"] = "1"
+			paramsAgentCustomer["rec_status"] = "1"
+			paramsAgentCustomer["eff_date"] = time.Now().Format(dateLayout)
+			paramsAgentCustomer["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsAgentCustomer["rec_created_by"] = strKey
+			status, err = models.CreateMsAgentCustomer(paramsAgentCustomer)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error create agent customer")
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
 
-		tx.Commit()
+			tx.Commit()
 
-		log.Info("Success create customer")
+			log.Info("Success create customer")
 
-		//send email to customer
-		var userData models.ScUserLogin
-		status, err = models.GetScUserLoginByCustomerKey(&userData, requestID)
-		if err == nil {
-			sendEmailApproveOa(oapersonal.FullName, userData.UloginEmail)
-		}
+			//send email to customer
+			var userData models.ScUserLogin
+			status, err = models.GetScUserLoginByCustomerKey(&userData, requestID)
+			if err == nil {
+				sendEmailApproveOa(oapersonal.FullName, userData.UloginEmail)
+			}
 
-		// send email to fund admin
-		paramsScLogin := make(map[string]string)
-		paramsScLogin["role_key"] = "13"
-		paramsScLogin["rec_status"] = "1"
-		var userLogin []models.ScUserLogin
-		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
-		if err != nil {
-			log.Error("Error get email")
-			log.Error(err)
-		}
+			// send email to fund admin
+			paramsScLogin := make(map[string]string)
+			paramsScLogin["role_key"] = "13"
+			paramsScLogin["rec_status"] = "1"
+			var userLogin []models.ScUserLogin
+			_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+			if err != nil {
+				log.Error("Error get email")
+				log.Error(err)
+			}
 
-		for _, scLogin := range userLogin {
-			strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-			if (strUserCat == "2") || (strUserCat == "3") {
-				mailer := gomail.NewMessage()
-				mailer.SetHeader("From", config.EmailFrom)
-				mailer.SetHeader("To", scLogin.UloginEmail)
-				mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
-				mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-				dialer := gomail.NewDialer(
-					config.EmailSMTPHost,
-					int(config.EmailSMTPPort),
-					config.EmailFrom,
-					config.EmailFromPassword,
-				)
-				dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
+					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-				err = dialer.DialAndSend(mailer)
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
+				}
+			}
+			// end send email to fund admin
+
+			// insert into table ms_customer_bank_account
+			paramsCusBankAcc := make(map[string]string)
+			strBankAccKey := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
+			paramsCusBankAcc["customer_key"] = requestID
+			paramsCusBankAcc["bank_account_key"] = strBankAccKey
+			//get ms abank account
+			var bankaccount models.MsBankAccount
+			status, err = models.GetBankAccount(&bankaccount, strBankAccKey)
+			if err == nil {
+				paramsCusBankAcc["bank_account_name"] = bankaccount.AccountHolderName
+			}
+			paramsCusBankAcc["flag_priority"] = "1"
+			paramsCusBankAcc["rec_status"] = "1"
+			paramsCusBankAcc["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsCusBankAcc["rec_created_by"] = strKey
+			status, err = models.CreateMsCustomerBankAccount(paramsCusBankAcc)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error create ms_customer_bank_account")
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
+			//end insert into table ms_customer_bank_account
+		} else { //create user message
+			paramsUserMessage := make(map[string]string)
+			paramsUserMessage["umessage_type"] = "245"
+			if oareq.UserLoginKey != nil {
+				strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
+				paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+			} else {
+				paramsUserMessage["umessage_recipient_key"] = "0"
+			}
+			paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_read"] = "0"
+			paramsUserMessage["umessage_sender_key"] = strKey
+			paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_sent"] = "1"
+			paramsUserMessage["umessage_subject"] = "Selamat! Pengkinian Data telah Disetujui"
+			paramsUserMessage["umessage_body"] = "Saat ini pengkinian data kamu sudah disetujui. Yuk investasi sekarang juga."
+			paramsUserMessage["umessage_category"] = "248"
+			paramsUserMessage["flag_archieved"] = "0"
+			paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_status"] = "1"
+			paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_created_by"] = strKey
+
+			status, err = models.CreateScUserMessage(paramsUserMessage)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error create user message")
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
+
+			// insert into table ms_customer_bank_account
+			paramsCusBankAcc := make(map[string]string)
+			strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+			strBankAccKeyNew := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
+
+			var bankaccountnew models.MsBankAccount
+			status, err = models.GetBankAccount(&bankaccountnew, strBankAccKeyNew)
+			if err == nil {
+				//check bank is ready or no
+				bankKeyNew := strconv.FormatUint(bankaccountnew.BankKey, 10)
+				var cekBankCus models.CheckBankAccountPengkinianData
+				status, err = models.CheckMsBankAccountPengkinianData(&cekBankCus, strCustomerKey, strBankAccKeyNew,
+					bankKeyNew, bankaccountnew.AccountNo, bankaccountnew.AccountHolderName)
 				if err != nil {
-					log.Error("Error send email")
-					log.Error(err)
+					if err == sql.ErrNoRows {
+						paramsCusBankAcc["customer_key"] = strCustomerKey
+						paramsCusBankAcc["bank_account_key"] = strBankAccKeyNew
+						paramsCusBankAcc["bank_account_name"] = bankaccountnew.AccountHolderName
+						paramsCusBankAcc["flag_priority"] = "0"
+						paramsCusBankAcc["rec_status"] = "1"
+						paramsCusBankAcc["rec_created_date"] = time.Now().Format(dateLayout)
+						paramsCusBankAcc["rec_created_by"] = strKey
+						status, err = models.CreateMsCustomerBankAccount(paramsCusBankAcc)
+						if err != nil {
+							tx.Rollback()
+							log.Error("Error create ms_customer_bank_account")
+							return lib.CustomError(status, err.Error(), "failed input data")
+						}
+						//end insert into table ms_customer_bank_account
+
+					}
 				}
 			}
-		}
-		// end send email to fund admin
 
-		// insert into table ms_customer_bank_account
-		paramsCusBankAcc := make(map[string]string)
-		strBankAccKey := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
-		paramsCusBankAcc["customer_key"] = requestID
-		paramsCusBankAcc["bank_account_key"] = strBankAccKey
-		//get ms abank account
-		var bankaccount models.MsBankAccount
-		status, err = models.GetBankAccount(&bankaccount, strBankAccKey)
-		if err == nil {
-			paramsCusBankAcc["bank_account_name"] = bankaccount.AccountHolderName
 		}
-		paramsCusBankAcc["flag_priority"] = "1"
-		paramsCusBankAcc["rec_status"] = "1"
-		paramsCusBankAcc["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsCusBankAcc["rec_created_by"] = strKey
-		status, err = models.CreateMsCustomerBankAccount(paramsCusBankAcc)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error create ms_customer_bank_account")
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
-		//end insert into table ms_customer_bank_account
 	} else { //reject
 		//create user message
 		paramsUserMessage := make(map[string]string)
@@ -1588,7 +1671,11 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		paramsUserMessage["umessage_sender_key"] = strKey
 		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 		paramsUserMessage["flag_sent"] = "1"
-		paramsUserMessage["umessage_subject"] = "Pembukaan Rekening kamu ditolak"
+		if oareq.CustomerKey == nil { //NEW OA
+			paramsUserMessage["umessage_subject"] = "Pembukaan Rekening kamu ditolak"
+		} else {
+			paramsUserMessage["umessage_subject"] = "Pengkinian Data kamu ditolak"
+		}
 		paramsUserMessage["umessage_body"] = check2notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
 		paramsUserMessage["umessage_category"] = "248"
 		paramsUserMessage["flag_archieved"] = "0"

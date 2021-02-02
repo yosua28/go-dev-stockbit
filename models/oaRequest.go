@@ -757,12 +757,14 @@ func AdminGetAllOaByCustomerKey(c *[]OaCustomer, customerKey string) (int, error
 }
 
 type OaRequestKeyLastHistory struct {
-	OaRequestKey uint64 `db:"oa_request_key"             json:"oa_request_key"`
+	OaRequestKey uint64    `db:"oa_request_key"             json:"oa_request_key"`
+	RecOrder     *uint64   `db:"rec_order"                  json:"rec_order"`
 }
 
 func AdminGetLastHistoryOaRequest(c *OaRequestKeyLastHistory, customerKey string, oaRequestNew string) (int, error) {
 	query := `SELECT 
-			 o.oa_request_key as oa_request_key  
+			 o.oa_request_key as oa_request_key,  
+			 o.rec_order as rec_order  
 			FROM oa_request AS o
 			WHERE o.rec_status = 1 AND o.customer_key = ` + customerKey + ` 
 			AND o.rec_order IS NOT NULL AND o.oa_request_key < ` + oaRequestNew + `
