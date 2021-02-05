@@ -812,3 +812,126 @@ func CreateOaPersonalData(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetOaPersonalData(c echo.Context) error {
+
+	var oaRequestDB []models.OaRequest
+	params := make(map[string]string)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["orderBy"] = "oa_request_key"
+	params["orderType"] = "DESC"
+	status, err := models.GetAllOaRequest(&oaRequestDB, 0, 0, true, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Oa Request not found")
+	}
+	var requestKey string
+	if len(oaRequestDB) > 0 {
+		requestKey = strconv.FormatUint(oaRequestDB[0].OaRequestKey, 10)
+	}else{
+		log.Error("oa not found")
+		return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
+	}
+
+	var personalDataDB models.OaPersonalData
+	if requestKey != "" {
+		status, err = models.GetOaPersonalData(&personalDataDB, requestKey, "oa_request_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Oa Request not found")
+		}
+	}
+
+	responseData := make(map[string]interface{})
+	responseData["full_name"] = personalDataDB.FullName
+	responseData["place_birth"] = personalDataDB.PlaceBirth
+	responseData["date_birth"] = personalDataDB.DateBirth
+	responseData["nationality"] = personalDataDB.Nationality
+	responseData["idcard_type"] = personalDataDB.IDcardType
+	responseData["idcard_no"] = personalDataDB.IDcardNo
+	responseData["idcard_expired_date"] = personalDataDB.IDcardExpiredDate
+	responseData["idcard_never_expired"] = personalDataDB.IDcardNeverExpired
+	responseData["gender"] = personalDataDB.Gender
+	responseData["marital_status"] = personalDataDB.MaritalStatus
+	var address models.OaPostalAddress
+	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.IDcardAddressKey, 10))
+	if err == nil {
+		addressID := make(map[string]interface{})
+		addressID["postal_address_key"] = address.PostalAddressKey
+		addressID["kabupaten_key"] = address.KabupatenKey
+		addressID["kecamatan_key"] = address.KecamatanKey
+		addressID["address_line1"] = address.AddressLine1
+		addressID["address_line2"] = address.AddressLine2
+		addressID["address_line3"] = address.AddressLine3
+		addressID["postal_code"] = address.PostalCode
+		responseData["idcard_address"] = addressID
+	}
+	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.DomicileAddressKey, 10))
+	if err == nil {
+		addressID := make(map[string]interface{})
+		addressID["postal_address_key"] = address.PostalAddressKey
+		addressID["kabupaten_key"] = address.KabupatenKey
+		addressID["kecamatan_key"] = address.KecamatanKey
+		addressID["address_line1"] = address.AddressLine1
+		addressID["address_line2"] = address.AddressLine2
+		addressID["address_line3"] = address.AddressLine3
+		addressID["postal_code"] = address.PostalCode
+		responseData["domicile_address"] = addressID
+	}
+	responseData["phone_home"] = personalDataDB.PhoneHome
+	responseData["phone_mobile"] = personalDataDB.PhoneMobile
+	responseData["email"] = personalDataDB.EmailAddress
+	responseData["religion"] = personalDataDB.Religion
+	responseData["education"] = personalDataDB.Education
+	responseData["occup_job"] = personalDataDB.OccupJob
+	responseData["occup_company"] = personalDataDB.OccupCompany
+	responseData["occup_position"] = personalDataDB.OccupPosition
+	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.OccupAddressKey, 10))
+	if err == nil {
+		addressID := make(map[string]interface{})
+		addressID["postal_address_key"] = address.PostalAddressKey
+		addressID["kabupaten_key"] = address.KabupatenKey
+		addressID["kecamatan_key"] = address.KecamatanKey
+		addressID["address_line1"] = address.AddressLine1
+		addressID["address_line2"] = address.AddressLine2
+		addressID["address_line3"] = address.AddressLine3
+		addressID["postal_code"] = address.PostalCode
+		responseData["occup_address"] = addressID
+	}
+	responseData["occup_business_field"] = personalDataDB.OccupBusinessFields
+	responseData["occup_phone"] = personalDataDB.OccupPhone
+	responseData["occup_web_url"] = personalDataDB.OccupWebUrl
+	responseData["correspondence"] = personalDataDB.Correspondence
+	responseData["annual_income"] = personalDataDB.AnnualIncome
+	responseData["sourceof_fund"] = personalDataDB.SourceofFund
+	responseData["invesment_objectives"] = personalDataDB.InvesmentObjectives
+	responseData["relation_type"] = personalDataDB.RelationType
+	responseData["relation_full_name"] = personalDataDB.RelationFullName
+	responseData["relation_occupation"] = personalDataDB.RelationOccupation
+	responseData["relation_business_fields"] = personalDataDB.RelationBusinessFields
+	responseData["mother_maiden_name"] = personalDataDB.MotherMaidenName
+	responseData["emergency_full_name"] = personalDataDB.EmergencyFullName
+	responseData["emergency_relation"] = personalDataDB.EmergencyRelation
+	responseData["emergency_phone_no"] = personalDataDB.EmergencyPhoneNo
+	responseData["beneficial_full_name"] = personalDataDB.BeneficialFullName
+	responseData["beneficial_relation"] = personalDataDB.BeneficialRelation
+	var bankAccountDB models.MsBankAccount
+	if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
+		_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
+		if err == nil {
+			bankAccount := make(map[string]interface{})
+			bankAccount["bank_key"] = bankAccountDB.BankKey
+			bankAccount["account_no"] = bankAccountDB.AccountNo
+			bankAccount["account_holder_name"] = bankAccountDB.AccountHolderName
+			responseData["bank_account"] = bankAccount
+		}
+	}
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+}
+
+

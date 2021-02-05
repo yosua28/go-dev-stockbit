@@ -552,6 +552,136 @@
         }
       }
     },
+    "/auth/oadata": {
+      "get": {
+        "description": "Get oa data",
+        "tags": [
+          "Request"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "annual_income": 1,
+                    "bank_account": {
+                      "account_holder_name": "entah",
+                      "account_no": "123",
+                      "bank_key": 1
+                    },
+                    "beneficial_full_name": "entah",
+                    "beneficial_relation": 1,
+                    "correspondence": 1,
+                    "date_birth": "1991-02-09 00:00:00",
+                    "domicile_address": {
+                      "address_line1": "tangerang",
+                      "address_line2": null,
+                      "address_line3": null,
+                      "kabupaten_key": 1,
+                      "kecamatan_key": 1,
+                      "postal_address_key": 215,
+                      "postal_code": "123"
+                    },
+                    "education": 1,
+                    "email": "yogasutrisna@gmail.com",
+                    "emergency_full_name": "entah",
+                    "emergency_phone_no": "123",
+                    "emergency_relation": 1,
+                    "full_name": "yoga",
+                    "gender": 1,
+                    "idcard_address": {
+                      "address_line1": "tangerang",
+                      "address_line2": null,
+                      "address_line3": null,
+                      "kabupaten_key": 1,
+                      "kecamatan_key": 1,
+                      "postal_address_key": 214,
+                      "postal_code": "123"
+                    },
+                    "idcard_expired_date": null,
+                    "idcard_never_expired": null,
+                    "idcard_no": "123",
+                    "idcard_type": 1,
+                    "invesment_objectives": 1,
+                    "marital_status": 1,
+                    "mother_maiden_name": "entah",
+                    "nationality": 1,
+                    "occup_address": {
+                      "address_line1": "jakarta",
+                      "address_line2": null,
+                      "address_line3": null,
+                      "kabupaten_key": null,
+                      "kecamatan_key": null,
+                      "postal_address_key": 216,
+                      "postal_code": null
+                    },
+                    "occup_business_field": 1,
+                    "occup_company": "mnc",
+                    "occup_job": 1,
+                    "occup_phone": null,
+                    "occup_position": 1,
+                    "occup_web_url": null,
+                    "phone_home": "123",
+                    "phone_mobile": "123",
+                    "place_birth": "tangerang",
+                    "relation_business_fields": 1,
+                    "relation_full_name": "entah",
+                    "relation_occupation": 1,
+                    "relation_type": null,
+                    "religion": 1,
+                    "sourceof_fund": 1
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/portofolio": {
       "get": {
         "description": "Get portofolio",
@@ -14461,7 +14591,7 @@
                       "trans_amount": 894052,
                       "trans_unit": 333.85,
                       "total_amount": 1341080
-                    },
+                    }
                   ]
                 }
               }
@@ -16963,7 +17093,7 @@
                 2
               ]
             }
-          },
+          }
         ],
         "responses": {
           "200": {
