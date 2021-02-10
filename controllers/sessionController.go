@@ -775,6 +775,8 @@ func ForgotPassword(c echo.Context) error {
 	params["ulogin_must_changepwd"] = "1"
 	params["last_password_changed"] = time.Now().Format(dateLayout)
 	params["ulogin_password"] = encryptedPassword
+	params["ulogin_locked"] = "0"
+	params["ulogin_failed_count"] = "0"
 
 	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
