@@ -721,9 +721,9 @@ func ForgotPassword(c echo.Context) error {
 	var err error
 	var status int
 
-	//cek token notif
-	// hahatest := c.FormValue("token")
-	// log.Println("token notif : " + hahatest)
+	// cek token notif
+	hahatest := c.FormValue("token")
+	log.Println("token notif : " + hahatest)
 	// if hahatest != "" {
 	// 	CreateNotification(hahatest)
 	// }
