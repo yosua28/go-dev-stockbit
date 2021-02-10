@@ -567,6 +567,13 @@ func Login(c echo.Context) error {
 	uloginkey := strconv.FormatUint(accountData.UserLoginKey, 10)
 	paramsUpdate["user_login_key"] = uloginkey
 	paramsUpdate["ulogin_failed_count"] = "0"
+
+	tokenNotif := c.FormValue("token")
+	if tokenNotif != "" {
+		paramsUpdate["token_notif"] = tokenNotif
+		paramsUpdate["last_update_token_notif"] = time.Now().Format(dateLayout)
+	}
+
 	_, err = models.UpdateScUserLogin(paramsUpdate)
 	if err != nil {
 		log.Error(err.Error())
@@ -723,9 +730,10 @@ func ForgotPassword(c echo.Context) error {
 
 	// cek token notif
 	hahatest := c.FormValue("token")
+	// hahatest := "d93442ad-95e9-4964-8508-4b6c2718e642" // aldi
 	log.Println("token notif : " + hahatest)
 	// if hahatest != "" {
-	// 	CreateNotification(hahatest)
+	// 	lib.CreateNotificationOneSignal(hahatest)
 	// }
 
 	// Check parameters
