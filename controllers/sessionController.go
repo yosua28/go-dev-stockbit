@@ -476,7 +476,7 @@ func Login(c echo.Context) error {
 
 		if countFalse >= countWrong {
 			log.Error("Wrong password, user is locked")
-			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password "+*scApp.AppConfigValue+" kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password "+*scApp.AppConfigValue+" kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
+			return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password "+*scApp.AppConfigValue+" kali berturut-turut. Silakan menunggu 1 jam lagi untuk login atau hubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password "+*scApp.AppConfigValue+" kali berturut-turut. Silakan menunggu 1 jam lagi untuk login atau hubungi Customer Service untuk informasi lebih lanjut.")
 		} else {
 			log.Error("Wrong password")
 			return lib.CustomError(http.StatusUnauthorized, "Email/Username atau Kata Sandi kamu salah", "Email/Username atau Kata Sandi kamu salah")
