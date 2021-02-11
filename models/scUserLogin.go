@@ -47,6 +47,7 @@ type ScUserLogin struct {
 	AllowedSharingLogin  uint8   `db:"allowed_sharing_login"     json:"allowed_sharing_login"`
 	TokenNotif           *string `db:"token_notif"               json:"token_notif"`
 	LastUpdateTokenNotif *string `db:"last_update_token_notif"   json:"last_update_token_notif"`
+	LockedDate           *string `db:"locked_date"               json:"locked_date"`
 	RecOrder             *uint64 `db:"rec_order"                 json:"rec_order"`
 	RecStatus            uint8   `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate       *string `db:"rec_created_date"          json:"rec_created_date"`

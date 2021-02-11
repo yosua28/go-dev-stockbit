@@ -441,6 +441,8 @@ func Login(c echo.Context) error {
 		return lib.CustomError(http.StatusUnauthorized, "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.", "Akun anda tidak aktif, Mohon hubungi admin MNCDuit untuk mengaktifkan akun anda kembali.")
 	}
 
+	dateLayout := "2006-01-02 15:04:05"
+
 	// Check valid password
 	encryptedPasswordByte := sha256.Sum256([]byte(password))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
@@ -463,6 +465,7 @@ func Login(c echo.Context) error {
 
 		if countFalse >= countWrong {
 			paramsUpdate["ulogin_locked"] = "1"
+			paramsUpdate["locked_date"] = time.Now().Format(dateLayout)
 		}
 
 		_, err = models.UpdateScUserLogin(paramsUpdate)
@@ -531,7 +534,6 @@ func Login(c echo.Context) error {
 	}
 
 	// sessionKey := base64.StdEncoding.EncodeToString([]byte(uuidString))
-	dateLayout := "2006-01-02 15:04:05"
 	// expired := date.Add(time.Second * time.Duration(config.SessionExpired)).Format(dateLayout)
 
 	// Check previous login
