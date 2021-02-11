@@ -1287,7 +1287,7 @@ func LoginBo(c echo.Context) error {
 
 	if accountData.UloginLocked == uint8(1) {
 		log.Error("User is locked")
-		return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
+		return lib.CustomError(http.StatusUnauthorized, "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menunggu 1 jam lagi untuk login atau hubungi Customer Service untuk informasi lebih lanjut.", "Akun kamu terkunci karena salah memasukkan password 3 kali berturut-turut. Silakan menunggu 1 jam lagi untuk login atau hubungi Customer Service untuk informasi lebih lanjut.")
 	}
 
 	if accountData.UloginEnabled == uint8(0) {
