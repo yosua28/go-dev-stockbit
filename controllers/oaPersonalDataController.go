@@ -786,8 +786,10 @@ func CreateOaPersonalData(c echo.Context) error {
 	paramsUserMessage["flag_read"] = "0"
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
-	paramsUserMessage["umessage_subject"] = "Pembukaan Rekening sedang Diproses"
-	paramsUserMessage["umessage_body"] = "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+	subject := "Pembukaan Rekening sedang Diproses"
+	body := "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
 
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
@@ -802,6 +804,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	} else {
 		log.Error("Sukses insert user message")
 	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body)
 
 	responseData := make(map[string]string)
 	responseData["request_key"] = requestKey
@@ -828,7 +831,7 @@ func GetOaPersonalData(c echo.Context) error {
 	var requestKey string
 	if len(oaRequestDB) > 0 {
 		requestKey = strconv.FormatUint(oaRequestDB[0].OaRequestKey, 10)
-	}else{
+	} else {
 		log.Error("oa not found")
 		return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
 	}
@@ -933,5 +936,3 @@ func GetOaPersonalData(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
-
-

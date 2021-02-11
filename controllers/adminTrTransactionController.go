@@ -1457,24 +1457,33 @@ func CreateNotifRejected(strCustomerKey string, strIDUserLogin string,
 	paramsUserMessage["umessage_sender_key"] = strIDUserLogin
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
+	var subject string
 	if strTransTypeKey == "1" { // SUBS
 		if transaction.FlagNewSub != nil {
 			if *transaction.FlagNewSub == 1 {
+				subject = "Subscription Tidak Dapat Diproses"
 				paramsUserMessage["umessage_subject"] = "Subscription Tidak Dapat Diproses"
 			} else {
+				subject = "Top Up Tidak Dapat Diproses"
 				paramsUserMessage["umessage_subject"] = "Top Up Tidak Dapat Diproses"
 			}
+		} else {
+			subject = "Top Up Tidak Dapat Diproses"
+			paramsUserMessage["umessage_subject"] = "Top Up Tidak Dapat Diproses"
 		}
 	}
 
 	if strTransTypeKey == "2" { // REDM
+		subject = "Redemption Tidak Dapat Diproses"
 		paramsUserMessage["umessage_subject"] = "Redemption Tidak Dapat Diproses"
 	}
 	if strTransTypeKey == "4" { // SWITCH
+		subject = "Switching Tidak Dapat Diproses"
 		paramsUserMessage["umessage_subject"] = "Switching Tidak Dapat Diproses"
 	}
 
-	paramsUserMessage["umessage_body"] = notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+	body := notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+	paramsUserMessage["umessage_body"] = body
 
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
@@ -1490,6 +1499,7 @@ func CreateNotifRejected(strCustomerKey string, strIDUserLogin string,
 	} else {
 		log.Println("Success create user message")
 	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 }
 
 func UpdateNavDate(c echo.Context) error {
@@ -2877,25 +2887,40 @@ func ProsesPosting(c echo.Context) error {
 		paramsUserMessage["umessage_sender_key"] = strIDUserLogin
 		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 		paramsUserMessage["flag_sent"] = "1"
+		var subject string
+		var body string
 		if strTransTypeKey == "1" { // SUBS
 			if transaction.FlagNewSub != nil {
 				if *transaction.FlagNewSub == 1 {
-					paramsUserMessage["umessage_subject"] = "Subscription Berhasil"
-					paramsUserMessage["umessage_body"] = "Subscription kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+					subject = "Subscription Berhasil"
+					body = "Subscription kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+					paramsUserMessage["umessage_subject"] = subject
+					paramsUserMessage["umessage_body"] = body
 				} else {
-					paramsUserMessage["umessage_subject"] = "Top Up Berhasil"
-					paramsUserMessage["umessage_body"] = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+					subject = "Top Up Berhasil"
+					body = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+					paramsUserMessage["umessage_subject"] = subject
+					paramsUserMessage["umessage_body"] = body
 				}
+			} else {
+				subject = "Top Up Berhasil"
+				body = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+				paramsUserMessage["umessage_subject"] = subject
+				paramsUserMessage["umessage_body"] = body
 			}
 		}
 
 		if strTransTypeKey == "2" { // REDM
-			paramsUserMessage["umessage_subject"] = "Redemption Berhasil"
-			paramsUserMessage["umessage_body"] = "Redemption kamu telah berhasil dijalankan. Dana akan ditransfer ke rekening bank kamu maks. 7 hari bursa. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+			subject = "Redemption Berhasil"
+			body = "Redemption kamu telah berhasil dijalankan. Dana akan ditransfer ke rekening bank kamu maks. 7 hari bursa. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+			paramsUserMessage["umessage_subject"] = subject
+			paramsUserMessage["umessage_body"] = body
 		}
 		if strTransTypeKey == "4" { // SWITCH
-			paramsUserMessage["umessage_subject"] = "Switching Berhasil"
-			paramsUserMessage["umessage_body"] = "Switching kamu telah berhasil dijalankan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+			subject = "Switching Berhasil"
+			body = "Switching kamu telah berhasil dijalankan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+			paramsUserMessage["umessage_subject"] = subject
+			paramsUserMessage["umessage_body"] = body
 		}
 
 		paramsUserMessage["umessage_category"] = "248"
@@ -2910,6 +2935,7 @@ func ProsesPosting(c echo.Context) error {
 			log.Error("Error create user message")
 			return lib.CustomError(status, err.Error(), "failed input data user message")
 		}
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 
 		sendEmailTransactionPosted(transaction, transactionConf, userLogin, strCustomerKey, strTransTypeKey)
 	}

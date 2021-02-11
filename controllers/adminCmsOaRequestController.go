@@ -1203,8 +1203,8 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		//create user message
 		paramsUserMessage := make(map[string]string)
 		paramsUserMessage["umessage_type"] = "245"
+		strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 		if oareq.UserLoginKey != nil {
-			strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 			paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
 		} else {
 			paramsUserMessage["umessage_recipient_key"] = "0"
@@ -1214,8 +1214,10 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		paramsUserMessage["umessage_sender_key"] = strKey
 		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 		paramsUserMessage["flag_sent"] = "1"
-		paramsUserMessage["umessage_subject"] = "Pembukaan Rekening kamu ditolak"
-		paramsUserMessage["umessage_body"] = check1notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+		subject := "Pembukaan Rekening kamu ditolak"
+		body := check1notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+		paramsUserMessage["umessage_body"] = body
+		paramsUserMessage["umessage_subject"] = subject
 		paramsUserMessage["umessage_category"] = "248"
 		paramsUserMessage["flag_archieved"] = "0"
 		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
@@ -1227,6 +1229,7 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		if err != nil {
 			log.Error("Error create user message")
 		}
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 	}
 
 	var response lib.Response
@@ -1465,8 +1468,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			//create user message
 			paramsUserMessage := make(map[string]string)
 			paramsUserMessage["umessage_type"] = "245"
+			strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 			if oareq.UserLoginKey != nil {
-				strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 				paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
 			} else {
 				paramsUserMessage["umessage_recipient_key"] = "0"
@@ -1476,8 +1479,10 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			paramsUserMessage["umessage_sender_key"] = strKey
 			paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 			paramsUserMessage["flag_sent"] = "1"
-			paramsUserMessage["umessage_subject"] = "Selamat! Pembukaan Rekening telah Disetujui"
-			paramsUserMessage["umessage_body"] = "Saat ini akun kamu sudah aktif dan bisa melakukan transaksi. Yuk mulai investasi sekarang juga."
+			subject := "Selamat! Pembukaan Rekening telah Disetujui"
+			body := "Saat ini akun kamu sudah aktif dan bisa melakukan transaksi. Yuk mulai investasi sekarang juga."
+			paramsUserMessage["umessage_subject"] = subject
+			paramsUserMessage["umessage_body"] = body
 			paramsUserMessage["umessage_category"] = "248"
 			paramsUserMessage["flag_archieved"] = "0"
 			paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
@@ -1491,6 +1496,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				log.Error("Error create user message")
 				return lib.CustomError(status, err.Error(), "failed input data")
 			}
+			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 
 			//update sc user login
 			paramsUserLogin := make(map[string]string)
@@ -1594,8 +1600,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		} else { //create user message
 			paramsUserMessage := make(map[string]string)
 			paramsUserMessage["umessage_type"] = "245"
+			strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 			if oareq.UserLoginKey != nil {
-				strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 				paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
 			} else {
 				paramsUserMessage["umessage_recipient_key"] = "0"
@@ -1605,8 +1611,10 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			paramsUserMessage["umessage_sender_key"] = strKey
 			paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 			paramsUserMessage["flag_sent"] = "1"
-			paramsUserMessage["umessage_subject"] = "Selamat! Pengkinian Data telah Disetujui"
-			paramsUserMessage["umessage_body"] = "Saat ini pengkinian data kamu sudah disetujui. Yuk investasi sekarang juga."
+			subject := "Selamat! Pengkinian Data telah Disetujui"
+			body := "Saat ini pengkinian data kamu sudah disetujui. Yuk investasi sekarang juga."
+			paramsUserMessage["umessage_subject"] = subject
+			paramsUserMessage["umessage_body"] = body
 			paramsUserMessage["umessage_category"] = "248"
 			paramsUserMessage["flag_archieved"] = "0"
 			paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
@@ -1620,6 +1628,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				log.Error("Error create user message")
 				return lib.CustomError(status, err.Error(), "failed input data")
 			}
+			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 
 			// insert into table ms_customer_bank_account
 			paramsCusBankAcc := make(map[string]string)
@@ -1660,8 +1669,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		//create user message
 		paramsUserMessage := make(map[string]string)
 		paramsUserMessage["umessage_type"] = "245"
+		strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 		if oareq.UserLoginKey != nil {
-			strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 			paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
 		} else {
 			paramsUserMessage["umessage_recipient_key"] = "0"
@@ -1671,12 +1680,17 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		paramsUserMessage["umessage_sender_key"] = strKey
 		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 		paramsUserMessage["flag_sent"] = "1"
+		var subject string
+		body := check2notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+		paramsUserMessage["umessage_body"] = body
 		if oareq.CustomerKey == nil { //NEW OA
 			paramsUserMessage["umessage_subject"] = "Pembukaan Rekening kamu ditolak"
+			subject = "Pembukaan Rekening kamu ditolak"
 		} else {
 			paramsUserMessage["umessage_subject"] = "Pengkinian Data kamu ditolak"
+			subject = "Pengkinian Data kamu ditolak"
 		}
-		paramsUserMessage["umessage_body"] = check2notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+		paramsUserMessage["umessage_body"] = body
 		paramsUserMessage["umessage_category"] = "248"
 		paramsUserMessage["flag_archieved"] = "0"
 		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
@@ -1689,6 +1703,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			tx.Rollback()
 			log.Error("Error create user message")
 		}
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 		tx.Commit()
 	}
 

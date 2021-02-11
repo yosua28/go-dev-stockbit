@@ -2128,8 +2128,10 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsUserMessage["flag_read"] = "0"
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
-	paramsUserMessage["umessage_subject"] = "Pembukaan Rekening sedang Diproses"
-	paramsUserMessage["umessage_body"] = "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+	subject := "Pembukaan Rekening sedang Diproses"
+	body := "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
 
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
@@ -2144,6 +2146,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	} else {
 		log.Error("Sukses insert user message")
 	}
+	// lib.CreateNotifCustomerFromAdminByUserLoginKey(idUserLogin, subject, body)
 
 	var responseData models.MsRiskProfileInfo
 

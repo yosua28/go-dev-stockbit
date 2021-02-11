@@ -532,24 +532,28 @@ func CreateTransaction(c echo.Context) error {
 		paramsUserMessage["flag_read"] = "0"
 		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 		paramsUserMessage["flag_sent"] = "1"
+		var subject string
+		var body string
 		if typeKeyStr == "1" { // SUBS
 			if params["flag_newsub"] == "1" {
-				paramsUserMessage["umessage_subject"] = "Subscription sedang Diproses"
-				paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
+				subject = "Subscription sedang Diproses"
+				body = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
 			} else {
-				paramsUserMessage["umessage_subject"] = "Top Up sedang Diproses"
-				paramsUserMessage["umessage_body"] = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
+				subject = "Top Up sedang Diproses"
+				body = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
 			}
 		}
 
 		if typeKeyStr == "2" { // REDM
-			paramsUserMessage["umessage_subject"] = "Redemption sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
+			subject = "Redemption sedang Diproses"
+			body = "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
 		}
 		if typeKeyStr == "4" || typeKeyStr == "3" { // SWITCH
-			paramsUserMessage["umessage_subject"] = "Switching sedang Diproses"
-			paramsUserMessage["umessage_body"] = "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
+			subject = "Switching sedang Diproses"
+			body = "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
 		}
+		paramsUserMessage["umessage_subject"] = subject
+		paramsUserMessage["umessage_body"] = body
 
 		paramsUserMessage["umessage_category"] = "248"
 		paramsUserMessage["flag_archieved"] = "0"
@@ -564,6 +568,7 @@ func CreateTransaction(c echo.Context) error {
 		} else {
 			log.Error("Sukses insert user message")
 		}
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body)
 	}
 
 	responseData := make(map[string]string)

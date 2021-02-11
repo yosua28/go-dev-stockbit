@@ -731,9 +731,10 @@ func ForgotPassword(c echo.Context) error {
 	// cek token notif
 	hahatest := c.FormValue("token")
 	// hahatest := "d93442ad-95e9-4964-8508-4b6c2718e642" // aldi
+	// hahatest := "a00cfd56-b91a-464f-8da9-f36b376190b4" // yosua
 	log.Println("token notif : " + hahatest)
 	// if hahatest != "" {
-	// 	lib.CreateNotificationOneSignal(hahatest)
+	// 	lib.CreateNotificationHelper(hahatest, "Oke! Header Notif MNCDuit", "Ini Body Mnc Duit Notifikasi Testing Aplikasi hahaha oke gan jangan di hiraukan.")
 	// }
 
 	// Check parameters
@@ -1084,8 +1085,10 @@ func ChangePassword(c echo.Context) error {
 	paramsUserMessage["umessage_sender_key"] = strKey
 	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_sent"] = "1"
-	paramsUserMessage["umessage_subject"] = "Perubahan Kata Sandi Berhasil"
-	paramsUserMessage["umessage_body"] = "Kata sandi kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan kata sandi, mohon segera menghubungi customer service kami."
+	subject := "Perubahan Kata Sandi Berhasil"
+	body := "Kata sandi kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan kata sandi, mohon segera menghubungi customer service kami."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
 	paramsUserMessage["umessage_category"] = "248"
 	paramsUserMessage["flag_archieved"] = "0"
 	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
@@ -1098,6 +1101,7 @@ func ChangePassword(c echo.Context) error {
 		log.Error(err.Error())
 		log.Error("Error create user message")
 	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
 
 	//kirim email
 	t := template.New("index-sukses-ubah-password.html")

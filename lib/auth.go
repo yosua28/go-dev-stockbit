@@ -24,6 +24,7 @@ type CProfile struct {
 	UserCategoryKey uint64  `json:"user_category_key"`
 	RolePrivileges  *uint64 `json:"role_privileges"`
 	BranchKey       *uint64 `json:"branch_key"`
+	TokenNotif      *string `json:"token_notif"`
 }
 
 var Profile CProfile
@@ -133,6 +134,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			Profile.PhoneNumber = *user.UloginMobileno
 			Profile.CustomerKey = user.CustomerKey
 			Profile.UserCategoryKey = user.UserCategoryKey
+			Profile.TokenNotif = user.TokenNotif
 			if user.RecImage1 != nil && *user.RecImage1 != "" {
 				Profile.RecImage1 = config.BaseUrl + "/images/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
 			} else {
