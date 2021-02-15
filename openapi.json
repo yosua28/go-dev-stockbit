@@ -17770,6 +17770,591 @@
           }
         }
       }
+    },
+    "/admin/transaction/subscription": {
+      "get": {
+        "description": "Get All Transaction Subscription",
+        "tags": [
+          "Admin Transaction Action (Individu)"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "transaction_key",
+                "branch_key",
+                "agent_key",
+                "customer_key",
+                "product_key",
+                "trans_date",
+                "trans_amount",
+                "trans_bank_key"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "Product Key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "trans_status_key",
+            "in": "query",
+            "description": "Trans Status Key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Nav Date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2020-10-14"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "transaction_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Lancar",
+                      "trans_status": "POSTED",
+                      "trans_date": "01 Oct 2020",
+                      "trans_type": "Subscription",
+                      "nav_date": "01 Apr 2020",
+                      "trans_amount": 100000.21,
+                      "trans_unit": 100.13526,
+                      "total_amount": 1000
+                    },
+                    {
+                      "transaction_key": 2,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Lancar",
+                      "trans_status": "POSTED",
+                      "trans_date": "05 Oct 2020",
+                      "trans_type": "Subscription",
+                      "nav_date": "29 Jul 2020",
+                      "trans_amount": 200000,
+                      "trans_unit": 200,
+                      "total_amount": 2000
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transaction/redemption": {
+      "get": {
+        "description": "Get All Transaction Redemption",
+        "tags": [
+          "Admin Transaction Action (Individu)"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "transaction_key",
+                "branch_key",
+                "agent_key",
+                "customer_key",
+                "product_key",
+                "trans_date",
+                "trans_amount",
+                "trans_bank_key"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "Product Key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "trans_status_key",
+            "in": "query",
+            "description": "Trans Status Key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Nav Date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2020-10-14"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "transaction_key": 3,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Lancar",
+                      "trans_status": "POSTED",
+                      "trans_date": "13 Oct 2020",
+                      "trans_type": "Redemption",
+                      "nav_date": "03 Apr 2020",
+                      "trans_amount": 60000,
+                      "trans_unit": 60,
+                      "total_amount": 12500
+                    },
+                    {
+                      "transaction_key": 4,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Lancar",
+                      "trans_status": "POSTED",
+                      "trans_date": "14 Oct 2020",
+                      "trans_type": "Redemption",
+                      "nav_date": "06 Apr 2020",
+                      "trans_amount": 120000,
+                      "trans_unit": 120,
+                      "total_amount": 12500
+                    },
+                    {
+                      "transaction_key": 18,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Syariah",
+                      "trans_status": "POSTED",
+                      "trans_date": "03 Nov 2020",
+                      "trans_type": "Redemption",
+                      "nav_date": "03 Aug 2020",
+                      "trans_amount": 150000,
+                      "trans_unit": 150,
+                      "total_amount": 157500
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/transaction/switching": {
+      "get": {
+        "description": "Get All Transaction Switching",
+        "tags": [
+          "Admin Transaction Action (Individu)"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "transaction_key",
+                "branch_key",
+                "agent_key",
+                "customer_key",
+                "product_key",
+                "trans_date",
+                "trans_amount",
+                "trans_bank_key"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "query",
+            "description": "Product Key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "trans_status_key",
+            "in": "query",
+            "description": "Trans Status Key",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nav_date",
+            "in": "query",
+            "description": "Nav Date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2020-10-14"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "transaction_key": 34,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Lancar",
+                      "trans_status": "BATCHED",
+                      "trans_date": "04 Nov 2020",
+                      "trans_type": "Switch Out",
+                      "nav_date": "01 Dec 2020",
+                      "trans_amount": 2000000,
+                      "trans_unit": 200.998,
+                      "total_amount": 1007500
+                    },
+                    {
+                      "transaction_key": 35,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga yuyu",
+                      "product_name": "Dana Kombinasi Konsumen",
+                      "trans_status": "BATCHED",
+                      "trans_date": "04 Nov 2020",
+                      "trans_type": "Switch In",
+                      "nav_date": "01 Dec 2020",
+                      "trans_amount": 2000000.88,
+                      "trans_unit": 200.998001,
+                      "total_amount": 1007500
+                    },
+                    {
+                      "transaction_key": 57,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga",
+                      "product_name": "Dana Syariah Ekuitas",
+                      "trans_status": "ENTRIED",
+                      "trans_date": "17 Nov 2020",
+                      "trans_type": "Switch Out",
+                      "nav_date": "17 Nov 2020",
+                      "trans_amount": 100000,
+                      "trans_unit": 1,
+                      "total_amount": 160000
+                    },
+                    {
+                      "transaction_key": 58,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT",
+                      "customer_name": "Aldy Yoga",
+                      "product_name": "Dana Syariah Ekuitas",
+                      "trans_status": "ENTRIED",
+                      "trans_date": "17 Nov 2020",
+                      "trans_type": "Switch In",
+                      "nav_date": "17 Nov 2020",
+                      "trans_amount": 100000,
+                      "trans_unit": 1,
+                      "total_amount": 160000
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

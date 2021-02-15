@@ -105,6 +105,10 @@ type AdminListScUserLoginRole struct {
 	UloginEmail    string `json:"ulogin_email"`
 }
 
+type UserLoginKeyLocked struct {
+	UserLoginKey uint64 `db:"user_login_key"            json:"user_login_key"`
+}
+
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               sc_user_login.* FROM 
@@ -637,4 +641,58 @@ func CreateScUserLoginReturnKey(params map[string]string) (int, error, string) {
 	}
 	lastID, _ := ret.LastInsertId()
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
+}
+
+func GetUserLocked(c *[]UserLoginKeyLocked) (int, error) {
+	query := `SELECT 
+				user_login_key 
+			FROM sc_user_login 
+			WHERE ulogin_locked = 1 AND rec_status = 1
+			AND DATE_ADD(locked_date, INTERVAL 1 HOUR) < NOW()`
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateScUserLoginByKeyIn(params map[string]string, valueIn []string, fieldIn string) (int, error) {
+	query := "UPDATE sc_user_login SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+
+	inQuery := strings.Join(valueIn, ",")
+	query += " WHERE sc_user_login." + fieldIn + " IN(" + inQuery + ")"
+
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
 }
