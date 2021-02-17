@@ -1,6 +1,7 @@
 package models
 
 import (
+	"api/config"
 	"api/db"
 	"database/sql"
 	"log"
@@ -232,6 +233,26 @@ type AdminMsProductDetail struct {
 	FlagRedemption        bool                     `json:"flag_redemption"`
 	FlagSwitchOut         bool                     `json:"flag_switch_out"`
 	FlagSwitchIn          bool                     `json:"flag_switch_in"`
+}
+
+type ProductSubscription struct {
+	ProductKey     uint64          `db:"product_key"             json:"product_key"`
+	FundTypeName   string          `db:"fund_type_name"          json:"fund_type_name"`
+	ProductName    string          `db:"product_name"            json:"product_name"`
+	NavDate        string          `db:"nav_date"                json:"nav_date"`
+	NavValue       decimal.Decimal `db:"nav_value"               json:"nav_value"`
+	PerformD1      decimal.Decimal `db:"perform_d1"              json:"perform_d1"`
+	PerformM1      decimal.Decimal `db:"perform_m1"              json:"perform_m1"`
+	PerformY1      decimal.Decimal `db:"perform_y1"              json:"perform_y1"`
+	ProductImage   *string         `db:"product_image"           json:"product_image"`
+	MinSubAmount   decimal.Decimal `db:"min_sub_amount"          json:"min_sub_amount"`
+	MinRedAmount   decimal.Decimal `db:"min_red_amount"          json:"min_red_amount"`
+	MinRedUnit     decimal.Decimal `db:"min_red_unit"            json:"min_red_unit"`
+	ProspectusLink string          `db:"prospectus_link"         json:"prospectus_link"`
+	FfsLink        *string         `db:"ffs_link"                json:"ffs_link"`
+	RiskName       string          `db:"risk_name"               json:"risk_name"`
+	FeeService     decimal.Decimal `db:"fee_service"             json:"fee_service"`
+	FeeTransfer    decimal.Decimal `db:"fee_transfer"            json:"fee_transfer"`
 }
 
 func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -518,6 +539,63 @@ func AdminGetValidateUniqueDataInsertUpdate(c *CountData, paramsOr map[string]st
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetProductSubscription(c *[]ProductSubscription) (int, error) {
+	query := `SELECT 
+				p.product_key as product_key,
+				f.fund_type_name as fund_type_name,
+				p.product_name_alt as product_name,
+				DATE_FORMAT(nav.nav_date, '%d %M %Y') AS nav_date, 
+				nav.nav_value as nav_value,
+				ffs.perform_d1 as perform_d1,
+				ffs.perform_m1 as perform_m1,
+				ffs.perform_y1 as perform_y1,
+				(CASE
+					WHEN p.rec_image1 IS NULL THEN CONCAT('` + config.BaseUrl + `', '/images/product/default.png')
+					ELSE CONCAT('` + config.BaseUrl + `', '/images/product/', p.rec_image1)
+				END) AS product_image,
+				p.min_sub_amount as min_sub_amount, 
+				p.min_red_amount as min_red_amount,
+				p.min_red_unit as min_red_unit,
+				p.prospectus_link as prospectus_link,
+				pub.ffs_link as ffs_link,
+				pr.risk_name as risk_name,
+				ft.app_config_value AS fee_transfer,
+				fc.app_config_value AS fee_service 
+			FROM ms_product AS p 
+			LEFT JOIN sc_app_config AS ft ON ft.app_config_code = 'BANK_CHARGES' 
+			LEFT JOIN sc_app_config AS fc ON fc.app_config_code = 'SERVICE_CHARGES' 
+			INNER JOIN ms_fund_type AS f ON p.fund_type_key = f.fund_type_key 
+			INNER JOIN (
+				SELECT MAX(nav_date) AS nav_date, product_key 
+				FROM tr_nav
+				WHERE rec_status = 1
+				AND publish_mode = 236
+				GROUP BY product_key
+			) b ON (b.product_key = p.product_key)
+			INNER JOIN tr_nav AS nav ON nav.product_key = p.product_key AND nav.nav_date = b.nav_date
+			INNER JOIN (
+				SELECT product_key, MAX(nav_date) AS nav_date
+				FROM ffs_nav_performance
+				WHERE rec_status = 1
+				GROUP BY product_key
+			) c ON (c.product_key = p.product_key)
+			INNER JOIN ffs_nav_performance AS ffs ON ffs.product_key = p.product_key AND ffs.nav_date = c.nav_date
+			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key
+			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
+			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1
+			ORDER BY f.rec_order ASC`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err

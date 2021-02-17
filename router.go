@@ -254,6 +254,7 @@ func router() *echo.Echo {
 	//Transaction Action Admin (Individu)
 	//subscribe
 	admin.GET("/transaction/subscription", controllers.GetTransactionSubscription).Name = "GetTransactionSubscription"
+	admin.GET("/product/subscription", controllers.AdminGetProductSubscription).Name = "AdminGetProductSubscription"
 	//redemption
 	admin.GET("/transaction/redemption", controllers.GetTransactionRedemption).Name = "GetTransactionRedemption"
 	//switching

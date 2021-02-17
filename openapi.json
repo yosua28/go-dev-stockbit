@@ -18355,6 +18355,108 @@
           }
         }
       }
+    },
+    "/admin/product/subscription": {
+      "get": {
+        "description": "Get All Product Subscription",
+        "tags": [
+          "Admin Transaction Action (Individu)"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "product_key": 9,
+                      "fund_type_name": "Saham",
+                      "product_name": "Dana Syariah Ekuitas",
+                      "nav_date": "18 January 2021",
+                      "nav_value": 903.33,
+                      "perform_d1": -1.37,
+                      "perform_m1": 2.32,
+                      "perform_y1": -11.72,
+                      "product_image": "https://devapi.mncasset.com/images/product/mdse.jpg",
+                      "min_sub_amount": 100000,
+                      "min_red_amount": 100000,
+                      "min_red_unit": 0,
+                      "prospectus_link": "https://www.mncasset.com/downloads/271-Prospektus-MNC-Dana-Syariah-Ekuitas.pdf",
+                      "ffs_link": "https://www.mncasset.com/downloads/699-FFS_MDSE_300720.pdf",
+                      "risk_name": "Agresif",
+                      "fee_service": 0,
+                      "fee_transfer": 0
+                    },
+                    {
+                      "product_key": 5,
+                      "fund_type_name": "Saham",
+                      "product_name": "Dana Ekuitas",
+                      "nav_date": "18 January 2021",
+                      "nav_value": 2746.28,
+                      "perform_d1": -0.36,
+                      "perform_m1": 2.21,
+                      "perform_y1": -23.46,
+                      "product_image": "https://devapi.mncasset.com/images/product/bbe.jpg",
+                      "min_sub_amount": 100000,
+                      "min_red_amount": 100000,
+                      "min_red_unit": 0,
+                      "prospectus_link": "https://www.mncasset.com/downloads/232-Prospektus-MNC-Dana-Ekuitas.pdf",
+                      "ffs_link": "https://www.mncasset.com/downloads/588-FFS_BBE_300720.pdf",
+                      "risk_name": "Agresif",
+                      "fee_service": 0,
+                      "fee_transfer": 0
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

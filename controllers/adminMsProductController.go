@@ -2167,3 +2167,52 @@ func GetListProductAdminDropdown(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func AdminGetProductSubscription(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	var products []models.ProductSubscription
+	status, err = models.AdminGetProductSubscription(&products)
+
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(products) < 1 {
+		log.Error("Product not found")
+		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
+	}
+
+	var productList []models.ProductSubscription
+	for _, pr := range products {
+		var prod models.ProductSubscription
+		prod.ProductKey = pr.ProductKey
+		prod.FundTypeName = pr.FundTypeName
+		prod.ProductName = pr.ProductName
+		prod.NavDate = pr.NavDate
+		prod.NavValue = pr.NavValue.Truncate(2)
+		prod.PerformD1 = pr.PerformD1.Truncate(2)
+		prod.PerformM1 = pr.PerformM1.Truncate(2)
+		prod.PerformY1 = pr.PerformY1.Truncate(2)
+		prod.ProductImage = pr.ProductImage
+		prod.MinSubAmount = pr.MinSubAmount.Truncate(2)
+		prod.MinRedAmount = pr.MinRedAmount.Truncate(2)
+		prod.MinRedUnit = pr.MinRedUnit.Truncate(2)
+		prod.ProspectusLink = pr.ProspectusLink
+		prod.FfsLink = pr.FfsLink
+		prod.RiskName = pr.RiskName
+		prod.FeeService = pr.FeeService.Truncate(0)
+		prod.FeeTransfer = pr.FeeTransfer.Truncate(0)
+		productList = append(productList, prod)
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = productList
+
+	return c.JSON(http.StatusOK, response)
+}
