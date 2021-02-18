@@ -251,12 +251,18 @@ func router() *echo.Echo {
 	admin.GET("/report/daily-subscription", controllers.GetTransactionReportSubscribeDaily).Name = "GetTransactionReportSubscribeDaily"
 	admin.GET("/report/daily-redemption", controllers.GetTransactionReportRedemptionDaily).Name = "GetTransactionReportRedemptionDaily"
 
-	//Transaction Action Admin (Individu)
+	//Transaction Action Admin Subscription
 	//subscribe
 	admin.GET("/transaction/subscription", controllers.GetTransactionSubscription).Name = "GetTransactionSubscription"
 	admin.GET("/product/subscription", controllers.AdminGetProductSubscription).Name = "AdminGetProductSubscription"
+	admin.GET("/bankproduct/subscription/:product_key", controllers.GetBankProductSubscription).Name = "GetBankProductSubscription"
+	admin.POST("/createtransaction/subscription", controllers.CreateTransactionSubscription).Name = "CreateTransactionSubscription"
+
+	//Transaction Action Admin Redemption
 	//redemption
 	admin.GET("/transaction/redemption", controllers.GetTransactionRedemption).Name = "GetTransactionRedemption"
+
+	//Transaction Action Admin Switching
 	//switching
 	admin.GET("/transaction/switching", controllers.GetTransactionSwitching).Name = "GetTransactionSwitching"
 

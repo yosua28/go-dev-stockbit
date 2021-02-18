@@ -2216,3 +2216,38 @@ func AdminGetProductSubscription(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetBankProductSubscription(c echo.Context) error {
+
+	var err error
+	var status int
+
+	productStr := c.Param("product_key")
+	log.Println(productStr)
+	log.Println(productStr)
+	log.Println(productStr)
+	key, _ := strconv.ParseUint(productStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	lookupTransType := "269"
+
+	var bankAccountTransactionInfo []models.MsProductBankAccountTransactionInfo
+
+	status, err = models.GetAllMsProductBankAccountTransaction(&bankAccountTransactionInfo, productStr, lookupTransType)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = bankAccountTransactionInfo
+
+	return c.JSON(http.StatusOK, response)
+}

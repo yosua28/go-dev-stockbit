@@ -6,8 +6,8 @@ import (
 	"net/http"
 	_ "strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
 type OaRiskProfile struct {
@@ -35,14 +35,14 @@ type OaRiskProfile struct {
 }
 
 type AdminOaRiskProfile struct {
-	OaRiskProfileKey *uint64 `db:"oa_risk_profile_key"        json:"oa_risk_profile_key"`
-	RiskProfileKey   *uint64 `db:"risk_profile_key"           json:"risk_profile_key"`
-	RiskCode         string  `db:"risk_code"                  json:"risk_code"`
-	RiskName         *string `db:"risk_name"                  json:"risk_name"`
-	RiskDesc         *string `db:"risk_desc"                  json:"risk_desc"`
+	OaRiskProfileKey *uint64         `db:"oa_risk_profile_key"        json:"oa_risk_profile_key"`
+	RiskProfileKey   *uint64         `db:"risk_profile_key"           json:"risk_profile_key"`
+	RiskCode         string          `db:"risk_code"                  json:"risk_code"`
+	RiskName         *string         `db:"risk_name"                  json:"risk_name"`
+	RiskDesc         *string         `db:"risk_desc"                  json:"risk_desc"`
 	MinScore         decimal.Decimal `db:"min_score"                  json:"min_score"`
 	MaxScore         decimal.Decimal `db:"max_score"                  json:"max_score"`
-	ScoreResult      *uint64 `db:"score_result"               json:"score_result"`
+	ScoreResult      *uint64         `db:"score_result"               json:"score_result"`
 }
 
 func CreateOaRiskProfile(params map[string]string) (int, error) {
@@ -103,6 +103,27 @@ func AdminGetOaRiskProfile(c *[]AdminOaRiskProfile, oaRequestKey string) (int, e
 
 func GetOaRiskProfile(c *OaRiskProfile, key string, field string) (int, error) {
 	query := "SELECT oa_risk_profile.* FROM oa_risk_profile WHERE oa_risk_profile." + field + " = " + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type RiskProfilCustomer struct {
+	RiskProfileKey uint64 `db:"risk_profile_key"        json:"risk_profile_key"`
+}
+
+func GetRiskProfilCustomer(c *RiskProfilCustomer, customerKey string) (int, error) {
+	query := `SELECT 
+				r.risk_profile_key
+			FROM oa_request AS o
+			INNER JOIN oa_risk_profile AS r ON o.oa_request_key = r.oa_request_key 
+			WHERE o.customer_key = '` + customerKey + `' AND o.rec_order IS NOT NULL AND o.rec_status = 1 
+			ORDER BY o.rec_order DESC LIMIT 1`
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

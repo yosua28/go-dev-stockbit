@@ -17775,7 +17775,7 @@
       "get": {
         "description": "Get All Transaction Subscription",
         "tags": [
-          "Admin Transaction Action (Individu)"
+          "Transaction Action Admin Subscription"
         ],
         "security": [
           {
@@ -17956,7 +17956,7 @@
       "get": {
         "description": "Get All Transaction Redemption",
         "tags": [
-          "Admin Transaction Action (Individu)"
+          "Transaction Action Admin Redemption"
         ],
         "security": [
           {
@@ -18151,7 +18151,7 @@
       "get": {
         "description": "Get All Transaction Switching",
         "tags": [
-          "Admin Transaction Action (Individu)"
+          "Transaction Action Admin Switching"
         ],
         "security": [
           {
@@ -18360,7 +18360,7 @@
       "get": {
         "description": "Get All Product Subscription",
         "tags": [
-          "Admin Transaction Action (Individu)"
+          "Transaction Action Admin Subscription"
         ],
         "security": [
           {
@@ -18444,6 +18444,192 @@
             "content": {
               "text/plain": {
                 "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/bankproduct/subscription/{product_key}": {
+      "get": {
+        "description": "Get All Bank Product Subscription",
+        "tags": [
+          "Transaction Action Admin Subscription"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_key",
+            "in": "path",
+            "description": "product key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "prod_bankacc_key": 56,
+                      "bank_name": "BANK MANDIRI",
+                      "account_no": "103-0006243329",
+                      "account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS"
+                    },
+                    {
+                      "prod_bankacc_key": 57,
+                      "bank_name": "BCA",
+                      "account_no": "458-2191003",
+                      "account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/createtransaction/subscription": {
+      "post": {
+        "description": "Get All Bank Product Subscription",
+        "tags": [
+          "Transaction Action Admin Subscription"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "trans_amount": {
+                    "type": "number"
+                  },
+                  "total_amount": {
+                    "type": "number"
+                  },
+                  "payment_method": {
+                    "type": "integer"
+                  },
+                  "bank_transaction": {
+                    "type": "integer"
+                  },
+                  "transfer_pic": {
+                    "type": "file"
+                  },
+                  "trans_remarks": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "customer_key",
+                  "product_key",
+                  "trans_amount",
+                  "total_amount",
+                  "payment_method",
+                  "bank_transaction",
+                  "transfer_pic"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "request_key": "1"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
               }
             }
           },
