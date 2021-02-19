@@ -143,6 +143,11 @@ type CustomerDropdown struct {
 	Name        string `db:"name"           json:"name"`
 }
 
+type AdminTopupData struct {
+	Customer CustomerDropdown    `json:"customer"`
+	Product  ProductSubscription `json:"product"`
+}
+
 func GetMsCustomerIn(c *[]MsCustomer, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT

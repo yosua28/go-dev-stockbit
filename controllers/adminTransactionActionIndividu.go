@@ -758,3 +758,112 @@ func CreateTransactionSubscription(c echo.Context) error {
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetTopupData(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	customerKeyStr := c.Param("customer_key")
+	var cus models.MsCustomer
+	if customerKeyStr != "" {
+		customerKey, err := strconv.ParseUint(customerKeyStr, 10, 64)
+		if err == nil && customerKey > 0 {
+			status, err = models.GetMsCustomer(&cus, customerKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Customer tidak ditemukan")
+			}
+			if cus.CifSuspendFlag == uint8(1) {
+				log.Error("Customer Suspended")
+				return lib.CustomError(http.StatusBadRequest, "Customer Suspended", "Customer Suspended")
+			}
+		} else {
+			log.Error("Wrong input for parameter: customer_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: customer_key", "Wrong input for parameter: customer_key")
+		}
+	} else {
+		log.Error("Missing required parameter: customer_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: customer_key", "Missing required parameter: customer_key")
+	}
+
+	params := make(map[string]string)
+	//if user admin role 7 branch
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	if lib.Profile.RoleKey == roleKeyBranchEntry {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["d.branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
+	params["c.customer_key"] = customerKeyStr
+	paramsLike := make(map[string]string)
+	var customerList []models.CustomerDropdown
+	status, err = models.GetCustomerDropdown(&customerList, params, paramsLike)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(customerList) < 1 {
+		log.Error("Customer not found")
+		return lib.CustomError(http.StatusNotFound, "Customer not found", "Customer not found")
+	}
+
+	var customer models.CustomerDropdown
+	customer = customerList[0]
+
+	productKeyStr := c.Param("product_key")
+	var product models.ProductSubscription
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err == nil && productKey > 0 {
+			status, err = models.AdminGetProductSubscriptionByProductKey(&product, productKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+			}
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	var productResponse models.ProductSubscription
+	productResponse.ProductKey = product.ProductKey
+	productResponse.FundTypeName = product.FundTypeName
+	productResponse.ProductName = product.ProductName
+	productResponse.NavDate = product.NavDate
+	productResponse.NavValue = product.NavValue.Truncate(2)
+	productResponse.PerformD1 = product.PerformD1.Truncate(2)
+	productResponse.PerformM1 = product.PerformM1.Truncate(2)
+	productResponse.PerformY1 = product.PerformY1.Truncate(2)
+	productResponse.ProductImage = product.ProductImage
+	productResponse.MinSubAmount = product.MinSubAmount.Truncate(2)
+	productResponse.MinRedAmount = product.MinRedAmount.Truncate(2)
+	productResponse.MinRedUnit = product.MinRedUnit.Truncate(2)
+	productResponse.ProspectusLink = product.ProspectusLink
+	productResponse.FfsLink = product.FfsLink
+	productResponse.RiskName = product.RiskName
+	productResponse.FeeService = product.FeeService.Truncate(0)
+	productResponse.FeeTransfer = product.FeeTransfer.Truncate(0)
+
+	var responseData models.AdminTopupData
+
+	responseData.Customer = customer
+	responseData.Product = productResponse
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+}

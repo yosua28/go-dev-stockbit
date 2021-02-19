@@ -2223,9 +2223,6 @@ func GetBankProductSubscription(c echo.Context) error {
 	var status int
 
 	productStr := c.Param("product_key")
-	log.Println(productStr)
-	log.Println(productStr)
-	log.Println(productStr)
 	key, _ := strconv.ParseUint(productStr, 10, 64)
 	if key == 0 {
 		return lib.CustomError(http.StatusNotFound)

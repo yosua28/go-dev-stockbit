@@ -18643,6 +18643,104 @@
           }
         }
       }
+    },
+    "/admin/transaction/topupdata/{customer_key}/{product_key}": {
+      "get": {
+        "description": "Get Data Topup Customer Product",
+        "tags": [
+          "Transaction Action Admin Subscription"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_key",
+            "in": "path",
+            "description": "customer key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "product_key",
+            "in": "path",
+            "description": "Product key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "customer": {
+                      "customer_key": "55",
+                      "name": "202010000001 - Annafrid MP Nikijuluw"
+                    },
+                    "product": {
+                      "product_key": 2,
+                      "fund_type_name": "Pendapatan Tetap",
+                      "product_name": "Dana Syariah",
+                      "nav_date": "18 January 2021",
+                      "nav_value": 2768.77,
+                      "perform_d1": 0.11,
+                      "perform_m1": 0.51,
+                      "perform_y1": 6.16,
+                      "product_image": "https://devapi.mncasset.com/images/product/bdm.jpg",
+                      "min_sub_amount": 100000,
+                      "min_red_amount": 100000,
+                      "min_red_unit": 0,
+                      "prospectus_link": "https://www.mncasset.com/downloads/332-Prospektus-MNC-Dana-Syariah.pdf",
+                      "ffs_link": "https://www.mncasset.com/downloads/531-FFS_BDM_300720.pdf",
+                      "risk_name": "Moderat",
+                      "fee_service": 0,
+                      "fee_transfer": 0
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {

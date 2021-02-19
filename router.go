@@ -257,6 +257,7 @@ func router() *echo.Echo {
 	admin.GET("/product/subscription", controllers.AdminGetProductSubscription).Name = "AdminGetProductSubscription"
 	admin.GET("/bankproduct/subscription/:product_key", controllers.GetBankProductSubscription).Name = "GetBankProductSubscription"
 	admin.POST("/createtransaction/subscription", controllers.CreateTransactionSubscription).Name = "CreateTransactionSubscription"
+	admin.GET("/transaction/topupdata/:customer_key/:product_key", controllers.GetTopupData).Name = "getTopupData"
 
 	//Transaction Action Admin Redemption
 	//redemption
