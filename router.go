@@ -267,6 +267,8 @@ func router() *echo.Echo {
 	//switching
 	admin.GET("/transaction/switching", controllers.GetTransactionSwitching).Name = "GetTransactionSwitching"
 
+	admin.POST("/transaction/delete", controllers.DeleteTransactionAdmin).Name = "DeleteTransactionAdmin"
+
 	return e
 }
 

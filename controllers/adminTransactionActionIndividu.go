@@ -867,3 +867,59 @@ func GetTopupData(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
+
+func DeleteTransactionAdmin(c echo.Context) error {
+	var err error
+	decimal.MarshalJSONWithoutQuotes = true
+
+	params := make(map[string]string)
+
+	keyStr := c.FormValue("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		log.Error("Missing required parameter: key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
+	}
+
+	var transaction models.TrTransaction
+	_, err = models.GetTrTransaction(&transaction, keyStr)
+	if err != nil {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	if transaction.TransStatusKey != uint64(2) { //cek sudah diproses belum
+		log.Error("Transaction in process, can't delete data.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction in process, can't delete data.", "Transaction in process, can't delete data.")
+	}
+
+	if transaction.TransSource != nil {
+		if *transaction.TransSource != uint64(141) { //cek transaction hanya manual transaksi oleh admin
+			log.Error("Can't delete data.")
+			return lib.CustomError(http.StatusBadRequest, "Can't delete data.", "Can't delete data.")
+		}
+	} else {
+		log.Error("Can't delete data.")
+		return lib.CustomError(http.StatusBadRequest, "Can't delete data.", "Can't delete data.")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["transaction_key"] = keyStr
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateTrTransaction(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+
+}
