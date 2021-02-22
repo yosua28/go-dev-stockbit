@@ -17886,6 +17886,8 @@
                   "data": [
                     {
                       "transaction_key": 1,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -17900,6 +17902,8 @@
                     },
                     {
                       "transaction_key": 2,
+                      "customer_key": 10,
+                      "product_key": 10,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -18067,6 +18071,8 @@
                   "data": [
                     {
                       "transaction_key": 3,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -18081,6 +18087,8 @@
                     },
                     {
                       "transaction_key": 4,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -18095,6 +18103,8 @@
                     },
                     {
                       "transaction_key": 18,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -18262,6 +18272,8 @@
                   "data": [
                     {
                       "transaction_key": 34,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -18276,6 +18288,8 @@
                     },
                     {
                       "transaction_key": 35,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga yuyu",
@@ -18290,6 +18304,8 @@
                     },
                     {
                       "transaction_key": 57,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga",
@@ -18304,6 +18320,8 @@
                     },
                     {
                       "transaction_key": 58,
+                      "customer_key": 40,
+                      "product_key": 1,
                       "branch_name": "MNC ASSET HO (BRANCH)",
                       "agent_name": "SALES MNC DUIT",
                       "customer_name": "Aldy Yoga",
@@ -18610,9 +18628,7 @@
                     "message_server": "OK",
                     "message_client": "OK"
                   },
-                  "data": {
-                    "request_key": "1"
-                  }
+                  "data": ""
                 }
               }
             }

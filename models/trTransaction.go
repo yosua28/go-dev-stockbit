@@ -155,6 +155,8 @@ type AdminTrTransactionList struct {
 
 type AdminTrTransactionInquiryList struct {
 	TransactionKey uint64          `json:"transaction_key"`
+	CustomerKey    uint64          `json:"customer_key,omitempty"`
+	ProductKey     uint64          `json:"product_key,omitempty"`
 	BranchName     string          `json:"branch_name"`
 	AgentName      string          `json:"agent_name"`
 	CustomerName   string          `json:"customer_name"`

@@ -1516,9 +1516,20 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			//create agent customer
 			paramsAgentCustomer := make(map[string]string)
 			paramsAgentCustomer["customer_key"] = requestID
+
 			paramsAgentCustomer["agent_key"] = "1"
+			if oareq.SalesCode != nil {
+				var agent models.MsAgent
+				var salcode string
+				salcode = *oareq.SalesCode
+				status, err = models.GetMsAgentByField(&agent, salcode, "agent_code")
+				if err == nil {
+					paramsAgentCustomer["agent_key"] = strconv.FormatUint(agent.AgentKey, 10)
+				}
+			}
+
 			paramsAgentCustomer["rec_status"] = "1"
-			paramsAgentCustomer["eff_date"] = time.Now().Format(dateLayout)
+			paramsAgentCustomer["eff_date"] = oareq.OaEntryStart
 			paramsAgentCustomer["rec_created_date"] = time.Now().Format(dateLayout)
 			paramsAgentCustomer["rec_created_by"] = strKey
 			status, err = models.CreateMsAgentCustomer(paramsAgentCustomer)

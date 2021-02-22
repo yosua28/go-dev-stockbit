@@ -311,6 +311,8 @@ func getListAdminTransaction(c echo.Context, trType []string) error {
 		var data models.AdminTrTransactionInquiryList
 
 		data.TransactionKey = tr.TransactionKey
+		data.CustomerKey = tr.CustomerKey
+		data.ProductKey = tr.ProductKey
 
 		if tr.BranchKey != nil {
 			if n, ok := branchData[*tr.BranchKey]; ok {

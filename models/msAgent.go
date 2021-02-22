@@ -65,3 +65,15 @@ func GetMsAgent(c *MsAgent, key string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetMsAgentByField(c *MsAgent, value string, field string) (int, error) {
+	query := `SELECT ms_agent.* FROM ms_agent WHERE ms_agent.rec_status = 1 AND ms_agent.` + field + ` = ` + value
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
