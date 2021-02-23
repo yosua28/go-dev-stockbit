@@ -2163,3 +2163,48 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetAdminListCustomerRedemption(c echo.Context) error {
+
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	//if user admin role 7 branch
+	var roleKeyBranchEntry uint64
+	roleKeyBranchEntry = 7
+	if lib.Profile.RoleKey == roleKeyBranchEntry {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["d.branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
+
+	paramsLike := make(map[string]string)
+
+	var customer []models.CustomerDropdown
+
+	status, err = models.GetCustomerRedemptionDropdown(&customer, params, paramsLike)
+
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(customer) < 1 {
+		log.Error("Customer not found")
+		return lib.CustomError(http.StatusNotFound, "Customer not found", "Customer not found")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = customer
+
+	return c.JSON(http.StatusOK, response)
+}

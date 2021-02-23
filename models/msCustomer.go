@@ -711,3 +711,69 @@ func GetCustomerDropdown(c *[]CustomerDropdown, params map[string]string, params
 
 	return http.StatusOK, nil
 }
+
+func GetCustomerRedemptionDropdown(c *[]CustomerDropdown, params map[string]string, paramsLike map[string]string) (int, error) {
+
+	query := `SELECT 
+				c.customer_key AS customer_key,
+				CONCAT(c.unit_holder_idno, " - ", c.full_name) AS name 
+			FROM tr_balance AS b
+			INNER JOIN tr_transaction_confirmation AS tc  ON tc.tc_key = b.tc_key
+			INNER JOIN tr_transaction AS t ON t.transaction_key = tc.transaction_key
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key
+			INNER JOIN sc_user_login AS l ON l.customer_key = c.customer_key 
+			INNER JOIN sc_user_dept AS d ON d.user_dept_key = l.user_dept_key 
+			WHERE c.rec_status = 1 AND l.rec_status = 1 AND c.investor_type IN (263, 264)
+			AND b.balance_unit > 0 AND tc.rec_status = 1 AND t.rec_status = 1 `
+
+	var present bool
+	var condition string
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	for fieldLike, valueLike := range paramsLike {
+		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+	query += " GROUP BY c.customer_key"
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	var conditionOrder string
+	if orderBy, present = params["orderBy"]; present == true {
+		conditionOrder += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			conditionOrder += " " + orderType
+		}
+	}
+
+	query += conditionOrder
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
