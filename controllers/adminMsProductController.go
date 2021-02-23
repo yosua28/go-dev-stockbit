@@ -2248,3 +2248,104 @@ func GetBankProductSubscription(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func AdminGetProductRedemption(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	customerKeyStr := c.Param("customer_key")
+	var cus models.MsCustomer
+	if customerKeyStr != "" {
+		customerKey, err := strconv.ParseUint(customerKeyStr, 10, 64)
+		if err == nil && customerKey > 0 {
+			status, err = models.GetMsCustomer(&cus, customerKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Customer tidak ditemukan")
+			}
+			if cus.CifSuspendFlag == uint8(1) {
+				log.Error("Customer Suspended")
+				return lib.CustomError(http.StatusBadRequest, "Customer Suspended", "Customer Suspended")
+			}
+		} else {
+			log.Error("Wrong input for parameter: customer_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: customer_key", "Wrong input for parameter: customer_key")
+		}
+	} else {
+		log.Error("Missing required parameter: customer_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: customer_key", "Missing required parameter: customer_key")
+	}
+
+	var products []models.ProductRedemption
+	status, err = models.AdminGetProductRedemption(&products, customerKeyStr)
+
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(products) < 1 {
+		log.Error("Product not found")
+		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
+	}
+
+	var acaIds []string
+	for _, pr := range products {
+		if _, ok := lib.Find(acaIds, strconv.FormatUint(pr.AcaKey, 10)); !ok {
+			acaIds = append(acaIds, strconv.FormatUint(pr.AcaKey, 10))
+		}
+	}
+
+	//mapping Balance Unit
+	var balances []models.SumBalanceUnit
+	if len(acaIds) > 0 {
+		status, err = models.GetSumBalanceUnit(&balances, acaIds)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	balanceData := make(map[uint64]models.SumBalanceUnit)
+	for _, b := range balances {
+		balanceData[b.AcaKey] = b
+	}
+
+	var productList []models.ProductRedemption
+	zero := decimal.NewFromInt(0)
+	for _, pr := range products {
+		if n, ok := balanceData[pr.AcaKey]; ok {
+			if n.Unit.Cmp(zero) == 1 {
+				var prod models.ProductRedemption
+				prod.ProductKey = pr.ProductKey
+				prod.FundTypeName = pr.FundTypeName
+				prod.ProductName = pr.ProductName
+				prod.NavDate = pr.NavDate
+				prod.NavValue = pr.NavValue.Truncate(2)
+				prod.PerformD1 = pr.PerformD1.Truncate(2)
+				prod.PerformM1 = pr.PerformM1.Truncate(2)
+				prod.PerformY1 = pr.PerformY1.Truncate(2)
+				prod.ProductImage = pr.ProductImage
+				prod.MinSubAmount = pr.MinSubAmount.Truncate(2)
+				prod.MinRedAmount = pr.MinRedAmount.Truncate(2)
+				prod.MinRedUnit = pr.MinRedUnit.Truncate(2)
+				prod.ProspectusLink = pr.ProspectusLink
+				prod.FfsLink = pr.FfsLink
+				prod.RiskName = pr.RiskName
+				prod.FeeService = pr.FeeService.Truncate(0)
+				prod.FeeTransfer = pr.FeeTransfer.Truncate(0)
+				prod.AcaKey = pr.AcaKey
+				prod.Unit = n.Unit.Truncate(2)
+				prod.NilaiInvestasi = n.Unit.Mul(prod.NavValue).Truncate(0)
+				productList = append(productList, prod)
+			}
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = productList
+
+	return c.JSON(http.StatusOK, response)
+}

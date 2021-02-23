@@ -11,39 +11,39 @@ import (
 )
 
 type TrBalance struct {
-	BalanceKey        uint64   `db:"balance_key"               json:"balance_key"`
-	AcaKey            uint64   `db:"aca_key"                   json:"aca_key"`
-	TcKey             uint64   `db:"tc_key"                    json:"tc_key"`
-	BalanceDate       string   `db:"balance_date"              json:"balance_date"`
+	BalanceKey        uint64           `db:"balance_key"               json:"balance_key"`
+	AcaKey            uint64           `db:"aca_key"                   json:"aca_key"`
+	TcKey             uint64           `db:"tc_key"                    json:"tc_key"`
+	BalanceDate       string           `db:"balance_date"              json:"balance_date"`
 	BalanceUnit       decimal.Decimal  `db:"balance_unit"              json:"balance_unit"`
 	AvgNav            *decimal.Decimal `db:"avg_nav"                   json:"avg_nav"`
-	TcKeyRed          *uint64  `db:"tc_key_red"                json:"tc_key_red"`
-	RecOrder          *uint64  `db:"rec_order"                 json:"rec_order"`
-	RecStatus         uint8    `db:"rec_status"                json:"rec_status"`
-	RecCreatedDate    *string  `db:"rec_created_date"          json:"rec_created_date"`
-	RecCreatedBy      *string  `db:"rec_created_by"            json:"rec_created_by"`
-	RecModifiedDate   *string  `db:"rec_modified_date"         json:"rec_modified_date"`
-	RecModifiedBy     *string  `db:"rec_modified_by"           json:"rec_modified_by"`
-	RecImage1         *string  `db:"rec_image1"                json:"rec_image1"`
-	RecImage2         *string  `db:"rec_image2"                json:"rec_image2"`
-	RecApprovalStatus *uint8   `db:"rec_approval_status"       json:"rec_approval_status"`
-	RecApprovalStage  *uint64  `db:"rec_approval_stage"        json:"rec_approval_stage"`
-	RecApprovedDate   *string  `db:"rec_approved_date"         json:"rec_approved_date"`
-	RecApprovedBy     *string  `db:"rec_approved_by"           json:"rec_approved_by"`
-	RecDeletedDate    *string  `db:"rec_deleted_date"          json:"rec_deleted_date"`
-	RecDeletedBy      *string  `db:"rec_deleted_by"            json:"rec_deleted_by"`
-	RecAttributeID1   *string  `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
-	RecAttributeID2   *string  `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
-	RecAttributeID3   *string  `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+	TcKeyRed          *uint64          `db:"tc_key_red"                json:"tc_key_red"`
+	RecOrder          *uint64          `db:"rec_order"                 json:"rec_order"`
+	RecStatus         uint8            `db:"rec_status"                json:"rec_status"`
+	RecCreatedDate    *string          `db:"rec_created_date"          json:"rec_created_date"`
+	RecCreatedBy      *string          `db:"rec_created_by"            json:"rec_created_by"`
+	RecModifiedDate   *string          `db:"rec_modified_date"         json:"rec_modified_date"`
+	RecModifiedBy     *string          `db:"rec_modified_by"           json:"rec_modified_by"`
+	RecImage1         *string          `db:"rec_image1"                json:"rec_image1"`
+	RecImage2         *string          `db:"rec_image2"                json:"rec_image2"`
+	RecApprovalStatus *uint8           `db:"rec_approval_status"       json:"rec_approval_status"`
+	RecApprovalStage  *uint64          `db:"rec_approval_stage"        json:"rec_approval_stage"`
+	RecApprovedDate   *string          `db:"rec_approved_date"         json:"rec_approved_date"`
+	RecApprovedBy     *string          `db:"rec_approved_by"           json:"rec_approved_by"`
+	RecDeletedDate    *string          `db:"rec_deleted_date"          json:"rec_deleted_date"`
+	RecDeletedBy      *string          `db:"rec_deleted_by"            json:"rec_deleted_by"`
+	RecAttributeID1   *string          `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
+	RecAttributeID2   *string          `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
+	RecAttributeID3   *string          `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
 }
 
 type TrBalanceCustomerProduk struct {
-	BalanceKey     uint64  `db:"balance_key"               json:"balance_key"`
-	AcaKey         uint64  `db:"aca_key"                   json:"aca_key"`
+	BalanceKey     uint64          `db:"balance_key"               json:"balance_key"`
+	AcaKey         uint64          `db:"aca_key"                   json:"aca_key"`
 	BalanceUnit    decimal.Decimal `db:"balance_unit"              json:"balance_unit"`
-	TcKey          uint64  `db:"tc_key"                    json:"tc_key"`
-	TransactionKey uint64  `db:"transaction_key"           json:"transaction_key"`
-	NavDate        string  `db:"nav_date"                  json:"nav_date"`
+	TcKey          uint64          `db:"tc_key"                    json:"tc_key"`
+	TransactionKey uint64          `db:"transaction_key"           json:"transaction_key"`
+	NavDate        string          `db:"nav_date"                  json:"nav_date"`
 }
 
 type AvgNav struct {
@@ -198,5 +198,38 @@ func UpdateTrBalance(params map[string]string, value string, field string) (int,
 		// log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+type SumBalanceUnit struct {
+	AcaKey uint64          `db:"aca_key"           json:"aca_key"`
+	Unit   decimal.Decimal `db:"unit"              json:"unit"`
+}
+
+func GetSumBalanceUnit(c *[]SumBalanceUnit, acaKeys []string) (int, error) {
+	inQuery := strings.Join(acaKeys, ",")
+	query := `SELECT
+					t.aca_key as aca_key,
+					SUM(t.balance_unit) AS unit
+				FROM
+					(
+						SELECT 
+							*
+						FROM tr_balance 
+						WHERE balance_key IN (SELECT MAX(balance_key) AS id 
+						FROM tr_balance WHERE aca_key IN(` + inQuery + `)
+						GROUP BY tc_key
+					) ORDER BY balance_key
+				) AS t
+				GROUP BY t.aca_key`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }
