@@ -925,3 +925,32 @@ func DeleteTransactionAdmin(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 
 }
+
+func GetCustomerBankAccountRedemption(c echo.Context) error {
+
+	var err error
+	var status int
+
+	keyStr := c.Param("customer_key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var customerBankAccountInfo []models.MsCustomerBankAccountInfo
+	status, err = models.GetAllMsCustomerBankAccountTransaction(&customerBankAccountInfo, keyStr)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = customerBankAccountInfo
+
+	return c.JSON(http.StatusOK, response)
+}

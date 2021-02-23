@@ -19021,6 +19021,101 @@
           }
         }
       }
+    },
+    "/admin/transaction/customerbankredemption/{customer_key}": {
+      "get": {
+        "description": "Get All customer bank account customer",
+        "tags": [
+          "Transaction Action Admin Redemption"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_key",
+            "in": "path",
+            "description": "customer key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "cust_bankacc_key": 120,
+                      "bank_name": "BANK DANAMON",
+                      "account_no": "003538736061",
+                      "account_name": "LENNY TRIANA",
+                      "branch_name": "CABANG KEBON SIRIH JAKARTA"
+                    },
+                    {
+                      "cust_bankacc_key": 121,
+                      "bank_name": "BRI",
+                      "account_no": "039901008976509",
+                      "account_name": "LENNY TRIANA",
+                      "branch_name": "KC JAKARTA KALIDERES"
+                    },
+                    {
+                      "cust_bankacc_key": 122,
+                      "bank_name": "BCA",
+                      "account_no": "6815010951",
+                      "account_name": "LENNY TRIANA",
+                      "branch_name": "KCP MNC PLAZA"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
