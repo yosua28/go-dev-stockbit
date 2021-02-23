@@ -44,6 +44,11 @@ type GenLookup struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"       json:"rec_attribute_id3"`
 }
 
+type MetodePerhitungan struct {
+	Key  string `json:"key"`
+	Name string `json:"name"`
+}
+
 func GetAllGenLookup(c *[]GenLookup, params map[string]string) (int, error) {
 	query := `SELECT
               gen_lookup.* FROM 

@@ -1,13 +1,13 @@
 package controllers
 
 import (
-	"api/models"
 	"api/lib"
+	"api/models"
 	"net/http"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetGenLookup(c echo.Context) error {
@@ -20,7 +20,7 @@ func GetGenLookup(c echo.Context) error {
 	groupKey, _ := strconv.ParseUint(groupKeyStr, 10, 64)
 	if groupKey == 0 {
 		log.Error("Group key should be number")
-		return lib.CustomError(http.StatusNotFound,"Group key should be number","Group key should be number")
+		return lib.CustomError(http.StatusNotFound, "Group key should be number", "Group key should be number")
 	}
 
 	params["lkp_group_key"] = groupKeyStr
@@ -36,7 +36,7 @@ func GetGenLookup(c echo.Context) error {
 
 	for _, lkp := range lookupDB {
 		var data models.GenLookupInfo
-		if lkp.LkpName != nil{
+		if lkp.LkpName != nil {
 			data.Name = *lkp.LkpName
 		}
 		data.Value = lkp.LookupKey
@@ -51,7 +51,7 @@ func GetGenLookup(c echo.Context) error {
 	}
 
 	var responseData []models.GenLookupGroupList
-	
+
 	for _, lkpGroup := range lkpGroupDB {
 		var data models.GenLookupGroupList
 
@@ -59,7 +59,7 @@ func GetGenLookup(c echo.Context) error {
 
 		if lkp, ok := lookupData[lkpGroup.LkpGroupKey]; ok {
 			data.Lookup = &lkp
-		} 
+		}
 
 		responseData = append(responseData, data)
 	}
@@ -69,6 +69,32 @@ func GetGenLookup(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetMetodePerhitungan(c echo.Context) error {
+	var responseData []models.MetodePerhitungan
+
+	var data1 models.MetodePerhitungan
+	data1.Key = "1"
+	data1.Name = "All Units"
+	var data2 models.MetodePerhitungan
+	data2.Key = "2"
+	data2.Name = "Unit Penyertaan"
+	var data3 models.MetodePerhitungan
+	data3.Key = "3"
+	data3.Name = "Nominal"
+
+	responseData = append(responseData, data1)
+	responseData = append(responseData, data2)
+	responseData = append(responseData, data3)
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
 	return c.JSON(http.StatusOK, response)
 }

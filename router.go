@@ -265,6 +265,7 @@ func router() *echo.Echo {
 	admin.GET("/transaction/redemption", controllers.GetTransactionRedemption).Name = "GetTransactionRedemption"
 	admin.GET("/product/redemption/:customer_key", controllers.AdminGetProductRedemption).Name = "AdminGetProductRedemption"
 	admin.GET("/transaction/customerbankredemption/:customer_key", controllers.GetCustomerBankAccountRedemption).Name = "GetCustomerBankAccountRedemption"
+	admin.GET("/metode-perhitungan", controllers.GetMetodePerhitungan).Name = "GetMetodePerhitungan"
 
 	//Transaction Action Admin Switching
 	//switching
