@@ -233,3 +233,35 @@ func GetSumBalanceUnit(c *[]SumBalanceUnit, acaKeys []string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetBalanceUnitByCustomerAndProduct(c *SumBalanceUnit, customerKey string, productKey string) (int, error) {
+	query := `SELECT
+				t.aca_key AS aca_key,
+				SUM(t.balance_unit) AS unit
+			FROM
+				(
+					SELECT 
+						*
+					FROM tr_balance
+					WHERE balance_key IN 
+					(
+						SELECT MAX(t.balance_key) AS id 
+						FROM tr_balance AS t
+						INNER JOIN tr_account_agent AS aca ON aca.aca_key = t.aca_key
+						INNER JOIN tr_account AS ta ON ta.acc_key = aca.acc_key
+						WHERE ta.customer_key = '` + customerKey + `' AND ta.product_key = '` + productKey + `'
+						GROUP BY tc_key
+					) ORDER BY balance_key
+				) AS t
+			GROUP BY t.aca_key`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

@@ -18564,7 +18564,7 @@
     },
     "/admin/createtransaction/subscription": {
       "post": {
-        "description": "Get All Bank Product Subscription",
+        "description": "Create Transaksi Manual Subscription",
         "tags": [
           "Transaction Action Admin Subscription"
         ],
@@ -19178,6 +19178,100 @@
             "content": {
               "text/plain": {
                 "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/createtransaction/redemption": {
+      "post": {
+        "description": "Create Transaksi Manual Redemption",
+        "tags": [
+          "Transaction Action Admin Redemption"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  },
+                  "metode_perhitungan": {
+                    "type": "integer"
+                  },
+                  "trans_amount": {
+                    "type": "number"
+                  },
+                  "trans_unit": {
+                    "type": "string"
+                  },
+                  "bank_redemption": {
+                    "type": "integer"
+                  },
+                  "trans_remarks": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "customer_key",
+                  "product_key",
+                  "trans_amount",
+                  "trans_unit",
+                  "metode_perhitungan",
+                  "bank_redemption"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
               }
             }
           },
