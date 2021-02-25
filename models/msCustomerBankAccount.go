@@ -186,3 +186,26 @@ func CheckMsBankAccountPengkinianData(c *CheckBankAccountPengkinianData, custome
 
 	return http.StatusOK, nil
 }
+
+func GetMsCustomerBankAccountTransactionByCustBankaccKey(c *MsCustomerBankAccountInfo, custBankaccKey string) (int, error) {
+	query2 := `SELECT 
+				ba.cust_bankacc_key AS cust_bankacc_key, 
+				bank.bank_fullname AS bank_name, 
+				b.account_no AS account_no, 
+				b.account_holder_name AS account_name,
+				b.branch_name as branch_name 
+			FROM ms_customer_bank_account AS ba 
+			INNER JOIN ms_bank_account AS b ON b.bank_account_key = ba.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = b.bank_key`
+	query := query2 + " WHERE ba.rec_status = 1 AND ba.cust_bankacc_key = '" + custBankaccKey + "'"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

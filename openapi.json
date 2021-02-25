@@ -19285,6 +19285,101 @@
           }
         }
       }
+    },
+    "/admin/createtransaction/switching": {
+      "post": {
+        "description": "Create Transaksi Manual Switching",
+        "tags": [
+          "Transaction Action Admin Switching"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_key": {
+                    "type": "integer"
+                  },
+                  "product_from": {
+                    "type": "integer"
+                  },
+                  "metode_perhitungan": {
+                    "type": "integer"
+                  },
+                  "trans_amount": {
+                    "type": "number"
+                  },
+                  "trans_unit": {
+                    "type": "string"
+                  },
+                  "product_to": {
+                    "type": "integer"
+                  },
+                  "trans_remarks": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "customer_key",
+                  "product_from",
+                  "metode_perhitungan",
+                  "trans_amount",
+                  "trans_unit",
+                  "product_to",
+                  "trans_remarks"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
