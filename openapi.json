@@ -19331,8 +19331,7 @@
                   "metode_perhitungan",
                   "trans_amount",
                   "trans_unit",
-                  "product_to",
-                  "trans_remarks"
+                  "product_to"
                 ]
               }
             }
