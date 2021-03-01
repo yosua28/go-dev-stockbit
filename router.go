@@ -97,6 +97,7 @@ func router() *echo.Echo {
 	auth.PUT("/changepassword", controllers.ChangePassword).Name = "ChangePassword"
 	auth.GET("/servertime", controllers.CurrentTime).Name = "CurrentTime"
 	e.POST("/forgotpassword", controllers.ForgotPassword).Name = "ForgotPassword"
+	e.PUT("/changeforgotpassword", controllers.ChangeForgotPassword).Name = "ForgotPassword"
 
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"

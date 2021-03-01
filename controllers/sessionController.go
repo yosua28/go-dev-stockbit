@@ -780,14 +780,14 @@ func ForgotPassword(c echo.Context) error {
 	str := string(buf)
 	encryptedPasswordByte := sha256.Sum256([]byte(str))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
-	dateLayout := "2006-01-02 15:04:05"
+	// dateLayout := "2006-01-02 15:04:05"
 	params = make(map[string]string)
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
-	params["ulogin_must_changepwd"] = "1"
-	params["last_password_changed"] = time.Now().Format(dateLayout)
-	params["ulogin_password"] = encryptedPassword
-	params["ulogin_locked"] = "0"
-	params["ulogin_failed_count"] = "0"
+	params["string_token"] = encryptedPassword
+	// params["last_password_changed"] = time.Now().Format(dateLayout)
+	// params["ulogin_password"] = encryptedPassword
+	// params["ulogin_locked"] = "0"
+	// params["ulogin_failed_count"] = "0"
 
 	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
@@ -808,7 +808,7 @@ func ForgotPassword(c echo.Context) error {
 		Password string
 		FileUrl  string
 		Name     string
-	}{Password: str, FileUrl: config.FileUrl + "/images/mail", Name: accountData.UloginFullName}); err != nil {
+	}{Password: encryptedPassword, FileUrl: config.FileUrl + "/images/mail", Name: accountData.UloginFullName}); err != nil {
 		log.Println(err)
 	}
 
@@ -1444,5 +1444,158 @@ func LoginBo(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = data
 	log.Info(response)
+	return c.JSON(http.StatusOK, response)
+}
+
+func ChangeForgotPassword(c echo.Context) error {
+	
+	var err error
+
+	token := c.FormValue("token")
+	if token == "" {
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Token tidak ditemukan")
+	}
+	params := make(map[string]string)
+	params["string_token"] = token
+	var userLogin []models.ScUserLogin
+	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(http.StatusBadRequest, "Error get email", "Gagal mendapatkan data email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("No matching token " + token)
+		return lib.CustomError(http.StatusBadRequest, "Token not found", "Token tidak ditemukan")
+	}
+
+	accountData := userLogin[0]
+	log.Info("Found account with email " + accountData.UloginEmail)
+	// Check parameters
+	newPassword1 := c.FormValue("new_password1")
+	if newPassword1 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	newPassword2 := c.FormValue("new_password2")
+	if newPassword2 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+
+
+	if newPassword1 != newPassword2 {
+		log.Error("Password doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "Password doesnt match", "Password doesnt match")
+	}
+	// Validate password
+	length, number, upper, special := verifyPassword(newPassword1)
+	if length == false || number == false || upper == false || special == false {
+		log.Error("Password does meet the criteria")
+		return lib.CustomError(http.StatusBadRequest, "Password does meet the criteria", "Your password need at least 8 character length, has lower and upper case letter, has numeric letter, and has special character")
+	}
+
+	// Encrypt password
+	encryptedPasswordByte := sha256.Sum256([]byte(newPassword1))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["ulogin_password"] = encryptedPassword
+	params["last_password_changed"] = time.Now().Format(dateLayout)
+	params["ulogin_must_changepwd"] = "1"
+	params["string_token"] = ""
+	params["ulogin_failed_count"] = "0"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//insert table sc_user_message
+	strKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	strUserLoginKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strKey
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = "Perubahan Kata Sandi Berhasil"
+	paramsUserMessage["umessage_body"] = "Kata sandi kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan kata sandi, mohon segera menghubungi customer service kami."
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strKey
+
+	_, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("Error create user message")
+	}
+
+	//kirim email
+	t := template.New("index-sukses-ubah-password.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-sukses-ubah-password.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var customer models.MsCustomer
+
+	fullnameuser := accountData.UloginFullName
+
+	if accountData.CustomerKey != nil {
+		strCustomerKey := strconv.FormatUint(*accountData.CustomerKey, 10)
+		_, err = models.GetMsCustomer(&customer, strCustomerKey)
+		if err == nil {
+			fullnameuser = customer.FullName
+		}
+	}
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl,
+		struct {
+			Name    string
+			FileUrl string
+		}{
+			Name:    fullnameuser,
+			FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", accountData.UloginEmail)
+	mailer.SetHeader("Subject", "[MNC Duit] Berhasil Merubah Kata Sandi")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+	}else{
+		log.Info("Email sent")
+	}
+	
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 }

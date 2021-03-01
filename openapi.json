@@ -897,6 +897,77 @@
         }
       }
     },
+    "/changeforgotpassword": {
+      "put": {
+        "description": "Change password with token",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "new_password1": {
+                    "type": "string"
+                  },
+                  "new_password2": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "new_password1",
+                  "new_password2"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/servertime": {
       "get": {
         "description": "Curent server time",
