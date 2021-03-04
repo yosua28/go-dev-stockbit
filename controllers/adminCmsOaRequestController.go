@@ -79,6 +79,21 @@ func initAuthCsKycFundAdmin() error {
 }
 
 func GetOaRequestList(c echo.Context) error {
+	oaRequestType := "127"
+	return GetOaRequestListAdmin(c, oaRequestType)
+}
+
+func GetListPengkinianRiskProfile(c echo.Context) error {
+	oaRequestType := "128"
+	return GetOaRequestListAdmin(c, oaRequestType)
+}
+
+func GetListPengkinianPersonalData(c echo.Context) error {
+	oaRequestType := "296"
+	return GetOaRequestListAdmin(c, oaRequestType)
+}
+
+func GetOaRequestListAdmin(c echo.Context, oaRequestType string) error {
 
 	errorAuth := initAuthCsKyc()
 	if errorAuth != nil {
@@ -175,6 +190,7 @@ func GetOaRequestList(c echo.Context) error {
 	if lib.Profile.RoleKey == roleKeyKyc {
 		params["oa_status"] = oaStatusKyc
 	}
+	params["oa_request_type"] = oaRequestType
 	params["rec_status"] = "1"
 
 	var oaRequestDB []models.OaRequest

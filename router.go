@@ -276,6 +276,10 @@ func router() *echo.Echo {
 
 	admin.POST("/transaction/delete", controllers.DeleteTransactionAdmin).Name = "DeleteTransactionAdmin"
 
+	//Admin OA Pengkinian
+	admin.GET("/pengkinian/profile-risiko", controllers.GetListPengkinianRiskProfile).Name = "GetListPengkinianRiskProfile"
+	admin.GET("/pengkinian/personal-data", controllers.GetListPengkinianPersonalData).Name = "GetListPengkinianPersonalData"
+
 	return e
 }
 

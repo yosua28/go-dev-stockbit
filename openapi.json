@@ -19450,6 +19450,298 @@
           }
         }
       }
+    },
+    "/admin/pengkinian/profile-risiko": {
+      "get": {
+        "description": "Get All OA Pengkinian Profile Risiko (User Allowed : RoleKey 11 & 12)",
+        "tags": [
+          "Admin OA Pengkinian"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "oa_request_key",
+                "oa_request_type",
+                "oa_entry_start",
+                "oa_entry_end",
+                "oa_status",
+                "rec_order",
+                "rec_status"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "oa_request_key": 2,
+                      "oa_entry_start": "01 Jan 2020",
+                      "oa_entry_end": "01 Jan 2020",
+                      "oa_status": "Waiting",
+                      "email_address": "yosua@mnc.com",
+                      "phone_mobile": "081353455",
+                      "date_birth": "2020-08-04 13:01:33",
+                      "full_name": "Yosua",
+                      "idcard_no": "6543543534"
+                    },
+                    {
+                      "oa_request_key": 1,
+                      "oa_entry_start": "01 Jan 2020",
+                      "oa_entry_end": "01 Jan 2020",
+                      "oa_status": "Waiting",
+                      "email_address": "",
+                      "phone_mobile": "",
+                      "date_birth": "",
+                      "full_name": "",
+                      "idcard_no": ""
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/pengkinian/personal-data": {
+      "get": {
+        "description": "Get All OA Pengkinian Personal Data (User Allowed : RoleKey 11 & 12)",
+        "tags": [
+          "Admin OA Pengkinian"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "oa_request_key",
+                "oa_request_type",
+                "oa_entry_start",
+                "oa_entry_end",
+                "oa_status",
+                "rec_order",
+                "rec_status"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "oa_request_key": 2,
+                      "oa_entry_start": "01 Jan 2020",
+                      "oa_entry_end": "01 Jan 2020",
+                      "oa_status": "Waiting",
+                      "email_address": "yosua@mnc.com",
+                      "phone_mobile": "081353455",
+                      "date_birth": "2020-08-04 13:01:33",
+                      "full_name": "Yosua",
+                      "idcard_no": "6543543534"
+                    },
+                    {
+                      "oa_request_key": 1,
+                      "oa_entry_start": "01 Jan 2020",
+                      "oa_entry_end": "01 Jan 2020",
+                      "oa_status": "Waiting",
+                      "email_address": "",
+                      "phone_mobile": "",
+                      "date_birth": "",
+                      "full_name": "",
+                      "idcard_no": ""
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
