@@ -71,7 +71,7 @@ func GetAllMsTransactionStatus(c *[]TrTransactionStatus, params map[string]strin
 	query := `SELECT
               tr_transaction_status.*
 			  FROM tr_transaction_status
-			  WHERE tr_transaction_status.rec_status = 1`
+			  WHERE tr_transaction_status.rec_status = 1 AND tr_transaction_status.trans_status_key != 3`
 
 	var present bool
 	var whereClause []string

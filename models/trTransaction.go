@@ -367,7 +367,7 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 	query := `SELECT
               tr_transaction.*
 			  FROM tr_transaction
-			  WHERE tr_transaction.rec_status = 1`
+			  WHERE tr_transaction.rec_status = 1 AND tr_transaction.trans_status_key != 3`
 
 	if isAll == false {
 		query += " AND tr_transaction.trans_type_key != 3"
