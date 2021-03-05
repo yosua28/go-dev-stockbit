@@ -1983,3 +1983,1055 @@ func sendEmailApproveOa(fullName string, email string) {
 	}
 	log.Info("Email sent")
 }
+
+func GetDetailPengkinianProfileRisiko(c echo.Context) error {
+	keyStr := c.Param("key")
+	return ResultOaProfileRisiko(keyStr, c, false)
+}
+
+func GetDetailPengkinianProfileRisikoLastHistory(c echo.Context) error {
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oareq models.OaRequest
+	status, err := models.GetOaRequest(&oareq, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var lastKeyStr string
+
+	if oareq.OaRequestType == nil {
+		log.Error("OA Request Type Null")
+		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		if oareq.CustomerKey == nil { //Error jika belum jadi customer
+			return lib.CustomError(http.StatusBadRequest)
+		}
+		var lastHistoryOareq models.OaRequestKeyLastHistory
+		customerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+		status, err := models.AdminGetLastHistoryOaRequest(&lastHistoryOareq, customerKey, keyStr)
+		if err != nil {
+			return lib.CustomError(status)
+		}
+		lastKeyStr = strconv.FormatUint(lastHistoryOareq.OaRequestKey, 10)
+	}
+
+	if lastKeyStr == "" {
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	return ResultOaProfileRisiko(lastKeyStr, c, true)
+}
+
+func ResultOaProfileRisiko(keyStr string, c echo.Context, isHistory bool) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+	//Get parameter limit
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oareq models.OaRequest
+	status, err = models.GetOaRequest(&oareq, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	if isHistory == false {
+		strRequestType := strconv.FormatUint(*oareq.OaRequestType, 10)
+		if strRequestType != "128" { //Pengkinian Risk Profile
+			log.Error("Data tidak ditemukan. Data bukan pengkinian Risk Profile")
+			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+		}
+	}
+
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+	var roleKeyFundAdmin uint64
+	roleKeyFundAdmin = 13
+
+	log.Println(lib.Profile.RoleKey)
+
+	strOaKey := strconv.FormatUint(*oareq.Oastatus, 10)
+
+	if lib.Profile.RoleKey == roleKeyCs {
+		if isHistory == false {
+			oaStatusCs := strconv.FormatUint(uint64(258), 10)
+			if strOaKey != oaStatusCs {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
+	}
+
+	if lib.Profile.RoleKey == roleKeyKyc {
+		if isHistory == false {
+			oaStatusKyc := strconv.FormatUint(uint64(259), 10)
+			if strOaKey != oaStatusKyc {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
+	}
+
+	if lib.Profile.RoleKey == roleKeyFundAdmin {
+		if isHistory == false {
+			oaStatusFundAdmin1 := strconv.FormatUint(uint64(260), 10)
+			oaStatusFundAdmin2 := strconv.FormatUint(uint64(261), 10)
+			if (strOaKey != oaStatusFundAdmin1) && (strOaKey != oaStatusFundAdmin2) {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
+	}
+
+	var responseData models.OaRequestDetailRiskProfil
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+
+	responseData.OaRequestKey = oareq.OaRequestKey
+	date, _ := time.Parse(layout, oareq.OaEntryStart)
+	responseData.OaEntryStart = date.Format(newLayout)
+	date, _ = time.Parse(layout, oareq.OaEntryEnd)
+	responseData.OaEntryEnd = date.Format(newLayout)
+
+	var oaRequestLookupIds []string
+
+	if oareq.OaRequestType != nil {
+		if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRequestType, 10)); !ok {
+			oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRequestType, 10))
+		}
+	}
+	if oareq.Oastatus != nil {
+		if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.Oastatus, 10)); !ok {
+			oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.Oastatus, 10))
+		}
+	}
+	if oareq.OaRiskLevel != nil {
+		if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRiskLevel, 10)); !ok {
+			oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRiskLevel, 10))
+		}
+	}
+
+	//gen lookup oa request
+	var lookupOaReq []models.GenLookup
+	if len(oaRequestLookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&lookupOaReq, oaRequestLookupIds, "lookup_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range lookupOaReq {
+		gData[gen.LookupKey] = gen
+	}
+
+	if oareq.OaRequestType != nil {
+		if n, ok := gData[*oareq.OaRequestType]; ok {
+			responseData.OaRequestType = n.LkpName
+		}
+	}
+
+	if oareq.OaRiskLevel != nil {
+		if n, ok := gData[*oareq.OaRiskLevel]; ok {
+			responseData.OaRiskLevel = n.LkpName
+		}
+	}
+
+	if oareq.Oastatus != nil {
+		if n, ok := gData[*oareq.Oastatus]; ok {
+			responseData.Oastatus = *n.LkpName
+		}
+	}
+
+	//check personal data by oa request key
+	var oapersonal models.OaPersonalData
+	strKey := strconv.FormatUint(oareq.OaRequestKey, 10)
+	status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		responseData.FullName = oapersonal.FullName
+		responseData.IDCardNo = oapersonal.IDcardNo
+		date, _ = time.Parse(layout, oapersonal.DateBirth)
+		responseData.DateBirth = date.Format(newLayout)
+		responseData.PhoneNumber = oapersonal.PhoneMobile
+		responseData.EmailAddress = oapersonal.EmailAddress
+		responseData.PlaceBirth = oapersonal.PlaceBirth
+		responseData.PhoneHome = oapersonal.PhoneHome
+
+		//mapping gen lookup
+		var personalDataLookupIds []string
+		if oapersonal.Gender != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
+			}
+		}
+		if oapersonal.MaritalStatus != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.MaritalStatus, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.MaritalStatus, 10))
+			}
+		}
+		if oapersonal.Religion != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Religion, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Religion, 10))
+			}
+		}
+		if oapersonal.Education != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Education, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Education, 10))
+			}
+		}
+		//gen lookup personal data
+		var lookupPersonData []models.GenLookup
+		if len(personalDataLookupIds) > 0 {
+			status, err = models.GetGenLookupIn(&lookupPersonData, personalDataLookupIds, "lookup_key")
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+		}
+
+		pData := make(map[uint64]models.GenLookup)
+		for _, genLook := range lookupPersonData {
+			pData[genLook.LookupKey] = genLook
+		}
+
+		if oapersonal.Gender != nil {
+			if n, ok := pData[*oapersonal.Gender]; ok {
+				responseData.Gender = n.LkpName
+			}
+		}
+		if oapersonal.MaritalStatus != nil {
+			if n, ok := pData[*oapersonal.MaritalStatus]; ok {
+				responseData.MaritalStatus = n.LkpName
+			}
+		}
+		if oapersonal.Religion != nil {
+			if n, ok := pData[*oapersonal.Religion]; ok {
+				responseData.Religion = n.LkpName
+			}
+		}
+
+		var country models.MsCountry
+
+		strCountry := strconv.FormatUint(oapersonal.Nationality, 10)
+		status, err = models.GetMsCountry(&country, strCountry)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error("Error Personal Data not Found")
+				return lib.CustomError(status, err.Error(), "Personal data not found")
+			}
+		} else {
+			responseData.Nationality = &country.CouName
+		}
+
+		if oapersonal.Education != nil {
+			if n, ok := pData[*oapersonal.Education]; ok {
+				responseData.Education = n.LkpName
+			}
+		}
+
+		var oaRiskProfile []models.AdminOaRiskProfile
+		status, err = models.AdminGetOaRiskProfile(&oaRiskProfile, strKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+		responseData.RiskProfile = oaRiskProfile[0]
+
+		//mapping oa risk profile quiz
+		var oaRiskProfileQuiz []models.AdminOaRiskProfileQuiz
+		status, err = models.AdminGetOaRiskProfileQuizByOaRequestKey(&oaRiskProfileQuiz, strKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+		if len(oaRiskProfileQuiz) > 0 {
+			var questionIDs []string
+			for _, quiz := range oaRiskProfileQuiz {
+				if _, ok := lib.Find(questionIDs, strconv.FormatUint(quiz.QuizQuestionKey, 10)); !ok {
+					questionIDs = append(questionIDs, strconv.FormatUint(quiz.QuizQuestionKey, 10))
+				}
+			}
+			var optionDB []models.CmsQuizOptions
+			status, err = models.GetCmsQuizOptionsIn(&optionDB, questionIDs, "quiz_question_key")
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+
+			optionData := make(map[uint64][]models.CmsQuizOptionsInfo)
+			optionUserData := make(map[uint64]models.CmsQuizOptions)
+			if len(optionDB) > 0 {
+				for _, option := range optionDB {
+
+					optionUserData[option.QuizOptionKey] = option
+
+					var data models.CmsQuizOptionsInfo
+
+					data.QuizOptionKey = option.QuizOptionKey
+					if option.QuizOptionLabel != nil {
+						data.QuizOptionLabel = *option.QuizOptionLabel
+					}
+					if option.QuizOptionTitle != nil {
+						data.QuizOptionTitle = *option.QuizOptionTitle
+					}
+					if option.QuizOptionScore != nil {
+						data.QuizOptionScore = *option.QuizOptionScore
+					}
+					if option.QuizOptionDefault != nil {
+						data.QuizOptionDefault = *option.QuizOptionDefault
+					}
+
+					optionData[option.QuizQuestionKey] = append(optionData[option.QuizQuestionKey], data)
+				}
+			}
+
+			var riskQuiz []models.RiskProfileQuiz
+
+			for _, oaRiskQuiz := range oaRiskProfileQuiz {
+				var risk models.RiskProfileQuiz
+
+				risk.RiskProfileQuizKey = oaRiskQuiz.RiskProfileQuizKey
+				if n, ok := optionUserData[oaRiskQuiz.QuizOptionKeyUser]; ok {
+					risk.QuizOptionUser.QuizOptionKey = n.QuizOptionKey
+					if n.QuizOptionLabel != nil {
+						risk.QuizOptionUser.QuizOptionLabel = *n.QuizOptionLabel
+					}
+					if n.QuizOptionTitle != nil {
+						risk.QuizOptionUser.QuizOptionTitle = *n.QuizOptionTitle
+					}
+					if n.QuizOptionScore != nil {
+						risk.QuizOptionUser.QuizOptionScore = *n.QuizOptionScore
+					}
+					if n.QuizOptionDefault != nil {
+						risk.QuizOptionUser.QuizOptionDefault = *n.QuizOptionDefault
+					}
+				}
+				risk.QuizOptionScoreUser = oaRiskQuiz.QuizOptionScoreUser
+				risk.QuizQuestionKey = oaRiskQuiz.QuizQuestionKey
+				risk.HeaderQuizName = *oaRiskQuiz.HeaderQuizName
+				risk.QuizTitle = oaRiskQuiz.QuizTitle
+
+				if opt, ok := optionData[oaRiskQuiz.QuizQuestionKey]; ok {
+					risk.Options = opt
+				}
+
+				riskQuiz = append(riskQuiz, risk)
+			}
+			responseData.RiskProfileQuiz = riskQuiz
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetDetailPengkinianPersonalData(c echo.Context) error {
+	keyStr := c.Param("key")
+	return ResultOaPersonalData(keyStr, c, false)
+}
+
+func GetDetailPengkinianPersonalDataLastHistory(c echo.Context) error {
+	keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oareq models.OaRequest
+	status, err := models.GetOaRequest(&oareq, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var lastKeyStr string
+
+	if oareq.OaRequestType == nil {
+		log.Error("OA Request Type Null")
+		return lib.CustomError(http.StatusBadRequest)
+	} else {
+		if oareq.CustomerKey == nil { //Error jika belum jadi customer
+			return lib.CustomError(http.StatusBadRequest)
+		}
+		var lastHistoryOareq models.OaRequestKeyLastHistory
+		customerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+		status, err := models.AdminGetLastHistoryOaRequest(&lastHistoryOareq, customerKey, keyStr)
+		if err != nil {
+			return lib.CustomError(status)
+		}
+		lastKeyStr = strconv.FormatUint(lastHistoryOareq.OaRequestKey, 10)
+	}
+
+	if lastKeyStr == "" {
+		return lib.CustomError(http.StatusBadRequest)
+	}
+
+	return ResultOaPersonalData(lastKeyStr, c, true)
+}
+
+func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
+	errorAuth := initAuthCsKycFundAdmin()
+	if errorAuth != nil {
+		log.Error("User Autorizer")
+		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	}
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+	//Get parameter limit
+	// keyStr := c.Param("key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oareq models.OaRequest
+	status, err = models.GetOaRequest(&oareq, keyStr)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	var roleKeyCs uint64
+	roleKeyCs = 11
+	var roleKeyKyc uint64
+	roleKeyKyc = 12
+	var roleKeyFundAdmin uint64
+	roleKeyFundAdmin = 13
+
+	log.Println(lib.Profile.RoleKey)
+
+	strOaKey := strconv.FormatUint(*oareq.Oastatus, 10)
+
+	if lib.Profile.RoleKey == roleKeyCs {
+		if isHistory == false {
+			oaStatusCs := strconv.FormatUint(uint64(258), 10)
+			if strOaKey != oaStatusCs {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
+	}
+
+	if lib.Profile.RoleKey == roleKeyKyc {
+		if isHistory == false {
+			oaStatusKyc := strconv.FormatUint(uint64(259), 10)
+			if strOaKey != oaStatusKyc {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
+	}
+
+	if lib.Profile.RoleKey == roleKeyFundAdmin {
+		if isHistory == false {
+			oaStatusFundAdmin1 := strconv.FormatUint(uint64(260), 10)
+			oaStatusFundAdmin2 := strconv.FormatUint(uint64(261), 10)
+			if (strOaKey != oaStatusFundAdmin1) && (strOaKey != oaStatusFundAdmin2) {
+				log.Error("User Autorizer")
+				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+			}
+		}
+	}
+
+	var responseData models.OaRequestDetailResponse
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+
+	responseData.OaRequestKey = oareq.OaRequestKey
+	date, _ := time.Parse(layout, oareq.OaEntryStart)
+	responseData.OaEntryStart = date.Format(newLayout)
+	date, _ = time.Parse(layout, oareq.OaEntryEnd)
+	responseData.OaEntryEnd = date.Format(newLayout)
+
+	var oaRequestLookupIds []string
+
+	if oareq.OaRequestType != nil {
+		if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRequestType, 10)); !ok {
+			oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRequestType, 10))
+		}
+	}
+	if oareq.Oastatus != nil {
+		if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.Oastatus, 10)); !ok {
+			oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.Oastatus, 10))
+		}
+	}
+	if oareq.OaRiskLevel != nil {
+		if _, ok := lib.Find(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRiskLevel, 10)); !ok {
+			oaRequestLookupIds = append(oaRequestLookupIds, strconv.FormatUint(*oareq.OaRiskLevel, 10))
+		}
+	}
+
+	//gen lookup oa request
+	var lookupOaReq []models.GenLookup
+	if len(oaRequestLookupIds) > 0 {
+		status, err = models.GetGenLookupIn(&lookupOaReq, oaRequestLookupIds, "lookup_key")
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+	}
+
+	gData := make(map[uint64]models.GenLookup)
+	for _, gen := range lookupOaReq {
+		gData[gen.LookupKey] = gen
+	}
+
+	if oareq.OaRequestType != nil {
+		if n, ok := gData[*oareq.OaRequestType]; ok {
+			responseData.OaRequestType = n.LkpName
+		}
+	}
+
+	if oareq.OaRiskLevel != nil {
+		if n, ok := gData[*oareq.OaRiskLevel]; ok {
+			responseData.OaRiskLevel = n.LkpName
+		}
+	}
+
+	if oareq.Oastatus != nil {
+		if n, ok := gData[*oareq.Oastatus]; ok {
+			responseData.Oastatus = *n.LkpName
+		}
+	}
+
+	//check personal data by oa request key
+	var oapersonal models.OaPersonalData
+	strKey := strconv.FormatUint(oareq.OaRequestKey, 10)
+	status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		responseData.FullName = oapersonal.FullName
+		responseData.IDCardNo = oapersonal.IDcardNo
+		date, _ = time.Parse(layout, oapersonal.DateBirth)
+		responseData.DateBirth = date.Format(newLayout)
+		responseData.PhoneNumber = oapersonal.PhoneMobile
+		responseData.EmailAddress = oapersonal.EmailAddress
+		responseData.PlaceBirth = oapersonal.PlaceBirth
+		responseData.PhoneHome = oapersonal.PhoneHome
+
+		dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(*oareq.UserLoginKey, 10) + "/"
+
+		if oapersonal.PicKtp != nil && *oapersonal.PicKtp != "" {
+			path := dir + *oapersonal.PicKtp
+			responseData.PicKtp = &path
+		}
+
+		if oapersonal.PicSelfie != nil && *oapersonal.PicSelfie != "" {
+			path := dir + *oapersonal.PicSelfie
+			responseData.PicSelfie = &path
+		}
+
+		if oapersonal.PicSelfieKtp != nil && *oapersonal.PicSelfieKtp != "" {
+			path := dir + *oapersonal.PicSelfieKtp
+			responseData.PicSelfieKtp = &path
+		}
+
+		responseData.OccupCompany = oapersonal.OccupCompany
+		responseData.OccupPhone = oapersonal.OccupPhone
+		responseData.OccupWebURL = oapersonal.OccupWebUrl
+		responseData.MotherMaidenName = oapersonal.MotherMaidenName
+		responseData.BeneficialFullName = oapersonal.BeneficialFullName
+
+		//mapping gen lookup
+		var personalDataLookupIds []string
+		if oapersonal.Gender != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
+			}
+		}
+		if oapersonal.MaritalStatus != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.MaritalStatus, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.MaritalStatus, 10))
+			}
+		}
+		if oapersonal.Religion != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Religion, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Religion, 10))
+			}
+		}
+		if oapersonal.Education != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Education, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Education, 10))
+			}
+		}
+		if oapersonal.OccupJob != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupJob, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupJob, 10))
+			}
+		}
+		if oapersonal.OccupPosition != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupPosition, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupPosition, 10))
+			}
+		}
+		if oapersonal.AnnualIncome != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.AnnualIncome, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.AnnualIncome, 10))
+			}
+		}
+		if oapersonal.SourceofFund != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.SourceofFund, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.SourceofFund, 10))
+			}
+		}
+		if oapersonal.InvesmentObjectives != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.InvesmentObjectives, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.InvesmentObjectives, 10))
+			}
+		}
+		if oapersonal.Correspondence != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Correspondence, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Correspondence, 10))
+			}
+		}
+		if oapersonal.BeneficialRelation != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.BeneficialRelation, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.BeneficialRelation, 10))
+			}
+		}
+		if oapersonal.EmergencyRelation != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.EmergencyRelation, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.EmergencyRelation, 10))
+			}
+		}
+		if oapersonal.RelationType != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationType, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationType, 10))
+			}
+		}
+		if oapersonal.RelationOccupation != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationOccupation, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationOccupation, 10))
+			}
+		}
+		if oapersonal.RelationBusinessFields != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationBusinessFields, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.RelationBusinessFields, 10))
+			}
+		}
+		if oapersonal.OccupBusinessFields != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10))
+			}
+		}
+		//gen lookup personal data
+		var lookupPersonData []models.GenLookup
+		if len(personalDataLookupIds) > 0 {
+			status, err = models.GetGenLookupIn(&lookupPersonData, personalDataLookupIds, "lookup_key")
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+		}
+
+		pData := make(map[uint64]models.GenLookup)
+		for _, genLook := range lookupPersonData {
+			pData[genLook.LookupKey] = genLook
+		}
+
+		if oapersonal.Gender != nil {
+			if n, ok := pData[*oapersonal.Gender]; ok {
+				responseData.Gender = n.LkpName
+			}
+		}
+		if oapersonal.MaritalStatus != nil {
+			if n, ok := pData[*oapersonal.MaritalStatus]; ok {
+				responseData.MaritalStatus = n.LkpName
+			}
+		}
+		if oapersonal.Religion != nil {
+			if n, ok := pData[*oapersonal.Religion]; ok {
+				responseData.Religion = n.LkpName
+			}
+		}
+
+		var country models.MsCountry
+
+		strCountry := strconv.FormatUint(oapersonal.Nationality, 10)
+		status, err = models.GetMsCountry(&country, strCountry)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error("Error Personal Data not Found")
+				return lib.CustomError(status, err.Error(), "Personal data not found")
+			}
+		} else {
+			responseData.Nationality = &country.CouName
+		}
+
+		if oapersonal.Education != nil {
+			if n, ok := pData[*oapersonal.Education]; ok {
+				responseData.Education = n.LkpName
+			}
+		}
+		if oapersonal.OccupJob != nil {
+			if n, ok := pData[*oapersonal.OccupJob]; ok {
+				responseData.OccupJob = n.LkpName
+			}
+		}
+		if oapersonal.OccupPosition != nil {
+			if n, ok := pData[*oapersonal.OccupPosition]; ok {
+				responseData.OccupPosition = n.LkpName
+			}
+		}
+		if oapersonal.AnnualIncome != nil {
+			if n, ok := pData[*oapersonal.AnnualIncome]; ok {
+				responseData.AnnualIncome = n.LkpName
+			}
+		}
+		if oapersonal.SourceofFund != nil {
+			if n, ok := pData[*oapersonal.SourceofFund]; ok {
+				responseData.SourceofFund = n.LkpName
+			}
+		}
+		if oapersonal.InvesmentObjectives != nil {
+			if n, ok := pData[*oapersonal.InvesmentObjectives]; ok {
+				responseData.InvesmentObjectives = n.LkpName
+			}
+		}
+		if oapersonal.Correspondence != nil {
+			if n, ok := pData[*oapersonal.Correspondence]; ok {
+				responseData.Correspondence = n.LkpName
+			}
+		}
+		if oapersonal.BeneficialRelation != nil {
+			if n, ok := pData[*oapersonal.BeneficialRelation]; ok {
+				responseData.BeneficialRelation = n.LkpName
+			}
+		}
+		if oapersonal.OccupBusinessFields != nil {
+			if n, ok := pData[*oapersonal.OccupBusinessFields]; ok {
+				responseData.OccupBusinessFields = n.LkpName
+			}
+		}
+
+		//mapping idcard address &  domicile
+		var postalAddressIds []string
+		if oapersonal.IDcardAddressKey != nil {
+			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.IDcardAddressKey, 10)); !ok {
+				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.IDcardAddressKey, 10))
+			}
+		}
+		if oapersonal.DomicileAddressKey != nil {
+			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10)); !ok {
+				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.DomicileAddressKey, 10))
+			}
+		}
+		if oapersonal.OccupAddressKey != nil {
+			if _, ok := lib.Find(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10)); !ok {
+				postalAddressIds = append(postalAddressIds, strconv.FormatUint(*oapersonal.OccupAddressKey, 10))
+			}
+		}
+		var oaPstalAddressList []models.OaPostalAddress
+		if len(postalAddressIds) > 0 {
+			status, err = models.GetOaPostalAddressIn(&oaPstalAddressList, postalAddressIds, "postal_address_key")
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+		}
+
+		postalData := make(map[uint64]models.OaPostalAddress)
+		for _, posAdd := range oaPstalAddressList {
+			postalData[posAdd.PostalAddressKey] = posAdd
+		}
+
+		if len(postalData) > 0 {
+			if oapersonal.IDcardAddressKey != nil {
+				if p, ok := postalData[*oapersonal.IDcardAddressKey]; ok {
+					responseData.IDcardAddress.Address = p.AddressLine1
+					responseData.IDcardAddress.PostalCode = p.PostalCode
+
+					var cityIds []string
+					if p.KabupatenKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KabupatenKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KabupatenKey, 10))
+						}
+					}
+					if p.KecamatanKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KecamatanKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KecamatanKey, 10))
+						}
+					}
+
+					var cityList []models.MsCity
+					if len(cityIds) > 0 {
+						status, err = models.GetMsCityIn(&cityList, cityIds, "city_key")
+						if err != nil {
+							if err != sql.ErrNoRows {
+								log.Error(err.Error())
+								return lib.CustomError(status, err.Error(), "Failed get data")
+							}
+						}
+					}
+					cityData := make(map[uint64]models.MsCity)
+					for _, city := range cityList {
+						cityData[city.CityKey] = city
+					}
+					if p.KabupatenKey != nil {
+						if c, ok := cityData[*p.KabupatenKey]; ok {
+							responseData.IDcardAddress.Kabupaten = &c.CityName
+						}
+					}
+
+					if p.KecamatanKey != nil {
+						if c, ok := cityData[*p.KecamatanKey]; ok {
+							responseData.IDcardAddress.Kecamatan = &c.CityName
+						}
+					}
+				}
+			}
+			if oapersonal.DomicileAddressKey != nil {
+				if p, ok := postalData[*oapersonal.DomicileAddressKey]; ok {
+					responseData.DomicileAddress.Address = p.AddressLine1
+					responseData.DomicileAddress.PostalCode = p.PostalCode
+
+					var cityIds []string
+					if p.KabupatenKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KabupatenKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KabupatenKey, 10))
+						}
+					}
+					if p.KecamatanKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KecamatanKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KecamatanKey, 10))
+						}
+					}
+
+					var cityList []models.MsCity
+					if len(cityIds) > 0 {
+						status, err = models.GetMsCityIn(&cityList, cityIds, "city_key")
+						if err != nil {
+							if err != sql.ErrNoRows {
+								log.Error(err.Error())
+								return lib.CustomError(status, err.Error(), "Failed get data")
+							}
+						}
+					}
+					cityData := make(map[uint64]models.MsCity)
+					for _, city := range cityList {
+						cityData[city.CityKey] = city
+					}
+					if p.KabupatenKey != nil {
+						if c, ok := cityData[*p.KabupatenKey]; ok {
+							responseData.DomicileAddress.Kabupaten = &c.CityName
+						}
+					}
+					if p.KecamatanKey != nil {
+						if c, ok := cityData[*p.KecamatanKey]; ok {
+							responseData.DomicileAddress.Kecamatan = &c.CityName
+						}
+					}
+				}
+			}
+			if oapersonal.OccupAddressKey != nil {
+				if p, ok := postalData[*oapersonal.OccupAddressKey]; ok {
+					responseData.OccupAddressKey.Address = p.AddressLine1
+					responseData.OccupAddressKey.PostalCode = p.PostalCode
+
+					var cityIds []string
+					if p.KabupatenKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KabupatenKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KabupatenKey, 10))
+						}
+					}
+					if p.KecamatanKey != nil {
+						if _, ok := lib.Find(cityIds, strconv.FormatUint(*p.KecamatanKey, 10)); !ok {
+							cityIds = append(cityIds, strconv.FormatUint(*p.KecamatanKey, 10))
+						}
+					}
+
+					var cityList []models.MsCity
+					if len(cityIds) > 0 {
+						status, err = models.GetMsCityIn(&cityList, cityIds, "city_key")
+						if err != nil {
+							if err != sql.ErrNoRows {
+								log.Error(err.Error())
+								return lib.CustomError(status, err.Error(), "Failed get data")
+							}
+						}
+					}
+					cityData := make(map[uint64]models.MsCity)
+					for _, city := range cityList {
+						cityData[city.CityKey] = city
+					}
+					if p.KabupatenKey != nil {
+						if c, ok := cityData[*p.KabupatenKey]; ok {
+							responseData.DomicileAddress.Kabupaten = &c.CityName
+						}
+					}
+					if p.KecamatanKey != nil {
+						if c, ok := cityData[*p.KecamatanKey]; ok {
+							responseData.DomicileAddress.Kecamatan = &c.CityName
+						}
+					}
+				}
+			}
+		}
+
+		//mapping bank account
+		if oapersonal.BankAccountKey != nil {
+			var bankaccount models.MsBankAccount
+			strBank := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
+			status, err = models.GetBankAccount(&bankaccount, strBank)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					return lib.CustomError(status)
+				}
+			} else {
+				var bank models.MsBank
+				strBankKey := strconv.FormatUint(bankaccount.BankKey, 10)
+				status, err = models.GetMsBank(&bank, strBankKey)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						return lib.CustomError(status)
+					}
+				} else {
+					responseData.BankAccount.BankName = bank.BankName
+				}
+				responseData.BankAccount.AccountNo = bankaccount.AccountNo
+				responseData.BankAccount.AccountHolderName = bankaccount.AccountHolderName
+				responseData.BankAccount.BranchName = bankaccount.BranchName
+			}
+		}
+
+		//mapping relation
+		if oapersonal.RelationType != nil {
+			if n, ok := pData[*oapersonal.RelationType]; ok {
+				responseData.Relation.RelationType = n.LkpName
+			}
+		}
+		responseData.Relation.RelationFullName = oapersonal.RelationFullName
+		if oapersonal.RelationOccupation != nil {
+			if n, ok := pData[*oapersonal.RelationOccupation]; ok {
+				responseData.Relation.RelationOccupation = n.LkpName
+			}
+		}
+		if oapersonal.RelationBusinessFields != nil {
+			if n, ok := pData[*oapersonal.RelationBusinessFields]; ok {
+				responseData.Relation.RelationBusinessFields = n.LkpName
+			}
+		}
+
+		//mapping emergency
+		responseData.Emergency.EmergencyFullName = oapersonal.EmergencyFullName
+		if oapersonal.EmergencyRelation != nil {
+			if n, ok := pData[*oapersonal.EmergencyRelation]; ok {
+				responseData.Emergency.EmergencyRelation = n.LkpName
+			}
+		}
+		responseData.Emergency.EmergencyPhoneNo = oapersonal.EmergencyPhoneNo
+
+		//add response field Sinvest
+		if oareq.CustomerKey != nil {
+			var customer models.MsCustomer
+			strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+			status, err = models.GetMsCustomer(&customer, strCustomerKey)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error(err.Error())
+					return lib.CustomError(status, err.Error(), "Failed get data")
+				}
+			}
+
+			responseData.FirstName = customer.FirstName
+			responseData.MiddleName = customer.MiddleName
+			responseData.LastName = customer.LastName
+			responseData.ClientCode = customer.ClientCode
+			responseData.TinNumber = customer.TinNumber
+
+			if customer.TinIssuanceDate != nil {
+				layout := "2006-01-02 15:04:05"
+				newLayout := "02 Jan 2006"
+				date, _ := time.Parse(layout, *customer.TinIssuanceDate)
+				oke := date.Format(newLayout)
+				responseData.TinIssuanceDate = &oke
+			}
+
+			if customer.FatcaStatus != nil {
+				var fatca models.GenLookup
+				strLookKey := strconv.FormatUint(*customer.FatcaStatus, 10)
+				status, err = models.GetGenLookup(&fatca, strLookKey)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						log.Error(err.Error())
+						return lib.CustomError(status, err.Error(), "Failed get data")
+					}
+				}
+				responseData.FatcaStatus = fatca.LkpName
+			}
+
+			if customer.TinIssuanceCountry != nil {
+				var country models.MsCountry
+				strCountryKey := strconv.FormatUint(*customer.TinIssuanceCountry, 10)
+				status, err = models.GetMsCountry(&country, strCountryKey)
+				if err != nil {
+					if err != sql.ErrNoRows {
+						log.Error(err.Error())
+						return lib.CustomError(status, err.Error(), "Failed get data")
+					}
+				}
+				responseData.TinIssuanceCountry = &country.CouName
+			}
+		} else {
+			sliceName := strings.Fields(oapersonal.FullName)
+			if len(sliceName) > 0 {
+				responseData.FirstName = &sliceName[0]
+				if len(sliceName) > 1 {
+					responseData.MiddleName = &sliceName[1]
+					if len(sliceName) > 2 {
+						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
+						responseData.LastName = &lastName
+					}
+				}
+			}
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
