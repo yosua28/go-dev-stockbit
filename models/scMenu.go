@@ -168,7 +168,7 @@ func AdminGetMenuListRoleLogin(c *[]ListMenuRoleUser, roleKey string) (int, erro
 			FROM sc_endpoint_auth au 
 			INNER JOIN sc_menu AS m ON m.menu_key = au.menu_key 
 			WHERE au.role_key = ` + roleKey + ` AND au.rec_status = 1 AND m.rec_status = 1 
-			GROUP BY au.menu_key`
+			GROUP BY au.menu_key ORDER BY m.rec_order`
 
 	// Main query
 	log.Info(query)
