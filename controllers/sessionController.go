@@ -1599,3 +1599,396 @@ func ChangeForgotPassword(c echo.Context) error {
 	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 }
+
+func CreatePin(c echo.Context) error {
+	
+	var err error
+	var status int
+	// Check parameters
+	pin1 := c.FormValue("pin1")
+	if pin1 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	pin2 := c.FormValue("pin2")
+	if pin2 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+
+	// Check valid email
+	params := make(map[string]string)
+	params["ulogin_email"] = lib.Profile.Email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status, "Error get email", "Error get email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("Email not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info(accountData)
+
+	if pin1 != pin2 {
+		log.Error("Pin doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "Pin doesnt match", "Pin doesnt match")
+	}
+
+	// Encrypt pin
+	encryptedPasswordByte := sha256.Sum256([]byte(pin1))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["ulogin_pin"] = encryptedPassword
+	params["last_changed_pin"] = time.Now().Format(dateLayout)
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//insert table sc_user_message
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	strUserLoginKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strKey
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	subject := "Pembuatan pin Berhasil"
+	body := "Pin Berhasil dibuat. Apabila kamu tidak merasa melakukan pembuatan pin, mohon segera menghubungi customer service kami."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strKey
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("Error create user message")
+	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func ChangePin(c echo.Context) error {
+
+	var err error
+	var status int
+	// Check parameters
+	recentPin := c.FormValue("recent_pin")
+	if recentPin == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	newPin1 := c.FormValue("new_pin1")
+	if newPin1 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	newPin2 := c.FormValue("new_pin2")
+	if newPin2 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+
+	// Check valid email
+	params := make(map[string]string)
+	params["ulogin_email"] = lib.Profile.Email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status, "Error get email", "Error get email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("Email not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info(accountData)
+
+	// Check valid password
+	encryptedPasswordByte := sha256.Sum256([]byte(recentPin))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	if accountData.UloginPin != nil && encryptedPassword != *accountData.UloginPin {
+		log.Error("Wrong password")
+		return lib.CustomError(http.StatusUnauthorized, "Wrong pin", "Wrong pin")
+	}
+
+	if newPin1 != newPin2 {
+		log.Error("Password doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "Pin doesnt match", "Pin doesnt match")
+	}
+
+	// Encrypt password
+	encryptedPasswordByte = sha256.Sum256([]byte(newPin1))
+	encryptedPassword = hex.EncodeToString(encryptedPasswordByte[:])
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["ulogin_pin"] = encryptedPassword
+	params["last_changed_pin"] = time.Now().Format(dateLayout)
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//insert table sc_user_message
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	strUserLoginKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strKey
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	subject := "Perubahan Pin Berhasil"
+	body := "Pin kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan pin, mohon segera menghubungi customer service kami."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strKey
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("Error create user message")
+	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func ForgotPin(c echo.Context) error {
+	var err error
+	var status int
+
+	// Check valid email
+	params := make(map[string]string)
+	params["ulogin_email"] = lib.Profile.Email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status, "Error get email", "Error get email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("Email not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info("Found account with email " + accountData.UloginEmail)
+
+	rand.Seed(time.Now().UnixNano())
+	digits := "0123456789"
+	specials := "~=+%^*/()[]{}/!@#$?|"
+	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
+		"abcdefghijklmnopqrstuvwxyz" +
+		digits + specials
+	length := 8
+	buf := make([]byte, length)
+	buf[0] = digits[rand.Intn(len(digits))]
+	buf[1] = specials[rand.Intn(len(specials))]
+	for i := 2; i < length; i++ {
+		buf[i] = all[rand.Intn(len(all))]
+	}
+	rand.Shuffle(len(buf), func(i, j int) {
+		buf[i], buf[j] = buf[j], buf[i]
+	})
+	str := string(buf)
+	encryptedPasswordByte := sha256.Sum256([]byte(str))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	
+	params = make(map[string]string)
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["string_token"] = encryptedPassword
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	// Send email
+	t := template.New("index-forgot-password.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-forgot-password.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct {
+		Password string
+		FileUrl  string
+		Name     string
+	}{Password: encryptedPassword, FileUrl: config.FileUrl + "/images/mail", Name: accountData.UloginFullName}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MNC Duit] Lupa Kata Sandi")
+	mailer.SetBody("text/html", result)
+
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error(err)
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed send email")
+	}
+	log.Info("Email sent")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func ChangeForgotPin(c echo.Context) error {
+	
+	var err error
+	var status int
+	// Check parameters
+	token := c.FormValue("token")
+	if token == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	newPin1 := c.FormValue("new_pin1")
+	if newPin1 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+	newPin2 := c.FormValue("new_pin2")
+	if newPin2 == "" {
+		log.Error("Missing required parameter")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
+	}
+
+	// Check valid email
+	params := make(map[string]string)
+	params["ulogin_email"] = lib.Profile.Email
+	var userLogin []models.ScUserLogin
+	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get email")
+		return lib.CustomError(status, "Error get email", "Error get email")
+	}
+	if len(userLogin) < 1 {
+		log.Error("Email not registered")
+		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
+	}
+
+	accountData := userLogin[0]
+	log.Info(accountData)
+
+	if newPin1 != newPin2 {
+		log.Error("Password doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "Pin doesnt match", "Pin doesnt match")
+	}
+
+	// Encrypt password
+	encryptedPasswordByte := sha256.Sum256([]byte(newPin1))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["ulogin_pin"] = encryptedPassword
+	params["last_changed_pin"] = time.Now().Format(dateLayout)
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error("Error update user data")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	//insert table sc_user_message
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	strUserLoginKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sender_key"] = strKey
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	subject := "Perubahan Pin Berhasil"
+	body := "Pin kamu berhasil berubah. Apabila kamu tidak merasa melakukan perubahan pin, mohon segera menghubungi customer service kami."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strKey
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error(err.Error())
+		log.Error("Error create user message")
+	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}

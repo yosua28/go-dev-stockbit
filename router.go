@@ -98,6 +98,10 @@ func router() *echo.Echo {
 	auth.GET("/servertime", controllers.CurrentTime).Name = "CurrentTime"
 	e.POST("/forgotpassword", controllers.ForgotPassword).Name = "ForgotPassword"
 	e.PUT("/changeforgotpassword", controllers.ChangeForgotPassword).Name = "ForgotPassword"
+	auth.POST("/forgotpin", controllers.ForgotPin).Name = "ForgotPin"
+	auth.PUT("/changeforgotpin", controllers.ChangeForgotPin).Name = "ChangeForgotPin"
+	auth.PUT("/changepin", controllers.ChangePin).Name = "ChangePin"
+	auth.POST("/createpin", controllers.CreatePin).Name = "CreatePin"
 
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"

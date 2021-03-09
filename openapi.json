@@ -416,7 +416,7 @@
     },
     "/forgotpassword": {
       "post": {
-        "description": "Forgot PAssword",
+        "description": "Forgot Password",
         "tags": [
           "Session"
         ],
@@ -928,6 +928,270 @@
                   "token",
                   "new_password1",
                   "new_password2"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/forgotpin": {
+      "post": {
+        "description": "Forgot Pin",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "example": "Success verify send email/otp verification"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/changeforgotpin": {
+      "put": {
+        "description": "Change pin with token",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "token": {
+                    "type": "string"
+                  },
+                  "new_pin1": {
+                    "type": "string"
+                  },
+                  "new_pin2": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "token",
+                  "new_pin1",
+                  "new_pin2"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/changepin": {
+      "put": {
+        "description": "Change pin",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "recent_pin": {
+                    "type": "string"
+                  },
+                  "new_pin1": {
+                    "type": "string"
+                  },
+                  "new_pin2": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "recent_pin",
+                  "new_pin1",
+                  "new_pin2"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/auth/createpin": {
+      "post": {
+        "description": "Crerate pin",
+        "tags": [
+          "Session"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "pin1": {
+                    "type": "string"
+                  },
+                  "pin2": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "pin1",
+                  "pin2"
                 ]
               }
             }
@@ -18995,7 +19259,7 @@
             "schema": {
               "type": "integer"
             }
-          },
+          }
         ],
         "responses": {
           "200": {
