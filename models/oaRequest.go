@@ -105,8 +105,8 @@ type OaRequestDetailResponse struct {
 	BankAccount         BankAccount          `json:"bank_account"`
 	Relation            Relation             `json:"relation"`
 	Emergency           Emergency            `json:"emergency"`
-	RiskProfile         []AdminOaRiskProfile `json:"risk_profile"`
-	RiskProfileQuiz     []RiskProfileQuiz    `json:"risk_profile_quiz"`
+	RiskProfile         []AdminOaRiskProfile `json:"risk_profile,omitempty"`
+	RiskProfileQuiz     []RiskProfileQuiz    `json:"risk_profile_quiz,omitempty"`
 	FirstName           *string              `json:"first_name"`
 	MiddleName          *string              `json:"middle_name"`
 	LastName            *string              `json:"last_name"`
@@ -223,6 +223,29 @@ type DetailPersonalDataCustomerIndividu struct {
 	Customer            *CustomerDetailPersonalData `json:"customer"`
 	ApproveCS           *ApprovalData               `json:"approve_cs"`
 	ApproveKYC          *ApprovalData               `json:"approve_kyc"`
+}
+
+type OaRequestDetailRiskProfil struct {
+	OaRequestKey    uint64             `json:"oa_request_key"`
+	OaRequestType   *string            `json:"oa_request_type"`
+	OaRiskLevel     *string            `json:"oa_risk_level"`
+	OaEntryStart    string             `json:"oa_entry_start"`
+	OaEntryEnd      string             `json:"oa_entry_end"`
+	Oastatus        string             `json:"oa_status"`
+	EmailAddress    string             `json:"email_address"`
+	PhoneNumber     string             `json:"phone_mobile"`
+	DateBirth       string             `json:"date_birth"`
+	FullName        string             `json:"full_name"`
+	IDCardNo        string             `json:"idcard_no"`
+	Nationality     *string            `json:"nationality"`
+	Gender          *string            `json:"gender"`
+	PlaceBirth      string             `json:"place_birth"`
+	MaritalStatus   *string            `json:"marital_status"`
+	PhoneHome       string             `json:"phone_home"`
+	Religion        *string            `json:"religion"`
+	Education       *string            `json:"education"`
+	RiskProfile     AdminOaRiskProfile `json:"risk_profile"`
+	RiskProfileQuiz []RiskProfileQuiz  `json:"risk_profile_quiz"`
 }
 
 type ApprovalData struct {
@@ -757,8 +780,8 @@ func AdminGetAllOaByCustomerKey(c *[]OaCustomer, customerKey string) (int, error
 }
 
 type OaRequestKeyLastHistory struct {
-	OaRequestKey uint64    `db:"oa_request_key"             json:"oa_request_key"`
-	RecOrder     *uint64   `db:"rec_order"                  json:"rec_order"`
+	OaRequestKey uint64  `db:"oa_request_key"             json:"oa_request_key"`
+	RecOrder     *uint64 `db:"rec_order"                  json:"rec_order"`
 }
 
 func AdminGetLastHistoryOaRequest(c *OaRequestKeyLastHistory, customerKey string, oaRequestNew string) (int, error) {
