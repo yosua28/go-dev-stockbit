@@ -526,6 +526,7 @@ func Login(c echo.Context) error {
 	atClaims["uuid"] = uuidString
 	atClaims["exp"] = time.Now().Add(time.Minute * 50).Unix()
 	atClaims["email"] = accountData.UloginEmail
+	atClaims["pin"] = accountData.UloginPin
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(config.Secret))
 	if err != nil {
