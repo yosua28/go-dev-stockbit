@@ -290,6 +290,9 @@ func router() *echo.Echo {
 	admin.GET("/pengkinian/detail/personal-data/:key", controllers.GetDetailPengkinianPersonalData).Name = "GetDetailPengkinianPersonalData"
 	admin.GET("/pengkinian/detail/lasthistory/personal-data/:key", controllers.GetDetailPengkinianPersonalDataLastHistory).Name = "GetDetailPengkinianPersonalDataLastHistory"
 
+	//Admin Promo
+	admin.GET("/promo", controllers.GetListPromo).Name = "GetListPromo"
+
 	return e
 }
 

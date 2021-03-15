@@ -20960,6 +20960,169 @@
           }
         }
       }
+    },
+    "/admin/promo": {
+      "get": {
+        "description": "Get All Promo",
+        "tags": [
+          "Admin Promo"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "product_name",
+                "nav_date",
+                "full_name",
+                "cif",
+                "sid"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "promo_category",
+            "in": "query",
+            "description": "promo_category filter",
+            "required": false,
+            "schema": {
+              "type": "number"
+            }
+          },
+          {
+            "name": "start_valid",
+            "in": "query",
+            "description": "start_valid filter",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "end_valid",
+            "in": "query",
+            "description": "end_valid filter",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "promo_key": 1,
+                      "category": "Cash Back MAM",
+                      "promo_code": "MAM01",
+                      "promo_title": "Promo Lebaran",
+                      "promo_nominal": 10000,
+                      "promo_max_nominal": 20000,
+                      "value_type": "Percentage",
+                      "promo_maxuser": 50,
+                      "start_valid": "15 March 2021",
+                      "end_valid": "31 March 2021",
+                      "promo_notif_start": "15 March 2021",
+                      "promo_notif_end": "30 March 2021"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
