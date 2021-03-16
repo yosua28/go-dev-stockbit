@@ -62,7 +62,28 @@ type TrPromoData struct {
 	PromoNotifEnd   string          `db:"promo_notif_end"         json:"promo_notif_end"`
 }
 
-func CreateTrPromo(params map[string]string) (int, error) {
+type TrPromoDetail struct {
+	PromoKey              uint64               `json:"promo_key"`
+	PromoCode             *string              `json:"promo_code"`
+	PromoTitle            *string              `json:"promo_title"`
+	PromoCategory         LookupTrans          `json:"promo_category"`
+	PromoNominal          decimal.Decimal      `json:"promo_nominal"`
+	PromoMaxNominal       decimal.Decimal      `json:"promo_max_nominal"`
+	PromoValuesType       LookupTrans          `json:"promo_values_type"`
+	PromoMaxuser          uint64               `json:"promo_maxuser"`
+	PromoStayPeriode      uint64               `json:"promo_stay_periode"`
+	PromoFlagUniqUser     uint8                `json:"promo_flag_uniq_user"`
+	PromoValidDate1       string               `json:"promo_valid_date1"`
+	PromoValidDate2       string               `json:"promo_valid_date2"`
+	PromoNotifStart       string               `json:"promo_notif_start"`
+	PromoNotifEnd         string               `json:"promo_notif_end"`
+	PromoNotifType        LookupTrans          `json:"promo_notif_type"`
+	PromoNotifDescription string               `json:"promo_description"`
+	PromoTnc              string               `json:"promo_tnc"`
+	PromoProduct          []TrPromoProductData `json:"promo_product"`
+}
+
+func CreateTrPromo(params map[string]string) (int, error, string) {
 	query := "INSERT INTO tr_promo"
 	// Get params
 	var fields, values string
@@ -82,15 +103,17 @@ func CreateTrPromo(params map[string]string) (int, error) {
 	tx, err := db.Db.Begin()
 	if err != nil {
 		log.Println(err)
-		return http.StatusBadGateway, err
+		return http.StatusBadGateway, err, "0"
 	}
-	_, err = tx.Exec(query, bindvars...)
+	var ret sql.Result
+	ret, err = tx.Exec(query, bindvars...)
 	tx.Commit()
 	if err != nil {
 		log.Println(err)
-		return http.StatusBadRequest, err
+		return http.StatusBadRequest, err, "0"
 	}
-	return http.StatusOK, nil
+	lastID, _ := ret.LastInsertId()
+	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
 
 func AdminGetAllTrPromo(c *[]TrPromoData, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -261,5 +284,30 @@ func UpdateTrPromo(params map[string]string) (int, error) {
 		log.Println(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetTrPromo(c *TrPromo, field string, value string) (int, error) {
+	query := `SELECT tr_promo.* FROM tr_promo WHERE tr_promo.rec_status = 1 AND tr_promo.` + field + ` = '` + value + `'`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrPromoValidasiDuplikat(c *TrPromo, field string, value string, promoKeyNot string) (int, error) {
+	query := `SELECT tr_promo.* FROM tr_promo WHERE tr_promo.rec_status = 1 AND tr_promo.` + field + ` = '` + value + `' 
+	AND tr_promo.promo_key != '` + promoKeyNot + `'`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
 	return http.StatusOK, nil
 }
