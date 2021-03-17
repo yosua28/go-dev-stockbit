@@ -164,7 +164,7 @@ func AdminGetAllTrPromo(c *[]TrPromoData, limit uint64, offset uint64, params ma
 	}
 
 	if (dateFrom != "") && (dateTo != "") {
-		query += " AND (p.promo_valid_date2 BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+		query += " AND p.promo_valid_date2 >= '" + dateFrom + "'"
 	}
 
 	// Check order by
@@ -233,7 +233,7 @@ func AdminGetCountTrPromo(c *CountData, params map[string]string) (int, error) {
 	}
 
 	if (dateFrom != "") && (dateTo != "") {
-		query += " AND (p.promo_valid_date2 BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+		query += " AND p.promo_valid_date2 >= '" + dateFrom + "'"
 	}
 
 	query += condition
