@@ -293,6 +293,13 @@ func router() *echo.Echo {
 	admin.GET("/pengkinian/detail/personal-data/:key", controllers.GetDetailPengkinianPersonalData).Name = "GetDetailPengkinianPersonalData"
 	admin.GET("/pengkinian/detail/lasthistory/personal-data/:key", controllers.GetDetailPengkinianPersonalDataLastHistory).Name = "GetDetailPengkinianPersonalDataLastHistory"
 
+	//Admin Promo
+	admin.GET("/promo", controllers.GetListPromo).Name = "GetListPromo"
+	admin.POST("/promo/create", controllers.CreateAdminTrPromo).Name = "CreateAdminTrPromo"
+	admin.POST("/promo/delete", controllers.DeletePromo).Name = "DeletePromo"
+	admin.POST("/promo/update", controllers.UpdateAdminTrPromo).Name = "UpdateAdminTrPromo"
+	admin.GET("/promo/detail/:key", controllers.DetailPromo).Name = "DetailPromo"
+
 	return e
 }
 

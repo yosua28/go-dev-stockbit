@@ -607,6 +607,18 @@ func GetTrTransaction(c *TrTransaction, key string) (int, error) {
 	return http.StatusOK, nil
 }
 
+func GetTrTransactionByField(c *TrTransaction, field string, value string) (int, error) {
+	query := `SELECT tr_transaction.* FROM tr_transaction WHERE tr_transaction.rec_status = 1 AND tr_transaction.` + field + ` = '` + value + `'`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
 func UpdateTrTransactionByKeyIn(params map[string]string, valueIn []string, fieldIn string) (int, error) {
 	query := "UPDATE tr_transaction SET "
 	// Get params
