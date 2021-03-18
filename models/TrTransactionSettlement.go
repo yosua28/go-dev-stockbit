@@ -1,6 +1,13 @@
 package models
 
 import(
+	"api/db"
+	"net/http"
+	"strings"
+	"database/sql"
+	"strconv"
+
+	log "github.com/sirupsen/logrus"
 	"github.com/shopspring/decimal"
 )
 
@@ -17,7 +24,9 @@ type TrTransactionSettlement struct{
 	SourceBankAccountKey     *uint64    `db:"source_bank_account_key"   json:"source_bank_account_key"`
 	TargetBankAccountKey      uint64    `db:"target_bank_account_key"   json:"target_bank_account_key"`
 	SettleNotes              *string    `db:"settle_notes"              json:"settle_notes"`
-	SettleAcknowledgement    *string    `db:"settle_acknowledgement"    json:"settle_acknowledgement"`
+	SettleChannel             uint8     `db:"settle_channel"            json:"settle_channel"`
+	SettlePaymentMethod       uint8     `db:"settle_payment_method"     json:"settle_payment_method"`
+	SettleResponse           *string    `db:"settle_response"           json:"settle_response"`
 	RecOrder                 *uint64    `db:"rec_order"                 json:"rec_order"`
 	RecStatus                 uint8     `db:"rec_status"                json:"rec_status"`
 	RecCreatedDate           *string    `db:"rec_created_date"          json:"rec_created_date"`
@@ -35,4 +44,119 @@ type TrTransactionSettlement struct{
 	RecAttributeID1          *string    `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
 	RecAttributeID2          *string    `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
 	RecAttributeID3          *string    `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+}
+
+func GetAllTrTransactionSettlement(c *[]TrTransactionSettlement, params map[string]string) (int, error) {
+	query := `SELECT
+              tr_transaction_settlement.* FROM 
+			  tr_transaction_settlement `
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "tr_transaction_settlement."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrTransactionSettlementIn(c *[]TrTransactionSettlement, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query2 := `SELECT
+				tr_transaction_settlement.* FROM 
+				tr_transaction_settlement `
+	query := query2 + " WHERE tr_transaction_settlement." + field + " IN(" + inQuery + ")"
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrTransactionSettlement(c *TrTransactionSettlement, field string, key string) (int, error) {
+	query := `SELECT tr_transaction_settlement.* FROM tr_transaction_settlement WHERE tr_transaction_settlement.`+ field +` = "` + key + `"`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CreateTrTransactionSettlement(params map[string]string) (int, error, string) {
+	query := "INSERT INTO tr_transaction_settlement"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		if value == "NULL" {
+			var s *string
+			bindvars = append(bindvars, s)
+		} else {
+			bindvars = append(bindvars, value)
+		}
+
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err, "0"
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err, "0"
+	}
+	lastID, _ := ret.LastInsertId()
+	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }

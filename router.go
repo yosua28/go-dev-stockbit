@@ -103,6 +103,9 @@ func router() *echo.Echo {
 	auth.PUT("/changepin", controllers.ChangePin).Name = "ChangePin"
 	auth.POST("/createpin", controllers.CreatePin).Name = "CreatePin"
 
+	// SPIN
+	auth.POST("/spincreateorder", controllers.SpinCreateOrder).Name = "SpinCreateOrder"
+
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"
 	admin.GET("/oarequestdata/:key", controllers.GetOaRequestData).Name = "GetOaRequestData"

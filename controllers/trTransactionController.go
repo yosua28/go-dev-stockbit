@@ -15,6 +15,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"encoding/json"
 
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
@@ -308,6 +309,29 @@ func CreateTransaction(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: risk_waiver", "Missing required parameter: risk_waiver")
 	}
 
+	paymentChannel := c.FormValue("payment_channel")
+	if paymentChannel != "" {
+		_, err := strconv.ParseUint(paymentChannel, 10, 64)
+		if err != nil {
+			log.Error("Wrong input for parameter: payment_channel")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: payment_channel", "Wrong input for parameter: payment_channel")
+		}
+	} else {
+		log.Error("Missing required parameter: payment_channel")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_channel", "Missing required parameter: payment_channel")
+	}
+	paymentMethod := c.FormValue("payment_method")
+	if paymentMethod != "" {
+		_, err := strconv.ParseUint(paymentMethod, 10, 64)
+		if err != nil {
+			log.Error("Wrong input for parameter: payment_method")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: payment_method", "Wrong input for parameter: payment_method")
+		}
+	} else {
+		log.Error("Missing required parameter: payment_method")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_method", "Missing required parameter: payment_method")
+	}
+
 	var accKey string
 	var trAccountDB []models.TrAccount
 	status, err = models.GetAllTrAccount(&trAccountDB, params)
@@ -372,13 +396,14 @@ func CreateTransaction(c echo.Context) error {
 	nowString := now.Format(layout)
 	t, _ := time.Parse(layout, now.AddDate(0, 0, -1).Format(layout))
 	dateBursa := SettDate(t, int(1))
+	navDate := ""
 	if nowString == dateBursa && (now.Hour() == 12 && now.Minute() > 0) || now.Hour() > 12 {
 		t, _ := time.Parse(layout, dateBursa)
-		params["nav_date"] = SettDate(t, int(1)) + " 00:00:00"
+		navDate = SettDate(t, int(1)) + " 00:00:00"
 	} else {
-		params["nav_date"] = dateBursa + " 00:00:00"
+		navDate = dateBursa + " 00:00:00"
 	}
-
+	params["nav_date"] = navDate
 	params["entry_mode"] = "140"
 	if transAmountStr == "0" {
 		params["entry_mode"] = "139"
@@ -414,7 +439,7 @@ func CreateTransaction(c echo.Context) error {
 
 	params["risk_waiver"] = riskWaiver
 	params["trans_source"] = transSourceStr
-	params["payment_method"] = "284"
+	params["payment_method"] = paymentChannel
 	params["aca_key"] = acaKey
 	params["rec_status"] = "1"
 
@@ -509,10 +534,87 @@ func CreateTransaction(c echo.Context) error {
 		paramsTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
 	}
 
+	settlementParams := make(map[string]string)
+	if paymentChannel == "285" {
+		orderID := c.FormValue("order_id")
+		if orderID == "" {
+			log.Error("Missing required parameter: order_id")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: order_id", "Missing required parameter: order_id")
+		}
+		referenceNumber := c.FormValue("reference_number")
+		if referenceNumber == "" {
+			log.Error("Missing required parameter: reference_number")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: reference_number", "Missing required parameter: reference_number")
+		}
+		otp := c.FormValue("otp")
+		if otp == "" {
+			log.Error("Missing required parameter: otp")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: otp", "Missing required parameter: otp")
+		}
+		params := make(map[string]string)
+		params["order_id"] = orderID
+		params["phone"] = lib.Profile.PhoneNumber
+		params["otp_private_code"] = otp
+		params["payment_method"] = "SPINPAY"
+		//params["payment_data"] = "Transaction " + params["reference_code"]
+	
+		status, res, err := lib.Spin(orderID, "PAY_ORDER", params)
+		if err != nil {
+			log.Error(status, err.Error())
+			return lib.CustomError(status, err.Error(), "Pay order failed")
+		}
+		if status != 200 {
+			log.Error(status, "Pay order failed")
+			return lib.CustomError(status, "Pay order failed", "Pay order failed")
+		}
+		var sec map[string]interface{}
+		if err = json.Unmarshal([]byte(res), &sec); err != nil {
+			log.Error("Error4", err.Error())
+			return lib.CustomError(http.StatusBadGateway, err.Error(), "Parsing data failed")
+		}
+		
+		data := sec["message_action"].(string)
+		if data == "PAYMENT_SUCCESS" {
+			settlementParams["settle_realized_date"] = time.Now().Format(dateLayout)
+			settlementParams["settle_response"] = res
+			settlementParams["settle_remarks"] = orderID
+			settlementParams["settle_references"] = referenceNumber
+		}
+	}
+
 	paramsTransaction["rec_status"] = "1"
 	status, err = models.CreateTrTransactionBankAccount(paramsTransaction)
 	if err != nil {
 		log.Error(err.Error())
+	}
+
+	if typeKeyStr == "1"{
+		
+		settlementParams["transaction_key"] = transactionID	
+		settlementParams["settle_purposed"] = "297"	
+		settlementParams["settle_date"] = navDate	
+		settlementParams["settle_nominal"] = totalAmountStr	
+		settlementParams["client_subaccount_no"] = ""
+		if paymentChannel != "284"{
+			subAcc := c.FormValue("sub_acc")
+			if subAcc == "" {
+				log.Error("Missing required parameter: sub_acc")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: sub_acc", "Missing required parameter: sub_acc")
+			}else{
+				settlementParams["client_subaccount_no"] = subAcc
+			}
+		}	
+		settlementParams["settled_status"] = "243"
+		settlementParams["source_bank_account_key"] = paramsTransaction["cust_bankacc_key"]
+		settlementParams["target_bank_account_key"] = productBankAccountKey
+		settlementParams["settle_channel"] = paymentChannel
+		settlementParams["settle_payment_method"] = paymentMethod
+		settlementParams["rec_status"] = "1"
+
+		_, err, _ = models.CreateTrTransactionSettlement(settlementParams)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	if typeKeyStr != "3" {
