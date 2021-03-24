@@ -916,13 +916,24 @@ func DetailPromo(c echo.Context) error {
 		responseData.PromoValuesType = trc
 	}
 
+	dateLayout := "2006-01-02 15:04:05"
+	newlayout := "2006-01-02"
+
 	responseData.PromoMaxuser = promo.PromoMaxuser
 	responseData.PromoStayPeriode = promo.PromoStayPeriode
 	responseData.PromoFlagUniqUser = promo.PromoFlagUniqUser
-	responseData.PromoValidDate1 = promo.PromoValidDate1
-	responseData.PromoValidDate2 = promo.PromoValidDate2
-	responseData.PromoNotifStart = promo.PromoNotifStart
-	responseData.PromoNotifEnd = promo.PromoNotifEnd
+
+	t, _ := time.Parse(dateLayout, promo.PromoValidDate1)
+	responseData.PromoValidDate1 = t.Format(newlayout)
+
+	t, _ = time.Parse(dateLayout, promo.PromoValidDate2)
+	responseData.PromoValidDate2 = t.Format(newlayout)
+
+	t, _ = time.Parse(dateLayout, promo.PromoNotifStart)
+	responseData.PromoNotifStart = t.Format(newlayout)
+
+	t, _ = time.Parse(dateLayout, promo.PromoNotifEnd)
+	responseData.PromoNotifEnd = t.Format(newlayout)
 
 	if n, ok := gData[promo.PromoNotifType]; ok {
 		var trc models.LookupTrans

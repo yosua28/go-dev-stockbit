@@ -21288,7 +21288,7 @@
                   "promo_notif_type",
                   "promo_description",
                   "promo_tnc",
-                  "promo_product_items",
+                  "promo_product_items"
                 ]
               }
             }
@@ -21503,7 +21503,7 @@
                   "promo_notif_type",
                   "promo_description",
                   "promo_tnc",
-                  "promo_product_items",
+                  "promo_product_items"
                 ]
               }
             }
@@ -21606,10 +21606,10 @@
                     "promo_maxuser": 70,
                     "promo_stay_periode": 8,
                     "promo_flag_uniq_user": 0,
-                    "promo_valid_date1": "2021-03-13 00:00:00",
-                    "promo_valid_date2": "2021-04-13 23:59:59",
-                    "promo_notif_start": "2021-03-13 00:00:00",
-                    "promo_notif_end": "2021-04-13 23:59:59",
+                    "promo_valid_date1": "2021-03-15",
+                    "promo_valid_date2": "2021-03-31",
+                    "promo_notif_start": "2021-03-15",
+                    "promo_notif_end": "2021-03-30",
                     "promo_notif_type": {
                       "lookup_key": 317,
                       "lkp_group_key": 78,
