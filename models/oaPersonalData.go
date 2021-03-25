@@ -11,15 +11,15 @@ import (
 )
 
 type UserProfile struct {
-	FullName            string              `json:"full_name"`
-	SID                 string              `json:"sid"`
-	Email               string              `json:"email"`
-	CIF                 string              `json:"cif"`
-	PhoneNumber         string              `json:"phone_number"`
-	CifSuspendFlag      bool                `json:"cif_suspend_flag"`
-	RiskProfile         MsRiskProfileInfo   `json:"risk_profile"`
-	RecImage1           string              `json:"rec_image1"`
-	BankAcc             BankAccount         `json:"bank_account"`
+	FullName       string            `json:"full_name"`
+	SID            string            `json:"sid"`
+	Email          string            `json:"email"`
+	CIF            string            `json:"cif"`
+	PhoneNumber    string            `json:"phone_number"`
+	CifSuspendFlag bool              `json:"cif_suspend_flag"`
+	RiskProfile    MsRiskProfileInfo `json:"risk_profile"`
+	RecImage1      string            `json:"rec_image1"`
+	BankAcc        BankAccount       `json:"bank_account"`
 }
 
 type OaPersonalData struct {
@@ -71,6 +71,7 @@ type OaPersonalData struct {
 	BeneficialFullName     *string `db:"beneficial_full_name"       json:"beneficial_full_name"`
 	BeneficialRelation     *uint64 `db:"beneficial_relation"        json:"beneficial_relation"`
 	BankAccountKey         *uint64 `db:"bank_account_key"           json:"bank_account_key"`
+	PepStatus              *uint64 `db:"pep_status"                 json:"pep_status"`
 	RecOrder               *uint64 `db:"rec_order"                  json:"rec_order"`
 	RecStatus              uint8   `db:"rec_status"                 json:"rec_status"`
 	RecCreatedDate         *string `db:"rec_created_date"           json:"rec_created_date"`
