@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"strconv"
 	"strings"
+	"time"
 
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
@@ -139,6 +140,19 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 				Profile.RecImage1 = config.BaseUrl + "/images/user/" + strconv.FormatUint(user.UserLoginKey, 10) + "/profile/" + *user.RecImage1
 			} else {
 				Profile.RecImage1 = config.BaseUrl + "/user/default.png"
+			}
+
+			//log endpoint
+			dateLayout := "2006-01-02 15:04:05"
+			paramLog := make(map[string]string)
+			paramLog["path"] = c.Path()
+			paramLog["url"] = c.Request().URL.String()
+			paramLog["user_login_key"] = strconv.FormatUint(Profile.UserID, 10)
+			paramLog["created_date"] = time.Now().Format(dateLayout)
+			paramLog["created_by"] = strconv.FormatUint(Profile.UserID, 10)
+			_, err = models.CreateEndpointAuditTrail(paramLog)
+			if err != nil {
+				log.Error("Failed Log Audit Trail: " + err.Error())
 			}
 
 		} else {
