@@ -1104,7 +1104,7 @@ func ChangePassword(c echo.Context) error {
 		log.Error(err.Error())
 		log.Error("Error create user message")
 	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 	//kirim email
 	t := template.New("index-sukses-ubah-password.html")
@@ -1449,7 +1449,7 @@ func LoginBo(c echo.Context) error {
 }
 
 func ChangeForgotPassword(c echo.Context) error {
-	
+
 	var err error
 
 	token := c.FormValue("token")
@@ -1482,7 +1482,6 @@ func ChangeForgotPassword(c echo.Context) error {
 		log.Error("Missing required parameter")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter", "Missing required parameter")
 	}
-
 
 	if newPassword1 != newPassword2 {
 		log.Error("Password doesnt match")
@@ -1589,10 +1588,10 @@ func ChangeForgotPassword(c echo.Context) error {
 	err = dialer.DialAndSend(mailer)
 	if err != nil {
 		log.Error(err)
-	}else{
+	} else {
 		log.Info("Email sent")
 	}
-	
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -1602,7 +1601,7 @@ func ChangeForgotPassword(c echo.Context) error {
 }
 
 func CreatePin(c echo.Context) error {
-	
+
 	var err error
 	var status int
 	// Check parameters
@@ -1683,7 +1682,7 @@ func CreatePin(c echo.Context) error {
 		log.Error(err.Error())
 		log.Error("Error create user message")
 	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -1788,7 +1787,7 @@ func ChangePin(c echo.Context) error {
 		log.Error(err.Error())
 		log.Error("Error create user message")
 	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -1838,7 +1837,7 @@ func ForgotPin(c echo.Context) error {
 	str := string(buf)
 	encryptedPasswordByte := sha256.Sum256([]byte(str))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
-	
+
 	params = make(map[string]string)
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	params["string_token"] = encryptedPassword
@@ -1898,7 +1897,7 @@ func ForgotPin(c echo.Context) error {
 }
 
 func ChangeForgotPin(c echo.Context) error {
-	
+
 	var err error
 	var status int
 	// Check parameters
@@ -1984,7 +1983,7 @@ func ChangeForgotPin(c echo.Context) error {
 		log.Error(err.Error())
 		log.Error("Error create user message")
 	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

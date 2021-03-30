@@ -1499,7 +1499,7 @@ func CreateNotifRejected(strCustomerKey string, strIDUserLogin string,
 	} else {
 		log.Println("Success create user message")
 	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 }
 
 func UpdateNavDate(c echo.Context) error {
@@ -2935,7 +2935,7 @@ func ProsesPosting(c echo.Context) error {
 			log.Error("Error create user message")
 			return lib.CustomError(status, err.Error(), "failed input data user message")
 		}
-		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 		sendEmailTransactionPosted(transaction, transactionConf, userLogin, strCustomerKey, strTransTypeKey)
 	}

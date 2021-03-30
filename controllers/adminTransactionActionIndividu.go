@@ -760,7 +760,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 	} else {
 		log.Error("Sukses insert user message")
 	}
-	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body)
+	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body, "TRANSACTION")
 
 	//send email
 	params["product_name"] = product.ProductNameAlt
@@ -1369,7 +1369,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 	}
 
 	//create push notif
-	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body)
+	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body, "TRANSACTION")
 
 	//send email
 	var customerBankAccountInfo models.MsCustomerBankAccountInfo
@@ -1936,7 +1936,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	}
 
 	//create push notif
-	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body)
+	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body, "TRANSACTION")
 
 	//send email
 	params["product_name"] = product.ProductNameAlt

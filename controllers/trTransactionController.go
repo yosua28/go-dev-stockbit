@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"database/sql"
+	"encoding/json"
 	"fmt"
 	"html/template"
 	"mime/multipart"
@@ -15,7 +16,6 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
-	"encoding/json"
 
 	wkhtml "github.com/SebastiaanKlippert/go-wkhtmltopdf"
 	"github.com/labstack/echo"
@@ -557,7 +557,7 @@ func CreateTransaction(c echo.Context) error {
 		params["otp_private_code"] = otp
 		params["payment_method"] = "SPINPAY"
 		//params["payment_data"] = "Transaction " + params["reference_code"]
-	
+
 		status, res, err := lib.Spin(orderID, "PAY_ORDER", params)
 		if err != nil {
 			log.Error(status, err.Error())
@@ -572,7 +572,7 @@ func CreateTransaction(c echo.Context) error {
 			log.Error("Error4", err.Error())
 			return lib.CustomError(http.StatusBadGateway, err.Error(), "Parsing data failed")
 		}
-		
+
 		data := sec["message_action"].(string)
 		if data == "PAYMENT_SUCCESS" {
 			settlementParams["settle_realized_date"] = time.Now().Format(dateLayout)
@@ -588,22 +588,22 @@ func CreateTransaction(c echo.Context) error {
 		log.Error(err.Error())
 	}
 
-	if typeKeyStr == "1"{
-		
-		settlementParams["transaction_key"] = transactionID	
-		settlementParams["settle_purposed"] = "297"	
-		settlementParams["settle_date"] = navDate	
-		settlementParams["settle_nominal"] = totalAmountStr	
+	if typeKeyStr == "1" {
+
+		settlementParams["transaction_key"] = transactionID
+		settlementParams["settle_purposed"] = "297"
+		settlementParams["settle_date"] = navDate
+		settlementParams["settle_nominal"] = totalAmountStr
 		settlementParams["client_subaccount_no"] = ""
-		if paymentChannel != "284"{
+		if paymentChannel != "284" {
 			subAcc := c.FormValue("sub_acc")
 			if subAcc == "" {
 				log.Error("Missing required parameter: sub_acc")
 				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: sub_acc", "Missing required parameter: sub_acc")
-			}else{
+			} else {
 				settlementParams["client_subaccount_no"] = subAcc
 			}
-		}	
+		}
 		settlementParams["settled_status"] = "243"
 		settlementParams["source_bank_account_key"] = paramsTransaction["cust_bankacc_key"]
 		settlementParams["target_bank_account_key"] = productBankAccountKey
@@ -670,7 +670,7 @@ func CreateTransaction(c echo.Context) error {
 		} else {
 			log.Error("Sukses insert user message")
 		}
-		lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body)
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 	}
 
 	responseData := make(map[string]string)

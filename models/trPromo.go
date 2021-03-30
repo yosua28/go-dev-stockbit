@@ -83,6 +83,13 @@ type TrPromoDetail struct {
 	PromoProduct          []TrPromoProductData `json:"promo_product"`
 }
 
+type TrPromoCron struct {
+	PromoKey         uint64  `db:"promo_key"               json:"promo_key"`
+	PromoCode        *string `db:"promo_code"              json:"promo_code"`
+	PromoTitle       *string `db:"promo_title"             json:"promo_title"`
+	PromoDescription string  `db:"promo_description"       json:"promo_description"`
+}
+
 func CreateTrPromo(params map[string]string) (int, error, string) {
 	query := "INSERT INTO tr_promo"
 	// Get params
@@ -307,6 +314,63 @@ func GetTrPromoValidasiDuplikat(c *TrPromo, field string, value string, promoKey
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllPromoOnce(c *[]TrPromoCron) (int, error) {
+	query := `SELECT 
+				promo_key, promo_code, promo_title, promo_description 
+			FROM tr_promo
+			WHERE rec_status = 1 AND 
+			promo_notif_type = '310' AND 
+			DATE(NOW()) = DATE(promo_notif_start)`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllPromoOnceBeginOnceBefore(c *[]TrPromoCron) (int, error) {
+	query := `SELECT 
+				promo_key, promo_code, promo_title, promo_description  
+			FROM tr_promo
+			WHERE rec_status = 1 AND 
+			promo_notif_type = '311' AND 
+			((DATE(NOW()) = DATE(promo_notif_start)) OR (DATE(NOW()) = DATE(promo_notif_end)))`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllPromoOnceAday(c *[]TrPromoCron) (int, error) {
+	query := `SELECT 
+				promo_key, promo_code, promo_title, promo_description 
+			FROM tr_promo
+			WHERE rec_status = 1 AND 
+			promo_notif_type = '312' AND 
+			(DATE(NOW()) <= DATE(promo_notif_end)) AND (DATE(NOW()) >= DATE(promo_notif_start))`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

@@ -108,6 +108,11 @@ type AdminListScUserLoginRole struct {
 type UserLoginKeyLocked struct {
 	UserLoginKey uint64 `db:"user_login_key"            json:"user_login_key"`
 }
+type UserBlastPromo struct {
+	UserLoginKey uint64  `db:"user_login_key"       json:"user_login_key"`
+	TokenNotif   *string `db:"token_notif"          json:"token_notif"`
+	FirstName    *string `db:"first_name"           json:"first_name"`
+}
 
 func GetAllScUserLogin(c *[]ScUserLogin, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
@@ -694,5 +699,26 @@ func UpdateScUserLoginByKeyIn(params map[string]string, valueIn []string, fieldI
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func AdminGetAllUserBlastPromo(c *[]UserBlastPromo) (int, error) {
+	query := `SELECT
+				u.user_login_key,
+				u.token_notif,
+				c.first_name 
+			FROM sc_user_login AS u 
+			INNER JOIN ms_customer AS c ON u.customer_key = c.customer_key
+			WHERE u.customer_key IS NOT NULL AND
+			u.user_category_key = 1 AND u.rec_status = 1 AND u.token_notif IS NOT NULL AND c.rec_status = 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

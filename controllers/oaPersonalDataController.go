@@ -804,7 +804,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	} else {
 		log.Error("Sukses insert user message")
 	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body)
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 
 	responseData := make(map[string]string)
 	responseData["request_key"] = requestKey

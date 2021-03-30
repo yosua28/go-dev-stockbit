@@ -1245,7 +1245,7 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		if err != nil {
 			log.Error("Error create user message")
 		}
-		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 	}
 
 	var response lib.Response
@@ -1512,7 +1512,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				log.Error("Error create user message")
 				return lib.CustomError(status, err.Error(), "failed input data")
 			}
-			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 			//update sc user login
 			paramsUserLogin := make(map[string]string)
@@ -1655,7 +1655,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				log.Error("Error create user message")
 				return lib.CustomError(status, err.Error(), "failed input data")
 			}
-			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 			// insert into table ms_customer_bank_account
 			paramsCusBankAcc := make(map[string]string)
@@ -1730,7 +1730,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			tx.Rollback()
 			log.Error("Error create user message")
 		}
-		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body)
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 		tx.Commit()
 	}
 

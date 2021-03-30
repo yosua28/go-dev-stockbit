@@ -2146,7 +2146,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	} else {
 		log.Error("Sukses insert user message")
 	}
-	// lib.CreateNotifCustomerFromAdminByUserLoginKey(idUserLogin, subject, body)
+	// lib.CreateNotifCustomerFromAdminByUserLoginKey(idUserLogin, subject, body, "TRANSACTION")
 
 	var responseData models.MsRiskProfileInfo
 
