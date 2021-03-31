@@ -80,6 +80,7 @@ type TrPromoDetail struct {
 	PromoNotifType        LookupTrans          `json:"promo_notif_type"`
 	PromoNotifDescription string               `json:"promo_description"`
 	PromoTnc              string               `json:"promo_tnc"`
+	Image                 *string              `json:"image"`
 	PromoProduct          []TrPromoProductData `json:"promo_product"`
 }
 

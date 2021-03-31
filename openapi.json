@@ -21269,7 +21269,10 @@
                   "promo_product_items": {
                     "type": "string",
                     "example": "1,2,3,5"
-                  }
+                  },
+                  "image": {
+                    "type": "file"
+                  },
                 },
                 "required": [
                   "promo_code",
@@ -21483,7 +21486,10 @@
                   "promo_product_items": {
                     "type": "string",
                     "example": "1,2,3,5"
-                  }
+                  },
+                  "image": {
+                    "type": "file"
+                  },
                 },
                 "required": [
                   "promo_key",
@@ -21618,6 +21624,7 @@
                     },
                     "promo_description": "Ha Ha Ha Ha",
                     "promo_tnc": "Gan Gan Gan",
+                    "image": "https://devapi.mncasset.com/images/promo/LwEtyHR6KrBzGiPBT2m6.jpg",
                     "promo_product": [
                       {
                         "promo_product_key": 14,

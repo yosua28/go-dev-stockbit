@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"strings"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type TrPromoProduct struct {
@@ -187,5 +189,35 @@ func AdminGetPromoProductByPromoKey(c *[]TrPromoProductData, promoKey string) (i
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func CreateMultiplePromoProduct(params []interface{}) (int, error) {
+
+	q := `INSERT INTO tr_promo_product (
+		promo_key, 
+		product_key,
+		flag_allowed,
+		rec_status,
+		rec_created_date,
+		rec_created_by) VALUES `
+
+	for i := 0; i < len(params); i++ {
+		q += "(?)"
+		if i < (len(params) - 1) {
+			q += ","
+		}
+	}
+	query, args, err := sqlx.In(q, params...)
+	if err != nil {
+		return http.StatusBadGateway, err
+	}
+
+	query = db.Db.Rebind(query)
+	_, err = db.Db.Query(query, args...)
+	if err != nil {
+		log.Println(err.Error())
+		return http.StatusBadGateway, err
+	}
 	return http.StatusOK, nil
 }

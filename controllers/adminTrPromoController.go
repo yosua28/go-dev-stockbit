@@ -6,7 +6,10 @@ import (
 	"api/models"
 	"database/sql"
 	"math"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -374,6 +377,27 @@ func CreateAdminTrPromo(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product cann't be blank", "Missing required parameter: product cann't be blank")
 	}
 
+	var file *multipart.FileHeader
+	file, err = c.FormFile("image")
+	if file != nil {
+		err = os.MkdirAll(config.BasePath+"/images/promo", 0755)
+		if err != nil {
+			log.Error(err.Error())
+		} else {
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			// Generate filename
+			filename := lib.RandStringBytesMaskImprSrc(20)
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/images/promo/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+			params["rec_image1"] = filename + extension
+		}
+	}
+
 	dateLayout := "2006-01-02 15:04:05"
 	params["rec_created_date"] = time.Now().Format(dateLayout)
 	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
@@ -386,23 +410,25 @@ func CreateAdminTrPromo(c echo.Context) error {
 
 	s := strings.Split(promoproductitems, ",")
 
+	var bindVarPromoPruduct []interface{}
 	for _, value := range s {
 		is := strings.TrimSpace(value)
 		if is != "" {
-			paramsPromoProduct := make(map[string]string)
-			paramsPromoProduct["promo_key"] = lastID
-			paramsPromoProduct["product_key"] = is
-			paramsPromoProduct["flag_allowed"] = "1"
-			paramsPromoProduct["rec_status"] = "1"
-			paramsPromoProduct["rec_created_date"] = time.Now().Format(dateLayout)
-			paramsPromoProduct["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
-
-			status, err := models.CreateTrPromoProduct(paramsPromoProduct)
-			if err != nil {
-				log.Error("Failed create request data: " + err.Error())
-				return lib.CustomError(status, err.Error(), "failed input data")
-			}
+			var row []string
+			row = append(row, lastID)                                     //promo_key
+			row = append(row, is)                                         //product_key
+			row = append(row, "1")                                        //flag_allowed
+			row = append(row, "1")                                        //rec_status
+			row = append(row, time.Now().Format(dateLayout))              //rec_created_date
+			row = append(row, strconv.FormatUint(lib.Profile.UserID, 10)) //rec_created_by
+			bindVarPromoPruduct = append(bindVarPromoPruduct, row)
 		}
+	}
+
+	_, err = models.CreateMultiplePromoProduct(bindVarPromoPruduct)
+	if err != nil {
+		log.Error("Failed create promo product: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
 	}
 
 	var response lib.Response
@@ -721,6 +747,27 @@ func UpdateAdminTrPromo(c echo.Context) error {
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
+	var file *multipart.FileHeader
+	file, err = c.FormFile("image")
+	if file != nil {
+		err = os.MkdirAll(config.BasePath+"/images/promo", 0755)
+		if err != nil {
+			log.Error(err.Error())
+		} else {
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			// Generate filename
+			filename := lib.RandStringBytesMaskImprSrc(20)
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/images/promo/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+			params["rec_image1"] = filename + extension
+		}
+	}
+
 	status, err = models.UpdateTrPromo(params)
 	if err != nil {
 		log.Error("Failed update request data: " + err.Error())
@@ -809,24 +856,25 @@ func UpdateAdminTrPromo(c echo.Context) error {
 			productKeyNew = productIds
 		}
 
+		var bindVarPromoPruduct []interface{}
 		if len(productKeyNew) > 0 {
 			for _, value := range productKeyNew {
 				is := strings.TrimSpace(value)
 				if is != "" {
-					paramsPromoProduct := make(map[string]string)
-					paramsPromoProduct["promo_key"] = promokey
-					paramsPromoProduct["product_key"] = is
-					paramsPromoProduct["flag_allowed"] = "1"
-					paramsPromoProduct["rec_status"] = "1"
-					paramsPromoProduct["rec_created_date"] = time.Now().Format(dateLayout)
-					paramsPromoProduct["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
-
-					status, err := models.CreateTrPromoProduct(paramsPromoProduct)
-					if err != nil {
-						log.Error("Failed create request data: " + err.Error())
-						return lib.CustomError(status, err.Error(), "failed input data")
-					}
+					var row []string
+					row = append(row, promokey)                                   //promo_key
+					row = append(row, is)                                         //product_key
+					row = append(row, "1")                                        //flag_allowed
+					row = append(row, "1")                                        //rec_status
+					row = append(row, time.Now().Format(dateLayout))              //rec_created_date
+					row = append(row, strconv.FormatUint(lib.Profile.UserID, 10)) //rec_created_by
+					bindVarPromoPruduct = append(bindVarPromoPruduct, row)
 				}
+			}
+			_, err = models.CreateMultiplePromoProduct(bindVarPromoPruduct)
+			if err != nil {
+				log.Error("Failed create promo product: " + err.Error())
+				return lib.CustomError(status, err.Error(), "failed input data")
 			}
 		}
 	}
@@ -892,6 +940,13 @@ func DetailPromo(c echo.Context) error {
 	responseData.PromoKey = promo.PromoKey
 	responseData.PromoCode = promo.PromoCode
 	responseData.PromoTitle = promo.PromoTitle
+
+	dir := config.BaseUrl + "/images/promo/"
+
+	if promo.RecImage1 != nil {
+		path := dir + *promo.RecImage1
+		responseData.Image = &path
+	}
 
 	if n, ok := gData[promo.PromoCategory]; ok {
 		var trc models.LookupTrans
