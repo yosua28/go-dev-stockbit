@@ -381,6 +381,11 @@ func CreateOaPersonalData(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest)
 		}
 
+		err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/signature", 0755)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadGateway, err.Error(), err.Error())
+		}
 		file, err = c.FormFile("signature")
 		if file != nil {
 			if err != nil {
