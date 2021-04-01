@@ -4,7 +4,6 @@ import (
 	"api/db"
 	_ "database/sql"
 	"net/http"
-	_ "strconv"
 
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"

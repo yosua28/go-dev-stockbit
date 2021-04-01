@@ -1023,6 +1023,61 @@
         }
       }
     },
+    "/auth/getquizresult": {
+      "get": {
+        "description": "Get Quiz Result",
+        "tags": [
+          "Quiz"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "201": {
+            "description": "Success",
+            "content": {
+              "text/plain": {
+                "example": "Success verify send email/otp verification"
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "403": {
+            "description": "Forbidden",
+            "content": {
+              "text/plain": {
+                "example": "OTP is expired"
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Email not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
     "/auth/forgotpin": {
       "post": {
         "description": "Forgot Pin",
@@ -1626,6 +1681,15 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "sales_code": {
+                    "type": "string"
+                  },
+                  "request_type": {
+                    "type": "integer"
+                  },
+                  "pep_status": {
+                    "type": "integer"
+                  },
                   "full_name": {
                     "type": "string"
                   },
@@ -1699,8 +1763,20 @@
                   "pic_ktp": {
                     "type": "file"
                   },
+                  "signature": {
+                    "type": "file"
+                  },
                   "pic_selfie_ktp": {
                     "type": "file"
+                  },
+                  "pic_ktp_str": {
+                    "type": "string"
+                  },
+                  "signature_str": {
+                    "type": "string"
+                  },
+                  "pic_selfie_ktp_str": {
+                    "type": "string"
                   },
                   "job": {
                     "type": "integer"

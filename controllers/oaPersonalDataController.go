@@ -244,7 +244,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	params["phone_mobile"] = phoneMobile
 
 	email := c.FormValue("email")
-	if phoneHome == "" {
+	if email == "" {
 		log.Error("Missing required parameter: email")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: email", "Missing required parameter: email")
 	}
@@ -301,11 +301,23 @@ func CreateOaPersonalData(c echo.Context) error {
 		row = append(row, educationOther)
 		bindVar = append(bindVar, row)
 	}
+	
+	requestTypeStr := c.FormValue("request_type")
+	if requestTypeStr == "" {
+		log.Error("Missing required parameter: request_type")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: request_type", "Missing required parameter: request_type")
+	} else {
+		_, err := strconv.ParseUint(requestTypeStr, 10, 64)
+		if err != nil  {
+			log.Error("Wrong input for parameter: request_type")
+			return lib.CustomError(http.StatusBadRequest)
+		}
+	}
 
 	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10), 0755)
 	if err != nil {
 		log.Error(err.Error())
-	} else {
+	} else if requestTypeStr == "127" {
 		var file *multipart.FileHeader
 		file, err = c.FormFile("pic_ktp")
 		if file != nil {
@@ -367,6 +379,60 @@ func CreateOaPersonalData(c echo.Context) error {
 			params["pic_selfie_ktp"] = filename + extension
 		} else {
 			return lib.CustomError(http.StatusBadRequest)
+		}
+
+		file, err = c.FormFile("signature")
+		if file != nil {
+			if err != nil {
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: signature")
+			}
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			// Generate filename
+			var filename string
+			for {
+				filename = lib.RandStringBytesMaskImprSrc(20)
+				log.Println("Generate filename:", filename)
+				var personalData []models.OaPersonalData
+				getParams := make(map[string]string)
+				getParams["rec_image1"] = filename + extension
+				_, err := models.GetAllOaPersonalData(&personalData, 1, 0, getParams, false)
+				if (err == nil && len(personalData) < 1) || err != nil {
+					break
+				}
+			}
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/signature/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+			params["rec_image1"] = filename + extension
+		} else {
+			return lib.CustomError(http.StatusBadRequest)
+		}
+		
+	} else {
+		picKtp := c.FormValue("pic_ktp_str")
+		if picKtp == "" {
+			log.Error("Missing required parameter: pic_ktp_str")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp_str", "Missing required parameter: pic_ktp_str")
+		}else{
+			params["pic_ktp"] = picKtp
+		}
+		picSelfie := c.FormValue("pic_selfie_ktp_str")
+		if picSelfie == "" {
+			log.Error("Missing required parameter: pic_selfie_ktp_str")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp_str")
+		}else{
+			params["pic_selfie_ktp"] = picSelfie
+		}
+		signature := c.FormValue("signature_str")
+		if signature == "" {
+			log.Error("Missing required parameter: signature_str")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature_str", "Missing required parameter: signature_str")
+		}else{
+			params["rec_image1"] = signature
 		}
 	}
 
@@ -647,6 +713,20 @@ func CreateOaPersonalData(c echo.Context) error {
 		bindVar = append(bindVar, row)
 	}
 
+	pepStatus := c.FormValue("pep_status")
+	if pepStatus == "" {
+		log.Error("Missing required parameter: pep_status")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pep_status", "Missing required parameter: pep_status")
+	} else {
+		n, err := strconv.ParseUint(pepStatus, 10, 64)
+		if err == nil && n > 0 {
+			params["pep_status"] = pepStatus
+		} else {
+			log.Error("Wrong input for parameter: pep_status")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: pep_status", "Wrong input for parameter: pep_status")
+		}
+	}
+
 	paramsBank := make(map[string]string)
 	bankKey := c.FormValue("bank_key")
 	if bankKey == "" {
@@ -706,7 +786,11 @@ func CreateOaPersonalData(c echo.Context) error {
 	paramsRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	paramsRequest["oa_entry_start"] = dateNow
 	paramsRequest["oa_entry_end"] = dateNow
-	paramsRequest["oa_request_type"] = "127"
+	paramsRequest["oa_request_type"] = requestTypeStr
+	salesCode := c.FormValue("sales_code")
+	if salesCode != "" {
+		paramsRequest["sales_code"] = salesCode
+	} 
 	paramsRequest["rec_status"] = "1"
 	status, err, requestID := models.CreateOaRequest(paramsRequest)
 	if err != nil {
@@ -772,7 +856,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	err = dialer.DialAndSend(mailer)
 	if err != nil {
 		log.Error(err)
-		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
+		// return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
 	}
 	log.Info("Email sent")
 
@@ -885,6 +969,9 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["phone_mobile"] = personalDataDB.PhoneMobile
 	responseData["email"] = personalDataDB.EmailAddress
 	responseData["religion"] = personalDataDB.Religion
+	responseData["pic_selfie"] = personalDataDB.PicSelfie
+	responseData["pic_ktp"] = personalDataDB.PicKtp
+	responseData["pic_selfie_ktp"] = personalDataDB.PicSelfieKtp
 	responseData["education"] = personalDataDB.Education
 	responseData["occup_job"] = personalDataDB.OccupJob
 	responseData["occup_company"] = personalDataDB.OccupCompany
@@ -929,6 +1016,59 @@ func GetOaPersonalData(c echo.Context) error {
 			responseData["bank_account"] = bankAccount
 		}
 	}
+
+	var requestDB []models.OaRequest
+	paramRequest := make(map[string]string)
+	paramRequest["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	paramRequest["orderBy"] = "oa_request_key"
+	paramRequest["orderType"] = "DESC"
+	_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	request := requestDB[0]
+	var quizDB []models.OaRiskProfileQuiz
+	paramQuiz := make(map[string]string)
+	paramQuiz["oa_request_key"] = strconv.FormatUint(request.OaRequestKey, 10)
+	paramQuiz["orderBy"] = "oa_request_key"
+	paramQuiz["orderType"] = "DESC"
+	_, err = models.GetAllOaRiskProfileQuiz(&quizDB, 100, 0, paramQuiz, true)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var risk models.OaRiskProfile
+	_, err = models.GetOaRiskProfile(&risk, strconv.FormatUint(request.OaRequestKey, 10), "oa_request_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var riskProfile models.MsRiskProfile
+	_, err = models.GetMsRiskProfile(&riskProfile, strconv.FormatUint(risk.RiskProfileKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	riskProfileData := make(map[string]interface{})
+	riskProfileData["score_result"] = risk.ScoreResult
+	riskProfileData["risk_code"] = riskProfile.RiskCode
+	riskProfileData["risk_name"] = riskProfile.RiskName
+	riskProfileData["risk_desc"] = riskProfile.RiskDesc
+	var quizData []interface{}
+	for _, q := range quizDB {
+		quiz := make(map[string]interface{})
+		quiz["question_key"] = q.QuizQuestionKey
+		quiz["option_key"] = q.QuizOptionKey
+		quiz["option_score"] = q.QuizOptionScore
+		quizData = append(quizData, quiz)
+	}
+	riskProfileData["quiz"] = quizData
+
+	responseData["risk_profile"] = riskProfileData
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"

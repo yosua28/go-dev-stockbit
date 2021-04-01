@@ -207,3 +207,72 @@ func PostQuizAnswer(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetQuizAnswer(c echo.Context) error {
+
+	var err error
+	var status int
+
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	}
+	var requestDB []models.OaRequest
+	paramRequest := make(map[string]string)
+	paramRequest["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	paramRequest["orderBy"] = "oa_request_key"
+	paramRequest["orderType"] = "DESC"
+	_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	request := requestDB[0]
+	var quizDB []models.OaRiskProfileQuiz
+	paramQuiz := make(map[string]string)
+	paramQuiz["oa_request_key"] = strconv.FormatUint(request.OaRequestKey, 10)
+	paramQuiz["orderBy"] = "oa_request_key"
+	paramQuiz["orderType"] = "DESC"
+	_, err = models.GetAllOaRiskProfileQuiz(&quizDB, 100, 0, paramQuiz, true)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var risk models.OaRiskProfile
+	_, err = models.GetOaRiskProfile(&risk, strconv.FormatUint(request.OaRequestKey, 10), "oa_request_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var riskProfile models.MsRiskProfile
+	_, err = models.GetMsRiskProfile(&riskProfile, strconv.FormatUint(risk.RiskProfileKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	responseData := make(map[string]interface{})
+	responseData["score_result"] = risk.ScoreResult
+	responseData["risk_code"] = riskProfile.RiskCode
+	responseData["risk_name"] = riskProfile.RiskName
+	responseData["risk_desc"] = riskProfile.RiskDesc
+	var quizData []interface{}
+	for _, q := range quizDB {
+		quiz := make(map[string]interface{})
+		quiz["question_key"] = q.QuizQuestionKey
+		quiz["option_key"] = q.QuizOptionKey
+		quiz["option_score"] = q.QuizOptionScore
+		quizData = append(quizData, quiz)
+	}
+	responseData["quiz"] = quizData
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}

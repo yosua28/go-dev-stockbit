@@ -11,15 +11,15 @@ import (
 )
 
 type UserProfile struct {
-	FullName       string            `json:"full_name"`
-	SID            string            `json:"sid"`
-	Email          string            `json:"email"`
-	CIF            string            `json:"cif"`
-	PhoneNumber    string            `json:"phone_number"`
-	CifSuspendFlag bool              `json:"cif_suspend_flag"`
-	RiskProfile    MsRiskProfileInfo `json:"risk_profile"`
-	RecImage1      string            `json:"rec_image1"`
-	BankAcc        BankAccount       `json:"bank_account"`
+	FullName            string              `json:"full_name"`
+	SID                 string              `json:"sid"`
+	Email               string              `json:"email"`
+	CIF                 string              `json:"cif"`
+	PhoneNumber         string              `json:"phone_number"`
+	CifSuspendFlag      bool                `json:"cif_suspend_flag"`
+	RiskProfile         MsRiskProfileInfo   `json:"risk_profile"`
+	RecImage1           string              `json:"rec_image1"`
+	BankAcc             BankAccount         `json:"bank_account"`
 }
 
 type OaPersonalData struct {
