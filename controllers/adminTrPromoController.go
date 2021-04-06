@@ -386,6 +386,9 @@ func CreateAdminTrPromo(c echo.Context) error {
 		} else {
 			// Get file extension
 			extension := filepath.Ext(file.Filename)
+			log.Println("-------------extension---------------")
+			log.Println(extension)
+			log.Println("-------------extension---------------")
 			// Generate filename
 			filename := lib.RandStringBytesMaskImprSrc(20)
 			// Upload image and move to proper directory

@@ -1487,7 +1487,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	if productToKeyStr != "" {
 		productToKey, err := strconv.ParseUint(productToKeyStr, 10, 64)
 		if err == nil && productToKey > 0 {
-			paramsSwIn["product_key"] = productKeyStr
+			paramsSwIn["product_key"] = productToKeyStr
 			status, err = models.GetMsProduct(&productTo, productToKeyStr)
 			if err != nil {
 				log.Error(err.Error())
@@ -1576,12 +1576,6 @@ func CreateTransactionSwitching(c echo.Context) error {
 			sisaUnitAfterRed := unitTersedia.Sub(value).Truncate(2)
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
-			log.Println("=============")
-			log.Println(sisaUnitAfterRed)
-			log.Println(minSisa)
-			log.Println(sisaUnitAfterRed.Cmp(minSisa))
-			log.Println("=============")
-
 			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
 				log.Error("Sisa unit setelah switching kurang dari minimal unit, Silahkan switch All")
 				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah switching kurang dari minimal unit, Silahkan switching All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah switching kurang dari minimal unit, Silahkan switching All. Sisa unit harus minimal : "+minSisa.String())
@@ -1648,12 +1642,6 @@ func CreateTransactionSwitching(c echo.Context) error {
 		}
 		jumlahSub := value.Truncate(0)
 
-		log.Println("++++++++++++++++++++++++++++++++++++")
-		log.Println(jumlahSub)
-		log.Println(minSubNewProd)
-		log.Println(jumlahSub.Cmp(minSubNewProd))
-		log.Println("++++++++++++++++++++++++++++++++++++")
-
 		if jumlahSub.Cmp(minSubNewProd) == -1 {
 			log.Error("switching nominal < minimal switching product tujuan")
 			return lib.CustomError(http.StatusBadRequest, "switching nominal < minimal switching product tujuan", "Switching amount tidak boleh kurang dari minimal switching product tujuan. Product tujuan memiliki minimal switching : "+productTo.MinSubAmount.String())
@@ -1676,10 +1664,6 @@ func CreateTransactionSwitching(c echo.Context) error {
 	}
 
 	transRemark := c.FormValue("trans_remarks")
-	if transRemark == "" {
-		log.Error("Remark gk blh ksong")
-		return lib.CustomError(http.StatusBadRequest, "Remark gk blh ksong", "Remark gk blh ksong")
-	}
 	params["trans_remarks"] = transRemark
 	paramsSwIn["trans_remarks"] = transRemark
 
