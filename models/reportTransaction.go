@@ -75,6 +75,31 @@ type NotesRedemption struct {
 	Note3  *string         `db:"note3"           json:"note3"`
 }
 
+type DailyTransactionReportField struct {
+	ClientName         string          `db:"client_name"           json:"client_name"`
+	Product            string          `db:"product"               json:"product"`
+	SubscriptionAmount decimal.Decimal `db:"subscription_amount"   json:"subscription_amount"`
+	SubscriptionFee    decimal.Decimal `db:"subscription_fee"      json:"subscription_fee"`
+	RedemptionAmount   decimal.Decimal `db:"redemption_amount"     json:"redemption_amount"`
+	RedemptionFee      decimal.Decimal `db:"redemption_fee"        json:"redemption_fee"`
+	Category           *string         `db:"category"              json:"category"`
+	Division           *string         `db:"division"              json:"division"`
+	Branch             *string         `db:"branch"                json:"branch"`
+	Sales              *string         `db:"sales"                 json:"sales"`
+}
+
+type DailyTransactionReportTotalField struct {
+	TotalSubscriptionAmount decimal.Decimal `db:"total_subscription_amount"   json:"total_subscription_amount"`
+	TotalSubscriptionFee    decimal.Decimal `db:"total_subscription_fee"      json:"total_subscription_fee"`
+	TotalRedemptionAmount   decimal.Decimal `db:"total_redemption_amount"     json:"total_redemption_amount"`
+	TotalRedemptionFee      decimal.Decimal `db:"total_redemption_fee"        json:"total_redemption_fee"`
+}
+
+type DailyTransactionReportResponse struct {
+	Total                  *DailyTransactionReportTotalField `json:"total"`
+	DailyTransactionReport *[]DailyTransactionReportField    `json:"data"`
+}
+
 func AdminGetHeaderDailySubsRedmBatchForm(c *HeaderDailySubsRedmBatchForm, params map[string]string) (int, error) {
 	query := `SELECT 
 			concat("` + config.BaseUrl + `", "/images/mail/report_logo_mnc.jpg") AS logo,
@@ -353,6 +378,232 @@ func AdminGetNotesRedemption(c *NotesRedemption, customerKey string, productKey 
 				AND tr.customer_key = '` + customerKey + `' AND tr.product_key = '` + productKey + `' 
 				ORDER BY tr.transaction_key DESC LIMIT 1) DAY) > '` + navDate + `' 
 			ORDER BY t.transaction_key DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func DailyTransactionReport(c *[]DailyTransactionReportField, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	dateFrom := ""
+	dateTo := ""
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType" || field == "dateFrom" || field == "dateTo") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+		if field == "dateFrom" {
+			dateFrom = value
+		}
+		if field == "dateTo" {
+			dateTo = value
+		}
+	}
+
+	query := `SELECT 
+				c.full_name AS client_name,
+				CONCAT(p.product_code, ' - ', p.product_name_alt) AS product,
+				SUM(CASE WHEN t.trans_type_key = 1 
+						THEN trans_amount ELSE 0 END) subscription_amount,
+				SUM(CASE WHEN t.trans_type_key = 1 
+						THEN (t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) ELSE 0 END) subscription_fee,
+				SUM(CASE WHEN t.trans_type_key = 2 
+						THEN trans_amount ELSE 0 END) redemption_amount,
+				SUM(CASE WHEN t.trans_type_key = 2 
+						THEN (t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) ELSE 0 END) redemption_fee,
+				ct.lkp_name AS category,
+				division.lkp_name AS division,
+				b.branch_name AS branch,
+				a.agent_name AS sales 
+			FROM tr_transaction t 
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key 
+			INNER JOIN ms_product AS p ON t.product_key = p.product_key 
+			INNER JOIN gen_lookup AS ct ON ct.lookup_key = c.investor_type
+			INNER JOIN gen_lookup AS division ON division.lookup_key = c.customer_category
+			INNER JOIN tr_account_agent AS taa ON taa.aca_key = t.aca_key 
+			INNER JOIN ms_agent AS a ON taa.agent_key = a.agent_key 
+			INNER JOIN ms_branch AS b ON b.branch_key = t.branch_key 
+			WHERE t.rec_status = 1 AND t.trans_type_key IN (1,2) AND t.trans_status_key >= 6 `
+
+	var present bool
+	var condition string
+	var conditionOrder string
+
+	if (dateFrom != "") && (dateTo != "") {
+		query += " AND (t.nav_date BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	query += " GROUP BY t.customer_key, t.product_key"
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		conditionOrder += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			conditionOrder += " " + orderType
+		}
+	}
+	query += conditionOrder
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func DailyTransactionReportTotal(c *DailyTransactionReportTotalField, params map[string]string) (int, error) {
+	dateFrom := ""
+	dateTo := ""
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType" || field == "dateFrom" || field == "dateTo") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+		if field == "dateFrom" {
+			dateFrom = value
+		}
+		if field == "dateTo" {
+			dateTo = value
+		}
+	}
+
+	query := `SELECT 
+				SUM(CASE WHEN t.trans_type_key = 1 
+						THEN trans_amount ELSE 0 END) total_subscription_amount,
+				SUM(CASE WHEN t.trans_type_key = 1 
+						THEN (t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) ELSE 0 END) total_subscription_fee,
+				SUM(CASE WHEN t.trans_type_key = 2 
+						THEN trans_amount ELSE 0 END) total_redemption_amount,
+				SUM(CASE WHEN t.trans_type_key = 2 
+						THEN (t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) ELSE 0 END) total_redemption_fee 
+			FROM tr_transaction t 
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key 
+			INNER JOIN ms_product AS p ON t.product_key = p.product_key 
+			INNER JOIN gen_lookup AS ct ON ct.lookup_key = c.investor_type
+			INNER JOIN gen_lookup AS division ON division.lookup_key = c.customer_category
+			INNER JOIN tr_account_agent AS taa ON taa.aca_key = t.aca_key 
+			INNER JOIN ms_agent AS a ON taa.agent_key = a.agent_key 
+			INNER JOIN ms_branch AS b ON b.branch_key = t.branch_key 
+			WHERE t.rec_status = 1 AND t.trans_type_key IN (1,2) AND t.trans_status_key >= 6 `
+
+	var condition string
+
+	if (dateFrom != "") && (dateTo != "") {
+		query += " AND (t.nav_date BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func DailyTransactionReportCountRow(c *CountData, params map[string]string) (int, error) {
+	dateFrom := ""
+	dateTo := ""
+
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType" || field == "dateFrom" || field == "dateTo") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+		if field == "dateFrom" {
+			dateFrom = value
+		}
+		if field == "dateTo" {
+			dateTo = value
+		}
+	}
+
+	query := `SELECT 
+				COUNT(trans.jml_row) AS count_data 
+			  FROM
+			  (
+				SELECT
+					COUNT(*) AS jml_row
+				FROM tr_transaction t 
+				INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key 
+				INNER JOIN ms_product AS p ON t.product_key = p.product_key 
+				INNER JOIN gen_lookup AS ct ON ct.lookup_key = c.investor_type
+				INNER JOIN gen_lookup AS division ON division.lookup_key = c.customer_category
+				INNER JOIN tr_account_agent AS taa ON taa.aca_key = t.aca_key 
+				INNER JOIN ms_agent AS a ON taa.agent_key = a.agent_key 
+				INNER JOIN ms_branch AS b ON b.branch_key = t.branch_key 
+				WHERE t.rec_status = 1 AND t.trans_type_key IN (1,2) AND t.trans_status_key >= 6 `
+
+	var condition string
+
+	if (dateFrom != "") && (dateTo != "") {
+		query += " AND (t.nav_date BETWEEN '" + dateFrom + "' AND '" + dateTo + "')"
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	query += " GROUP BY t.customer_key, t.product_key) trans"
 
 	// Main query
 	log.Println(query)

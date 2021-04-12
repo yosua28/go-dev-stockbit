@@ -301,6 +301,15 @@ func router() *echo.Echo {
 	admin.POST("/promo/update", controllers.UpdateAdminTrPromo).Name = "UpdateAdminTrPromo"
 	admin.GET("/promo/detail/:key", controllers.DetailPromo).Name = "DetailPromo"
 
+	//Admin Daily Transaction Report - J005
+	admin.GET("/report/daily-transaction-report", controllers.GetDailyTransactionReport).Name = "GetDailyTransactionReport"
+
+	//Admin MS BRANCH
+	admin.GET("/branchlist/dropdown", controllers.GetListBranchDropdown).Name = "GetListBranchDropdown"
+
+	//Admin MS AGENT
+	admin.GET("/agentlist/dropdown", controllers.GetListAgentDropdown).Name = "GetListAgentDropdown"
+
 	return e
 }
 

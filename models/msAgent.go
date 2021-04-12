@@ -36,6 +36,11 @@ type MsAgent struct {
 	RecAttributeID3   *string `db:"rec_attribute_id3"    json:"rec_attribute_id3"`
 }
 
+type MsAgentDropdown struct {
+	BranchKey  uint64 `db:"agent_key"            json:"agent_key"`
+	BranchName string `db:"agent_name"           json:"agent_name"`
+}
+
 func GetMsAgentIn(c *[]MsAgent, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -70,6 +75,21 @@ func GetMsAgentByField(c *MsAgent, value string, field string) (int, error) {
 	query := `SELECT ms_agent.* FROM ms_agent WHERE ms_agent.rec_status = 1 AND ms_agent.` + field + ` = ` + value
 	log.Println(query)
 	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetMsAgentDropdown(c *[]MsAgentDropdown) (int, error) {
+	query := `SELECT 
+				agent_key, 
+ 				CONCAT(agent_code, " - ", agent_name) AS agent_name 
+			FROM ms_agent WHERE ms_agent.rec_status = 1`
+	log.Println(query)
+	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
