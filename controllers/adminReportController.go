@@ -929,3 +929,210 @@ func GetDailyTransactionReport(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetSubscriptionBatchConfirmation(c echo.Context) error {
+
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	//Get parameter limit
+	limitStr := c.QueryParam("limit")
+	var limit uint64
+	if limitStr != "" {
+		limit, err = strconv.ParseUint(limitStr, 10, 64)
+		if err == nil {
+			if (limit == 0) || (limit > config.LimitQuery) {
+				limit = config.LimitQuery
+			}
+		} else {
+			log.Error("Limit should be number")
+			return lib.CustomError(http.StatusBadRequest, "Limit should be number", "Limit should be number")
+		}
+	} else {
+		limit = config.LimitQuery
+	}
+	// Get parameter page
+	pageStr := c.QueryParam("page")
+	var page uint64
+	if pageStr != "" {
+		page, err = strconv.ParseUint(pageStr, 10, 64)
+		if err == nil {
+			if page == 0 {
+				page = 1
+			}
+		} else {
+			log.Error("Page should be number")
+			return lib.CustomError(http.StatusBadRequest, "Page should be number", "Page should be number")
+		}
+	} else {
+		page = 1
+	}
+	var offset uint64
+	if page > 1 {
+		offset = limit * (page - 1)
+	}
+
+	noLimitStr := c.QueryParam("nolimit")
+	var noLimit bool
+	if noLimitStr != "" {
+		noLimit, err = strconv.ParseBool(noLimitStr)
+		if err != nil {
+			log.Error("Nolimit parameter should be true/false")
+			return lib.CustomError(http.StatusBadRequest, "Nolimit parameter should be true/false", "Nolimit parameter should be true/false")
+		}
+	} else {
+		noLimit = false
+	}
+
+	params := make(map[string]string)
+
+	productkey := c.QueryParam("product_key")
+	if productkey != "" {
+		params["t.product_key"] = productkey
+	} else {
+		log.Error("product_key parameter tidak boleh kosong")
+		return lib.CustomError(http.StatusBadRequest, "product_key parameter tidak boleh kosong", "product_key parameter tidak boleh kosong")
+	}
+
+	date := c.QueryParam("date")
+	if date == "" {
+		log.Error("date parameter tidak boleh kosong")
+		return lib.CustomError(http.StatusBadRequest, "date parameter tidak boleh kosong", "date parameter tidak boleh kosong")
+	} else {
+		params["t.nav_date"] = date
+	}
+
+	paymentMethod := c.QueryParam("payment_method")
+	if paymentMethod != "" {
+		params["t.payment_method"] = paymentMethod
+	}
+
+	items := []string{"no_sid", "account_no", "bk_unit_holder", "investor_name", "total_amount", "fee_percent",
+		"nett_amount", "unit", "bank", "payment_method"}
+
+	orderBy := c.QueryParam("order_by")
+	if orderBy != "" {
+		_, found := lib.Find(items, orderBy)
+		if found {
+
+			var orderByJoin string
+			orderByJoin = "t.nav_date"
+			if orderBy == "no_sid" {
+				orderByJoin = "c.sid_no"
+			} else if orderBy == "account_no" {
+				orderByJoin = "c.unit_holder_idno"
+			} else if orderBy == "bk_unit_holder" {
+				orderByJoin = "ba.account_holder_name"
+			} else if orderBy == "investor_name" {
+				orderByJoin = "c.full_name"
+			} else if orderBy == "total_amount" {
+				orderByJoin = "t.total_amount"
+			} else if orderBy == "fee_percent" {
+				orderByJoin = "t.trans_fee_percent"
+			} else if orderBy == "nett_amount" {
+				orderByJoin = "t.trans_amount"
+			} else if orderBy == "unit" {
+				orderByJoin = "tc.confirmed_unit"
+			} else if orderBy == "bank" {
+				orderByJoin = "bank.bank_name"
+			} else if orderBy == "payment_method" {
+				orderByJoin = "p_method.lkp_name"
+			}
+
+			params["orderBy"] = orderByJoin
+			params["orderBy"] = orderBy
+			orderType := c.QueryParam("order_type")
+			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
+				params["orderType"] = orderType
+			}
+		} else {
+			log.Error("Wrong input for parameter order_by")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
+		}
+	} else {
+		params["orderBy"] = "t.nav_date"
+		params["orderType"] = "DESC"
+	}
+
+	var listTransaksi []models.SubscriptionBatchConfirmationField
+	status, err = models.SubscriptionBatchConfirmation(&listTransaksi, limit, offset, params, noLimit)
+
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	if len(listTransaksi) < 1 {
+		log.Error("Transaksi not found")
+		return lib.CustomError(http.StatusNotFound, "Transaksi not found", "Transaksi not found")
+	}
+
+	var totalAmount decimal.Decimal
+	var totalFeeAmount decimal.Decimal
+	var totalNettAmount decimal.Decimal
+
+	tradeDate := listTransaksi[0].NavDate
+	var nab decimal.Decimal
+	nab = listTransaksi[0].NavValue.Truncate(2)
+	referenceNo := listTransaksi[0].BatchDisplayNo
+
+	var trFormaterList []models.SubscriptionBatchConfirmationField
+	for _, tr := range listTransaksi {
+		var trFormater models.SubscriptionBatchConfirmationField
+		trFormater.NoSid = tr.NoSid
+		trFormater.AccountNo = tr.AccountNo
+		trFormater.BkUnitHolder = tr.BkUnitHolder
+		trFormater.InvestorName = tr.InvestorName
+		trFormater.Amount = tr.Amount.Truncate(0)
+		trFormater.FeePercent = tr.FeePercent
+		trFormater.FeeAmount = tr.FeeAmount.Truncate(0)
+		trFormater.NettAmount = tr.NettAmount.Truncate(0)
+		trFormater.Unit = tr.Unit.Truncate(2)
+		trFormater.Bank = tr.Bank
+		trFormater.TransType = tr.TransType
+		trFormater.PaymentMethod = tr.PaymentMethod
+		trFormaterList = append(trFormaterList, trFormater)
+
+		totalAmount = totalAmount.Add(tr.Amount).Truncate(0)
+		totalFeeAmount = totalFeeAmount.Add(tr.FeeAmount).Truncate(0)
+		totalNettAmount = totalNettAmount.Add(tr.NettAmount).Truncate(0)
+	}
+
+	var result models.SubscriptionBatchConfirmationResponse
+	result.TradeDate = &tradeDate
+	result.Nab = &nab
+	result.ReferenceNo = &referenceNo
+	result.Data = &trFormaterList
+	result.TotalAmount = totalAmount
+	result.TotalFeeAmount = totalFeeAmount
+	result.TotalUnit = totalNettAmount
+
+	var countData models.CountData
+	var pagination int
+	if limit > 0 {
+		status, err = models.SubscriptionBatchConfirmationCount(&countData, params)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) < int(limit) {
+			pagination = 1
+		} else {
+			calc := math.Ceil(float64(countData.CountData) / float64(limit))
+			pagination = int(calc)
+		}
+	} else {
+		pagination = 1
+	}
+
+	var response lib.ResponseWithPagination
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Pagination = pagination
+	response.Data = result
+
+	return c.JSON(http.StatusOK, response)
+}

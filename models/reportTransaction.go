@@ -615,3 +615,178 @@ func DailyTransactionReportCountRow(c *CountData, params map[string]string) (int
 
 	return http.StatusOK, nil
 }
+
+type SubscriptionBatchConfirmationField struct {
+	NoSid          *string          `db:"no_sid"              json:"no_sid"`
+	AccountNo      *string          `db:"account_no"          json:"account_no"`
+	BkUnitHolder   *string          `db:"bk_unit_holder"      json:"bk_unit_holder"`
+	InvestorName   *string          `db:"investor_name"       json:"investor_name"`
+	Amount         decimal.Decimal  `db:"amount"              json:"amount"`
+	FeePercent     *string          `db:"fee_percent"         json:"fee_percent"`
+	FeeAmount      decimal.Decimal  `db:"fee_amount"          json:"fee_amount"`
+	NettAmount     decimal.Decimal  `db:"nett_amount"         json:"nett_amount"`
+	Unit           decimal.Decimal  `db:"unit"                json:"unit"`
+	Bank           *string          `db:"bank"                json:"bank"`
+	TransType      *string          `db:"trans_type"          json:"trans_type"`
+	PaymentMethod  *string          `db:"payment_method"      json:"payment_method"`
+	NavDate        string           `db:"nav_date"            json:"nav_date,omitempty"`
+	NavValue       *decimal.Decimal `db:"nav_value"           json:"nav_value,omitempty"`
+	BatchDisplayNo string           `db:"batch_display_no"    json:"batch_display_no,omitempty"`
+}
+
+type SubscriptionBatchConfirmationResponse struct {
+	TradeDate      *string                               `json:"trade_date"`
+	Nab            *decimal.Decimal                      `json:"nab"`
+	ReferenceNo    *string                               `json:"reference_no"`
+	TotalAmount    decimal.Decimal                       `json:"total_amount"`
+	TotalFeeAmount decimal.Decimal                       `json:"total_fee_amount"`
+	TotalUnit      decimal.Decimal                       `json:"total_unit"`
+	Data           *[]SubscriptionBatchConfirmationField `json:"data"`
+}
+
+func SubscriptionBatchConfirmation(c *[]SubscriptionBatchConfirmationField, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	query := `SELECT 
+				(CASE 
+					WHEN c.sid_no IS NULL THEN '-' 
+					ELSE c.sid_no 
+				END) AS no_sid,
+				c.unit_holder_idno AS account_no,
+				ba.account_holder_name AS bk_unit_holder,
+				c.full_name AS investor_name,
+				t.total_amount AS amount,
+				(CASE 
+					WHEN t.trans_fee_percent = 0 THEN '-' 
+					ELSE t.trans_fee_percent 
+				END) AS fee_percent,
+				(t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) AS fee_amount,
+				(CASE
+					WHEN tc.tc_key IS NOT NULL THEN tc.confirmed_amount
+					ELSE t.trans_amount
+				END) AS nett_amount, 
+				(CASE
+					WHEN tc.tc_key IS NOT NULL THEN tc.confirmed_unit
+					ELSE (t.trans_amount / n.nav_value)
+				END) AS unit,
+				CONCAT(bank.bank_name, " - ", ba.account_no) AS bank,
+				t_type.type_description AS trans_type,
+				p_method.lkp_name AS payment_method,
+				DATE_FORMAT(t.nav_date, '%d %M %Y') as nav_date,
+				n.nav_value,
+				b.batch_display_no
+			FROM tr_transaction AS t 
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key 
+			INNER JOIN tr_transaction_bank_account AS tb ON tb.transaction_key = t.transaction_key
+			INNER JOIN ms_product_bank_account AS pb ON pb.prod_bankacc_key = tb.prod_bankacc_key
+			INNER JOIN ms_bank_account AS ba ON ba.bank_account_key = pb.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = ba.bank_key
+			INNER JOIN gen_lookup AS p_method ON p_method.lookup_key = t.payment_method
+			INNER JOIN tr_transaction_batch AS b ON t.batch_key = b.batch_key
+			INNER JOIN tr_nav AS n ON 1=1 AND n.product_key = t.product_key AND n.nav_date = t.nav_date
+			INNER JOIN tr_transaction_type AS t_type ON t_type.trans_type_key = t.trans_type_key 
+			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
+				WHERE t.batch_key IS NOT NULL
+				AND t.trans_type_key = 1 AND t.rec_status = 1 `
+
+	var present bool
+	var condition string
+	var conditionOrder string
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		conditionOrder += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			conditionOrder += " " + orderType
+		}
+	}
+	query += conditionOrder
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func SubscriptionBatchConfirmationCount(c *CountData, params map[string]string) (int, error) {
+	var whereClause []string
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	query := `SELECT 
+				COUNT(t.transaction_key) AS count_data 
+			FROM tr_transaction AS t 
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key 
+			INNER JOIN tr_transaction_bank_account AS tb ON tb.transaction_key = t.transaction_key
+			INNER JOIN ms_product_bank_account AS pb ON pb.prod_bankacc_key = tb.prod_bankacc_key
+			INNER JOIN ms_bank_account AS ba ON ba.bank_account_key = pb.bank_account_key
+			INNER JOIN ms_bank AS bank ON bank.bank_key = ba.bank_key
+			INNER JOIN gen_lookup AS p_method ON p_method.lookup_key = t.payment_method
+			INNER JOIN tr_transaction_batch AS b ON t.batch_key = b.batch_key
+			INNER JOIN tr_nav AS n ON 1=1 AND n.product_key = t.product_key AND n.nav_date = t.nav_date
+			INNER JOIN tr_transaction_type AS t_type ON t_type.trans_type_key = t.trans_type_key 
+			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key
+				WHERE t.batch_key IS NOT NULL
+				AND t.trans_type_key = 1 AND t.rec_status = 1 `
+
+	var condition string
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

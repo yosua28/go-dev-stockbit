@@ -304,11 +304,14 @@ func router() *echo.Echo {
 	//Admin Daily Transaction Report - J005
 	admin.GET("/report/daily-transaction-report", controllers.GetDailyTransactionReport).Name = "GetDailyTransactionReport"
 
-	//Admin MS BRANCH
+	//Admin MS BRANCH - J005
 	admin.GET("/branchlist/dropdown", controllers.GetListBranchDropdown).Name = "GetListBranchDropdown"
 
-	//Admin MS AGENT
+	//Admin MS AGENT - J005
 	admin.GET("/agentlist/dropdown", controllers.GetListAgentDropdown).Name = "GetListAgentDropdown"
+
+	//Admin Subscription Batch Confirmation - J006
+	admin.GET("/report/subscription-batch-confirmation", controllers.GetSubscriptionBatchConfirmation).Name = "GetSubscriptionBatchConfirmation"
 
 	return e
 }
