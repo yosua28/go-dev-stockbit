@@ -313,6 +313,9 @@ func router() *echo.Echo {
 	//Admin Subscription Batch Confirmation - J006
 	admin.GET("/report/subscription-batch-confirmation", controllers.GetSubscriptionBatchConfirmation).Name = "GetSubscriptionBatchConfirmation"
 
+	//Admin Redemption Batch Confirmation - J007
+	admin.GET("/report/redemption-batch-confirmation", controllers.GetRedemptionBatchConfirmation).Name = "GetRedemptionBatchConfirmation"
+
 	return e
 }
 
