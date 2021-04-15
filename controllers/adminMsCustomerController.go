@@ -1346,7 +1346,6 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	if gender == "" {
 		log.Error("Missing required parameter: gender")
 		return lib.CustomError(http.StatusBadRequest, "gender can not be blank", "gender can not be blank")
-		return lib.CustomError(http.StatusBadRequest)
 	} else {
 		n, err := strconv.ParseUint(gender, 10, 64)
 		if err != nil || n == 0 {
@@ -1354,6 +1353,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: gender", "Wrong input for parameter: gender")
 		}
 	}
+
+	salesCode := c.FormValue("sales_code")
 
 	placeBirth := c.FormValue("place_birth")
 	if placeBirth == "" {
@@ -1579,6 +1580,20 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		}
 	}
 
+	pepStatus := c.FormValue("pep_status")
+	if pepStatus == "" {
+		log.Error("Missing required parameter: pep_status")
+		return lib.CustomError(http.StatusBadRequest, "pep_status can not be blank", "pep_status can not be blank")
+	} else {
+		n, err := strconv.ParseUint(pepStatus, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["pep_status"] = pepStatus
+		} else {
+			log.Error("Wrong input for parameter: pep_status")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: pep_status", "Wrong input for parameter: pep_status")
+		}
+	}
+
 	objectives := c.FormValue("objectives")
 	if objectives == "" {
 		log.Error("Missing required parameter: objectives")
@@ -1787,6 +1802,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsOaRequest := make(map[string]string)
 	paramsOaRequest["oa_status"] = "258"
 	paramsOaRequest["oa_entry_start"] = dateNow
+	paramsOaRequest["sales_code"] = salesCode
 	paramsOaRequest["oa_entry_end"] = dateNow
 	paramsOaRequest["oa_request_type"] = "127"
 	paramsOaRequest["rec_status"] = "1"
@@ -1953,7 +1969,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		file, err = c.FormFile("pic_ktp")
 		if file != nil {
 			if err != nil {
-				return lib.CustomError(http.StatusBadRequest)
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: pic_ktp")
 			}
 			// Get file extension
 			extension := filepath.Ext(file.Filename)
@@ -1984,7 +2000,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		file, err = c.FormFile("pic_selfie_ktp")
 		if file != nil {
 			if err != nil {
-				return lib.CustomError(http.StatusBadRequest)
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: pic_selfie_ktp")
 			}
 			// Get file extension
 			extension := filepath.Ext(file.Filename)
@@ -2011,6 +2027,42 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		} else {
 			return lib.CustomError(http.StatusBadRequest)
 		}
+	}
+
+	err = os.MkdirAll(config.BasePath+"/images/user/"+idUserLogin+"/signature", 0755)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadGateway, err.Error(), err.Error())
+	}
+	file, err = c.FormFile("signature")
+	if file != nil {
+		if err != nil {
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: signature")
+		}
+		// Get file extension
+		extension := filepath.Ext(file.Filename)
+		// Generate filename
+		var filename string
+		for {
+			filename = lib.RandStringBytesMaskImprSrc(20)
+			log.Println("Generate filename:", filename)
+			var personalData []models.OaPersonalData
+			getParams := make(map[string]string)
+			getParams["rec_image1"] = filename + extension
+			_, err := models.GetAllOaPersonalData(&personalData, 1, 0, getParams, false)
+			if (err == nil && len(personalData) < 1) || err != nil {
+				break
+			}
+		}
+		// Upload image and move to proper directory
+		err = lib.UploadImage(file, config.BasePath+"/images/user/"+idUserLogin+"/signature/"+filename+extension)
+		if err != nil {
+			log.Println(err)
+			return lib.CustomError(http.StatusInternalServerError)
+		}
+		paramsOaPersonalData["rec_image1"] = filename + extension
+	} else {
+		return lib.CustomError(http.StatusBadRequest)
 	}
 
 	status, err, _ = models.CreateOaPersonalData(paramsOaPersonalData)

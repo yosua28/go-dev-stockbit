@@ -18038,6 +18038,9 @@
                   "idcard_no": {
                     "type": "string"
                   },
+                  "sales_code": {
+                    "type": "string"
+                  },
                   "gender": {
                     "type": "integer"
                   },
@@ -18090,6 +18093,9 @@
                   "pic_selfie_ktp": {
                     "type": "file"
                   },
+                  "signature": {
+                    "type": "file"
+                  },
                   "job": {
                     "type": "integer"
                   },
@@ -18106,6 +18112,9 @@
                     "type": "integer"
                   },
                   "annual_income": {
+                    "type": "integer"
+                  },
+                  "pep_status": {
                     "type": "integer"
                   },
                   "fund_source": {
@@ -18185,7 +18194,9 @@
                   "religion",
                   "education",
                   "pic_ktp",
+                  "pep_status",
                   "pic_selfie_ktp",
+                  "signature",
                   "job",
                   "company",
                   "position",
