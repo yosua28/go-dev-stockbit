@@ -426,6 +426,7 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 	responseData.OaEntryStart = date.Format(newLayout)
 	date, _ = time.Parse(layout, oareq.OaEntryEnd)
 	responseData.OaEntryEnd = date.Format(newLayout)
+	responseData.SalesCode = oareq.SalesCode
 
 	var oaRequestLookupIds []string
 
@@ -510,6 +511,11 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 			responseData.PicSelfie = &path
 		}
 
+		if oapersonal.RecImage1 != nil && *oapersonal.RecImage1 != "" {
+			path := dir + "signature/" + *oapersonal.RecImage1
+			responseData.Signature = &path
+		}
+
 		if oapersonal.PicSelfieKtp != nil && *oapersonal.PicSelfieKtp != "" {
 			path := dir + *oapersonal.PicSelfieKtp
 			responseData.PicSelfieKtp = &path
@@ -526,6 +532,11 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 		if oapersonal.Gender != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
+			}
+		}
+		if oapersonal.PepStatus != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10))
 			}
 		}
 		if oapersonal.MaritalStatus != nil {
@@ -623,6 +634,12 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 		if oapersonal.Gender != nil {
 			if n, ok := pData[*oapersonal.Gender]; ok {
 				responseData.Gender = n.LkpName
+			}
+		}
+
+		if oapersonal.PepStatus != nil {
+			if n, ok := pData[*oapersonal.PepStatus]; ok {
+				responseData.PepStatus = n.LkpName
 			}
 		}
 		if oapersonal.MaritalStatus != nil {

@@ -80,11 +80,14 @@ type OaRequestDetailResponse struct {
 	Gender              *string              `json:"gender"`
 	PlaceBirth          string               `json:"place_birth"`
 	MaritalStatus       *string              `json:"marital_status"`
+	PepStatus           *string              `json:"pep_status"`
+	SalesCode           *string              `json:"sales_code"`
 	PhoneHome           string               `json:"phone_home"`
 	Religion            *string              `json:"religion"`
 	Education           *string              `json:"education"`
 	PicKtp              *string              `json:"pic_ktp"`
 	PicSelfie           *string              `json:"pic_selfie"`
+	Signature           *string              `json:"signature"`
 	PicSelfieKtp        *string              `json:"pic_selfie_ktp"`
 	OccupJob            *string              `json:"occup_job"`
 	OccupCompany        *string              `json:"occup_company"`

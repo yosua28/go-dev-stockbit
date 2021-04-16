@@ -4751,164 +4751,322 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "oa_request_key": 17,
+                    "oa_request_key": 131,
                     "oa_request_type": "NEW",
-                    "oa_risk_level": "Risiko Tinggi",
-                    "oa_entry_start": "08 Oct 2020",
-                    "oa_entry_end": "08 Oct 2020",
-                    "oa_status": "KYC_APPROVED",
-                    "email_address": "aldy.alfianta@mncgroup.com",
-                    "phone_mobile": "085328481220",
-                    "date_birth": "25 Oct 1996",
-                    "full_name": "Aldy Yoga",
-                    "idcard_no": "3403162510960003",
+                    "oa_risk_level": null,
+                    "oa_entry_start": "15 Apr 2021",
+                    "oa_entry_end": "15 Apr 2021",
+                    "oa_status": "OA_ENTRIED",
+                    "email_address": "yohaha@gm.com",
+                    "phone_mobile": "0842356554654",
+                    "date_birth": "30 Oct 1996",
+                    "full_name": "Jojo Susanto",
+                    "idcard_no": "323546234432445",
                     "nationality": "Indonesia",
-                    "gender": "Pria",
-                    "place_birth": "Gunungkidul",
-                    "marital_status": "Lajang ",
-                    "phone_home": "021532846",
-                    "religion": "Islam",
-                    "education": "Sarjana S1",
-                    "pic_ktp": "https://devapi.mncasset.com/images/user/44/gqHqiQGSbvPhtiHbJ0ec.png",
+                    "gender": "Approved",
+                    "place_birth": "7",
+                    "marital_status": "Approved",
+                    "pep_status": "Reject",
+                    "sales_code": "PUIOY",
+                    "phone_home": "07654324543",
+                    "religion": "Waiting",
+                    "education": "Waiting",
+                    "pic_ktp": "https://devapi.mncasset.com/images/user/7391/F2KRUQvtQGYsuBnosgU6.jpg",
                     "pic_selfie": null,
-                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/44/5BAHhHhzzmJanACsFpQP.649023",
-                    "occup_job": "Karyawan Swasta",
+                    "signature": "https://devapi.mncasset.com/images/user/7391/signature/Q9oGjVNb4T2NA0h5E1Zw.jpg",
+                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/7391/iKyq3ZEV1xZZnWMErn9M.jpg",
+                    "occup_job": "Waiting",
                     "occup_company": "MNC",
-                    "occup_position": "Staff atau officer",
+                    "occup_position": "SD",
                     "occup_phone": null,
                     "occup_web_url": null,
-                    "annual_income": "< Rp 10 Juta",
-                    "sourceof_fund": "Gaji",
-                    "invesment_objectives": "Investasi Jangka Panjang",
-                    "correspondence": "Teman",
-                    "mother_maiden_name": "rina",
-                    "beneficial_relation": "Suami/Istri",
-                    "beneficial_full_name": "heru",
-                    "occup_business_fields": "Lainnya",
+                    "annual_income": "Spekulasi",
+                    "sourceof_fund": "WNI",
+                    "invesment_objectives": "Saudara Kandung",
+                    "correspondence": "Gaji",
+                    "mother_maiden_name": "ghf fth",
+                    "beneficial_relation": "Waiting",
+                    "beneficial_full_name": "try rtyrt",
+                    "occup_business_fields": "Pedagang Isi Pulsa",
                     "idcard_address": {
-                      "address": "tileng, girisubo",
-                      "kabupaten": "Kota Yogyakarta",
-                      "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "address": "6",
+                      "kabupaten": "Bengkulu",
+                      "kecamatan": "Kabupaten Bireuen",
+                      "postal_code": "78654"
                     },
                     "domicile_address": {
-                      "address": "tileng, girisubo",
-                      "kabupaten": "Kota Yogyakarta",
-                      "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "address": "gfuh fghvv",
+                      "kabupaten": "Kalimantan Tengah",
+                      "kecamatan": "Kota Medan",
+                      "postal_code": "54645"
                     },
                     "occup_address_key": {
-                      "address": "kebon sirih",
+                      "address": "df dfg rter",
                       "kabupaten": null,
                       "kecamatan": null,
                       "postal_code": null
                     },
                     "bank_account": {
-                      "bank_name": "BANK MANDIRI",
-                      "account_no": "1462576464",
-                      "account_holder_name": "heru",
-                      "branch_name": "jogjakarta"
+                      "bank_name": "BANK AGRO NIAGA",
+                      "account_no": "987645354",
+                      "account_holder_name": "ftrrr",
+                      "branch_name": "fyrt rter"
                     },
                     "relation": {
                       "relation_type": null,
-                      "relation_full_name": "heru",
-                      "relation_occupation": "Pensiunan",
-                      "relation_business_fields": "Lainnya"
+                      "relation_full_name": "gtta",
+                      "relation_occupation": "Saudara Kandung",
+                      "relation_business_fields": "Pinjaman"
                     },
                     "emergency": {
-                      "emergency_full_name": "heru",
-                      "emergency_relation": "Orangtua",
-                      "emergency_phone_no": "08536843484"
+                      "emergency_full_name": "hgf gg",
+                      "emergency_relation": "Waiting",
+                      "emergency_phone_no": "546754563"
                     },
                     "risk_profile": [
                       {
-                        "oa_risk_profile_key": 12,
-                        "risk_profile_key": 2,
-                        "risk_code": "RendahMenengah",
-                        "risk_name": "Konservatif Moderate",
-                        "risk_desc": "Investor masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi.",
-                        "min_score": 41,
-                        "max_score": 65,
-                        "score_result": 61
+                        "oa_risk_profile_key": 61,
+                        "risk_profile_key": 4,
+                        "risk_code": "Tinggi",
+                        "risk_name": "Agresif",
+                        "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
+                        "min_score": 65,
+                        "max_score": 10000000,
+                        "score_result": 70
                       }
                     ],
                     "risk_profile_quiz": [
                       {
-                        "risk_profile_quiz_key": 65,
+                        "risk_profile_quiz_key": 292,
                         "quiz_option_user": {
-                          "quiz_option_key": 2,
+                          "quiz_option_key": 7,
                           "quiz_option_label": "B",
-                          "quiz_option_title": "Sedikit mengenal",
-                          "quiz_option_score": 1,
+                          "quiz_option_title": "Pendapatan dan Pertumbuhan Nilai",
+                          "quiz_option_score": 10,
                           "quiz_option_default": 0
                         },
-                        "quiz_option_score_user": 1,
-                        "quiz_question_key": 1,
-                        "header_quiz_name": "Survey Pengenalan RD",
-                        "quiz_title": "Seberapa jauh Anda kenal Reksadana",
+                        "quiz_option_score_user": 10,
+                        "quiz_question_key": 3,
+                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
+                        "quiz_title": "Apa Tujuan Investasi Kamu?",
                         "options": [
                           {
-                            "quiz_option_key": 1,
+                            "quiz_option_key": 6,
                             "quiz_option_label": "A",
-                            "quiz_option_title": "Belum mengenal",
-                            "quiz_option_score": 0,
+                            "quiz_option_title": "Pendapatan Berkala",
+                            "quiz_option_score": 5,
                             "quiz_option_default": 0
                           },
                           {
-                            "quiz_option_key": 2,
+                            "quiz_option_key": 7,
                             "quiz_option_label": "B",
-                            "quiz_option_title": "Sedikit mengenal",
-                            "quiz_option_score": 1,
+                            "quiz_option_title": "Pendapatan dan Pertumbuhan Nilai",
+                            "quiz_option_score": 10,
                             "quiz_option_default": 0
                           },
                           {
-                            "quiz_option_key": 3,
+                            "quiz_option_key": 8,
                             "quiz_option_label": "C",
-                            "quiz_option_title": "Sangat mengenal",
-                            "quiz_option_score": 2,
+                            "quiz_option_title": "Investasi Jangka Panjang",
+                            "quiz_option_score": 15,
                             "quiz_option_default": 0
                           }
                         ]
                       },
                       {
-                        "risk_profile_quiz_key": 66,
+                        "risk_profile_quiz_key": 293,
                         "quiz_option_user": {
-                          "quiz_option_key": 4,
-                          "quiz_option_label": "A",
-                          "quiz_option_title": "Belum",
-                          "quiz_option_score": 0,
+                          "quiz_option_key": 10,
+                          "quiz_option_label": "B",
+                          "quiz_option_title": "2 - 5 Tahun",
+                          "quiz_option_score": 10,
                           "quiz_option_default": 0
                         },
-                        "quiz_option_score_user": 0,
-                        "quiz_question_key": 2,
-                        "header_quiz_name": "Survey Pengenalan RD",
-                        "quiz_title": "Apakah Anda sudah memiliki Reksadana?",
+                        "quiz_option_score_user": 10,
+                        "quiz_question_key": 4,
+                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
+                        "quiz_title": "Berapa Lama Jangka Waktu Kamu untuk Investasi?",
                         "options": [
                           {
-                            "quiz_option_key": 4,
+                            "quiz_option_key": 9,
                             "quiz_option_label": "A",
-                            "quiz_option_title": "Belum",
-                            "quiz_option_score": 0,
+                            "quiz_option_title": "< 2 Tahun",
+                            "quiz_option_score": 5,
                             "quiz_option_default": 0
                           },
                           {
-                            "quiz_option_key": 5,
+                            "quiz_option_key": 10,
                             "quiz_option_label": "B",
-                            "quiz_option_title": "Sudah",
-                            "quiz_option_score": 1,
+                            "quiz_option_title": "2 - 5 Tahun",
+                            "quiz_option_score": 10,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 11,
+                            "quiz_option_label": "C",
+                            "quiz_option_title": "> 5 Tahun",
+                            "quiz_option_score": 15,
+                            "quiz_option_default": 0
+                          }
+                        ]
+                      },
+                      {
+                        "risk_profile_quiz_key": 294,
+                        "quiz_option_user": {
+                          "quiz_option_key": 14,
+                          "quiz_option_label": "C",
+                          "quiz_option_title": "> 70%",
+                          "quiz_option_score": 15,
+                          "quiz_option_default": 0
+                        },
+                        "quiz_option_score_user": 15,
+                        "quiz_question_key": 5,
+                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
+                        "quiz_title": "Persentase Dana yang Kamu Investasikan",
+                        "options": [
+                          {
+                            "quiz_option_key": 12,
+                            "quiz_option_label": "A",
+                            "quiz_option_title": "< 35%",
+                            "quiz_option_score": 5,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 13,
+                            "quiz_option_label": "B",
+                            "quiz_option_title": "35% - 70%",
+                            "quiz_option_score": 10,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 14,
+                            "quiz_option_label": "C",
+                            "quiz_option_title": "> 70%",
+                            "quiz_option_score": 15,
+                            "quiz_option_default": 0
+                          }
+                        ]
+                      },
+                      {
+                        "risk_profile_quiz_key": 295,
+                        "quiz_option_user": {
+                          "quiz_option_key": 16,
+                          "quiz_option_label": "B",
+                          "quiz_option_title": "Cukup Memahami",
+                          "quiz_option_score": 10,
+                          "quiz_option_default": 0
+                        },
+                        "quiz_option_score_user": 10,
+                        "quiz_question_key": 6,
+                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
+                        "quiz_title": "Pemahaman Kamu terhadap Produk Investasi dan Produk Reksa Dana di MNC Asset Management",
+                        "options": [
+                          {
+                            "quiz_option_key": 15,
+                            "quiz_option_label": "A",
+                            "quiz_option_title": "Kurang Memahami",
+                            "quiz_option_score": 5,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 16,
+                            "quiz_option_label": "B",
+                            "quiz_option_title": "Cukup Memahami",
+                            "quiz_option_score": 10,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 17,
+                            "quiz_option_label": "C",
+                            "quiz_option_title": "Sangat Memahami",
+                            "quiz_option_score": 15,
+                            "quiz_option_default": 0
+                          }
+                        ]
+                      },
+                      {
+                        "risk_profile_quiz_key": 296,
+                        "quiz_option_user": {
+                          "quiz_option_key": 20,
+                          "quiz_option_label": "C",
+                          "quiz_option_title": "Tinggi, Berani Menghadapi Risiko",
+                          "quiz_option_score": 15,
+                          "quiz_option_default": 0
+                        },
+                        "quiz_option_score_user": 15,
+                        "quiz_question_key": 7,
+                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
+                        "quiz_title": "Toleransi Risiko Kamu",
+                        "options": [
+                          {
+                            "quiz_option_key": 18,
+                            "quiz_option_label": "A",
+                            "quiz_option_title": "Rendah, Mengutamakan Kestabilan",
+                            "quiz_option_score": 5,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 19,
+                            "quiz_option_label": "B",
+                            "quiz_option_title": "Sedang, Bisa Menerima Sedikit Risiko",
+                            "quiz_option_score": 10,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 20,
+                            "quiz_option_label": "C",
+                            "quiz_option_title": "Tinggi, Berani Menghadapi Risiko",
+                            "quiz_option_score": 15,
+                            "quiz_option_default": 0
+                          }
+                        ]
+                      },
+                      {
+                        "risk_profile_quiz_key": 297,
+                        "quiz_option_user": {
+                          "quiz_option_key": 22,
+                          "quiz_option_label": "B",
+                          "quiz_option_title": "Dapat Menerima Kerugian dalam Jumlah Relatif Kecil",
+                          "quiz_option_score": 10,
+                          "quiz_option_default": 0
+                        },
+                        "quiz_option_score_user": 10,
+                        "quiz_question_key": 8,
+                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
+                        "quiz_title": "Kepentingan Atas Pokok Investasi",
+                        "options": [
+                          {
+                            "quiz_option_key": 21,
+                            "quiz_option_label": "A",
+                            "quiz_option_title": "Tidak Dapat Menerima Kerugian Apapun",
+                            "quiz_option_score": 5,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 22,
+                            "quiz_option_label": "B",
+                            "quiz_option_title": "Dapat Menerima Kerugian dalam Jumlah Relatif Kecil",
+                            "quiz_option_score": 10,
+                            "quiz_option_default": 0
+                          },
+                          {
+                            "quiz_option_key": 23,
+                            "quiz_option_label": "C",
+                            "quiz_option_title": "Dapat Menerima Kerugian Apapun",
+                            "quiz_option_score": 15,
                             "quiz_option_default": 0
                           }
                         ]
                       }
                     ],
-                    "first_name": "Aldy",
-                    "middle_name": "Yoga",
-                    "last_name": "Putra",
+                    "first_name": "Jojo",
+                    "middle_name": "Susanto",
+                    "last_name": null,
                     "client_code": null,
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
-                    "fatca_status": "Domestic (WNA)"
+                    "fatca_status": null
                   }
                 }
               }
@@ -4998,11 +5156,14 @@
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
                     "marital_status": "Lajang ",
+                    "pep_status": "Reject",
+                    "sales_code": "PUIOY",
                     "phone_home": "021532846",
                     "religion": "Islam",
                     "education": "Sarjana S1",
                     "pic_ktp": "https://devapi.mncasset.com/images/user/44/gqHqiQGSbvPhtiHbJ0ec.png",
                     "pic_selfie": null,
+                    "signature": "https://devapi.mncasset.com/images/user/7391/signature/Q9oGjVNb4T2NA0h5E1Zw.jpg",
                     "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/44/5BAHhHhzzmJanACsFpQP.649023",
                     "occup_job": "Karyawan Swasta",
                     "occup_company": "MNC",
