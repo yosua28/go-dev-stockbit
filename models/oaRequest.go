@@ -179,6 +179,7 @@ type DetailPersonalDataCustomerIndividu struct {
 	OaEntryStart        string                      `json:"oa_entry_start"`
 	OaEntryEnd          string                      `json:"oa_entry_end"`
 	Oastatus            string                      `json:"oa_status"`
+	SalesCode           string                      `json:"sales_code"`
 	EmailAddress        string                      `json:"email_address"`
 	PhoneNumber         string                      `json:"phone_mobile"`
 	DateBirth           string                      `json:"date_birth"`
@@ -188,12 +189,14 @@ type DetailPersonalDataCustomerIndividu struct {
 	Gender              *string                     `json:"gender"`
 	PlaceBirth          string                      `json:"place_birth"`
 	MaritalStatus       *string                     `json:"marital_status"`
+	PepStatus           *string                     `json:"pep_status"`
 	PhoneHome           string                      `json:"phone_home"`
 	Religion            *string                     `json:"religion"`
 	Education           *string                     `json:"education"`
 	PicKtp              *string                     `json:"pic_ktp"`
 	PicSelfie           *string                     `json:"pic_selfie"`
 	PicSelfieKtp        *string                     `json:"pic_selfie_ktp"`
+	Signature           *string                     `json:"signature"`
 	OccupJob            *string                     `json:"occup_job"`
 	OccupCompany        *string                     `json:"occup_company"`
 	OccupPosition       *string                     `json:"occup_position"`

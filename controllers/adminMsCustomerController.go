@@ -5,12 +5,9 @@ import (
 	"api/db"
 	"api/lib"
 	"api/models"
-	"bytes"
 	"crypto/sha256"
-	"crypto/tls"
 	"database/sql"
 	"encoding/hex"
-	"html/template"
 	"math"
 	"mime/multipart"
 	"net/http"
@@ -24,7 +21,6 @@ import (
 	"github.com/labstack/echo"
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/gomail.v2"
 )
 
 func GetListCustomerIndividuInquiry(c echo.Context) error {
@@ -516,6 +512,7 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 	responseData.OaEntryStart = date.Format(newLayout)
 	date, _ = time.Parse(layout, oareq.OaEntryEnd)
 	responseData.OaEntryEnd = date.Format(newLayout)
+	responseData.SalesCode = *oareq.SalesCode
 
 	var oaRequestLookupIds []string
 
@@ -605,6 +602,11 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 			responseData.PicSelfieKtp = &path
 		}
 
+		if oapersonal.RecImage1 != nil && *oapersonal.RecImage1 != "" {
+			path := dir + "/signature/" + *oapersonal.PicSelfieKtp
+			responseData.Signature = &path
+		}
+
 		responseData.OccupCompany = oapersonal.OccupCompany
 		responseData.OccupPhone = oapersonal.OccupPhone
 		responseData.OccupWebURL = oapersonal.OccupWebUrl
@@ -616,6 +618,11 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		if oapersonal.Gender != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
+			}
+		}
+		if oapersonal.PepStatus != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10))
 			}
 		}
 		if oapersonal.MaritalStatus != nil {
@@ -713,6 +720,12 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		if oapersonal.Gender != nil {
 			if n, ok := pData[*oapersonal.Gender]; ok {
 				responseData.Gender = n.LkpName
+			}
+		}
+
+		if oapersonal.PepStatus != nil {
+			if n, ok := pData[*oapersonal.PepStatus]; ok {
+				responseData.PepStatus = n.LkpName
 			}
 		}
 		if oapersonal.MaritalStatus != nil {
@@ -1802,7 +1815,9 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsOaRequest := make(map[string]string)
 	paramsOaRequest["oa_status"] = "258"
 	paramsOaRequest["oa_entry_start"] = dateNow
-	paramsOaRequest["sales_code"] = salesCode
+	if salesCode != "" {
+		paramsOaRequest["sales_code"] = salesCode
+	}
 	paramsOaRequest["oa_entry_end"] = dateNow
 	paramsOaRequest["oa_request_type"] = "127"
 	paramsOaRequest["rec_status"] = "1"
@@ -2133,43 +2148,43 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	tx.Commit()
 
 	// Send email
-	t := template.New("index-registration.html")
+	// t := template.New("index-registration.html")
 
-	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
-	if err != nil {
-		log.Println(err)
-	}
+	// t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+	// if err != nil {
+	// 	log.Println(err)
+	// }
 
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct {
-		Name    string
-		FileUrl string
-	}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-		log.Println(err)
-	}
+	// var tpl bytes.Buffer
+	// if err := t.Execute(&tpl, struct {
+	// 	Name    string
+	// 	FileUrl string
+	// }{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+	// 	log.Println(err)
+	// }
 
-	result := tpl.String()
+	// result := tpl.String()
 
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
-	mailer.SetBody("text/html", result)
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	// mailer := gomail.NewMessage()
+	// mailer.SetHeader("From", config.EmailFrom)
+	// mailer.SetHeader("To", email)
+	// mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+	// mailer.SetBody("text/html", result)
+	// dialer := gomail.NewDialer(
+	// 	config.EmailSMTPHost,
+	// 	int(config.EmailSMTPPort),
+	// 	config.EmailFrom,
+	// 	config.EmailFromPassword,
+	// )
+	// dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error("Error send email")
-		log.Error(err)
-		log.Error("Error send email")
-	}
-	log.Info("Email sent")
+	// err = dialer.DialAndSend(mailer)
+	// if err != nil {
+	// 	log.Error("Error send email")
+	// 	log.Error(err)
+	// 	log.Error("Error send email")
+	// }
+	// log.Info("Email sent")
 
 	//insert message notif in app
 	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
