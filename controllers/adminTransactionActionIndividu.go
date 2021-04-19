@@ -721,6 +721,27 @@ func CreateTransactionSubscription(c echo.Context) error {
 		log.Error(err.Error())
 	}
 
+	//create to tr_transaction_settlement
+	settlementParams := make(map[string]string)
+	settlementParams["settle_realized_date"] = time.Now().Format(dateLayout)
+	settlementParams["transaction_key"] = transactionID
+	settlementParams["settle_purposed"] = "297"
+	settlementParams["settle_date"] = dateBursa + " 00:00:00"
+	settlementParams["settle_nominal"] = totalAmountStr
+	settlementParams["client_subaccount_no"] = ""
+	settlementParams["settled_status"] = "243"
+	settlementParams["target_bank_account_key"] = bankStr
+	settlementParams["settle_channel"] = paymentStr
+	settlementParams["settle_payment_method"] = "303"
+	settlementParams["rec_status"] = "1"
+	settlementParams["rec_created_date"] = time.Now().Format(dateLayout)
+	settlementParams["rec_created_by"] = strIDUserLogin
+
+	_, err, _ = models.CreateTrTransactionSettlement(settlementParams)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
 	//create message
 	//create push notif
 	customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)

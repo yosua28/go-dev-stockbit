@@ -614,6 +614,33 @@ func GetTransactionDetail(c echo.Context) error {
 
 	var lookupIds []string
 
+	var trSettlement []models.TrTransactionSettlement
+	paramSettlement := make(map[string]string)
+	paramSettlement["rec_status"] = "1"
+	paramSettlement["transaction_key"] = strconv.FormatUint(transaction.TransactionKey, 10)
+	status, err = models.GetAllTrTransactionSettlement(&trSettlement, paramSettlement)
+	if err == nil {
+		if len(trSettlement) > 0 {
+			for _, settlement := range trSettlement {
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettlePurposed, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettlePurposed, 10))
+				}
+
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettleStatus, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettleStatus, 10))
+				}
+
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettleChannel, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettleChannel, 10))
+				}
+
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettlePaymentMethod, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettlePaymentMethod, 10))
+				}
+			}
+		}
+	}
+
 	if transaction.TrxCode != nil {
 		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*transaction.TrxCode, 10)); !ok {
 			lookupIds = append(lookupIds, strconv.FormatUint(*transaction.TrxCode, 10))
@@ -647,10 +674,44 @@ func GetTransactionDetail(c echo.Context) error {
 		}
 	}
 
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+
 	gData := make(map[uint64]models.GenLookup)
 	for _, gen := range lookupOaReq {
 		gData[gen.LookupKey] = gen
 	}
+
+	//set settlement
+	var settlementTransactionList []models.TransactionSettlement
+	if len(trSettlement) > 0 {
+		for _, settlement := range trSettlement {
+			var data models.TransactionSettlement
+			data.SettlementKey = settlement.SettlementKey
+			date, _ := time.Parse(layout, settlement.SettleDate)
+			data.SettleDate = date.Format(newLayout)
+			data.SettleNominal = settlement.SettleNominal
+			date, _ = time.Parse(layout, settlement.SettleRealizedDate)
+			data.SettleRealizedDate = date.Format(newLayout)
+			data.SettleRemarks = settlement.SettleRemarks
+			data.SettleReference = settlement.SettleReference
+			if n, ok := gData[settlement.SettlePurposed]; ok {
+				data.SettlePurposed = *n.LkpName
+			}
+			if n, ok := gData[settlement.SettleStatus]; ok {
+				data.SettleStatus = *n.LkpName
+			}
+			if n, ok := gData[settlement.SettleChannel]; ok {
+				data.SettleChannel = *n.LkpName
+			}
+			if n, ok := gData[settlement.SettlePaymentMethod]; ok {
+				data.SettlePaymentMethod = *n.LkpName
+			}
+
+			settlementTransactionList = append(settlementTransactionList, data)
+		}
+	}
+	responseData.TransactionSettlement = &settlementTransactionList
 
 	if transaction.TrxCode != nil {
 		if n, ok := gData[*transaction.TrxCode]; ok {
@@ -698,9 +759,6 @@ func GetTransactionDetail(c echo.Context) error {
 			responseData.TrxRiskLevel = &risk
 		}
 	}
-
-	layout := "2006-01-02 15:04:05"
-	newLayout := "02 Jan 2006"
 
 	responseData.TransactionKey = transaction.TransactionKey
 	date, _ := time.Parse(layout, transaction.TransDate)
@@ -3778,6 +3836,33 @@ func DetailTransaksiInquiry(c echo.Context) error {
 
 	var lookupIds []string
 
+	var trSettlement []models.TrTransactionSettlement
+	paramSettlement := make(map[string]string)
+	paramSettlement["rec_status"] = "1"
+	paramSettlement["transaction_key"] = strconv.FormatUint(transaction.TransactionKey, 10)
+	status, err = models.GetAllTrTransactionSettlement(&trSettlement, paramSettlement)
+	if err == nil {
+		if len(trSettlement) > 0 {
+			for _, settlement := range trSettlement {
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettlePurposed, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettlePurposed, 10))
+				}
+
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettleStatus, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettleStatus, 10))
+				}
+
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettleChannel, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettleChannel, 10))
+				}
+
+				if _, ok := lib.Find(lookupIds, strconv.FormatUint(settlement.SettlePaymentMethod, 10)); !ok {
+					lookupIds = append(lookupIds, strconv.FormatUint(settlement.SettlePaymentMethod, 10))
+				}
+			}
+		}
+	}
+
 	if transaction.TrxCode != nil {
 		if _, ok := lib.Find(lookupIds, strconv.FormatUint(*transaction.TrxCode, 10)); !ok {
 			lookupIds = append(lookupIds, strconv.FormatUint(*transaction.TrxCode, 10))
@@ -3811,10 +3896,44 @@ func DetailTransaksiInquiry(c echo.Context) error {
 		}
 	}
 
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+
 	gData := make(map[uint64]models.GenLookup)
 	for _, gen := range lookupOaReq {
 		gData[gen.LookupKey] = gen
 	}
+
+	//set settlement
+	var settlementTransactionList []models.TransactionSettlement
+	if len(trSettlement) > 0 {
+		for _, settlement := range trSettlement {
+			var data models.TransactionSettlement
+			data.SettlementKey = settlement.SettlementKey
+			date, _ := time.Parse(layout, settlement.SettleDate)
+			data.SettleDate = date.Format(newLayout)
+			data.SettleNominal = settlement.SettleNominal
+			date, _ = time.Parse(layout, settlement.SettleRealizedDate)
+			data.SettleRealizedDate = date.Format(newLayout)
+			data.SettleRemarks = settlement.SettleRemarks
+			data.SettleReference = settlement.SettleReference
+			if n, ok := gData[settlement.SettlePurposed]; ok {
+				data.SettlePurposed = *n.LkpName
+			}
+			if n, ok := gData[settlement.SettleStatus]; ok {
+				data.SettleStatus = *n.LkpName
+			}
+			if n, ok := gData[settlement.SettleChannel]; ok {
+				data.SettleChannel = *n.LkpName
+			}
+			if n, ok := gData[settlement.SettlePaymentMethod]; ok {
+				data.SettlePaymentMethod = *n.LkpName
+			}
+
+			settlementTransactionList = append(settlementTransactionList, data)
+		}
+	}
+	responseData.TransactionSettlement = &settlementTransactionList
 
 	if transaction.TrxCode != nil {
 		if n, ok := gData[*transaction.TrxCode]; ok {
@@ -3862,9 +3981,6 @@ func DetailTransaksiInquiry(c echo.Context) error {
 			responseData.TrxRiskLevel = &risk
 		}
 	}
-
-	layout := "2006-01-02 15:04:05"
-	newLayout := "02 Jan 2006"
 
 	responseData.TransactionKey = transaction.TransactionKey
 	date, _ := time.Parse(layout, transaction.TransDate)

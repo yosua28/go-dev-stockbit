@@ -1,49 +1,63 @@
 package models
 
-import(
+import (
 	"api/db"
-	"net/http"
-	"strings"
 	"database/sql"
+	"net/http"
 	"strconv"
+	"strings"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/shopspring/decimal"
+	log "github.com/sirupsen/logrus"
 )
 
-type TrTransactionSettlement struct{
-	SettlementKey             uint64    `db:"settlement_key"            json:"settlement_key"`
-	TransactionKey           *uint64    `db:"transaction_key"           json:"transaction_key"`
-	SettlePurposed            string    `db:"settle_purposed"           json:"settle_purposed"`
-	SettleDate                string    `db:"settle_date"               json:"settle_date"`
-	SettleNominal             decimal.Decimal   `db:"settle_nominal"            json:"settle_nominal"`
-	SettleStatus              uint64    `db:"settle_status"             json:"settle_status"`
-	SettleRealizedDate        string    `db:"settle_realize_date"       json:"settle_realize_date"`
-	SettleRemarks            *string    `db:"settle_remarks"            json:"settle_remarks"`
-	SettleReference          *string    `db:"settle_reference"          json:"settle_reference"`
-	SourceBankAccountKey     *uint64    `db:"source_bank_account_key"   json:"source_bank_account_key"`
-	TargetBankAccountKey      uint64    `db:"target_bank_account_key"   json:"target_bank_account_key"`
-	SettleNotes              *string    `db:"settle_notes"              json:"settle_notes"`
-	SettleChannel             uint8     `db:"settle_channel"            json:"settle_channel"`
-	SettlePaymentMethod       uint8     `db:"settle_payment_method"     json:"settle_payment_method"`
-	SettleResponse           *string    `db:"settle_response"           json:"settle_response"`
-	RecOrder                 *uint64    `db:"rec_order"                 json:"rec_order"`
-	RecStatus                 uint8     `db:"rec_status"                json:"rec_status"`
-	RecCreatedDate           *string    `db:"rec_created_date"          json:"rec_created_date"`
-	RecCreatedBy             *string    `db:"rec_created_by"            json:"rec_created_by"`
-	RecModifiedDate          *string    `db:"rec_modified_date"         json:"rec_modified_date"`
-	RecModifiedBy            *string    `db:"rec_modified_by"           json:"rec_modified_by"`
-	RecImage1                *string    `db:"rec_image1"                json:"rec_image1"`
-	RecImage2                *string    `db:"rec_image2"                json:"rec_image2"`
-	RecApprovalStatus        *uint8     `db:"rec_approval_status"       json:"rec_approval_status"`
-	RecApprovalStage         *uint64    `db:"rec_approval_stage"        json:"rec_approval_stage"`
-	RecApprovedDate          *string    `db:"rec_approved_date"         json:"rec_approved_date"`
-	RecApprovedBy            *string    `db:"rec_approved_by"           json:"rec_approved_by"`
-	RecDeletedDate           *string    `db:"rec_deleted_date"          json:"rec_deleted_date"`
-	RecDeletedBy             *string    `db:"rec_deleted_by"            json:"rec_deleted_by"`
-	RecAttributeID1          *string    `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
-	RecAttributeID2          *string    `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
-	RecAttributeID3          *string    `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+type TrTransactionSettlement struct {
+	SettlementKey        uint64          `db:"settlement_key"            json:"settlement_key"`
+	TransactionKey       *uint64         `db:"transaction_key"           json:"transaction_key"`
+	SettlePurposed       uint64          `db:"settle_purposed"           json:"settle_purposed"`
+	SettleDate           string          `db:"settle_date"               json:"settle_date"`
+	SettleNominal        decimal.Decimal `db:"settle_nominal"            json:"settle_nominal"`
+	ClientSubaccountNo   string          `db:"client_subaccount_no"      json:"client_subaccount_no"`
+	SettleStatus         uint64          `db:"settled_status"            json:"settled_status"`
+	SettleRealizedDate   string          `db:"settle_realized_date"      json:"settle_realized_date"`
+	SettleRemarks        *string         `db:"settle_remarks"            json:"settle_remarks"`
+	SettleReference      *string         `db:"settle_references"         json:"settle_references"`
+	SourceBankAccountKey *uint64         `db:"source_bank_account_key"   json:"source_bank_account_key"`
+	TargetBankAccountKey uint64          `db:"target_bank_account_key"   json:"target_bank_account_key"`
+	SettleNotes          *string         `db:"settle_notes"              json:"settle_notes"`
+	SettleChannel        uint64          `db:"settle_channel"            json:"settle_channel"`
+	SettlePaymentMethod  uint64          `db:"settle_payment_method"     json:"settle_payment_method"`
+	SettleResponse       *string         `db:"settle_response"           json:"settle_response"`
+	RecOrder             *uint64         `db:"rec_order"                 json:"rec_order"`
+	RecStatus            uint8           `db:"rec_status"                json:"rec_status"`
+	RecCreatedDate       *string         `db:"rec_created_date"          json:"rec_created_date"`
+	RecCreatedBy         *string         `db:"rec_created_by"            json:"rec_created_by"`
+	RecModifiedDate      *string         `db:"rec_modified_date"         json:"rec_modified_date"`
+	RecModifiedBy        *string         `db:"rec_modified_by"           json:"rec_modified_by"`
+	RecImage1            *string         `db:"rec_image1"                json:"rec_image1"`
+	RecImage2            *string         `db:"rec_image2"                json:"rec_image2"`
+	RecApprovalStatus    *uint8          `db:"rec_approval_status"       json:"rec_approval_status"`
+	RecApprovalStage     *uint64         `db:"rec_approval_stage"        json:"rec_approval_stage"`
+	RecApprovedDate      *string         `db:"rec_approved_date"         json:"rec_approved_date"`
+	RecApprovedBy        *string         `db:"rec_approved_by"           json:"rec_approved_by"`
+	RecDeletedDate       *string         `db:"rec_deleted_date"          json:"rec_deleted_date"`
+	RecDeletedBy         *string         `db:"rec_deleted_by"            json:"rec_deleted_by"`
+	RecAttributeID1      *string         `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
+	RecAttributeID2      *string         `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
+	RecAttributeID3      *string         `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+}
+
+type TransactionSettlement struct {
+	SettlementKey       uint64          `json:"settlement_key"`
+	SettlePurposed      string          `json:"settle_purposed"`
+	SettleDate          string          `json:"settle_date"`
+	SettleNominal       decimal.Decimal `json:"settle_nominal"`
+	SettleStatus        string          `json:"settle_status"`
+	SettleRealizedDate  string          `json:"settle_realized_date"`
+	SettleRemarks       *string         `json:"settle_remarks"`
+	SettleReference     *string         `json:"settle_references"`
+	SettleChannel       string          `json:"settle_channel"`
+	SettlePaymentMethod string          `json:"settle_payment_method"`
 }
 
 func GetAllTrTransactionSettlement(c *[]TrTransactionSettlement, params map[string]string) (int, error) {
@@ -111,7 +125,7 @@ func GetTrTransactionSettlementIn(c *[]TrTransactionSettlement, value []string, 
 }
 
 func GetTrTransactionSettlement(c *TrTransactionSettlement, field string, key string) (int, error) {
-	query := `SELECT tr_transaction_settlement.* FROM tr_transaction_settlement WHERE tr_transaction_settlement.`+ field +` = "` + key + `"`
+	query := `SELECT tr_transaction_settlement.* FROM tr_transaction_settlement WHERE tr_transaction_settlement.` + field + ` = "` + key + `"`
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

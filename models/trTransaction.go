@@ -207,6 +207,7 @@ type AdminTransactionDetail struct {
 	RiskWaiver                  bool                                 `json:"risk_waiver"`
 	FileUploadDate              *string                              `json:"file_upload_date"`
 	PaymentMethod               *LookupTrans                         `json:"payment_method"`
+	TransactionSettlement       *[]TransactionSettlement             `json:"transaction_settlement"`
 	TrxRiskLevel                *LookupTrans                         `json:"trx_risk_level"`
 	ProceedDate                 *string                              `json:"proceed_date"`
 	ProceedAmount               *decimal.Decimal                     `json:"proceed_amount"`

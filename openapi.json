@@ -7749,6 +7749,20 @@
                       "lkp_code": "0",
                       "lkp_name": "Transfer"
                     },
+                    "transaction_settlement": [
+                      {
+                        "settlement_key": 1,
+                        "settle_purposed": "IN",
+                        "settle_date": "19 Mar 2021",
+                        "settle_nominal": 115000,
+                        "settle_status": "UNSETTLED",
+                        "settle_realized_date": "18 Mar 2021",
+                        "settle_remarks": "6052f27a2846aadc27c9d7f6",
+                        "settle_references": "MDSP0000401616048791",
+                        "settle_channel": "SPIN",
+                        "settle_payment_method": "Y3"
+                      }
+                    ],
                     "trx_risk_level": null,
                     "proceed_date": null,
                     "proceed_amount": null,
@@ -15489,6 +15503,20 @@
                       "lkp_code": "0",
                       "lkp_name": "Transfer"
                     },
+                    "transaction_settlement": [
+                      {
+                        "settlement_key": 1,
+                        "settle_purposed": "IN",
+                        "settle_date": "19 Mar 2021",
+                        "settle_nominal": 115000,
+                        "settle_status": "UNSETTLED",
+                        "settle_realized_date": "18 Mar 2021",
+                        "settle_remarks": "6052f27a2846aadc27c9d7f6",
+                        "settle_references": "MDSP0000401616048791",
+                        "settle_channel": "SPIN",
+                        "settle_payment_method": "Y3"
+                      }
+                    ],
                     "trx_risk_level": null,
                     "proceed_date": null,
                     "proceed_amount": null,
