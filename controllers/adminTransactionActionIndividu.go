@@ -474,7 +474,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 			log.Error("Wrong input for parameter: total_amount")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: total_amount", "Wrong input for parameter: total_amount")
 		}
-		params["total_amount"] = transAmountStr
+		params["total_amount"] = totalAmountStr
 	} else {
 		log.Error("Missing required parameter: total_amount")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: total_amount", "Missing required parameter: total_amount")
@@ -644,7 +644,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 		params["services_fee_amount"] = "0"
 	} else {
 		if scApp.AppConfigValue != nil {
-			params["services_fee_amount"] = *scApp.AppConfigValue
+			params["services_fee_amount"] = *scApp2.AppConfigValue
 		} else {
 			params["services_fee_amount"] = "0"
 		}
@@ -1351,7 +1351,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 		params["services_fee_amount"] = "0"
 	} else {
 		if scApp.AppConfigValue != nil {
-			params["services_fee_amount"] = *scApp.AppConfigValue
+			params["services_fee_amount"] = *scApp2.AppConfigValue
 		} else {
 			params["services_fee_amount"] = "0"
 		}
