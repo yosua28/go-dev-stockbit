@@ -300,6 +300,7 @@ func router() *echo.Echo {
 	admin.POST("/promo/delete", controllers.DeletePromo).Name = "DeletePromo"
 	admin.POST("/promo/update", controllers.UpdateAdminTrPromo).Name = "UpdateAdminTrPromo"
 	admin.GET("/promo/detail/:key", controllers.DetailPromo).Name = "DetailPromo"
+	admin.POST("/promo/check", controllers.CheckPromo).Name = "CheckPromo"
 
 	//Admin Daily Transaction Report - J005
 	admin.GET("/report/daily-transaction-report", controllers.GetDailyTransactionReport).Name = "GetDailyTransactionReport"

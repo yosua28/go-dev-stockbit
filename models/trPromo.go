@@ -91,6 +91,11 @@ type TrPromoCron struct {
 	PromoDescription string  `db:"promo_description"       json:"promo_description"`
 }
 
+type CheckPromo struct {
+	PromoEnabled bool   `json:"promo_enabled"`
+	Message      string `json:"message"`
+}
+
 func CreateTrPromo(params map[string]string) (int, error, string) {
 	query := "INSERT INTO tr_promo"
 	// Get params
@@ -372,6 +377,23 @@ func AdminGetAllPromoOnceAday(c *[]TrPromoCron) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetTrPromoProductActive(c *TrPromo, promoCode string, productKey string) (int, error) {
+	query := `SELECT 
+				t.* 
+			FROM tr_promo AS t 
+			INNER JOIN tr_promo_product AS pp ON pp.promo_key = t.promo_key 
+			WHERE t.rec_status = 1 AND pp.rec_status = 1 AND t.promo_valid_date1 <= NOW() 
+			AND t.promo_valid_date2 >= NOW() AND pp.product_key = '` + productKey + `' AND t.promo_code = '` + promoCode + `'`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

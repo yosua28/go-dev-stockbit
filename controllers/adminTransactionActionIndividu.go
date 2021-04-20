@@ -480,6 +480,21 @@ func CreateTransactionSubscription(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: total_amount", "Missing required parameter: total_amount")
 	}
 
+	var promoKey *string
+	promoCode := c.FormValue("promo_code")
+	if promoCode != "" {
+		err, enable, text, promoKeyRes := validatePromo(promoCode, customerKeyStr, productKeyStr)
+		if err != nil {
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+		} else {
+			if enable == false {
+				return lib.CustomError(http.StatusBadRequest, text, text)
+			} else {
+				promoKey = promoKeyRes
+			}
+		}
+	}
+
 	paymentStr := c.FormValue("payment_method")
 	if paymentStr != "" {
 		paymentKey, err := strconv.ParseUint(paymentStr, 10, 64)
@@ -693,7 +708,29 @@ func CreateTransactionSubscription(c echo.Context) error {
 		}
 	}
 
+	if promoKey != nil {
+		params["promo_code"] = promoCode
+	}
+
 	status, err, transactionID := models.CreateTrTransaction(params)
+
+	//save to promo used
+	if promoKey != nil {
+		paramsPromoUsed := make(map[string]string)
+		paramsPromoUsed["used_date"] = time.Now().Format(dateLayout)
+		paramsPromoUsed["promo_key"] = *promoKey
+		paramsPromoUsed["user_login_key"] = strIDUserLogin
+		paramsPromoUsed["customer_key"] = customerKeyStr
+		paramsPromoUsed["transaction_key"] = transactionID
+		paramsPromoUsed["used_status"] = "317"
+		paramsPromoUsed["rec_status"] = "1"
+		paramsPromoUsed["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsPromoUsed["rec_created_by"] = strIDUserLogin
+		_, err := models.CreateTrPromoUsed(paramsPromoUsed)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
 
 	//save tr_transaction_bank_account
 	paramsBankTransaction := make(map[string]string)
@@ -731,8 +768,8 @@ func CreateTransactionSubscription(c echo.Context) error {
 	settlementParams["client_subaccount_no"] = ""
 	settlementParams["settled_status"] = "243"
 	settlementParams["target_bank_account_key"] = bankStr
-	settlementParams["settle_channel"] = paymentStr
-	settlementParams["settle_payment_method"] = "303"
+	settlementParams["settle_channel"] = "323"
+	settlementParams["settle_payment_method"] = "308"
 	settlementParams["rec_status"] = "1"
 	settlementParams["rec_created_date"] = time.Now().Format(dateLayout)
 	settlementParams["rec_created_by"] = strIDUserLogin

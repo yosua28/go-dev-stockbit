@@ -1025,3 +1025,106 @@ func DetailPromo(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func CheckPromo(c echo.Context) error {
+	//promo_code
+	promoCode := c.FormValue("promo_code")
+	if promoCode == "" {
+		log.Error("Wrong input for parameter: promo_code")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: promo_code", "Missing required parameter: promo_code")
+	}
+
+	//customer_key
+	customerKey := c.FormValue("customer_key")
+	if customerKey == "" {
+		log.Error("Wrong input for parameter: customer_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: customer_key", "Missing required parameter: customer_key")
+	}
+
+	//product_key
+	productKey := c.FormValue("product_key")
+	if productKey == "" {
+		log.Error("Wrong input for parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	err, enable, text, _ := validatePromo(promoCode, customerKey, productKey)
+
+	if err != nil {
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+	}
+
+	var responseData models.CheckPromo
+	responseData.PromoEnabled = enable
+	responseData.Message = text
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func validatePromo(promoCode string, customerKey string, productKey string) (error, bool, string, *string) {
+	var err error
+
+	var promoEnabled bool
+	var message string
+	var promoKey *string
+
+	//1. cek apakah promo ada
+	var promo models.TrPromo
+	_, err = models.GetTrPromoProductActive(&promo, promoCode, productKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return err, false, "Failed get data", nil
+		} else {
+			promoEnabled = false
+			message = "Promo tidak ditemukan."
+			promoKey = nil
+		}
+	} else {
+		//cek apakah promo unik user - cek udah pernah pake apa belom
+		checkCountUsedPromo := 0
+		promoKeyStr := strconv.FormatUint(promo.PromoKey, 10)
+		if promo.PromoFlagUniqUser == 1 {
+			var countData models.CountData
+			_, err = models.AdminGetCountPromoUsed(&countData, &promoKeyStr, &customerKey)
+			if err != nil {
+				log.Error(err.Error())
+				return err, false, "Failed get data", nil
+			}
+			if int(countData.CountData) > int(0) {
+				promoEnabled = false
+				message = "Promo tidak dapat digunakan lagi, kamu sudah pernah menggunakannya."
+				promoKey = nil
+			} else {
+				checkCountUsedPromo = 1
+			}
+		} else {
+			checkCountUsedPromo = 1
+		}
+
+		if checkCountUsedPromo == 1 {
+			var countData models.CountData
+			_, err = models.AdminGetCountPromoUsed(&countData, &promoKeyStr, nil)
+			if err != nil {
+				log.Error(err.Error())
+				return err, false, "Failed get data", nil
+			}
+			if int(countData.CountData) >= int(promo.PromoMaxuser) {
+				promoEnabled = false
+				message = "Promo sudah melebihi jumlah batas penggunaan user."
+				promoKey = nil
+			} else {
+				promoEnabled = true
+				message = promo.PromoNotifDescription
+				promoKey = &promoKeyStr
+			}
+		}
+	}
+	return nil, promoEnabled, message, promoKey
+}

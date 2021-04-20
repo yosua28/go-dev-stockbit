@@ -19284,6 +19284,9 @@
                   "bank_transaction": {
                     "type": "integer"
                   },
+                  "promo_code": {
+                    "type": "string"
+                  },
                   "transfer_pic": {
                     "type": "file"
                   },
@@ -21588,6 +21591,88 @@
                     "message_client": "OK"
                   },
                   "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/promo/check": {
+      "post": {
+        "description": "Check Promo",
+        "tags": [
+          "Admin Promo"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "promo_code": {
+                    "type": "string"
+                  },
+                  "customer_key": {
+                    "type": "integer"
+                  },
+                  "product_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "promo_code",
+                  "customer_key",
+                  "product_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "promo_enabled": true,
+                    "message": "Promo dengan potongan 5% untuk transaksi anda.",
+                  }
                 }
               }
             }
