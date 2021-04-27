@@ -18429,7 +18429,7 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "risk_profile_key": 0,
+                    "risk_profile_key": 4,
                     "risk_code": "Tinggi",
                     "risk_name": "Agresif",
                     "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
@@ -21554,7 +21554,7 @@
                   },
                   "image": {
                     "type": "file"
-                  },
+                  }
                 },
                 "required": [
                   "promo_code",
@@ -21671,7 +21671,7 @@
                   },
                   "data": {
                     "promo_enabled": true,
-                    "message": "Promo dengan potongan 5% untuk transaksi anda.",
+                    "message": "Promo dengan potongan 5% untuk transaksi anda."
                   }
                 }
               }
@@ -21853,7 +21853,7 @@
                   },
                   "image": {
                     "type": "file"
-                  },
+                  }
                 },
                 "required": [
                   "promo_key",
@@ -22801,6 +22801,457 @@
             "content": {
               "text/plain": {
                 "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/customer/individu/data/{key}": {
+      "get": {
+        "description": "Get Customer Individu Detail",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "customer key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "annual_income": 62,
+                    "bank_account": {
+                      "account_holder_name": "gfhgf fhfg",
+                      "account_no": "54654756",
+                      "branch_name": "Yosads ds",
+                      "bank_key": 3
+                    },
+                    "beneficial_full_name": "trytry rtytr",
+                    "beneficial_relation": 102,
+                    "correspondence": 83,
+                    "date_birth": "2021-04-06 00:00:00",
+                    "domicile_address": {
+                      "address_line1": "gfhfgh",
+                      "address_line2": null,
+                      "address_line3": null,
+                      "kabupaten_key": 42,
+                      "kecamatan_key": 608,
+                      "postal_address_key": 414,
+                      "postal_code": "67547"
+                    },
+                    "education": 37,
+                    "email": "yonahaha@gmail.com",
+                    "emergency_full_name": "rtytry",
+                    "emergency_phone_no": "657456546754",
+                    "emergency_relation": 98,
+                    "full_name": "Yona haha Oke",
+                    "gender": 10,
+                    "idcard_address": {
+                      "address_line1": "rtytfgy",
+                      "address_line2": null,
+                      "address_line3": null,
+                      "kabupaten_key": 41,
+                      "kecamatan_key": 598,
+                      "postal_address_key": 413,
+                      "postal_code": "78655"
+                    },
+                    "idcard_expired_date": null,
+                    "idcard_never_expired": null,
+                    "idcard_no": "89675433543564",
+                    "idcard_type": 12,
+                    "invesment_objectives": 78,
+                    "marital_status": 14,
+                    "mother_maiden_name": "trytry",
+                    "nationality": 97,
+                    "occup_address": {
+                      "address_line1": "trytr",
+                      "address_line2": null,
+                      "address_line3": null,
+                      "kabupaten_key": null,
+                      "kecamatan_key": null,
+                      "postal_address_key": 415,
+                      "postal_code": null
+                    },
+                    "occup_business_field": 53,
+                    "occup_company": "trytryrty",
+                    "occup_job": 29,
+                    "occup_phone": null,
+                    "occup_position": 108,
+                    "occup_web_url": null,
+                    "pep_status": 320,
+                    "phone_home": "08765324324",
+                    "phone_mobile": "07327489375",
+                    "pic_ktp": "x4LOmKTHyCOn6w3AFKQO.jpg",
+                    "pic_ktp_path": "https://devapi.mncasset.com/images/user/7396/x4LOmKTHyCOn6w3AFKQO.jpg",
+                    "pic_selfie": null,
+                    "pic_selfie_ktp": "rDOSZaqaDBMPqNCgTWnH.jpg",
+                    "pic_selfie_ktp_path": "https://devapi.mncasset.com/images/user/7396/rDOSZaqaDBMPqNCgTWnH.jpg",
+                    "pic_selfie_path": "",
+                    "place_birth": "pouigyfdg",
+                    "relation_business_fields": 54,
+                    "relation_full_name": "trytrytr",
+                    "relation_occupation": 29,
+                    "relation_type": null,
+                    "religion": 20,
+                    "risk_profile": {
+                      "quiz": [
+                        {
+                          "option_key": 8,
+                          "option_score": 15,
+                          "question_key": 3
+                        },
+                        {
+                          "option_key": 11,
+                          "option_score": 15,
+                          "question_key": 4
+                        },
+                        {
+                          "option_key": 14,
+                          "option_score": 15,
+                          "question_key": 5
+                        },
+                        {
+                          "option_key": 17,
+                          "option_score": 15,
+                          "question_key": 6
+                        },
+                        {
+                          "option_key": 20,
+                          "option_score": 15,
+                          "question_key": 7
+                        },
+                        {
+                          "option_key": 23,
+                          "option_score": 15,
+                          "question_key": 8
+                        }
+                      ],
+                      "risk_code": "Tinggi",
+                      "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
+                      "risk_name": "Agresif",
+                      "score_result": 90
+                    },
+                    "signature": "K6qGdCkiH4Cg2u4VtSbv.jpg",
+                    "signature_path": "https://devapi.mncasset.com/images/user/7396/signature/K6qGdCkiH4Cg2u4VtSbv.jpg",
+                    "sourceof_fund": 67
+                  }
+                }
+              }
+            }
+          }
+        },
+        "400": {
+          "description": "Bad request",
+          "content": {
+            "text/plain": {
+              "example": "Missing required parameter"
+            }
+          }
+        },
+        "401": {
+          "description": "Unauthorized",
+          "content": {
+            "text/plain": {
+              "example": ""
+            }
+          }
+        },
+        "500": {
+          "description": "Internal server error",
+          "content": {
+            "text/plain": {
+              "example": "Error parsing data"
+            }
+          }
+        }
+      }
+    },
+    "/admin/customer/pengkinian/create": {
+      "post": {
+        "description": "Pengkinian Customer Individu",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_key": {
+                    "type": "integer"
+                  },
+                  "oa_request_type": {
+                    "type": "integer",
+                    "description": "128 = risk profil, 296 = personal data"
+                  },
+                  "email": {
+                    "type": "string"
+                  },
+                  "phone": {
+                    "type": "string"
+                  },
+                  "full_name": {
+                    "type": "string"
+                  },
+                  "nationality": {
+                    "type": "integer"
+                  },
+                  "idcard_no": {
+                    "type": "string"
+                  },
+                  "gender": {
+                    "type": "integer"
+                  },
+                  "place_birth": {
+                    "type": "string"
+                  },
+                  "date_birth": {
+                    "type": "string",
+                    "example": "2017-10-30"
+                  },
+                  "marital_status": {
+                    "type": "integer"
+                  },
+                  "address_id": {
+                    "type": "string"
+                  },
+                  "kabupaten_id": {
+                    "type": "integer"
+                  },
+                  "kecamatan_id": {
+                    "type": "integer"
+                  },
+                  "postal_id": {
+                    "type": "string"
+                  },
+                  "address_domicile": {
+                    "type": "string"
+                  },
+                  "kabupaten_domicile": {
+                    "type": "integer"
+                  },
+                  "kecamatan_domicile": {
+                    "type": "integer"
+                  },
+                  "postal_domicile": {
+                    "type": "string"
+                  },
+                  "phone_home": {
+                    "type": "string"
+                  },
+                  "religion": {
+                    "type": "integer"
+                  },
+                  "education": {
+                    "type": "integer"
+                  },
+                  "pic_ktp": {
+                    "type": "file"
+                  },
+                  "pic_ktp_default": {
+                    "type": "string"
+                  },
+                  "pic_selfie_ktp": {
+                    "type": "file"
+                  },
+                  "pic_selfie_ktp_default": {
+                    "type": "string"
+                  },
+                  "signature": {
+                    "type": "file"
+                  },
+                  "signature_default": {
+                    "type": "string"
+                  },
+                  "job": {
+                    "type": "integer"
+                  },
+                  "company": {
+                    "type": "string"
+                  },
+                  "position": {
+                    "type": "integer"
+                  },
+                  "company_address": {
+                    "type": "string"
+                  },
+                  "business_field": {
+                    "type": "integer"
+                  },
+                  "annual_income": {
+                    "type": "integer"
+                  },
+                  "pep_status": {
+                    "type": "integer"
+                  },
+                  "fund_source": {
+                    "type": "integer"
+                  },
+                  "objectives": {
+                    "type": "integer"
+                  },
+                  "corespondence": {
+                    "type": "integer"
+                  },
+                  "mother_maiden_name": {
+                    "type": "string"
+                  },
+                  "relation_name": {
+                    "type": "string"
+                  },
+                  "relation_occupation": {
+                    "type": "integer"
+                  },
+                  "relation_business_field": {
+                    "type": "integer"
+                  },
+                  "emergency_name": {
+                    "type": "string"
+                  },
+                  "emergency_relation": {
+                    "type": "integer"
+                  },
+                  "emergency_phone": {
+                    "type": "string"
+                  },
+                  "beneficial_relation": {
+                    "type": "integer"
+                  },
+                  "beneficial_name": {
+                    "type": "string"
+                  },
+                  "bank_key": {
+                    "type": "integer"
+                  },
+                  "account_no": {
+                    "type": "string"
+                  },
+                  "account_name": {
+                    "type": "string"
+                  },
+                  "branch_name": {
+                    "type": "string"
+                  },
+                  "quiz_option": {
+                    "type": "string",
+                    "example": "7,10,14,16,20,22"
+                  }
+                },
+                "required": [
+                  "customer_key",
+                  "oa_request_type",
+                  "email",
+                  "phone",
+                  "full_name",
+                  "nationality",
+                  "idcard_no",
+                  "gender",
+                  "place_birth",
+                  "date_birth",
+                  "marital_status",
+                  "address_id",
+                  "kabupaten_id",
+                  "kecamatan_id",
+                  "postal_id",
+                  "address_domicile",
+                  "kabupaten_domicile",
+                  "kecamatan_domicile",
+                  "postal_domicile",
+                  "phone_home",
+                  "religion",
+                  "education",
+                  "pep_status",
+                  "job",
+                  "company",
+                  "position",
+                  "company_address",
+                  "business_field",
+                  "annual_income",
+                  "fund_source",
+                  "objectives",
+                  "corespondence",
+                  "mother_maiden_name",
+                  "relation_name",
+                  "relation_occupation",
+                  "relation_business_field",
+                  "emergency_name",
+                  "emergency_relation",
+                  "emergency_phone",
+                  "beneficial_relation",
+                  "beneficial_name",
+                  "bank_key",
+                  "account_no",
+                  "account_name",
+                  "branch_name",
+                  "quiz_option"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "risk_profile_key": 4,
+                    "risk_code": "Tinggi",
+                    "risk_name": "Agresif",
+                    "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
+                    "score": 70
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
               }
             }
           }

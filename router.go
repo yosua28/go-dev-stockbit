@@ -250,6 +250,8 @@ func router() *echo.Echo {
 	admin.GET("/personaldata/individu/:key", controllers.DetailPersonalDataCustomerIndividu).Name = "DetailPersonalDataCustomerIndividu"
 	admin.POST("/customer/create", controllers.AdminCreateCustomerIndividu).Name = "AdminCreateCustomerIndividu"
 	admin.GET("/customer/redemption/dropdown", controllers.GetAdminListCustomerRedemption).Name = "GetAdminListCustomerRedemption"
+	admin.GET("/customer/individu/data/:key", controllers.GetAdminOaRequestPersonalDataRiskProfile).Name = "GetAdminOaRequestPersonalDataRiskProfile"
+	admin.POST("/customer/pengkinian/create", controllers.AdminSavePengkinianCustomerIndividu).Name = "AdminSavePengkinianCustomerIndividu"
 
 	//Admin Transaction Report
 	admin.GET("/report/transactionhistorylist", controllers.GetTransactionHistory).Name = "GetTransactionHistory"

@@ -5,9 +5,12 @@ import (
 	"api/db"
 	"api/lib"
 	"api/models"
+	"bytes"
 	"crypto/sha256"
+	"crypto/tls"
 	"database/sql"
 	"encoding/hex"
+	"html/template"
 	"math"
 	"mime/multipart"
 	"net/http"
@@ -21,6 +24,7 @@ import (
 	"github.com/labstack/echo"
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func GetListCustomerIndividuInquiry(c echo.Context) error {
@@ -1552,8 +1556,6 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		}
 	}
 
-	// companyAddress := c.FormValue("company_address")
-
 	businessField := c.FormValue("business_field")
 	if businessField != "" {
 		n, err := strconv.ParseUint(businessField, 10, 64)
@@ -2148,43 +2150,43 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	tx.Commit()
 
 	// Send email
-	// t := template.New("index-registration.html")
+	t := template.New("index-registration.html")
 
-	// t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+	if err != nil {
+		log.Println(err)
+	}
 
-	// var tpl bytes.Buffer
-	// if err := t.Execute(&tpl, struct {
-	// 	Name    string
-	// 	FileUrl string
-	// }{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-	// 	log.Println(err)
-	// }
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct {
+		Name    string
+		FileUrl string
+	}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
 
-	// result := tpl.String()
+	result := tpl.String()
 
-	// mailer := gomail.NewMessage()
-	// mailer.SetHeader("From", config.EmailFrom)
-	// mailer.SetHeader("To", email)
-	// mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
-	// mailer.SetBody("text/html", result)
-	// dialer := gomail.NewDialer(
-	// 	config.EmailSMTPHost,
-	// 	int(config.EmailSMTPPort),
-	// 	config.EmailFrom,
-	// 	config.EmailFromPassword,
-	// )
-	// dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", email)
+	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-	// err = dialer.DialAndSend(mailer)
-	// if err != nil {
-	// 	log.Error("Error send email")
-	// 	log.Error(err)
-	// 	log.Error("Error send email")
-	// }
-	// log.Info("Email sent")
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Error send email")
+		log.Error(err)
+		log.Error("Error send email")
+	}
+	log.Info("Email sent")
 
 	//insert message notif in app
 	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
@@ -2213,10 +2215,10 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	} else {
 		log.Error("Sukses insert user message")
 	}
-	// lib.CreateNotifCustomerFromAdminByUserLoginKey(idUserLogin, subject, body, "TRANSACTION")
 
 	var responseData models.MsRiskProfileInfo
 
+	responseData.RiskProfileKey = riskProfile.RiskProfileKey
 	responseData.RiskCode = riskProfile.RiskCode
 	responseData.RiskName = riskProfile.RiskName
 	responseData.RiskDesc = riskProfile.RiskDesc
@@ -2272,6 +2274,1151 @@ func GetAdminListCustomerRedemption(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = customer
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
+	customerKey := c.Param("key")
+	key, _ := strconv.ParseUint(customerKey, 10, 64)
+	if key == 0 {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var oaRequestDB []models.OaRequest
+	params := make(map[string]string)
+	params["customer_key"] = customerKey
+	params["orderBy"] = "oa_request_key"
+	params["orderType"] = "DESC"
+	status, err := models.GetAllOaRequest(&oaRequestDB, 0, 0, true, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Oa Request not found")
+	}
+	var requestKey string
+	var oaData models.OaRequest
+	if len(oaRequestDB) > 0 {
+		oaData = oaRequestDB[0]
+		if *oaData.Oastatus == uint64(258) || *oaData.Oastatus == uint64(259) {
+			log.Error("oa in progress approval")
+			return lib.CustomError(http.StatusNotFound, "Terdapat Data Request yang dalam approval. Mohon Tunggu proses approval untuk dapat melakukan pengkinian lagi.", "Terdapat Data Request yang dalam approval. Mohon Tunggu proses approval untuk dapat melakukan pengkinian lagi.")
+		} else {
+			requestKey = strconv.FormatUint(oaData.OaRequestKey, 10)
+		}
+	} else {
+		log.Error("oa not found")
+		return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
+	}
+
+	var personalDataDB models.OaPersonalData
+	if requestKey != "" {
+		status, err = models.GetOaPersonalData(&personalDataDB, requestKey, "oa_request_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Oa Request not found")
+		}
+	}
+
+	responseData := make(map[string]interface{})
+	responseData["full_name"] = personalDataDB.FullName
+	responseData["place_birth"] = personalDataDB.PlaceBirth
+	responseData["date_birth"] = personalDataDB.DateBirth
+	responseData["nationality"] = personalDataDB.Nationality
+	responseData["idcard_type"] = personalDataDB.IDcardType
+	responseData["idcard_no"] = personalDataDB.IDcardNo
+	responseData["idcard_expired_date"] = personalDataDB.IDcardExpiredDate
+	responseData["idcard_never_expired"] = personalDataDB.IDcardNeverExpired
+	responseData["gender"] = personalDataDB.Gender
+	responseData["marital_status"] = personalDataDB.MaritalStatus
+	responseData["pep_status"] = personalDataDB.PepStatus
+	var address models.OaPostalAddress
+	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.IDcardAddressKey, 10))
+	if err == nil {
+		addressID := make(map[string]interface{})
+		addressID["postal_address_key"] = address.PostalAddressKey
+		addressID["kabupaten_key"] = address.KabupatenKey
+		addressID["kecamatan_key"] = address.KecamatanKey
+		addressID["address_line1"] = address.AddressLine1
+		addressID["address_line2"] = address.AddressLine2
+		addressID["address_line3"] = address.AddressLine3
+		addressID["postal_code"] = address.PostalCode
+		responseData["idcard_address"] = addressID
+	}
+	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.DomicileAddressKey, 10))
+	if err == nil {
+		addressID := make(map[string]interface{})
+		addressID["postal_address_key"] = address.PostalAddressKey
+		addressID["kabupaten_key"] = address.KabupatenKey
+		addressID["kecamatan_key"] = address.KecamatanKey
+		addressID["address_line1"] = address.AddressLine1
+		addressID["address_line2"] = address.AddressLine2
+		addressID["address_line3"] = address.AddressLine3
+		addressID["postal_code"] = address.PostalCode
+		responseData["domicile_address"] = addressID
+	}
+
+	dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(*oaData.UserLoginKey, 10) + "/"
+
+	responseData["phone_home"] = personalDataDB.PhoneHome
+	responseData["phone_mobile"] = personalDataDB.PhoneMobile
+	responseData["email"] = personalDataDB.EmailAddress
+	responseData["religion"] = personalDataDB.Religion
+	responseData["pic_selfie"] = personalDataDB.PicSelfie
+	responseData["pic_ktp"] = personalDataDB.PicKtp
+	responseData["pic_selfie_ktp"] = personalDataDB.PicSelfieKtp
+	responseData["signature"] = personalDataDB.RecImage1
+
+	if personalDataDB.PicSelfie != nil && *personalDataDB.PicSelfie != "" {
+		responseData["pic_selfie_path"] = dir + *personalDataDB.PicSelfie
+	} else {
+		responseData["pic_selfie_path"] = ""
+	}
+
+	if personalDataDB.PicKtp != nil && *personalDataDB.PicKtp != "" {
+		responseData["pic_ktp_path"] = dir + *personalDataDB.PicKtp
+	} else {
+		responseData["pic_ktp_path"] = ""
+	}
+
+	if personalDataDB.PicSelfieKtp != nil && *personalDataDB.PicSelfieKtp != "" {
+		responseData["pic_selfie_ktp_path"] = dir + *personalDataDB.PicSelfieKtp
+	} else {
+		responseData["pic_selfie_ktp_path"] = ""
+	}
+
+	if personalDataDB.RecImage1 != nil && *personalDataDB.RecImage1 != "" {
+		responseData["signature_path"] = dir + "signature/" + *personalDataDB.RecImage1
+	} else {
+		responseData["signature_path"] = ""
+	}
+
+	responseData["education"] = personalDataDB.Education
+	responseData["occup_job"] = personalDataDB.OccupJob
+	responseData["occup_company"] = personalDataDB.OccupCompany
+	responseData["occup_position"] = personalDataDB.OccupPosition
+	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.OccupAddressKey, 10))
+	if err == nil {
+		addressID := make(map[string]interface{})
+		addressID["postal_address_key"] = address.PostalAddressKey
+		addressID["kabupaten_key"] = address.KabupatenKey
+		addressID["kecamatan_key"] = address.KecamatanKey
+		addressID["address_line1"] = address.AddressLine1
+		addressID["address_line2"] = address.AddressLine2
+		addressID["address_line3"] = address.AddressLine3
+		addressID["postal_code"] = address.PostalCode
+		responseData["occup_address"] = addressID
+	}
+	responseData["occup_business_field"] = personalDataDB.OccupBusinessFields
+	responseData["occup_phone"] = personalDataDB.OccupPhone
+	responseData["occup_web_url"] = personalDataDB.OccupWebUrl
+	responseData["correspondence"] = personalDataDB.Correspondence
+	responseData["annual_income"] = personalDataDB.AnnualIncome
+	responseData["sourceof_fund"] = personalDataDB.SourceofFund
+	responseData["invesment_objectives"] = personalDataDB.InvesmentObjectives
+	responseData["relation_type"] = personalDataDB.RelationType
+	responseData["relation_full_name"] = personalDataDB.RelationFullName
+	responseData["relation_occupation"] = personalDataDB.RelationOccupation
+	responseData["relation_business_fields"] = personalDataDB.RelationBusinessFields
+	responseData["mother_maiden_name"] = personalDataDB.MotherMaidenName
+	responseData["emergency_full_name"] = personalDataDB.EmergencyFullName
+	responseData["emergency_relation"] = personalDataDB.EmergencyRelation
+	responseData["emergency_phone_no"] = personalDataDB.EmergencyPhoneNo
+	responseData["beneficial_full_name"] = personalDataDB.BeneficialFullName
+	responseData["beneficial_relation"] = personalDataDB.BeneficialRelation
+	var bankAccountDB models.MsBankAccount
+	if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
+		_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
+		if err == nil {
+			bankAccount := make(map[string]interface{})
+			bankAccount["bank_key"] = bankAccountDB.BankKey
+			bankAccount["account_no"] = bankAccountDB.AccountNo
+			bankAccount["account_holder_name"] = bankAccountDB.AccountHolderName
+			bankAccount["branch_name"] = bankAccountDB.BranchName
+			responseData["bank_account"] = bankAccount
+		}
+	}
+
+	var requestDB []models.OaRequest
+	paramRequest := make(map[string]string)
+	paramRequest["customer_key"] = customerKey
+	paramRequest["orderBy"] = "oa_request_key"
+	paramRequest["orderType"] = "DESC"
+	_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	request := requestDB[0]
+	var quizDB []models.OaRiskProfileQuiz
+	paramQuiz := make(map[string]string)
+	paramQuiz["oa_request_key"] = strconv.FormatUint(request.OaRequestKey, 10)
+	paramQuiz["orderBy"] = "oa_request_key"
+	paramQuiz["orderType"] = "DESC"
+	_, err = models.GetAllOaRiskProfileQuiz(&quizDB, 100, 0, paramQuiz, true)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var risk models.OaRiskProfile
+	_, err = models.GetOaRiskProfile(&risk, strconv.FormatUint(request.OaRequestKey, 10), "oa_request_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var riskProfile models.MsRiskProfile
+	_, err = models.GetMsRiskProfile(&riskProfile, strconv.FormatUint(risk.RiskProfileKey, 10))
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	riskProfileData := make(map[string]interface{})
+	riskProfileData["score_result"] = risk.ScoreResult
+	riskProfileData["risk_code"] = riskProfile.RiskCode
+	riskProfileData["risk_name"] = riskProfile.RiskName
+	riskProfileData["risk_desc"] = riskProfile.RiskDesc
+	var quizData []interface{}
+	for _, q := range quizDB {
+		quiz := make(map[string]interface{})
+		quiz["question_key"] = q.QuizQuestionKey
+		quiz["option_key"] = q.QuizOptionKey
+		quiz["option_score"] = q.QuizOptionScore
+		quizData = append(quizData, quiz)
+	}
+	riskProfileData["quiz"] = quizData
+
+	responseData["risk_profile"] = riskProfileData
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
+	var err error
+	var status int
+
+	paramsOaPersonalData := make(map[string]string)
+
+	//DEFAULT PARAM
+	customerKey := "267" //c.FormValue("customer_key")
+	if customerKey == "" {
+		log.Error("Missing required parameter: customer_key")
+		return lib.CustomError(http.StatusBadRequest, "customer_key can not be blank", "customer_key can not be blank")
+	}
+
+	var oaRequestDB []models.OaRequest
+	params := make(map[string]string)
+	params["customer_key"] = customerKey
+	params["orderBy"] = "oa_request_key"
+	params["orderType"] = "DESC"
+	status, err = models.GetAllOaRequest(&oaRequestDB, 0, 0, true, params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Customer not found")
+	}
+
+	var oaData models.OaRequest
+	if len(oaRequestDB) > 0 {
+		oaData = oaRequestDB[0]
+		if *oaData.Oastatus == uint64(258) || *oaData.Oastatus == uint64(259) {
+			log.Error("oa in progress approval")
+			return lib.CustomError(http.StatusNotFound, "Terdapat Data Request yang dalam approval. Mohon Tunggu proses approval untuk dapat melakukan pengkinian lagi.", "Terdapat Data Request yang dalam approval. Mohon Tunggu proses approval untuk dapat melakukan pengkinian lagi.")
+		}
+	} else {
+		log.Error("oa not found")
+		return lib.CustomError(http.StatusNotFound, "Customer not found", "Customer not found")
+	}
+
+	oaRequestType := "296" //c.FormValue("oa_request_type")
+	if oaRequestType == "" {
+		log.Error("Missing required parameter: oa_request_type")
+		return lib.CustomError(http.StatusBadRequest, "oa_request_type can not be blank", "oa_request_type can not be blank")
+	}
+
+	//INFORMASI NASABAH
+	email := c.FormValue("email")
+	if email == "" {
+		log.Error("Missing required parameter: email")
+		return lib.CustomError(http.StatusBadRequest, "email can not be blank", "email can not be blank")
+	}
+	phone := c.FormValue("phone")
+	if phone == "" {
+		log.Error("Missing required parameter: phone")
+		return lib.CustomError(http.StatusBadRequest, "phone can not be blank", "phone can not be blank")
+	}
+	fullname := c.FormValue("full_name")
+	if fullname == "" {
+		log.Error("Missing required parameter: full_name")
+		return lib.CustomError(http.StatusBadRequest, "full_name can not be blank", "full_name can not be blank")
+	}
+
+	nationality := c.FormValue("nationality")
+	if nationality == "" {
+		log.Error("Missing required parameter: nationality")
+		return lib.CustomError(http.StatusBadRequest, "nationality can not be blank", "nationality can not be blank")
+	} else {
+		n, err := strconv.ParseUint(nationality, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: nationality")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: nationality", "Wrong input for parameter: nationality")
+		}
+	}
+
+	idcardNumber := c.FormValue("idcard_no")
+	if idcardNumber == "" {
+		log.Error("Missing required parameter: idcard_no")
+		return lib.CustomError(http.StatusBadRequest, "idcard_no can not be blank", "idcard_no can not be blank")
+	}
+
+	gender := c.FormValue("gender")
+	if gender == "" {
+		log.Error("Missing required parameter: gender")
+		return lib.CustomError(http.StatusBadRequest, "gender can not be blank", "gender can not be blank")
+	} else {
+		n, err := strconv.ParseUint(gender, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: gender")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: gender", "Wrong input for parameter: gender")
+		}
+	}
+
+	placeBirth := c.FormValue("place_birth")
+	if placeBirth == "" {
+		log.Error("Missing required parameter: place_birth")
+		return lib.CustomError(http.StatusBadRequest, "place_birth can not be blank", "place_birth can not be blank")
+	}
+
+	dateBirth := c.FormValue("date_birth")
+	if dateBirth == "" {
+		log.Error("Missing required parameter: date_birth")
+		return lib.CustomError(http.StatusBadRequest, "date_birth can not be blank", "date_birth can not be blank")
+	}
+
+	maritalStatus := c.FormValue("marital_status")
+	if maritalStatus == "" {
+		log.Error("Missing required parameter: marital_status")
+		return lib.CustomError(http.StatusBadRequest, "marital_status can not be blank", "marital_status can not be blank")
+	} else {
+		n, err := strconv.ParseUint(maritalStatus, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: marital_status")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: marital_status", "Wrong input for parameter: marital_status")
+		}
+	}
+
+	addressid := c.FormValue("address_id")
+	if addressid == "" {
+		log.Error("Missing required parameter: address_id")
+		return lib.CustomError(http.StatusBadRequest, "address_id can not be blank", "address_id can not be blank")
+	}
+
+	kabupatenid := c.FormValue("kabupaten_id")
+	if kabupatenid != "" {
+		n, err := strconv.ParseUint(kabupatenid, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: kabupaten_id")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: kabupaten_id", "Wrong input for parameter: kabupaten_id")
+		}
+	} else {
+		log.Error("Missing required parameter: kabupaten_id")
+		return lib.CustomError(http.StatusBadRequest, "kabupaten_id can not be blank", "kabupaten_id can not be blank")
+	}
+
+	kecamatanid := c.FormValue("kecamatan_id")
+	if kecamatanid != "" {
+		n, err := strconv.ParseUint(kecamatanid, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: kecamatan_id")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: kecamatan_id", "Wrong input for parameter: kecamatan_id")
+		}
+	} else {
+		log.Error("Missing required parameter: kecamatan_id")
+		return lib.CustomError(http.StatusBadRequest, "kecamatan_id can not be blank", "kecamatan_id can not be blank")
+	}
+
+	postalid := c.FormValue("postal_id")
+	if postalid != "" {
+		ps, err := strconv.ParseUint(postalid, 10, 64)
+		if err != nil || ps == 0 {
+			log.Error("Wrong input for parameter: postal_id")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: postal_id", "Wrong input for parameter: postal_id")
+		}
+	} else {
+		log.Error("Missing required parameter: postal_id")
+		return lib.CustomError(http.StatusBadRequest, "postal_id can not be blank", "postal_id can not be blank")
+	}
+
+	addressdomicile := c.FormValue("address_domicile")
+	if addressdomicile == "" {
+		log.Error("Missing required parameter: address_domicile")
+		return lib.CustomError(http.StatusBadRequest, "address_domicile can not be blank", "address_domicile can not be blank")
+	}
+
+	kabupatendomicile := c.FormValue("kabupaten_domicile")
+	if kabupatendomicile != "" {
+		n, err := strconv.ParseUint(kabupatendomicile, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: kabupaten_domicile")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: kabupaten_domicile", "Wrong input for parameter: kabupaten_domicile")
+		}
+	} else {
+		log.Error("Missing required parameter: kabupaten_domicile")
+		return lib.CustomError(http.StatusBadRequest, "kabupaten_domicile can not be blank", "kabupaten_domicile can not be blank")
+	}
+
+	kecamatandomicile := c.FormValue("kecamatan_domicile")
+	if kecamatandomicile != "" {
+		n, err := strconv.ParseUint(kecamatandomicile, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: kecamatan_domicile")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: kecamatan_domicile", "Wrong input for parameter: kecamatan_domicile")
+		}
+	} else {
+		log.Error("Missing required parameter: kecamatan_domicile")
+		return lib.CustomError(http.StatusBadRequest, "kecamatan_domicile can not be blank", "kecamatan_domicile can not be blank")
+	}
+
+	postaldomicile := c.FormValue("postal_domicile")
+	if postaldomicile != "" {
+		ps, err := strconv.ParseUint(postaldomicile, 10, 64)
+		if err != nil || ps == 0 {
+			log.Error("Wrong input for parameter: postal_domicile")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: postal_domicile", "Wrong input for parameter: postal_domicile")
+		}
+	} else {
+		log.Error("Missing required parameter: postal_domicile")
+		return lib.CustomError(http.StatusBadRequest, "postal_domicile can not be blank", "postal_domicile can not be blank")
+	}
+
+	phoneHome := c.FormValue("phone_home")
+	if phoneHome == "" {
+		log.Error("Missing required parameter: phone_home")
+		return lib.CustomError(http.StatusBadRequest, "phone_home can not be blank", "phone_home can not be blank")
+	}
+
+	religion := c.FormValue("religion")
+	if religion == "" {
+		log.Error("Missing required parameter: phone_home")
+		return lib.CustomError(http.StatusBadRequest, "phone_home can not be blank", "phone_home can not be blank")
+	} else {
+		ps, err := strconv.ParseUint(religion, 10, 64)
+		if err != nil || ps == 0 {
+			log.Error("Wrong input for parameter: religion")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: religion", "Wrong input for parameter: religion")
+		}
+	}
+
+	education := c.FormValue("education")
+	if education == "" {
+		log.Error("Missing required parameter: education")
+		return lib.CustomError(http.StatusBadRequest, "education can not be blank", "education can not be blank")
+	} else {
+		ps, err := strconv.ParseUint(education, 10, 64)
+		if err != nil || ps == 0 {
+			log.Error("Wrong input for parameter: education")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: education", "Wrong input for parameter: education")
+		}
+	}
+
+	//UPLOAD DOKUMEN FOTO E-KTP & SELFIE DENGAN KTP
+
+	picKtpDefault := c.FormValue("pic_ktp_default")
+	picSelfieKtpDefault := c.FormValue("pic_selfie_ktp_default")
+	signatureDefault := c.FormValue("signature_default")
+
+	var file *multipart.FileHeader
+	file, err = c.FormFile("pic_ktp")
+	if file == nil && picKtpDefault == "" {
+		log.Error("Missing required parameter: pic_ktp")
+		return lib.CustomError(http.StatusBadRequest, "pic_ktp can not be blank", "pic_ktp can not be blank")
+	}
+
+	var fileselfie *multipart.FileHeader
+	fileselfie, err = c.FormFile("pic_selfie_ktp")
+	if fileselfie == nil && picSelfieKtpDefault == "" {
+		log.Error("Missing required parameter: pic_selfie_ktp")
+		return lib.CustomError(http.StatusBadRequest, "pic_selfie_ktp can not be blank", "pic_selfie_ktp can not be blank")
+	}
+
+	//URAIAN BIDANG USAHA DAN PEKERJAAN
+	job := c.FormValue("job")
+	if job == "" {
+		log.Error("Missing required parameter: job")
+		return lib.CustomError(http.StatusBadRequest, "job can not be blank", "job can not be blank")
+	} else {
+		n, err := strconv.ParseUint(job, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["occup_job"] = job
+		} else {
+			log.Error("Wrong input for parameter: job")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: job", "Wrong input for parameter: job")
+		}
+	}
+	company := c.FormValue("company")
+	if company != "" {
+		paramsOaPersonalData["occup_company"] = company
+	}
+
+	position := c.FormValue("position")
+	if position != "" {
+		n, err := strconv.ParseUint(job, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["occup_position"] = position
+		} else {
+			log.Error("Wrong input for parameter: position")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: position", "Wrong input for parameter: position")
+		}
+	}
+
+	businessField := c.FormValue("business_field")
+	if businessField != "" {
+		n, err := strconv.ParseUint(businessField, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["occup_business_fields"] = businessField
+		} else {
+			log.Error("Wrong input for parameter: business_field")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: business_field", "Wrong input for parameter: business_field")
+		}
+	}
+
+	annualIncome := c.FormValue("annual_income")
+	if annualIncome == "" {
+		log.Error("Missing required parameter: annual_income")
+		return lib.CustomError(http.StatusBadRequest, "annual_income can not be blank", "annual_income can not be blank")
+	} else {
+		n, err := strconv.ParseUint(annualIncome, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["annual_income"] = annualIncome
+		} else {
+			log.Error("Wrong input for parameter: annual_income")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: annual_income", "Wrong input for parameter: annual_income")
+		}
+	}
+
+	fundSource := c.FormValue("fund_source")
+	if fundSource == "" {
+		log.Error("Missing required parameter: fund_source")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: fund_source", "Missing required parameter: fund_source")
+	} else {
+		n, err := strconv.ParseUint(fundSource, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["sourceof_fund"] = fundSource
+		} else {
+			log.Error("Wrong input for parameter: fund_source")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: fund_source", "Wrong input for parameter: fund_source")
+		}
+	}
+
+	objectives := c.FormValue("objectives")
+	if objectives == "" {
+		log.Error("Missing required parameter: objectives")
+		return lib.CustomError(http.StatusBadRequest, "objectives can not be blank", "objectives can not be blank")
+	} else {
+		n, err := strconv.ParseUint(objectives, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["invesment_objectives"] = objectives
+		} else {
+			log.Error("Wrong input for parameter: objectives")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: objectives", "Wrong input for parameter: objectives")
+		}
+	}
+
+	corespondence := c.FormValue("corespondence")
+	if corespondence == "" {
+		log.Error("Missing required parameter: corespondence")
+		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
+	} else {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["correspondence"] = corespondence
+		} else {
+			log.Error("Wrong input for parameter: corespondence")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: corespondence", "Wrong input for parameter: corespondence")
+		}
+	}
+
+	//TAB 4
+	motherMaidenName := c.FormValue("mother_maiden_name")
+	if motherMaidenName == "" {
+		log.Error("Missing required parameter: mother_maiden_name")
+		return lib.CustomError(http.StatusBadRequest, "mother_maiden_name can not be blank", "mother_maiden_name can not be blank")
+	}
+
+	relationName := c.FormValue("relation_name")
+	if relationName == "" {
+		log.Error("Missing required parameter: relation_name")
+		return lib.CustomError(http.StatusBadRequest, "relation_name can not be blank", "relation_name can not be blank")
+	}
+
+	pepStatus := c.FormValue("pep_status")
+	if pepStatus == "" {
+		log.Error("Missing required parameter: pep_status")
+		return lib.CustomError(http.StatusBadRequest, "pep_status can not be blank", "pep_status can not be blank")
+	} else {
+		n, err := strconv.ParseUint(pepStatus, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["pep_status"] = pepStatus
+		} else {
+			log.Error("Wrong input for parameter: pep_status")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: pep_status", "Wrong input for parameter: pep_status")
+		}
+	}
+
+	relationOccupation := c.FormValue("relation_occupation")
+	if relationOccupation == "" {
+		log.Error("Missing required parameter: relation_occupation")
+		return lib.CustomError(http.StatusBadRequest, "relation_occupation can not be blank", "relation_occupation can not be blank")
+	} else {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["relation_occupation"] = relationOccupation
+		} else {
+			log.Error("Wrong input for parameter: relation_occupation")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: relation_occupation", "Wrong input for parameter: relation_occupation")
+		}
+	}
+
+	relationBusinessField := c.FormValue("relation_business_field")
+	if relationBusinessField != "" {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["relation_business_fields"] = relationBusinessField
+		} else {
+			log.Error("Wrong input for parameter: relation_business_field")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: relation_business_field", "Wrong input for parameter: relation_business_field")
+		}
+	}
+
+	emergencyName := c.FormValue("emergency_name")
+	if emergencyName == "" {
+		log.Error("Missing required parameter: emergency_name")
+		return lib.CustomError(http.StatusBadRequest, "emergency_name can not be blank", "emergency_name can not be blank")
+	}
+
+	emergencyRelation := c.FormValue("emergency_relation")
+	if emergencyRelation == "" {
+		log.Error("Missing required parameter: emergency_relation")
+		return lib.CustomError(http.StatusBadRequest, "emergency_relation can not be blank", "emergency_relation can not be blank")
+	} else {
+		n, err := strconv.ParseUint(emergencyRelation, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["emergency_relation"] = emergencyRelation
+		} else {
+			log.Error("Wrong input for parameter: emergency_relation")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: emergency_relation", "Wrong input for parameter: emergency_relation")
+		}
+	}
+
+	emergencyPhone := c.FormValue("emergency_phone")
+	if emergencyPhone == "" {
+		log.Error("Missing required parameter: emergency_phone")
+		return lib.CustomError(http.StatusBadRequest, "emergency_phone can not be blank", "emergency_phone can not be blank")
+	}
+
+	//TAB 5 REKENING DLL
+	beneficialRelation := c.FormValue("beneficial_relation")
+	if beneficialRelation == "" {
+		log.Error("Missing required parameter: beneficial_relation")
+		return lib.CustomError(http.StatusBadRequest, "beneficial_relation can not be blank", "beneficial_relation can not be blank")
+	} else {
+		n, err := strconv.ParseUint(beneficialRelation, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["beneficial_relation"] = beneficialRelation
+		} else {
+			log.Error("Wrong input for parameter: beneficial_relation")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: beneficial_relation", "Wrong input for parameter: beneficial_relation")
+		}
+	}
+
+	beneficialName := c.FormValue("beneficial_name")
+	if beneficialName == "" {
+		log.Error("Missing required parameter: beneficial_name")
+		return lib.CustomError(http.StatusBadRequest, "beneficial_name can not be blank", "beneficial_name can not be blank")
+	}
+
+	//BANK DETAIL
+	bankKey := c.FormValue("bank_key")
+	if bankKey == "" {
+		log.Error("Missing required parameter: bank_key")
+		return lib.CustomError(http.StatusBadRequest, "bank_key can not be blank", "bank_key can not be blank")
+	} else {
+		bank, err := strconv.ParseUint(bankKey, 10, 64)
+		if err != nil || bank == 0 {
+			log.Error("Wrong input for parameter: bank_key")
+			return lib.CustomError(http.StatusBadRequest)
+		}
+	}
+
+	accountNo := c.FormValue("account_no")
+	if accountNo == "" {
+		log.Error("Missing required parameter: account_no")
+		return lib.CustomError(http.StatusBadRequest, "account_no can not be blank", "account_no can not be blank")
+	}
+
+	accountName := c.FormValue("account_name")
+	if accountName == "" {
+		log.Error("Missing required parameter: account_name")
+		return lib.CustomError(http.StatusBadRequest, "account_name can not be blank", "account_name can not be blank")
+	}
+
+	branchName := c.FormValue("branch_name")
+	if branchName == "" {
+		log.Error("Missing required parameter: branch_name")
+		return lib.CustomError(http.StatusBadRequest, "branch_name can not be blank", "branch_name can not be blank")
+	}
+
+	//QUIZ
+	quizOption := c.FormValue("quiz_option")
+	if quizOption == "" {
+		log.Error("Missing required parameter: quiz_option")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: quiz_option", "Missing required parameter: quiz_option")
+	}
+
+	s := strings.Split(quizOption, ",")
+	var quizoptionkey []string
+
+	for _, value := range s {
+		is := strings.TrimSpace(value)
+		if is != "" {
+			if _, ok := lib.Find(quizoptionkey, is); !ok {
+				quizoptionkey = append(quizoptionkey, is)
+			}
+		}
+	}
+	if len(quizoptionkey) <= 0 {
+		log.Error("Missing required parameter: quiz_option")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: quiz_option", "Missing required parameter: quiz_option")
+	}
+
+	date := time.Now().AddDate(0, 0, 1)
+	dateLayout := "2006-01-02 15:04:05"
+
+	//OA_REQUEST
+	layout := "2006-01-02 15:04:05"
+	dateNow := time.Now().Format(layout)
+	paramsOaRequest := make(map[string]string)
+	paramsOaRequest["oa_status"] = "258"
+	paramsOaRequest["oa_entry_start"] = dateNow
+	paramsOaRequest["oa_entry_end"] = dateNow
+	paramsOaRequest["oa_request_type"] = oaRequestType
+	paramsOaRequest["customer_key"] = customerKey
+	paramsOaRequest["rec_status"] = "1"
+
+	//OA_POSTAL_ADDRESS CARD ID
+	addressIDParams := make(map[string]string)
+	addressIDParams["address_type"] = "17"
+	addressIDParams["address_line1"] = addressid
+	addressIDParams["kabupaten_key"] = kabupatenid
+	addressIDParams["kecamatan_key"] = kecamatanid
+	addressIDParams["postal_code"] = postalid
+	addressIDParams["rec_status"] = "1"
+
+	//OA_POSTAL_ADDRESS DOMICILE
+	addressDomicileParams := make(map[string]string)
+	addressDomicileParams["address_type"] = "18"
+	addressDomicileParams["address_line1"] = addressdomicile
+	addressDomicileParams["kabupaten_key"] = kabupatendomicile
+	addressDomicileParams["kecamatan_key"] = kecamatandomicile
+	addressDomicileParams["postal_code"] = postaldomicile
+	addressDomicileParams["rec_status"] = "1"
+
+	//MS_BANK_ACCOUNT
+	paramsBank := make(map[string]string)
+	paramsBank["bank_key"] = bankKey
+	paramsBank["account_no"] = accountNo
+	paramsBank["account_holder_name"] = accountName
+	paramsBank["branch_name"] = branchName
+	paramsBank["currency_key"] = "1"
+	paramsBank["bank_account_type"] = "1"
+	paramsBank["rec_domain"] = "1"
+	paramsBank["rec_status"] = "1"
+
+	//OA_PERSONAL_DATA
+	log.Info("dateBirth: " + dateBirth)
+	dateBirth += " 00:00:00"
+	date, err = time.Parse(layout, dateBirth)
+	dateStr := date.Format(layout)
+	log.Info("dateBirth: " + dateStr)
+
+	paramsOaPersonalData["full_name"] = fullname
+	paramsOaPersonalData["idcard_type"] = "12"
+	paramsOaPersonalData["place_birth"] = placeBirth
+	paramsOaPersonalData["date_birth"] = dateStr
+	paramsOaPersonalData["nationality"] = nationality
+	paramsOaPersonalData["idcard_no"] = idcardNumber
+	paramsOaPersonalData["gender"] = gender
+	paramsOaPersonalData["marital_status"] = maritalStatus
+	paramsOaPersonalData["phone_home"] = phoneHome
+	paramsOaPersonalData["phone_mobile"] = phone
+	paramsOaPersonalData["email_address"] = email
+	paramsOaPersonalData["religion"] = religion
+	paramsOaPersonalData["education"] = education
+	paramsOaPersonalData["occup_job"] = job
+	paramsOaPersonalData["occup_company"] = company
+	paramsOaPersonalData["occup_position"] = position
+	paramsOaPersonalData["beneficial_full_name"] = beneficialName
+	paramsOaPersonalData["emergency_phone_no"] = emergencyPhone
+	paramsOaPersonalData["relation_full_name"] = relationName
+	paramsOaPersonalData["mother_maiden_name"] = motherMaidenName
+	paramsOaPersonalData["emergency_full_name"] = emergencyName
+	paramsOaPersonalData["rec_status"] = "1"
+
+	tx, _ := db.Db.Begin()
+
+	//CEK SC_USER_LOGIN CUSTOMER
+	var idUserLogin string
+	var scUserLogin models.ScUserLogin
+	status, err = models.GetScUserLoginByCustomerKey(&scUserLogin, customerKey)
+	if err != nil {
+		tx.Rollback()
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create data")
+	} else {
+		idUserLogin = strconv.FormatUint(scUserLogin.UserLoginKey, 10)
+	}
+	paramsOaRequest["user_login_key"] = idUserLogin
+
+	//SAVE AO_PORTAL_ADDRESS IDCARD
+	status, err, addressidID := models.CreateOaPostalAddress(addressIDParams)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create adrress data idcard: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	addressID, err := strconv.ParseUint(addressidID, 10, 64)
+	if addressID == 0 {
+		tx.Rollback()
+		log.Error("Failed create adrress data idcard")
+		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	}
+	paramsOaPersonalData["idcard_address_key"] = addressidID
+
+	//SAVE AO_PORTAL_ADDRESS DOMICILE
+	status, err, addressDomicileID := models.CreateOaPostalAddress(addressDomicileParams)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create adrress data domicile: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	addressID, err = strconv.ParseUint(addressDomicileID, 10, 64)
+	if addressID == 0 {
+		tx.Rollback()
+		log.Error("Failed create adrress data domicile")
+		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	}
+	paramsOaPersonalData["domicile_address_key"] = addressDomicileID
+
+	//SAVE AO_PORTAL_ADDRESS COMPANY
+	addressCompanyParams := make(map[string]string)
+	companyAddress := c.FormValue("company_address")
+	if companyAddress != "" {
+		addressCompanyParams["address_type"] = "19"
+		addressCompanyParams["address_line1"] = companyAddress
+		addressCompanyParams["rec_status"] = "1"
+
+		status, err, addressCompanyID := models.CreateOaPostalAddress(addressCompanyParams)
+		if err != nil {
+			tx.Rollback()
+			log.Error("Failed create adrress data company: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+		addressID, err = strconv.ParseUint(addressCompanyID, 10, 64)
+		if addressID == 0 {
+			tx.Rollback()
+			log.Error("Failed create adrress data company")
+			return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+		}
+		paramsOaPersonalData["occup_address_key"] = addressCompanyID
+	}
+
+	//SAVE MS_BANK_ACCOUNT
+	status, err, bankAccountID := models.CreateMsBankAccount(paramsBank)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create bank account data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
+	if accountID == 0 {
+		tx.Rollback()
+		log.Error("Failed create bank account data")
+		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	}
+	paramsOaPersonalData["bank_account_key"] = bankAccountID
+
+	//SAVE OA_REQUEST
+	status, err, requestID := models.CreateOaRequest(paramsOaRequest)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create oa request data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	request, err := strconv.ParseUint(requestID, 10, 64)
+	if request == 0 {
+		tx.Rollback()
+		log.Error("Failed create oa request data")
+		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	}
+	paramsOaPersonalData["oa_request_key"] = requestID
+
+	//SAVE OA_PERSONAL_DATA
+	err = os.MkdirAll(config.BasePath+"/images/user/"+idUserLogin, 0755)
+	if err != nil {
+		log.Error(err.Error())
+	} else {
+		var file *multipart.FileHeader
+		file, err = c.FormFile("pic_ktp")
+		if file != nil {
+			if err != nil {
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: pic_ktp")
+			}
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			// Generate filename
+			var filename string
+			for {
+				filename = lib.RandStringBytesMaskImprSrc(20)
+				log.Println("Generate filename:", filename)
+				var personalData []models.OaPersonalData
+				getParams := make(map[string]string)
+				getParams["pic_ktp"] = filename + extension
+				_, err := models.GetAllOaPersonalData(&personalData, 1, 0, getParams, false)
+				if (err == nil && len(personalData) < 1) || err != nil {
+					break
+				}
+			}
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/images/user/"+idUserLogin+"/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+			paramsOaPersonalData["pic_ktp"] = filename + extension
+		} else {
+			paramsOaPersonalData["pic_ktp"] = picKtpDefault
+		}
+
+		file, err = c.FormFile("pic_selfie_ktp")
+		if file != nil {
+			if err != nil {
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: pic_selfie_ktp")
+			}
+			// Get file extension
+			extension := filepath.Ext(file.Filename)
+			// Generate filename
+			var filename string
+			for {
+				filename = lib.RandStringBytesMaskImprSrc(20)
+				log.Println("Generate filename:", filename)
+				var personalData []models.OaPersonalData
+				getParams := make(map[string]string)
+				getParams["pic_selfie_ktp"] = filename + extension
+				_, err := models.GetAllOaPersonalData(&personalData, 1, 0, getParams, false)
+				if (err == nil && len(personalData) < 1) || err != nil {
+					break
+				}
+			}
+			// Upload image and move to proper directory
+			err = lib.UploadImage(file, config.BasePath+"/images/user/"+idUserLogin+"/"+filename+extension)
+			if err != nil {
+				log.Println(err)
+				return lib.CustomError(http.StatusInternalServerError)
+			}
+			paramsOaPersonalData["pic_selfie_ktp"] = filename + extension
+		} else {
+			paramsOaPersonalData["pic_selfie_ktp"] = picSelfieKtpDefault
+		}
+	}
+
+	err = os.MkdirAll(config.BasePath+"/images/user/"+idUserLogin+"/signature", 0755)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadGateway, err.Error(), err.Error())
+	}
+	file, err = c.FormFile("signature")
+	if file != nil {
+		if err != nil {
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Missing required parameter: signature")
+		}
+		// Get file extension
+		extension := filepath.Ext(file.Filename)
+		// Generate filename
+		var filename string
+		for {
+			filename = lib.RandStringBytesMaskImprSrc(20)
+			log.Println("Generate filename:", filename)
+			var personalData []models.OaPersonalData
+			getParams := make(map[string]string)
+			getParams["rec_image1"] = filename + extension
+			_, err := models.GetAllOaPersonalData(&personalData, 1, 0, getParams, false)
+			if (err == nil && len(personalData) < 1) || err != nil {
+				break
+			}
+		}
+		// Upload image and move to proper directory
+		err = lib.UploadImage(file, config.BasePath+"/images/user/"+idUserLogin+"/signature/"+filename+extension)
+		if err != nil {
+			log.Println(err)
+			return lib.CustomError(http.StatusInternalServerError)
+		}
+		paramsOaPersonalData["rec_image1"] = filename + extension
+	} else {
+		paramsOaPersonalData["rec_image1"] = signatureDefault
+	}
+
+	status, err, _ = models.CreateOaPersonalData(paramsOaPersonalData)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create personal data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	//SAVE CMS_QUIZ_OPTIONS
+	var questionOptions []models.QuestionOptionQuiz
+	status, err = models.AdminGetQuestionOptionQuiz(&questionOptions, quizoptionkey)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(questionOptions) < 1 {
+		tx.Rollback()
+		log.Error("Missing required parameter: quiz_option")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: quiz_option", "Missing required parameter: quiz_option")
+	}
+
+	var bindVar []interface{}
+	var score uint64 = 0
+	for _, val := range questionOptions {
+
+		var row []string
+		row = append(row, requestID)
+		row = append(row, val.QuizQuestionKey)
+		row = append(row, val.QuizOptionKey)
+		row = append(row, strconv.FormatUint(val.QuizOptionScore, 10))
+		row = append(row, "1")
+		score += val.QuizOptionScore
+		bindVar = append(bindVar, row)
+	}
+
+	var riskProfile models.MsRiskProfile
+	scoreStr := strconv.FormatUint(score, 10)
+	status, err = models.GetMsRiskProfileScore(&riskProfile, scoreStr)
+	if err != nil {
+		tx.Rollback()
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data risk profile")
+	}
+
+	paramsOaRiskProfile := make(map[string]string)
+	paramsOaRiskProfile["oa_request_key"] = requestID
+	paramsOaRiskProfile["risk_profile_key"] = strconv.FormatUint(riskProfile.RiskProfileKey, 10)
+	paramsOaRiskProfile["score_result"] = scoreStr
+	paramsOaRiskProfile["rec_status"] = "1"
+
+	status, err = models.CreateOaRiskProfile(paramsOaRiskProfile)
+	if err != nil {
+		tx.Rollback()
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	status, err = models.CreateMultipleOaRiskProfileQuiz(bindVar)
+	if err != nil {
+		tx.Rollback()
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	tx.Commit()
+
+	// Send email
+	t := template.New("index-registration.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct {
+		Name    string
+		FileUrl string
+	}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", email)
+	mailer.SetHeader("Subject", "[MNC Duit] Pengkinian Data Kamu sedang Diproses")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Error send email")
+		log.Error(err)
+		log.Error("Error send email")
+	}
+	log.Info("Email sent")
+
+	//insert message notif in app
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = idUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	subject := "Pengkinian Data sedang Diproses"
+	body := "Terima kasih telah melakukan Pengkinian Data. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(idUserLogin, subject, body, "HOME")
+
+	var responseData models.MsRiskProfileInfo
+
+	responseData.RiskProfileKey = riskProfile.RiskProfileKey
+	responseData.RiskCode = riskProfile.RiskCode
+	responseData.RiskName = riskProfile.RiskName
+	responseData.RiskDesc = riskProfile.RiskDesc
+	responseData.Score = score
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 }
