@@ -72,6 +72,7 @@ type CustomerIndividuInquiry struct {
 	SidNo            string `db:"sid"                         json:"sid"`
 	CifSuspendFlag   string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
 	MotherMaidenName string `db:"mother_maiden_name"          json:"mother_maiden_name"`
+	OaStatus         string `db:"oa_status"                   json:"oa_status"`
 }
 
 type CustomerInstituionInquiry struct {
@@ -82,6 +83,7 @@ type CustomerInstituionInquiry struct {
 	Institusion    string `db:"institution"                 json:"institution"`
 	SidNo          string `db:"sid"                         json:"sid"`
 	CifSuspendFlag string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
+	OaStatus       string `db:"oa_status"                   json:"oa_status"`
 }
 
 type DetailCustomerIndividuInquiry struct {
@@ -291,7 +293,8 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
-				pd.mother_maiden_name AS mother_maiden_name  
+				pd.mother_maiden_name AS mother_maiden_name,
+				r.oa_status as oa_status   
 			FROM ms_customer AS c 
 			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
 			AS t2 ON c.customer_key = t2.customer_key
@@ -409,7 +412,8 @@ func AdminGetAllCustomerInstitutionInquery(c *[]CustomerInstituionInquiry, limit
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
 				pd.npwp_no AS npwp, 
-				pd.insti_full_name AS institution 
+				pd.insti_full_name AS institution, 
+				r.oa_status as oa_status   
 			FROM ms_customer AS c 
 			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
 			AS t2 ON c.customer_key = t2.customer_key

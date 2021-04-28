@@ -16411,7 +16411,8 @@
                       "phone_mobile": "081318696023",
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
-                      "mother_maiden_name": "asdasdas"
+                      "mother_maiden_name": "asdasdas",
+                      "oa_status": "260"
                     },
                     {
                       "customer_key": 229,
@@ -16422,7 +16423,8 @@
                       "phone_mobile": "081318696023",
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
-                      "mother_maiden_name": "sadasdasd"
+                      "mother_maiden_name": "sadasdasd",
+                      "oa_status": "260"
                     }
                   ]
                 }
@@ -16582,7 +16584,8 @@
                       "npwp": "776467868947",
                       "institution": "Okezone dot com",
                       "sid": "",
-                      "cif_suspend_flag": "Tidak"
+                      "cif_suspend_flag": "Tidak",
+                      "oa_status": "260"
                     },
                     {
                       "customer_key": 59,
@@ -16591,7 +16594,8 @@
                       "npwp": "112254267869",
                       "institution": "Jaya Merdeka",
                       "sid": "",
-                      "cif_suspend_flag": "Tidak"
+                      "cif_suspend_flag": "Tidak",
+                      "oa_status": "260"
                     }
                   ]
                 }
