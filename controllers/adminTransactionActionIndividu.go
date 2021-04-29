@@ -467,6 +467,72 @@ func CreateTransactionSubscription(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_amount", "Missing required parameter: trans_amount")
 	}
 
+	transCalcMethod := c.FormValue("trans_calc_method")
+	if transCalcMethod != "" {
+		transCalcMethodKey, err := strconv.ParseUint(transCalcMethod, 10, 64)
+		if err == nil && transCalcMethodKey > 0 {
+			params["trans_calc_method"] = transCalcMethod
+		} else {
+			log.Error("Missing required parameter: trans_calc_method")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_calc_method", "Missing required parameter: trans_calc_method")
+		}
+	} else {
+		log.Error("Missing required parameter: trans_calc_method")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_calc_method", "Missing required parameter: trans_calc_method")
+	}
+
+	transFeePercentStr := c.FormValue("trans_fee_percent")
+	if transFeePercentStr != "" {
+		_, err := decimal.NewFromString(transFeePercentStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: trans_fee_percent")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_fee_percent", "Wrong input for parameter: trans_fee_percent")
+		}
+		params["trans_fee_percent"] = transFeePercentStr
+	} else {
+		log.Error("Missing required parameter: trans_fee_percent")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_percent", "Missing required parameter: trans_fee_percent")
+	}
+
+	transFeeAmountStr := c.FormValue("trans_fee_amount")
+	if transFeeAmountStr != "" {
+		_, err := decimal.NewFromString(transFeeAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: trans_fee_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_fee_amount", "Wrong input for parameter: trans_fee_amount")
+		}
+		params["trans_fee_amount"] = transFeeAmountStr
+	} else {
+		log.Error("Missing required parameter: trans_fee_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_amount", "Missing required parameter: trans_fee_amount")
+	}
+
+	chargesFeeAmountStr := c.FormValue("charges_fee_amount")
+	if chargesFeeAmountStr != "" {
+		_, err := decimal.NewFromString(chargesFeeAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: charges_fee_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: charges_fee_amount", "Wrong input for parameter: charges_fee_amount")
+		}
+		params["charges_fee_amount"] = chargesFeeAmountStr
+	} else {
+		log.Error("Missing required parameter: charges_fee_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: charges_fee_amount", "Missing required parameter: charges_fee_amount")
+	}
+
+	servicesFeeAmountStr := c.FormValue("services_fee_amount")
+	if servicesFeeAmountStr != "" {
+		_, err := decimal.NewFromString(servicesFeeAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: services_fee_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: services_fee_amount", "Wrong input for parameter: services_fee_amount")
+		}
+		params["services_fee_amount"] = servicesFeeAmountStr
+	} else {
+		log.Error("Missing required parameter: services_fee_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: services_fee_amount", "Missing required parameter: services_fee_amount")
+	}
+
 	totalAmountStr := c.FormValue("total_amount")
 	if totalAmountStr != "" {
 		_, err := strconv.ParseFloat(totalAmountStr, 64)
@@ -611,7 +677,6 @@ func CreateTransactionSubscription(c echo.Context) error {
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "1"
 	params["trx_code"] = "137"
-	params["trans_calc_method"] = "288"
 	layout := "2006-01-02"
 	now := time.Now()
 	nowString := now.Format(layout)
@@ -625,30 +690,6 @@ func CreateTransactionSubscription(c echo.Context) error {
 	}
 	params["entry_mode"] = "140"
 	params["trans_unit"] = "0"
-	params["trans_fee_percent"] = "0"
-	params["charges_fee_amount"] = "0"
-	var scApp models.ScAppConfig
-	status, err = models.GetScAppConfigByCode(&scApp, "BANK_CHARGES")
-	if err != nil {
-		params["trans_fee_amount"] = "0"
-	} else {
-		if scApp.AppConfigValue != nil {
-			params["trans_fee_amount"] = *scApp.AppConfigValue
-		} else {
-			params["trans_fee_amount"] = "0"
-		}
-	}
-	var scApp2 models.ScAppConfig
-	status, err = models.GetScAppConfigByCode(&scApp2, "SERVICE_CHARGES")
-	if err != nil {
-		params["services_fee_amount"] = "0"
-	} else {
-		if scApp.AppConfigValue != nil {
-			params["services_fee_amount"] = *scApp2.AppConfigValue
-		} else {
-			params["services_fee_amount"] = "0"
-		}
-	}
 	params["aca_key"] = acaKey
 	params["trans_source"] = "141"
 	params["rec_status"] = "1"
@@ -929,6 +970,11 @@ func GetTopupData(c echo.Context) error {
 	productResponse.RiskName = product.RiskName
 	productResponse.FeeService = product.FeeService.Truncate(0)
 	productResponse.FeeTransfer = product.FeeTransfer.Truncate(0)
+	productResponse.CurrencyKey = product.CurrencyKey
+	productResponse.Symbol = product.Symbol
+	productResponse.FlagShowOntnc = product.FlagShowOntnc
+	productResponse.FeeAnnotation = product.FeeAnnotation
+	productResponse.FeeValue = product.FeeValue.Truncate(2)
 
 	var responseData models.AdminTopupData
 
@@ -1317,7 +1363,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 	params["trans_status_key"] = "2"
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "2"
-	params["trx_code"] = "137"
+	params["trx_code"] = "138"
 	params["payment_method"] = "284"
 	params["trans_calc_method"] = "288"
 	layout := "2006-01-02"
@@ -1331,31 +1377,15 @@ func CreateTransactionRedemption(c echo.Context) error {
 	} else {
 		params["nav_date"] = dateBursa + " 00:00:00"
 	}
-	params["entry_mode"] = "140"
+	if metodePerhitungan == "3" { //amount
+		params["entry_mode"] = "139"
+	} else {
+		params["entry_mode"] = "140"
+	}
 	params["trans_fee_percent"] = "0"
+	params["trans_fee_amount"] = "0"
 	params["charges_fee_amount"] = "0"
-	var scApp models.ScAppConfig
-	status, err = models.GetScAppConfigByCode(&scApp, "BANK_CHARGES")
-	if err != nil {
-		params["trans_fee_amount"] = "0"
-	} else {
-		if scApp.AppConfigValue != nil {
-			params["trans_fee_amount"] = *scApp.AppConfigValue
-		} else {
-			params["trans_fee_amount"] = "0"
-		}
-	}
-	var scApp2 models.ScAppConfig
-	status, err = models.GetScAppConfigByCode(&scApp2, "SERVICE_CHARGES")
-	if err != nil {
-		params["services_fee_amount"] = "0"
-	} else {
-		if scApp.AppConfigValue != nil {
-			params["services_fee_amount"] = *scApp2.AppConfigValue
-		} else {
-			params["services_fee_amount"] = "0"
-		}
-	}
+	params["services_fee_amount"] = "0"
 	params["aca_key"] = acaKey
 	params["trans_source"] = "141"
 	params["rec_status"] = "1"
@@ -1805,7 +1835,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	params["trans_status_key"] = "2"
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "3"
-	params["trx_code"] = "137"
+	params["trx_code"] = "138"
 	params["payment_method"] = "284"
 	params["trans_calc_method"] = "288"
 
@@ -1822,38 +1852,16 @@ func CreateTransactionSwitching(c echo.Context) error {
 		params["nav_date"] = dateBursa + " 00:00:00"
 		paramsSwIn["nav_date"] = dateBursa + " 00:00:00"
 	}
-	params["entry_mode"] = "140"
+	if metodePerhitungan == "3" { //Nominal
+		params["entry_mode"] = "139"
+	} else {
+		params["entry_mode"] = "140"
+	}
 	params["trans_fee_percent"] = "0"
+	params["trans_fee_amount"] = "0"
 	params["charges_fee_amount"] = "0"
+	params["services_fee_amount"] = "0"
 
-	var scApp models.ScAppConfig
-	status, err = models.GetScAppConfigByCode(&scApp, "BANK_CHARGES")
-	if err != nil {
-		params["trans_fee_amount"] = "0"
-		paramsSwIn["trans_fee_amount"] = "0"
-	} else {
-		if scApp.AppConfigValue != nil {
-			params["trans_fee_amount"] = *scApp.AppConfigValue
-			paramsSwIn["trans_fee_amount"] = *scApp.AppConfigValue
-		} else {
-			params["trans_fee_amount"] = "0"
-			paramsSwIn["trans_fee_amount"] = "0"
-		}
-	}
-	var scApp2 models.ScAppConfig
-	status, err = models.GetScAppConfigByCode(&scApp2, "SERVICE_CHARGES")
-	if err != nil {
-		params["services_fee_amount"] = "0"
-		paramsSwIn["services_fee_amount"] = "0"
-	} else {
-		if scApp.AppConfigValue != nil {
-			params["services_fee_amount"] = *scApp.AppConfigValue
-			paramsSwIn["services_fee_amount"] = *scApp.AppConfigValue
-		} else {
-			params["services_fee_amount"] = "0"
-			paramsSwIn["services_fee_amount"] = "0"
-		}
-	}
 	params["aca_key"] = acaKey
 	params["trans_source"] = "141"
 	params["rec_status"] = "1"
@@ -1931,7 +1939,9 @@ func CreateTransactionSwitching(c echo.Context) error {
 
 	paramsSwIn["entry_mode"] = "140"
 	paramsSwIn["trans_fee_percent"] = "0"
+	paramsSwIn["trans_fee_amount"] = "0"
 	paramsSwIn["charges_fee_amount"] = "0"
+	paramsSwIn["services_fee_amount"] = "0"
 
 	paramsSwIn["aca_key"] = acaNewProdKey
 	paramsSwIn["trans_source"] = "141"
@@ -2005,6 +2015,8 @@ func mailTransactionManual(typ string, params map[string]string, customerKey str
 		mailParam["Symbol"] = "Rp. "
 	} else if params["currency"] == "2" {
 		mailParam["Symbol"] = "$"
+	} else if params["currency"] == "3" {
+		mailParam["Symbol"] = "E"
 	}
 	val, _ := decimal.NewFromString(params["trans_fee_amount"])
 	mailParam["Fee"] = ac0.FormatMoneyDecimal(val.Truncate(0))

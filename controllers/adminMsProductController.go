@@ -2205,6 +2205,11 @@ func AdminGetProductSubscription(c echo.Context) error {
 		prod.RiskName = pr.RiskName
 		prod.FeeService = pr.FeeService.Truncate(0)
 		prod.FeeTransfer = pr.FeeTransfer.Truncate(0)
+		prod.CurrencyKey = pr.CurrencyKey
+		prod.Symbol = pr.Symbol
+		prod.FlagShowOntnc = pr.FlagShowOntnc
+		prod.FeeAnnotation = pr.FeeAnnotation
+		prod.FeeValue = pr.FeeValue.Truncate(2)
 		productList = append(productList, prod)
 	}
 

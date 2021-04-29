@@ -19106,7 +19106,12 @@
                       "ffs_link": "https://www.mncasset.com/downloads/699-FFS_MDSE_300720.pdf",
                       "risk_name": "Agresif",
                       "fee_service": 0,
-                      "fee_transfer": 0
+                      "fee_transfer": 0,
+                      "currency_key": 1,
+                      "symbol": "Rp",
+                      "flag_show_ontnc": 1,
+                      "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
+                      "fee_value": 0
                     },
                     {
                       "product_key": 5,
@@ -19125,7 +19130,12 @@
                       "ffs_link": "https://www.mncasset.com/downloads/588-FFS_BBE_300720.pdf",
                       "risk_name": "Agresif",
                       "fee_service": 0,
-                      "fee_transfer": 0
+                      "fee_transfer": 0,
+                      "currency_key": 1,
+                      "symbol": "Rp",
+                      "flag_show_ontnc": 1,
+                      "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
+                      "fee_value": 0
                     }
                   ]
                 }
@@ -19279,6 +19289,21 @@
                   "trans_amount": {
                     "type": "number"
                   },
+                  "trans_calc_method": {
+                    "type": "integer"
+                  },
+                  "trans_fee_percent": {
+                    "type": "number"
+                  },
+                  "trans_fee_amount": {
+                    "type": "number"
+                  },
+                  "charges_fee_amount": {
+                    "type": "number"
+                  },
+                  "services_fee_amount": {
+                    "type": "number"
+                  },
                   "total_amount": {
                     "type": "number"
                   },
@@ -19302,6 +19327,11 @@
                   "customer_key",
                   "product_key",
                   "trans_amount",
+                  "trans_calc_method",
+                  "trans_fee_percent",
+                  "trans_fee_amount",
+                  "charges_fee_amount",
+                  "services_fee_amount",
                   "total_amount",
                   "payment_method",
                   "bank_transaction",
@@ -19418,7 +19448,12 @@
                       "ffs_link": "https://www.mncasset.com/downloads/531-FFS_BDM_300720.pdf",
                       "risk_name": "Moderat",
                       "fee_service": 0,
-                      "fee_transfer": 0
+                      "fee_transfer": 0,
+                      "currency_key": 1,
+                      "symbol": "Rp",
+                      "flag_show_ontnc": 1,
+                      "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
+                      "fee_value": 0
                     }
                   }
                 }

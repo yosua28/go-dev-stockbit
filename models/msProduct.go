@@ -253,6 +253,11 @@ type ProductSubscription struct {
 	RiskName       string          `db:"risk_name"               json:"risk_name"`
 	FeeService     decimal.Decimal `db:"fee_service"             json:"fee_service"`
 	FeeTransfer    decimal.Decimal `db:"fee_transfer"            json:"fee_transfer"`
+	CurrencyKey    uint64          `db:"currency_key"            json:"currency_key"`
+	Symbol         string          `db:"symbol"                  json:"symbol"`
+	FlagShowOntnc  uint64          `db:"flag_show_ontnc"         json:"flag_show_ontnc"`
+	FeeAnnotation  *string         `db:"fee_annotation"          json:"fee_annotation"`
+	FeeValue       decimal.Decimal `db:"fee_value"               json:"fee_value"`
 }
 
 func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -568,7 +573,12 @@ func AdminGetProductSubscription(c *[]ProductSubscription) (int, error) {
 				pub.ffs_link as ffs_link,
 				pr.risk_name as risk_name,
 				ft.app_config_value AS fee_transfer,
-				fc.app_config_value AS fee_service 
+				fc.app_config_value AS fee_service,
+				cur.currency_key AS currency_key,
+				cur.symbol AS symbol, 
+				mpf.flag_show_ontnc AS flag_show_ontnc, 
+				mpf.fee_annotation AS fee_annotation, 
+				mpfi.fee_value AS fee_value  
 			FROM ms_product AS p 
 			LEFT JOIN sc_app_config AS ft ON ft.app_config_code = 'BANK_CHARGES' 
 			LEFT JOIN sc_app_config AS fc ON fc.app_config_code = 'SERVICE_CHARGES' 
@@ -588,9 +598,12 @@ func AdminGetProductSubscription(c *[]ProductSubscription) (int, error) {
 				GROUP BY product_key
 			) c ON (c.product_key = p.product_key)
 			INNER JOIN ffs_nav_performance AS ffs ON ffs.product_key = p.product_key AND ffs.nav_date = c.nav_date
-			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key
+			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key 
+			INNER JOIN ms_currency AS cur ON cur.currency_key = p.currency_key 
+			LEFT JOIN ms_product_fee AS mpf ON mpf.product_key = p.product_key AND mpf.fee_type = '183' AND mpf.rec_status = 1 
+			LEFT JOIN ms_product_fee_item AS mpfi ON mpfi.product_fee_key = mpf.fee_key AND mpfi.rec_status = 1
 			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
-			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1
+			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1 AND cur.rec_status = 1
 			ORDER BY f.rec_order ASC`
 
 	// Main query
@@ -625,7 +638,12 @@ func AdminGetProductSubscriptionByProductKey(c *ProductSubscription, productKey 
 				pub.ffs_link as ffs_link,
 				pr.risk_name as risk_name,
 				ft.app_config_value AS fee_transfer,
-				fc.app_config_value AS fee_service 
+				fc.app_config_value AS fee_service, 
+				cur.currency_key AS currency_key,
+				cur.symbol AS symbol, 
+				mpf.flag_show_ontnc AS flag_show_ontnc, 
+				mpf.fee_annotation AS fee_annotation, 
+				mpfi.fee_value AS fee_value 
 			FROM ms_product AS p 
 			LEFT JOIN sc_app_config AS ft ON ft.app_config_code = 'BANK_CHARGES' 
 			LEFT JOIN sc_app_config AS fc ON fc.app_config_code = 'SERVICE_CHARGES' 
@@ -645,9 +663,12 @@ func AdminGetProductSubscriptionByProductKey(c *ProductSubscription, productKey 
 				GROUP BY product_key
 			) c ON (c.product_key = p.product_key)
 			INNER JOIN ffs_nav_performance AS ffs ON ffs.product_key = p.product_key AND ffs.nav_date = c.nav_date
-			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key
+			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key 
+			INNER JOIN ms_currency AS cur ON cur.currency_key = p.currency_key 
+			LEFT JOIN ms_product_fee AS mpf ON mpf.product_key = p.product_key AND mpf.fee_type = '183' AND mpf.rec_status = 1 
+			LEFT JOIN ms_product_fee_item AS mpfi ON mpfi.product_fee_key = mpf.fee_key AND mpfi.rec_status = 1
 			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
-			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1 
+			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1 AND cur.rec_status = 1
 			AND p.product_key = '` + productKey + `'
 			ORDER BY f.rec_order ASC`
 
