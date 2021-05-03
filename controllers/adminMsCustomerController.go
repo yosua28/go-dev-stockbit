@@ -1658,6 +1658,20 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		}
 	}
 
+	relationType := c.FormValue("relation_type")
+	if relationType == "" {
+		log.Error("Missing required parameter: relation_type")
+		return lib.CustomError(http.StatusBadRequest, "relation_type can not be blank", "relation_type can not be blank")
+	} else {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["relation_type"] = relationType
+		} else {
+			log.Error("Wrong input for parameter: relation_type")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: relation_type", "Wrong input for parameter: relation_type")
+		}
+	}
+
 	relationName := c.FormValue("relation_name")
 	if relationName == "" {
 		log.Error("Missing required parameter: relation_name")
@@ -2150,43 +2164,45 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	tx.Commit()
 
 	// Send email
-	t := template.New("index-registration.html")
+	if config.Envi != "DEV" {
+		t := template.New("index-registration.html")
 
-	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
-	if err != nil {
-		log.Println(err)
+		t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, struct {
+			Name    string
+			FileUrl string
+		}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+			log.Println(err)
+		}
+
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", email)
+		mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+		mailer.SetBody("text/html", result)
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Error send email")
+			log.Error(err)
+			log.Error("Error send email")
+		}
+		log.Info("Email sent")
 	}
-
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct {
-		Name    string
-		FileUrl string
-	}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-		log.Println(err)
-	}
-
-	result := tpl.String()
-
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
-	mailer.SetBody("text/html", result)
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error("Error send email")
-		log.Error(err)
-		log.Error("Error send email")
-	}
-	log.Info("Email sent")
 
 	//insert message notif in app
 	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
@@ -2505,7 +2521,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	paramsOaPersonalData := make(map[string]string)
 
 	//DEFAULT PARAM
-	customerKey := "267" //c.FormValue("customer_key")
+	customerKey := c.FormValue("customer_key")
 	if customerKey == "" {
 		log.Error("Missing required parameter: customer_key")
 		return lib.CustomError(http.StatusBadRequest, "customer_key can not be blank", "customer_key can not be blank")
@@ -2874,7 +2890,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_occupation")
 		return lib.CustomError(http.StatusBadRequest, "relation_occupation can not be blank", "relation_occupation can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationOccupation, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_occupation"] = relationOccupation
 		} else {
@@ -2883,9 +2899,23 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		}
 	}
 
+	relationType := c.FormValue("relation_type")
+	if relationType == "" {
+		log.Error("Missing required parameter: relation_type")
+		return lib.CustomError(http.StatusBadRequest, "relation_type can not be blank", "relation_type can not be blank")
+	} else {
+		n, err := strconv.ParseUint(corespondence, 10, 64)
+		if err == nil && n > 0 {
+			paramsOaPersonalData["relation_type"] = relationType
+		} else {
+			log.Error("Wrong input for parameter: relation_type")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: relation_type", "Wrong input for parameter: relation_type")
+		}
+	}
+
 	relationBusinessField := c.FormValue("relation_business_field")
 	if relationBusinessField != "" {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationBusinessField, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_business_fields"] = relationBusinessField
 		} else {
@@ -2995,7 +3025,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: quiz_option", "Missing required parameter: quiz_option")
 	}
 
-	date := time.Now().AddDate(0, 0, 1)
+	// date := time.Now().AddDate(0, 0, 1)
 	dateLayout := "2006-01-02 15:04:05"
 
 	//OA_REQUEST
@@ -3041,14 +3071,14 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	//OA_PERSONAL_DATA
 	log.Info("dateBirth: " + dateBirth)
 	dateBirth += " 00:00:00"
-	date, err = time.Parse(layout, dateBirth)
-	dateStr := date.Format(layout)
-	log.Info("dateBirth: " + dateStr)
+	// date, err = time.Parse(layout, dateBirth)
+	// dateStr := date.Format(layout)
+	// log.Info("dateBirth: " + dateStr)
 
 	paramsOaPersonalData["full_name"] = fullname
 	paramsOaPersonalData["idcard_type"] = "12"
 	paramsOaPersonalData["place_birth"] = placeBirth
-	paramsOaPersonalData["date_birth"] = dateStr
+	paramsOaPersonalData["date_birth"] = dateBirth
 	paramsOaPersonalData["nationality"] = nationality
 	paramsOaPersonalData["idcard_no"] = idcardNumber
 	paramsOaPersonalData["gender"] = gender
@@ -3339,43 +3369,46 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	tx.Commit()
 
 	// Send email
-	t := template.New("index-registration.html")
 
-	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
-	if err != nil {
-		log.Println(err)
+	if config.Envi != "DEV" {
+		t := template.New("index-registration.html")
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, struct {
+			Name    string
+			FileUrl string
+		}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+			log.Println(err)
+		}
+
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", email)
+		mailer.SetHeader("Subject", "[MNC Duit] Pengkinian Data Kamu sedang Diproses")
+		mailer.SetBody("text/html", result)
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Error send email")
+			log.Error(err)
+			log.Error("Error send email")
+		}
+		log.Info("Email sent")
 	}
-
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct {
-		Name    string
-		FileUrl string
-	}{Name: fullname, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-		log.Println(err)
-	}
-
-	result := tpl.String()
-
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Pengkinian Data Kamu sedang Diproses")
-	mailer.SetBody("text/html", result)
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error("Error send email")
-		log.Error(err)
-		log.Error("Error send email")
-	}
-	log.Info("Email sent")
 
 	//insert message notif in app
 	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)

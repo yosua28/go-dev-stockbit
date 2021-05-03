@@ -18331,6 +18331,9 @@
                   "relation_occupation": {
                     "type": "integer"
                   },
+                  "relation_type": {
+                    "type": "integer"
+                  },
                   "relation_business_field": {
                     "type": "integer"
                   },
@@ -18405,6 +18408,7 @@
                   "mother_maiden_name",
                   "relation_name",
                   "relation_occupation",
+                  "relation_type",
                   "relation_business_field",
                   "emergency_name",
                   "emergency_relation",
@@ -23169,6 +23173,9 @@
                   "relation_occupation": {
                     "type": "integer"
                   },
+                  "relation_type": {
+                    "type": "integer"
+                  },
                   "relation_business_field": {
                     "type": "integer"
                   },
@@ -23240,6 +23247,7 @@
                   "mother_maiden_name",
                   "relation_name",
                   "relation_occupation",
+                  "relation_type",
                   "relation_business_field",
                   "emergency_name",
                   "emergency_relation",
