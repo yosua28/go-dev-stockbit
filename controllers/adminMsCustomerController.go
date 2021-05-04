@@ -2550,7 +2550,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusNotFound, "Customer not found", "Customer not found")
 	}
 
-	oaRequestType := "296" //c.FormValue("oa_request_type")
+	oaRequestType := c.FormValue("oa_request_type")
 	if oaRequestType == "" {
 		log.Error("Missing required parameter: oa_request_type")
 		return lib.CustomError(http.StatusBadRequest, "oa_request_type can not be blank", "oa_request_type can not be blank")
@@ -3025,7 +3025,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: quiz_option", "Missing required parameter: quiz_option")
 	}
 
-	// date := time.Now().AddDate(0, 0, 1)
+	date := time.Now().AddDate(0, 0, 1)
 	dateLayout := "2006-01-02 15:04:05"
 
 	//OA_REQUEST
@@ -3071,9 +3071,9 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	//OA_PERSONAL_DATA
 	log.Info("dateBirth: " + dateBirth)
 	dateBirth += " 00:00:00"
-	// date, err = time.Parse(layout, dateBirth)
-	// dateStr := date.Format(layout)
-	// log.Info("dateBirth: " + dateStr)
+	date, err = time.Parse(layout, dateBirth)
+	dateStr := date.Format(layout)
+	log.Info("dateBirth: " + dateStr)
 
 	paramsOaPersonalData["full_name"] = fullname
 	paramsOaPersonalData["idcard_type"] = "12"
