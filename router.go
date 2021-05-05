@@ -319,6 +319,12 @@ func router() *echo.Echo {
 	//Admin Redemption Batch Confirmation - J007
 	admin.GET("/report/redemption-batch-confirmation", controllers.GetRedemptionBatchConfirmation).Name = "GetRedemptionBatchConfirmation"
 
+	//Admin Promo
+	admin.GET("/user-notif", controllers.GetListUserNotif).Name = "GetListUserNotif"
+	admin.POST("/user-notif/create", controllers.CreateAdminScUserNotif).Name = "CreateAdminScUserNotif"
+	admin.POST("/user-notif/delete", controllers.DeleteUserNotif).Name = "DeleteUserNotif"
+	admin.POST("/user-notif/update", controllers.UpdateAdminScUserNotif).Name = "UpdateAdminScUserNotif"
+	admin.GET("/user-notif/detail/:key", controllers.DetailUserNotif).Name = "DetailUserNotif"
 	return e
 }
 

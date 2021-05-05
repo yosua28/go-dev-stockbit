@@ -4,6 +4,7 @@ import (
 	"api/db"
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -32,6 +33,17 @@ type ScUserNotif struct {
 	RecAttributeID1   *string `db:"rec_attribute_id1"         json:"rec_attribute_id1"`
 	RecAttributeID2   *string `db:"rec_attribute_id2"         json:"rec_attribute_id2"`
 	RecAttributeID3   *string `db:"rec_attribute_id3"         json:"rec_attribute_id3"`
+}
+
+type UserNotifField struct {
+	NotifHdrKey       uint64  `db:"notif_hdr_key"            json:"notif_hdr_key"`
+	NotifCategoryKey  *uint64 `db:"notif_category_key"       json:"notif_category_key"`
+	NotifCategory     *string `db:"notif_category"           json:"notif_category"`
+	NotifDateSent     *string `db:"notif_date_sent"          json:"notif_date_sent"`
+	UmessageSubject   *string `db:"umessage_subject"         json:"umessage_subject"`
+	UmessageBody      *string `db:"umessage_body"            json:"umessage_body"`
+	AlertNotifTypeKey uint64  `db:"alert_notif_type_key"     json:"alert_notif_type_key"`
+	AlertNotifType    string  `db:"alert_notif_type"         json:"alert_notif_type"`
 }
 
 func CreateScUserNotif(params map[string]string) (int, error) {
@@ -78,7 +90,7 @@ func GetScUserNotif(c *ScUserNotif, key string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func UpdateScUserNotif(params map[string]string, where map[string]string) (int, error) {
+func UpdateScUserNotif(params map[string]string) (int, error) {
 	query := "UPDATE sc_user_notif SET "
 	// Get params
 	i := 0
@@ -87,30 +99,14 @@ func UpdateScUserNotif(params map[string]string, where map[string]string) (int, 
 
 			query += key + " = '" + value + "'"
 
-			if (len(params) - 1) > i {
+			if (len(params) - 2) > i {
 				query += ", "
 			}
 			i++
 		}
 	}
+	query += " WHERE notif_hdr_key = " + params["notif_hdr_key"]
 
-	var whereClause []string
-	var condition string
-	for field, value := range where {
-		whereClause = append(whereClause, "sc_user_message."+field+" = '"+value+"'")
-	}
-
-	// Combile where clause
-	if len(whereClause) > 0 {
-		condition += " WHERE "
-		for index, where := range whereClause {
-			condition += where
-			if (len(whereClause) - 1) > index {
-				condition += " AND "
-			}
-		}
-	}
-	query += condition
 	log.Info(query)
 
 	tx, err := db.Db.Begin()
@@ -130,5 +126,156 @@ func UpdateScUserNotif(params map[string]string, where map[string]string) (int, 
 		log.Error(err)
 		return http.StatusBadRequest, err
 	}
+	return http.StatusOK, nil
+}
+
+func AdminGetAllUserNotif(c *[]UserNotifField, limit uint64, offset uint64, params map[string]string, paramsLike string, nolimit bool) (int, error) {
+	query := `SELECT 
+				s.notif_hdr_key AS notif_hdr_key,
+				s.notif_category AS notif_category_key,
+				cat.lkp_name AS notif_category,
+				DATE_FORMAT(s.notif_date_sent, '%d %M %Y') AS notif_date_sent,
+				s.umessage_subject AS umessage_subject,
+				s.umessage_body AS umessage_body,
+				s.alert_notif_type AS alert_notif_type_key,
+				ty.lkp_name AS alert_notif_type 
+			FROM sc_user_notif AS s
+			INNER JOIN gen_lookup AS cat ON cat.lookup_key = s.notif_category
+			INNER JOIN gen_lookup AS ty ON ty.lookup_key = s.alert_notif_type
+			WHERE s.rec_status = 1`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	if paramsLike != "" {
+		condition += " AND ("
+		condition += " s.notif_hdr_key LIKE '%" + paramsLike + "%' OR"
+		condition += " cat.lkp_name LIKE '%" + paramsLike + "%' OR"
+		condition += " DATE_FORMAT(s.notif_date_sent, '%d %M %Y') LIKE '%" + paramsLike + "%' OR"
+		condition += " s.umessage_subject LIKE '%" + paramsLike + "%' OR"
+		condition += " s.umessage_body LIKE '%" + paramsLike + "%' OR"
+		condition += " ty.lkp_name LIKE '%" + paramsLike + "%')"
+	}
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetAllUserNotif(c *CountData, params map[string]string, paramsLike string) (int, error) {
+	query := `SELECT 
+				count(s.notif_hdr_key) AS count_data 
+			FROM sc_user_notif AS s
+			INNER JOIN gen_lookup AS cat ON cat.lookup_key = s.notif_category
+			INNER JOIN gen_lookup AS ty ON ty.lookup_key = s.alert_notif_type
+			WHERE s.rec_status = 1`
+
+	var whereClause []string
+	var condition string
+
+	if paramsLike != "" {
+		condition += " AND ("
+		condition += " s.notif_hdr_key LIKE '%" + paramsLike + "%' OR"
+		condition += " cat.lkp_name LIKE '%" + paramsLike + "%' OR"
+		condition += " DATE_FORMAT(s.notif_date_sent, '%d %M %Y') LIKE '%" + paramsLike + "%' OR"
+		condition += " s.umessage_subject LIKE '%" + paramsLike + "%' OR"
+		condition += " s.umessage_body LIKE '%" + paramsLike + "%' OR"
+		condition += " ty.lkp_name LIKE '%" + paramsLike + "%')"
+	}
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetDetailUserNotif(c *UserNotifField, key string) (int, error) {
+	query := `SELECT 
+				s.notif_hdr_key AS notif_hdr_key,
+				s.notif_category AS notif_category_key,
+				cat.lkp_name AS notif_category,
+				DATE_FORMAT(s.notif_date_sent, '%d %M %Y') AS notif_date_sent,
+				s.umessage_subject AS umessage_subject,
+				s.umessage_body AS umessage_body,
+				s.alert_notif_type AS alert_notif_type_key,
+				ty.lkp_name AS alert_notif_type 
+			FROM sc_user_notif AS s
+			INNER JOIN gen_lookup AS cat ON cat.lookup_key = s.notif_category
+			INNER JOIN gen_lookup AS ty ON ty.lookup_key = s.alert_notif_type
+			WHERE s.rec_status = 1 and s.notif_hdr_key = ` + key
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
 	return http.StatusOK, nil
 }

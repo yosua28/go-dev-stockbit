@@ -23304,6 +23304,498 @@
           }
         }
       }
+    },
+    "/admin/user-notif": {
+      "get": {
+        "description": "Get All User Notif",
+        "tags": [
+          "Admin User Notif"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "order_by",
+            "in": "query",
+            "description": "Order By",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "notif_hdr_key", 
+                "notif_category", 
+                "notif_date_sent", 
+                "umessage_subject", 
+                "umessage_body", 
+                "alert_notif_type"
+              ]
+            }
+          },
+          {
+            "name": "order_type",
+            "in": "query",
+            "description": "Order Type",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "ASC",
+                "DESC"
+              ]
+            }
+          },
+          {
+            "name": "limit",
+            "in": "query",
+            "description": "Number of post (max 100 or choose no limit)",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "description": "Page",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "nolimit",
+            "in": "query",
+            "description": "Ignore limit and page",
+            "required": false,
+            "schema": {
+              "type": "boolean"
+            }
+          },
+          {
+            "name": "notif_category",
+            "in": "query",
+            "description": "notif_category filter",
+            "required": false,
+            "schema": {
+              "type": "int"
+            }
+          },
+          {
+            "name": "filter_data",
+            "in": "query",
+            "description": "filter_data filter",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "pagination": 1,
+                  "data": [
+                    {
+                      "notif_hdr_key": 2,
+                      "notif_category_key": 326,
+                      "notif_category": "New Apps Features",
+                      "notif_date_sent": "20 April 2021",
+                      "umessage_subject": "Fitur Autodebet",
+                      "umessage_body": "Hi nasabah. DI MNCDuit sudah ada fitur Autodebet lho. Kamu bisa daftar ",
+                      "alert_notif_type_key": 310,
+                      "alert_notif_type": "Once"
+                    },
+                    {
+                      "notif_hdr_key": 1,
+                      "notif_category_key": 324,
+                      "notif_category": "PENGUMUMAN",
+                      "notif_date_sent": "20 April 2021",
+                      "umessage_subject": "PENGUMUMAN",
+                      "umessage_body": "Hi nasabah. Pepatah mengatakan investlah apa yang bisa kamu invest, simpanlah apa yang kamu bisa simpan, raih lah apa yang kamu bisa raih dan berilah apa yang bisa kamu berikan",
+                      "alert_notif_type_key": 310,
+                      "alert_notif_type": "Once"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/user-notif/create": {
+      "post": {
+        "description": "Create User Notif",
+        "tags": [
+          "Admin User Notif"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notif_category": {
+                    "type": "integer"
+                  },
+                  "notif_date_sent": {
+                    "type": "string"
+                  },
+                  "umessage_subject": {
+                    "type": "string"
+                  },
+                  "umessage_body": {
+                    "type": "string"
+                  },
+                  "alert_notif_type": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "notif_category",
+                  "notif_date_sent",
+                  "umessage_subject",
+                  "umessage_body",
+                  "alert_notif_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/user-notif/delete": {
+      "post": {
+        "description": "Delete User Notif Admin",
+        "tags": [
+          "Admin User Notif"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notif_hdr_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "notif_hdr_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/user-notif/update": {
+      "post": {
+        "description": "Update User Notif",
+        "tags": [
+          "Admin User Notif"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "notif_hdr_key": {
+                    "type": "integer"
+                  },
+                  "notif_category": {
+                    "type": "integer"
+                  },
+                  "notif_date_sent": {
+                    "type": "string"
+                  },
+                  "umessage_subject": {
+                    "type": "string"
+                  },
+                  "umessage_body": {
+                    "type": "string"
+                  },
+                  "alert_notif_type": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "notif_hdr_key",
+                  "notif_category",
+                  "notif_date_sent",
+                  "umessage_subject",
+                  "umessage_body",
+                  "alert_notif_type"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/user-notif/detail/{key}": {
+      "get": {
+        "description": "Get Detail User Notif",
+        "tags": [
+          "Admin User Notif"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "key",
+            "in": "path",
+            "description": "notif_hdr_key key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "notif_hdr_key": 2,
+                    "notif_category_key": 326,
+                    "notif_category": "New Apps Features",
+                    "notif_date_sent": "20 April 2021",
+                    "umessage_subject": "Fitur Autodebet",
+                    "umessage_body": "Hi nasabah. DI MNCDuit sudah ada fitur Autodebet lho. Kamu bisa daftar ",
+                    "alert_notif_type_key": 310,
+                    "alert_notif_type": "Once"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
