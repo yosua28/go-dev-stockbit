@@ -32,6 +32,7 @@ type ScUserMessageData struct {
 type ScUserMessage struct {
 	UmessageKey          uint64  `db:"umessage_key"              json:"umessage_key"`
 	UmessageType         *uint64 `db:"umessage_type"             json:"umessage_type"`
+	NotifHdrKey          *uint64 `db:"notif_hdr_key"             json:"notif_hdr_key"`
 	UmessageRecipientKey uint64  `db:"umessage_recipient_key"    json:"umessage_recipient_key"`
 	UmessageReceiptDate  *string `db:"umessage_receipt_date"     json:"umessage_receipt_date"`
 	FlagRead             uint8   `db:"flag_read"                 json:"flag_read"`
