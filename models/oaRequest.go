@@ -17,6 +17,8 @@ type OaRequest struct {
 	OaEntryStart      string  `db:"oa_entry_start"             json:"oa_entry_start"`
 	OaEntryEnd        string  `db:"oa_entry_end"               json:"oa_entry_end"`
 	Oastatus          *uint64 `db:"oa_status"                  json:"oa_status"`
+	BranchKey         *uint64 `db:"branch_key"                 json:"branch_key"`
+	AgentKey          *uint64 `db:"agent_key"                  json:"agent_key"`
 	UserLoginKey      *uint64 `db:"user_login_key"             json:"user_login_key"`
 	CustomerKey       *uint64 `db:"customer_key"               json:"customer_key"`
 	SalesCode         *string `db:"sales_code"                 json:"sales_code"`
