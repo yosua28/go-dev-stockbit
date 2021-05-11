@@ -22243,6 +22243,88 @@
         }
       }
     },
+    "/admin/agentlist/branch/{branch_key}": {
+      "get": {
+        "description": "Get Agent By Last Branch",
+        "tags": [
+          "Admin Agent"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch_key",
+            "in": "path",
+            "description": "branch key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": [
+                    {
+                      "agent_key": 3,
+                      "agent_name": "132 - SALES HO MAM-GROUP"
+                    },
+                    {
+                      "agent_key": 4,
+                      "agent_name": "137 - SALES HO MAM-NON_GROUP"
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "text/plain": {
+                "example": "Token not found"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/report/daily-transaction-report": {
       "get": {
         "description": "Get Daily Transaction Report",

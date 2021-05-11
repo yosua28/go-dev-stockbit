@@ -312,6 +312,7 @@ func router() *echo.Echo {
 
 	//Admin MS AGENT - J005
 	admin.GET("/agentlist/dropdown", controllers.GetListAgentDropdown).Name = "GetListAgentDropdown"
+	admin.GET("/agentlist/branch/:branch_key", controllers.GetListAgentLastBranch).Name = "GetListAgentLastBranch"
 
 	//Admin Subscription Batch Confirmation - J006
 	admin.GET("/report/subscription-batch-confirmation", controllers.GetSubscriptionBatchConfirmation).Name = "GetSubscriptionBatchConfirmation"
