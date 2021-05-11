@@ -366,12 +366,13 @@ type DetailHeaderTransaksiCustomer struct {
 func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, nolimit bool,
 	params map[string]string, valueIn []string, fieldIn string, isAll bool) (int, error) {
 	query := `SELECT
-              tr_transaction.*
-			  FROM tr_transaction
-			  WHERE tr_transaction.rec_status = 1 AND tr_transaction.trans_status_key != 3`
+              t.*
+			  FROM tr_transaction as t
+			  inner join ms_customer as c on c.customer_key = t.customer_key
+			  WHERE t.rec_status = 1 AND t.trans_status_key != 3`
 
 	if isAll == false {
-		query += " AND tr_transaction.trans_type_key != 3"
+		query += " AND t.trans_type_key != 3"
 	}
 	var present bool
 	var whereClause []string
@@ -379,7 +380,11 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+			if field == "c.openacc_branch_key" {
+				whereClause = append(whereClause, field+" = '"+value+"'")
+			} else {
+				whereClause = append(whereClause, "t."+field+" = '"+value+"'")
+			}
 		}
 	}
 
@@ -396,7 +401,7 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 
 	if len(valueIn) > 0 {
 		inQuery := strings.Join(valueIn, ",")
-		condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
+		condition += " AND t." + fieldIn + " IN(" + inQuery + ")"
 	}
 
 	// Check order by
@@ -431,16 +436,21 @@ func AdminGetAllTrTransaction(c *[]TrTransaction, limit uint64, offset uint64, n
 
 func AdminGetCountTrTransaction(c *CountData, params map[string]string, valueIn []string, fieldIn string) (int, error) {
 	query := `SELECT
-              count(tr_transaction.transaction_key) as count_data
-			  FROM tr_transaction
-			  WHERE tr_transaction.trans_type_key != 3 `
+              count(t.transaction_key) as count_data
+			  FROM tr_transaction as t
+			  inner join ms_customer as c on c.customer_key = t.customer_key
+			  WHERE t.trans_type_key != 3 `
 
 	var whereClause []string
 	var condition string
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "tr_transaction."+field+" = '"+value+"'")
+			if field == "c.openacc_branch_key" {
+				whereClause = append(whereClause, field+" = '"+value+"'")
+			} else {
+				whereClause = append(whereClause, "t."+field+" = '"+value+"'")
+			}
 		}
 	}
 
@@ -457,7 +467,7 @@ func AdminGetCountTrTransaction(c *CountData, params map[string]string, valueIn 
 
 	if len(valueIn) > 0 {
 		inQuery := strings.Join(valueIn, ",")
-		condition += " AND tr_transaction." + fieldIn + " IN(" + inQuery + ")"
+		condition += " AND t." + fieldIn + " IN(" + inQuery + ")"
 	}
 
 	query += condition

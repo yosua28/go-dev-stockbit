@@ -242,13 +242,14 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 	}
 
 	//if user admin role 7 branch
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
 		log.Println(lib.Profile)
 		if lib.Profile.BranchKey != nil {
 			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["branch_key"] = strBranchKey
+			params["c.openacc_branch_key"] = strBranchKey
 		} else {
 			log.Error("User Branch haven't Branch")
 			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
@@ -560,10 +561,6 @@ func GetTransactionDetail(c echo.Context) error {
 	roleKeyKyc = 12
 	var roleKeyFundAdmin uint64
 	roleKeyFundAdmin = 13
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	var roleKeyHoEntry uint64
-	roleKeyHoEntry = 10
 
 	if lib.Profile.RoleKey == roleKeyCs {
 		statusCs := strconv.FormatUint(uint64(2), 10)
@@ -587,27 +584,33 @@ func GetTransactionDetail(c echo.Context) error {
 			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
 		}
 	}
-	if (lib.Profile.RoleKey == roleKeyBranchEntry) || (lib.Profile.RoleKey == roleKeyHoEntry) {
-		statusCorrected := strconv.FormatUint(uint64(1), 10)
-		if statusCorrected != strTransStatusKey {
-			log.Error("User Autorizer")
-			return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
-		}
 
-		//if user role 7, check branch
-		if lib.Profile.RoleKey == roleKeyBranchEntry {
-			if lib.Profile.BranchKey != nil {
-				strUserBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-				strTransBranchKey := strconv.FormatUint(*transaction.BranchKey, 10)
-				if strUserBranchKey != strTransBranchKey {
-					log.Error("User Autorizer")
-					return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
-				}
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
+		var cus models.MsCustomer
+		strCusKey := strconv.FormatUint(transaction.CustomerKey, 10)
+		status, err = models.GetMsCustomer(&cus, strCusKey)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Customer tidak ditemukan")
+		} else {
+			if cus.OpenaccBranchKey == nil {
+				log.Error("Customer Branch null, not match with user branch")
+				return lib.CustomError(http.StatusNotFound)
 			} else {
-				log.Error("User Autorizer")
-				return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+				strCusBranch := strconv.FormatUint(*cus.OpenaccBranchKey, 10)
+				strUserBranch := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+				log.Error("Customer branch " + strCusBranch)
+				log.Error("User branch " + strUserBranch)
+				if strCusBranch != strUserBranch {
+					log.Error("User Branch not match with customer branch")
+					return lib.CustomError(http.StatusNotFound)
+				}
 			}
 		}
+
 	}
 
 	var responseData models.AdminTransactionDetail

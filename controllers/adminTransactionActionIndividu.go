@@ -144,13 +144,14 @@ func getListAdminTransaction(c echo.Context, trType []string) error {
 		params["nav_date"] = navdate
 	}
 
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
 		log.Println(lib.Profile)
 		if lib.Profile.BranchKey != nil {
 			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["branch_key"] = strBranchKey
+			params["c.openacc_branch_key"] = strBranchKey
 		} else {
 			log.Error("User Branch haven't Branch")
 			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
