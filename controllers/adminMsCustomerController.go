@@ -150,6 +150,20 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 		paramsLike["pd.mother_maiden_name"] = mothermaidenname
 	}
 
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["c.openacc_branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
+
 	var customers []models.CustomerIndividuInquiry
 
 	status, err = models.AdminGetAllCustomerIndividuInquery(&customers, limit, offset, params, paramsLike, noLimit)
@@ -304,6 +318,20 @@ func GetListCustomerInstitutionInquiry(c echo.Context) error {
 		paramsLike["pd.npwp_no"] = npwp
 	}
 
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
+		log.Println(lib.Profile)
+		if lib.Profile.BranchKey != nil {
+			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			params["c.openacc_branch_key"] = strBranchKey
+		} else {
+			log.Error("User Branch haven't Branch")
+			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+		}
+	}
+
 	var customers []models.CustomerInstituionInquiry
 
 	status, err = models.AdminGetAllCustomerInstitutionInquery(&customers, limit, offset, params, paramsLike, noLimit)
@@ -364,6 +392,23 @@ func GetDetailCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusNotFound)
 	}
 
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
+		if customer.BranchKey == nil {
+			log.Error("User Branch null, not match with customer branch")
+			return lib.CustomError(http.StatusNotFound)
+		} else {
+			strCusBranch := strconv.FormatUint(*customer.BranchKey, 10)
+			strUserBranch := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			if strCusBranch != strUserBranch {
+				log.Error("User Branch not match with customer branch")
+				return lib.CustomError(http.StatusNotFound)
+			}
+		}
+	}
+
 	var oaCustomer []models.OaCustomer
 	_, err = models.AdminGetAllOaByCustomerKey(&oaCustomer, keyStr)
 	if err != nil {
@@ -402,6 +447,23 @@ func GetDetailCustomerInstitution(c echo.Context) error {
 	_, err = models.AdminGetHeaderCustomerInstitution(&customer, keyStr)
 	if err != nil {
 		return lib.CustomError(http.StatusNotFound)
+	}
+
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
+		if customer.BranchKey == nil {
+			log.Error("User Branch null, not match with customer branch")
+			return lib.CustomError(http.StatusNotFound)
+		} else {
+			strCusBranch := strconv.FormatUint(*customer.BranchKey, 10)
+			strUserBranch := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+			if strCusBranch != strUserBranch {
+				log.Error("User Branch not match with customer branch")
+				return lib.CustomError(http.StatusNotFound)
+			}
+		}
 	}
 
 	var oaCustomer []models.OaCustomer
@@ -1281,6 +1343,30 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 
 	paramsOaPersonalData := make(map[string]string)
 
+	branchkey := c.FormValue("branch_key")
+	if branchkey == "" {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(branchkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	}
+
+	agentkey := c.FormValue("agent_key")
+	if agentkey == "" {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+	}
+
 	//SC_USER_LOGIN
 	// Check parameters
 	email := c.FormValue("email")
@@ -1835,6 +1921,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		paramsOaRequest["sales_code"] = salesCode
 	}
 	paramsOaRequest["oa_entry_end"] = dateNow
+	paramsOaRequest["branch_key"] = branchkey
+	paramsOaRequest["agent_key"] = agentkey
 	paramsOaRequest["oa_request_type"] = "127"
 	paramsOaRequest["rec_status"] = "1"
 
@@ -2337,6 +2425,17 @@ func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
 
 	responseData := make(map[string]interface{})
 	responseData["full_name"] = personalDataDB.FullName
+	if oaData.BranchKey != nil {
+		responseData["branch_key"] = *oaData.BranchKey
+	} else {
+		responseData["branch_key"] = 1
+	}
+	if oaData.AgentKey != nil {
+		responseData["agent_key"] = *oaData.AgentKey
+	} else {
+		responseData["agent_key"] = 1
+	}
+
 	responseData["place_birth"] = personalDataDB.PlaceBirth
 	responseData["date_birth"] = personalDataDB.DateBirth
 	responseData["nationality"] = personalDataDB.Nationality
@@ -2555,6 +2654,31 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: oa_request_type")
 		return lib.CustomError(http.StatusBadRequest, "oa_request_type can not be blank", "oa_request_type can not be blank")
 	}
+
+	branchkey := c.FormValue("branch_key")
+	if branchkey == "" {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(branchkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	}
+
+	agentkey := c.FormValue("agent_key")
+	if agentkey == "" {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+	}
+	salesCode := c.FormValue("sales_code")
 
 	//INFORMASI NASABAH
 	email := c.FormValue("email")
@@ -3036,6 +3160,11 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	paramsOaRequest["oa_entry_start"] = dateNow
 	paramsOaRequest["oa_entry_end"] = dateNow
 	paramsOaRequest["oa_request_type"] = oaRequestType
+	if salesCode != "" {
+		paramsOaRequest["sales_code"] = salesCode
+	}
+	paramsOaRequest["branch_key"] = branchkey
+	paramsOaRequest["agent_key"] = agentkey
 	paramsOaRequest["customer_key"] = customerKey
 	paramsOaRequest["rec_status"] = "1"
 

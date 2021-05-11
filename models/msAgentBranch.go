@@ -34,12 +34,14 @@ type MsAgentBranch struct {
 
 type MsAgentLastBranch struct {
 	AgentKey  uint64 `db:"agent_key"            json:"agent_key"`
+	AgentCode string `db:"agent_code"            json:"agent_code"`
 	Agentname string `db:"agent_name"           json:"agent_name"`
 }
 
 func GetMsAgentLastBranch(c *[]MsAgentLastBranch, branchKey string) (int, error) {
 	query := `SELECT 
 				a.agent_key AS agent_key,
+				a.agent_code AS agent_code,
 				CONCAT(a.agent_code, " - ", a.agent_name) AS agent_name 
 			FROM ms_agent_branch AS mab 
 			INNER JOIN ms_agent AS a ON mab.agent_key = a.agent_key

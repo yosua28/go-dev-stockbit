@@ -37,8 +37,8 @@ type MsAgent struct {
 }
 
 type MsAgentDropdown struct {
-	BranchKey  uint64 `db:"agent_key"            json:"agent_key"`
-	BranchName string `db:"agent_name"           json:"agent_name"`
+	AgentKey  uint64 `db:"agent_key"            json:"agent_key"`
+	AgentName string `db:"agent_name"           json:"agent_name"`
 }
 
 func GetMsAgentIn(c *[]MsAgent, value []string, field string) (int, error) {

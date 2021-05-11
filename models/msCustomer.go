@@ -63,27 +63,33 @@ type MsCustomer struct {
 }
 
 type CustomerIndividuInquiry struct {
-	CustomerKey      uint64 `db:"customer_key"                json:"customer_key"`
-	Cif              string `db:"cif"                         json:"cif"`
-	FullName         string `db:"full_name"                   json:"full_name"`
-	DateBirth        string `db:"date_birth"                  json:"date_birth"`
-	IDcardNo         string `db:"ktp"                         json:"ktp"`
-	PhoneMobile      string `db:"phone_mobile"                json:"phone_mobile"`
-	SidNo            string `db:"sid"                         json:"sid"`
-	CifSuspendFlag   string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
-	MotherMaidenName string `db:"mother_maiden_name"          json:"mother_maiden_name"`
-	OaStatus         string `db:"oa_status"                   json:"oa_status"`
+	CustomerKey      uint64  `db:"customer_key"                json:"customer_key"`
+	Cif              string  `db:"cif"                         json:"cif"`
+	FullName         string  `db:"full_name"                   json:"full_name"`
+	DateBirth        string  `db:"date_birth"                  json:"date_birth"`
+	IDcardNo         string  `db:"ktp"                         json:"ktp"`
+	PhoneMobile      string  `db:"phone_mobile"                json:"phone_mobile"`
+	SidNo            string  `db:"sid"                         json:"sid"`
+	CifSuspendFlag   string  `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
+	MotherMaidenName string  `db:"mother_maiden_name"          json:"mother_maiden_name"`
+	OaStatus         string  `db:"oa_status"                   json:"oa_status"`
+	BranchKey        *uint64 `db:"branch_key"                  json:"branch_key"`
+	BranchName       *string `db:"branch_name"                 json:"branch_name"`
+	AgentName        *string `db:"agent_name"                  json:"agent_name"`
 }
 
 type CustomerInstituionInquiry struct {
-	CustomerKey    uint64 `db:"customer_key"                json:"customer_key"`
-	Cif            string `db:"cif"                         json:"cif"`
-	FullName       string `db:"full_name"                   json:"full_name"`
-	Npwp           string `db:"npwp"                        json:"npwp"`
-	Institusion    string `db:"institution"                 json:"institution"`
-	SidNo          string `db:"sid"                         json:"sid"`
-	CifSuspendFlag string `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
-	OaStatus       string `db:"oa_status"                   json:"oa_status"`
+	CustomerKey    uint64  `db:"customer_key"                json:"customer_key"`
+	Cif            string  `db:"cif"                         json:"cif"`
+	FullName       string  `db:"full_name"                   json:"full_name"`
+	Npwp           string  `db:"npwp"                        json:"npwp"`
+	Institusion    string  `db:"institution"                 json:"institution"`
+	SidNo          string  `db:"sid"                         json:"sid"`
+	CifSuspendFlag string  `db:"cif_suspend_flag"            json:"cif_suspend_flag"`
+	OaStatus       string  `db:"oa_status"                   json:"oa_status"`
+	BranchKey      *uint64 `db:"branch_key"                  json:"branch_key"`
+	BranchName     *string `db:"branch_name"                 json:"branch_name"`
+	AgentName      *string `db:"agent_name"                  json:"agent_name"`
 }
 
 type DetailCustomerIndividuInquiry struct {
@@ -294,12 +300,17 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
 				pd.mother_maiden_name AS mother_maiden_name,
-				r.oa_status as oa_status   
+				r.oa_status as oa_status, 
+				br.branch_key as branch_key, 
+				br.branch_name as branch_name, 
+				ag.agent_name as agent_name  
 			FROM ms_customer AS c 
 			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
 			AS t2 ON c.customer_key = t2.customer_key
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
 			WHERE c.rec_status = 1`
 	var present bool
 	var whereClause []string
@@ -361,6 +372,8 @@ func CountAdminGetAllCustomerIndividuInquery(c *CountData, params map[string]str
 			FROM ms_customer AS c
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
 			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
 			WHERE c.rec_status = 1`
 
 	var whereClause []string
@@ -413,12 +426,17 @@ func AdminGetAllCustomerInstitutionInquery(c *[]CustomerInstituionInquiry, limit
 				END) AS cif_suspend_flag, 
 				pd.npwp_no AS npwp, 
 				pd.insti_full_name AS institution, 
-				r.oa_status as oa_status   
+				r.oa_status as oa_status,   
+				br.branch_key as branch_key, 
+				br.branch_name as branch_name, 
+				ag.agent_name as agent_name  
 			FROM ms_customer AS c 
 			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
 			AS t2 ON c.customer_key = t2.customer_key
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
-			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
+			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key 
+			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
 			WHERE c.rec_status = 1`
 	var present bool
 	var whereClause []string
@@ -480,6 +498,8 @@ func CountAdminGetAllCustomerInstitutionInquery(c *CountData, params map[string]
 			FROM ms_customer AS c
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
 			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
 			WHERE c.rec_status = 1`
 
 	var whereClause []string
@@ -533,12 +553,17 @@ func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, customerKey stri
 					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
-				pd.mother_maiden_name AS mother_maiden_name  
+				pd.mother_maiden_name AS mother_maiden_name, 
+				br.branch_key as branch_key,  
+				br.branch_name as branch_name, 
+				ag.agent_name as agent_name  
 			FROM ms_customer AS c 
 			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
 			AS t2 ON c.customer_key = t2.customer_key
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
 			WHERE c.rec_status = 1 AND c.investor_type = 263 AND c.customer_key = ` + customerKey
 
 	// Main query
@@ -566,12 +591,17 @@ func AdminGetHeaderCustomerInstitution(c *CustomerInstituionInquiry, customerKey
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
 				pd.npwp_no AS npwp, 
-				pd.insti_full_name AS institution 
+				pd.insti_full_name AS institution, 
+				br.branch_key as branch_key, 
+				br.branch_name as branch_name, 
+				ag.agent_name as agent_name  
 			FROM ms_customer AS c 
 			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
 			AS t2 ON c.customer_key = t2.customer_key
 			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
 			INNER JOIN oa_institution_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
 			WHERE c.rec_status = 1 AND c.investor_type = 264 AND c.customer_key = ` + customerKey
 	// Main query
 	log.Println(query)

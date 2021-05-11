@@ -120,6 +120,8 @@ type OaRequestDetailResponse struct {
 	TinIssuanceDate     *string              `json:"tin_issuance_date"`
 	TinIssuanceCountry  *string              `json:"tin_issuance_country"`
 	FatcaStatus         *string              `json:"fatca_status"`
+	Branch              *MsBranchDropdown    `json:"branch,omitempty"`
+	Agent               *MsAgentDropdown     `json:"agent,omitempty"`
 }
 
 type Address struct {

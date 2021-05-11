@@ -1092,6 +1092,39 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 				}
 			}
 		}
+
+		//set branch
+		var branch_key string
+		if oareq.BranchKey != nil {
+			branch_key = strconv.FormatUint(*oareq.BranchKey, 10)
+		} else {
+			branch_key = "1"
+		}
+		var branch models.MsBranch
+		status, err = models.GetMsBranch(&branch, branch_key)
+		if err == nil {
+			log.Println(branch.BranchKey)
+			var b models.MsBranchDropdown
+			b.BranchKey = branch.BranchKey
+			b.BranchName = branch.BranchName
+			responseData.Branch = &b
+		}
+
+		//set agent
+		var agent_key string
+		if oareq.BranchKey != nil {
+			agent_key = strconv.FormatUint(*oareq.AgentKey, 10)
+		} else {
+			agent_key = "1"
+		}
+		var agent models.MsAgent
+		status, err = models.GetMsAgent(&agent, agent_key)
+		if err == nil {
+			var a models.MsAgentDropdown
+			a.AgentKey = agent.AgentKey
+			a.AgentName = agent.AgentName
+			responseData.Agent = &a
+		}
 	}
 
 	var response lib.Response
@@ -3041,6 +3074,39 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 					}
 				}
 			}
+		}
+
+		//set branch
+		var branch_key string
+		if oareq.BranchKey != nil {
+			branch_key = strconv.FormatUint(*oareq.BranchKey, 10)
+		} else {
+			branch_key = "1"
+		}
+		var branch models.MsBranch
+		status, err = models.GetMsBranch(&branch, branch_key)
+		if err == nil {
+			log.Println(branch.BranchKey)
+			var b models.MsBranchDropdown
+			b.BranchKey = branch.BranchKey
+			b.BranchName = branch.BranchName
+			responseData.Branch = &b
+		}
+
+		//set agent
+		var agent_key string
+		if oareq.BranchKey != nil {
+			agent_key = strconv.FormatUint(*oareq.AgentKey, 10)
+		} else {
+			agent_key = "1"
+		}
+		var agent models.MsAgent
+		status, err = models.GetMsAgent(&agent, agent_key)
+		if err == nil {
+			var a models.MsAgentDropdown
+			a.AgentKey = agent.AgentKey
+			a.AgentName = agent.AgentName
+			responseData.Agent = &a
 		}
 	}
 

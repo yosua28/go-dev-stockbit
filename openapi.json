@@ -5066,7 +5066,15 @@
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
-                    "fatca_status": null
+                    "fatca_status": null,
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_name": "SALES MNC DUIT"
+                    }
                   }
                 }
               }
@@ -5301,7 +5309,15 @@
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
-                    "fatca_status": "Domestic (WNA)"
+                    "fatca_status": "Domestic (WNA)",
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_name": "SALES MNC DUIT"
+                    }
                   }
                 }
               }
@@ -16412,7 +16428,10 @@
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
                       "mother_maiden_name": "asdasdas",
-                      "oa_status": "260"
+                      "oa_status": "260",
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT"
                     },
                     {
                       "customer_key": 229,
@@ -16424,7 +16443,10 @@
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
                       "mother_maiden_name": "sadasdasd",
-                      "oa_status": "260"
+                      "oa_status": "260",
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -16585,7 +16607,10 @@
                       "institution": "Okezone dot com",
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
-                      "oa_status": "260"
+                      "oa_status": "260",
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT"
                     },
                     {
                       "customer_key": 59,
@@ -16595,7 +16620,10 @@
                       "institution": "Jaya Merdeka",
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
-                      "oa_status": "260"
+                      "oa_status": "260",
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -16680,7 +16708,10 @@
                       "phone_mobile": "087877991679",
                       "sid": "",
                       "cif_suspend_flag": "Tidak",
-                      "mother_maiden_name": "Yati"
+                      "mother_maiden_name": "Yati",
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT"
                     },
                     "personal_data": [
                       {
@@ -16764,7 +16795,11 @@
                       "npwp": "776467868947",
                       "institution": "Okezone dot com",
                       "sid": "",
-                      "cif_suspend_flag": "Tidak"
+                      "cif_suspend_flag": "Tidak",
+                      "oa_status": "",
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)",
+                      "agent_name": "SALES MNC DUIT"
                     },
                     "personal_data": [
                       {
@@ -18213,6 +18248,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "branch_key": {
+                    "type": "integer"
+                  },
+                  "agent_key": {
+                    "type": "integer"
+                  },
                   "email": {
                     "type": "string"
                   },
@@ -18370,6 +18411,8 @@
                   }
                 },
                 "required": [
+                  "branch_key",
+                  "agent_key",
                   "email",
                   "phone",
                   "password",
@@ -21167,7 +21210,15 @@
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
-                    "fatca_status": "Domestic (WNA)"
+                    "fatca_status": "Domestic (WNA)",
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_name": "SALES MNC DUIT"
+                    }
                   }
                 }
               }
@@ -21318,7 +21369,15 @@
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
-                    "fatca_status": "Domestic (WNA)"
+                    "fatca_status": "Domestic (WNA)",
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_name": "SALES MNC DUIT"
+                    }
                   }
                 }
               }
@@ -22126,7 +22185,7 @@
                     {
                       "branch_key": 3,
                       "branch_name": "KBS - JAKARTA-KBS (BRANCH)"
-                    },
+                    }
                   ]
                 }
               }
@@ -22279,10 +22338,12 @@
                   "data": [
                     {
                       "agent_key": 3,
+                      "agent_code": "132",
                       "agent_name": "132 - SALES HO MAM-GROUP"
                     },
                     {
                       "agent_key": 4,
+                      "agent_code": "137",
                       "agent_name": "137 - SALES HO MAM-NON_GROUP"
                     }
                   ]
@@ -22966,6 +23027,8 @@
                     "message_client": "OK"
                   },
                   "data": {
+                    "branch_key": 1,
+                    "agent_key": 1,
                     "annual_income": 62,
                     "bank_account": {
                       "account_holder_name": "gfhgf fhfg",
@@ -23133,6 +23196,15 @@
                   "customer_key": {
                     "type": "integer"
                   },
+                  "branch_key": {
+                    "type": "integer"
+                  },
+                  "agent_key": {
+                    "type": "integer"
+                  },
+                  "sales_code": {
+                    "type": "string"
+                  },
                   "oa_request_type": {
                     "type": "integer",
                     "description": "128 = risk profil, 296 = personal data"
@@ -23294,6 +23366,8 @@
                   }
                 },
                 "required": [
+                  "branch_key",
+                  "agent_key",
                   "customer_key",
                   "oa_request_type",
                   "email",
