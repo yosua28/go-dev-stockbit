@@ -1475,8 +1475,19 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			paramsCustomer["investor_type"] = "263"
 			paramsCustomer["customer_category"] = "265"
 			paramsCustomer["cif_suspend_flag"] = "0"
-			paramsCustomer["openacc_branch_key"] = "1"
-			paramsCustomer["openacc_agent_key"] = "1"
+
+			if oareq.BranchKey == nil {
+				paramsCustomer["openacc_branch_key"] = "1"
+			} else {
+				paramsCustomer["openacc_branch_key"] = strconv.FormatUint(*oareq.BranchKey, 10)
+			}
+
+			if oareq.AgentKey == nil {
+				paramsCustomer["openacc_agent_key"] = "1"
+			} else {
+				paramsCustomer["openacc_agent_key"] = strconv.FormatUint(*oareq.AgentKey, 10)
+			}
+
 			paramsCustomer["openacc_date"] = time.Now().Format(dateLayout)
 			paramsCustomer["flag_employee"] = "0"
 			paramsCustomer["flag_group"] = "0"
