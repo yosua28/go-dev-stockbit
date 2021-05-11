@@ -67,7 +67,7 @@ func GetListUserNotif(c echo.Context) error {
 		noLimit = false
 	}
 
-	items := []string{"notif_hdr_key", "notif_category", "notif_date_sent", "umessage_subject", "umessage_body", "alert_notif_type"}
+	items := []string{"notif_hdr_key", "notif_category", "notif_start", "notif_end", "umessage_subject", "umessage_body", "alert_notif_type"}
 
 	params := make(map[string]string)
 	orderBy := c.QueryParam("order_by")
@@ -80,8 +80,10 @@ func GetListUserNotif(c echo.Context) error {
 				orderByJoin = "s.notif_hdr_key"
 			} else if orderBy == "notif_category" {
 				orderByJoin = "cat.lkp_name"
-			} else if orderBy == "notif_date_sent" {
-				orderByJoin = "s.notif_date_sent"
+			} else if orderBy == "notif_start" {
+				orderByJoin = "s.notif_start"
+			} else if orderBy == "notif_end" {
+				orderByJoin = "s.notif_end"
 			} else if orderBy == "umessage_subject" {
 				orderByJoin = "s.umessage_subject"
 			} else if orderBy == "umessage_body" {
@@ -179,13 +181,22 @@ func CreateAdminScUserNotif(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_category cann't be blank", "Missing required parameter: notif_category cann't be blank")
 	}
 
-	//notif_date_sent
-	notifdatesent := c.FormValue("notif_date_sent")
-	if notifdatesent != "" {
-		params["notif_date_sent"] = notifdatesent
+	//notif_start
+	notifstart := c.FormValue("notif_start")
+	if notifstart != "" {
+		params["notif_start"] = notifstart
 	} else {
-		log.Error("Missing required parameter: notif_date_sent cann't be blank")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_date_sent cann't be blank", "Missing required parameter: notif_date_sent cann't be blank")
+		log.Error("Missing required parameter: notif_start cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_start cann't be blank", "Missing required parameter: notif_start cann't be blank")
+	}
+
+	//notif_end
+	notifend := c.FormValue("notif_end")
+	if notifend != "" {
+		params["notif_end"] = notifend
+	} else {
+		log.Error("Missing required parameter: notif_end cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_end cann't be blank", "Missing required parameter: notif_end cann't be blank")
 	}
 
 	//umessage_subject
@@ -322,13 +333,22 @@ func UpdateAdminScUserNotif(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_category cann't be blank", "Missing required parameter: notif_category cann't be blank")
 	}
 
-	//notif_date_sent
-	notifdatesent := c.FormValue("notif_date_sent")
-	if notifdatesent != "" {
-		params["notif_date_sent"] = notifdatesent
+	//notif_start
+	notifstart := c.FormValue("notif_start")
+	if notifstart != "" {
+		params["notif_start"] = notifstart
 	} else {
-		log.Error("Missing required parameter: notif_date_sent cann't be blank")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_date_sent cann't be blank", "Missing required parameter: notif_date_sent cann't be blank")
+		log.Error("Missing required parameter: notif_start cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_start cann't be blank", "Missing required parameter: notif_start cann't be blank")
+	}
+
+	//notif_end
+	notifend := c.FormValue("notif_end")
+	if notifend != "" {
+		params["notif_end"] = notifend
+	} else {
+		log.Error("Missing required parameter: notif_end cann't be blank")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: notif_end cann't be blank", "Missing required parameter: notif_end cann't be blank")
 	}
 
 	//umessage_subject

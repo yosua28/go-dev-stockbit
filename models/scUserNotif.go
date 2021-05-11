@@ -12,7 +12,8 @@ import (
 type ScUserNotif struct {
 	NotifHdrKey       uint64  `db:"notif_hdr_key"             json:"notif_hdr_key"`
 	NotifCategory     *uint64 `db:"notif_category"            json:"notif_category"`
-	NotifDateSent     *string `db:"notif_date_sent"           json:"notif_date_sent"`
+	NotifStart        *string `db:"notif_start"           json:"notif_start"`
+	NotifEnd          *string `db:"notif_end"           json:"notif_end"`
 	UmessageSubject   *string `db:"umessage_subject"          json:"umessage_subject"`
 	UmessageBody      *string `db:"umessage_body"             json:"umessage_body"`
 	AlertNotifType    uint64  `db:"alert_notif_type"          json:"alert_notif_type"`
@@ -39,7 +40,8 @@ type UserNotifField struct {
 	NotifHdrKey       uint64  `db:"notif_hdr_key"            json:"notif_hdr_key"`
 	NotifCategoryKey  *uint64 `db:"notif_category_key"       json:"notif_category_key"`
 	NotifCategory     *string `db:"notif_category"           json:"notif_category"`
-	NotifDateSent     *string `db:"notif_date_sent"          json:"notif_date_sent"`
+	NotifStart        *string `db:"notif_start"          json:"notif_start"`
+	NotifEnd          *string `db:"notif_end"          json:"notif_end"`
 	UmessageSubject   *string `db:"umessage_subject"         json:"umessage_subject"`
 	UmessageBody      *string `db:"umessage_body"            json:"umessage_body"`
 	AlertNotifTypeKey uint64  `db:"alert_notif_type_key"     json:"alert_notif_type_key"`
@@ -134,7 +136,8 @@ func AdminGetAllUserNotif(c *[]UserNotifField, limit uint64, offset uint64, para
 				s.notif_hdr_key AS notif_hdr_key,
 				s.notif_category AS notif_category_key,
 				cat.lkp_name AS notif_category,
-				DATE_FORMAT(s.notif_date_sent, '%d %M %Y') AS notif_date_sent,
+				DATE_FORMAT(s.notif_start, '%d %M %Y') AS notif_start,
+				DATE_FORMAT(s.notif_end, '%d %M %Y') AS notif_end,
 				s.umessage_subject AS umessage_subject,
 				s.umessage_body AS umessage_body,
 				s.alert_notif_type AS alert_notif_type_key,
@@ -259,7 +262,8 @@ func AdminGetDetailUserNotif(c *UserNotifField, key string) (int, error) {
 				s.notif_hdr_key AS notif_hdr_key,
 				s.notif_category AS notif_category_key,
 				cat.lkp_name AS notif_category,
-				DATE_FORMAT(s.notif_date_sent, '%d %M %Y') AS notif_date_sent,
+				DATE_FORMAT(s.notif_start, '%d %M %Y') AS notif_start,
+				DATE_FORMAT(s.notif_end, '%d %M %Y') AS notif_end,
 				s.umessage_subject AS umessage_subject,
 				s.umessage_body AS umessage_body,
 				s.alert_notif_type AS alert_notif_type_key,

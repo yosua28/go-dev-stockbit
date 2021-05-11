@@ -23325,11 +23325,12 @@
             "schema": {
               "type": "string",
               "enum": [
-                "notif_hdr_key", 
-                "notif_category", 
-                "notif_date_sent", 
-                "umessage_subject", 
-                "umessage_body", 
+                "notif_hdr_key",
+                "notif_category",
+                "notif_start",
+                "notif_end",
+                "umessage_subject",
+                "umessage_body",
                 "alert_notif_type"
               ]
             }
@@ -23410,7 +23411,8 @@
                       "notif_hdr_key": 2,
                       "notif_category_key": 326,
                       "notif_category": "New Apps Features",
-                      "notif_date_sent": "20 April 2021",
+                      "notif_start": "20 April 2021",
+                      "notif_end": "29 April 2021",
                       "umessage_subject": "Fitur Autodebet",
                       "umessage_body": "Hi nasabah. DI MNCDuit sudah ada fitur Autodebet lho. Kamu bisa daftar ",
                       "alert_notif_type_key": 310,
@@ -23420,7 +23422,8 @@
                       "notif_hdr_key": 1,
                       "notif_category_key": 324,
                       "notif_category": "PENGUMUMAN",
-                      "notif_date_sent": "20 April 2021",
+                      "notif_start": "20 April 2021",
+                      "notif_end": "30 April 2021",
                       "umessage_subject": "PENGUMUMAN",
                       "umessage_body": "Hi nasabah. Pepatah mengatakan investlah apa yang bisa kamu invest, simpanlah apa yang kamu bisa simpan, raih lah apa yang kamu bisa raih dan berilah apa yang bisa kamu berikan",
                       "alert_notif_type_key": 310,
@@ -23486,7 +23489,10 @@
                   "notif_category": {
                     "type": "integer"
                   },
-                  "notif_date_sent": {
+                  "notif_start": {
+                    "type": "string"
+                  },
+                  "notif_end": {
                     "type": "string"
                   },
                   "umessage_subject": {
@@ -23501,7 +23507,8 @@
                 },
                 "required": [
                   "notif_category",
-                  "notif_date_sent",
+                  "notif_start",
+                  "notif_end",
                   "umessage_subject",
                   "umessage_body",
                   "alert_notif_type"
@@ -23647,7 +23654,10 @@
                   "notif_category": {
                     "type": "integer"
                   },
-                  "notif_date_sent": {
+                  "notif_start": {
+                    "type": "string"
+                  },
+                  "notif_end": {
                     "type": "string"
                   },
                   "umessage_subject": {
@@ -23663,7 +23673,8 @@
                 "required": [
                   "notif_hdr_key",
                   "notif_category",
-                  "notif_date_sent",
+                  "notif_start",
+                  "notif_end",
                   "umessage_subject",
                   "umessage_body",
                   "alert_notif_type"
@@ -23752,7 +23763,8 @@
                     "notif_hdr_key": 2,
                     "notif_category_key": 326,
                     "notif_category": "New Apps Features",
-                    "notif_date_sent": "20 April 2021",
+                    "notif_start": "20 April 2021",
+                    "notif_end": "29 April 2021",
                     "umessage_subject": "Fitur Autodebet",
                     "umessage_body": "Hi nasabah. DI MNCDuit sudah ada fitur Autodebet lho. Kamu bisa daftar ",
                     "alert_notif_type_key": 310,
