@@ -51,7 +51,7 @@ func GetListMenuLogin(c echo.Context) error {
 	cName = "CSidebarNavItem"
 	dashboard.ClassName = &cName
 	var name string
-	name = "Template Dashboard"
+	name = "Dashboard"
 	dashboard.Name = &name
 	var to string
 	to = "/dashboard"
