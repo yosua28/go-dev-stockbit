@@ -256,6 +256,8 @@ type OaRequestDetailRiskProfil struct {
 	Education       *string            `json:"education"`
 	RiskProfile     AdminOaRiskProfile `json:"risk_profile"`
 	RiskProfileQuiz []RiskProfileQuiz  `json:"risk_profile_quiz"`
+	Branch          *MsBranchDropdown  `json:"branch,omitempty"`
+	Agent           *MsAgentDropdown   `json:"agent,omitempty"`
 }
 
 type ApprovalData struct {

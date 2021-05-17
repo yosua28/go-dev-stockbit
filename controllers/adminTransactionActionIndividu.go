@@ -403,6 +403,30 @@ func CreateTransactionSubscription(c echo.Context) error {
 	decimal.MarshalJSONWithoutQuotes = true
 	params := make(map[string]string)
 
+	branchkey := c.FormValue("branch_key")
+	if branchkey == "" {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(branchkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	}
+
+	agentkey := c.FormValue("agent_key")
+	if agentkey == "" {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+	}
+
 	customerKeyStr := c.FormValue("customer_key")
 	var cus models.MsCustomer
 	if customerKeyStr != "" {
@@ -630,13 +654,8 @@ func CreateTransactionSubscription(c echo.Context) error {
 	//cek tr_account_agent / save
 	paramsAccAgent := make(map[string]string)
 	paramsAccAgent["acc_key"] = accKey
-	var agentCustomerDB models.MsAgentCustomer
-	status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKeyStr)
-	if err != nil {
-		log.Error("Failed get data agent: " + err.Error())
-		return lib.CustomError(status, err.Error(), "failed input data")
-	}
-	paramsAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	paramsAccAgent["agent_key"] = agentkey
+	paramsAccAgent["branch_key"] = branchkey
 	paramsAccAgent["rec_status"] = "1"
 
 	var acaKey string
@@ -650,7 +669,8 @@ func CreateTransactionSubscription(c echo.Context) error {
 		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+		paramsCreateAccAgent["agent_key"] = agentkey
+		paramsCreateAccAgent["branch_key"] = branchkey
 		paramsCreateAccAgent["rec_status"] = "1"
 		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
 		if err != nil {
@@ -659,21 +679,10 @@ func CreateTransactionSubscription(c echo.Context) error {
 		}
 	}
 	//save tr_transaction
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
-		log.Println(lib.Profile)
-		if lib.Profile.BranchKey != nil {
-			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["branch_key"] = strBranchKey
-		} else {
-			params["branch_key"] = "1"
-		}
-	} else {
-		params["branch_key"] = "1"
-	}
 
-	params["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	params["branch_key"] = branchkey
+
+	params["agent_key"] = agentkey
 	params["trans_status_key"] = "2"
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "1"
@@ -905,19 +914,21 @@ func GetTopupData(c echo.Context) error {
 	}
 
 	params := make(map[string]string)
-	//if user admin role 7 branch
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
+
+	//if user category  = 3 -> user branch, 2 = user HO
+	var userCategory uint64
+	userCategory = 3
+	if lib.Profile.UserCategoryKey == userCategory {
 		log.Println(lib.Profile)
 		if lib.Profile.BranchKey != nil {
 			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["d.branch_key"] = strBranchKey
+			params["c.openacc_branch_key"] = strBranchKey
 		} else {
 			log.Error("User Branch haven't Branch")
 			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
 		}
 	}
+
 	params["c.customer_key"] = customerKeyStr
 	paramsLike := make(map[string]string)
 	var customerList []models.CustomerDropdown
@@ -1080,6 +1091,30 @@ func CreateTransactionRedemption(c echo.Context) error {
 	var status int
 	decimal.MarshalJSONWithoutQuotes = true
 	params := make(map[string]string)
+
+	branchkey := c.FormValue("branch_key")
+	if branchkey == "" {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(branchkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	}
+
+	agentkey := c.FormValue("agent_key")
+	if agentkey == "" {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+	}
 
 	customerKeyStr := c.FormValue("customer_key")
 	var cus models.MsCustomer
@@ -1318,13 +1353,8 @@ func CreateTransactionRedemption(c echo.Context) error {
 	//cek tr_account_agent / save
 	paramsAccAgent := make(map[string]string)
 	paramsAccAgent["acc_key"] = accKey
-	var agentCustomerDB models.MsAgentCustomer
-	status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKeyStr)
-	if err != nil {
-		log.Error("Failed get data agent: " + err.Error())
-		return lib.CustomError(status, err.Error(), "failed input data")
-	}
-	paramsAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	paramsAccAgent["agent_key"] = agentkey
+	paramsAccAgent["branch_key"] = branchkey
 	paramsAccAgent["rec_status"] = "1"
 
 	var acaKey string
@@ -1338,7 +1368,8 @@ func CreateTransactionRedemption(c echo.Context) error {
 		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+		paramsCreateAccAgent["agent_key"] = agentkey
+		paramsCreateAccAgent["branch_key"] = branchkey
 		paramsCreateAccAgent["rec_status"] = "1"
 		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
 		if err != nil {
@@ -1347,20 +1378,9 @@ func CreateTransactionRedemption(c echo.Context) error {
 		}
 	}
 	//save tr_transaction
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
-		if lib.Profile.BranchKey != nil {
-			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["branch_key"] = strBranchKey
-		} else {
-			params["branch_key"] = "1"
-		}
-	} else {
-		params["branch_key"] = "1"
-	}
+	params["branch_key"] = branchkey
 
-	params["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	params["agent_key"] = agentkey
 	params["trans_status_key"] = "2"
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "2"
@@ -1497,6 +1517,30 @@ func CreateTransactionSwitching(c echo.Context) error {
 	decimal.MarshalJSONWithoutQuotes = true
 	params := make(map[string]string)
 	paramsSwIn := make(map[string]string)
+
+	branchkey := c.FormValue("branch_key")
+	if branchkey == "" {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(branchkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	}
+
+	agentkey := c.FormValue("agent_key")
+	if agentkey == "" {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentkey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+	}
 
 	customerKeyStr := c.FormValue("customer_key")
 	var cus models.MsCustomer
@@ -1787,13 +1831,14 @@ func CreateTransactionSwitching(c echo.Context) error {
 	//cek tr_account_agent / save
 	paramsAccAgent := make(map[string]string)
 	paramsAccAgent["acc_key"] = accKey
-	var agentCustomerDB models.MsAgentCustomer
-	status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKeyStr)
-	if err != nil {
-		log.Error("Failed get data agent: " + err.Error())
-		return lib.CustomError(status, err.Error(), "failed input data")
-	}
-	paramsAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	// var agentCustomerDB models.MsAgentCustomer
+	// status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKeyStr)
+	// if err != nil {
+	// 	log.Error("Failed get data agent: " + err.Error())
+	// 	return lib.CustomError(status, err.Error(), "failed input data")
+	// }
+	paramsAccAgent["agent_key"] = agentkey
+	paramsAccAgent["branch_key"] = branchkey
 	paramsAccAgent["rec_status"] = "1"
 
 	var acaKey string
@@ -1807,7 +1852,8 @@ func CreateTransactionSwitching(c echo.Context) error {
 		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+		paramsCreateAccAgent["agent_key"] = agentkey
+		paramsCreateAccAgent["branch_key"] = branchkey
 		paramsCreateAccAgent["rec_status"] = "1"
 		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
 		if err != nil {
@@ -1816,23 +1862,25 @@ func CreateTransactionSwitching(c echo.Context) error {
 		}
 	}
 	//save tr_transaction
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
-		if lib.Profile.BranchKey != nil {
-			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["branch_key"] = strBranchKey
-			paramsSwIn["branch_key"] = strBranchKey
-		} else {
-			params["branch_key"] = "1"
-			paramsSwIn["branch_key"] = "1"
-		}
-	} else {
-		params["branch_key"] = "1"
-		paramsSwIn["branch_key"] = "1"
-	}
+	// var roleKeyBranchEntry uint64
+	// roleKeyBranchEntry = 7
+	// if lib.Profile.RoleKey == roleKeyBranchEntry {
+	// 	if lib.Profile.BranchKey != nil {
+	// 		strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+	// 		params["branch_key"] = strBranchKey
+	// 		paramsSwIn["branch_key"] = strBranchKey
+	// 	} else {
+	// 		params["branch_key"] = "1"
+	// 		paramsSwIn["branch_key"] = "1"
+	// 	}
+	// } else {
+	// 	params["branch_key"] = "1"
+	// 	paramsSwIn["branch_key"] = "1"
+	// }
+	params["branch_key"] = branchkey
+	paramsSwIn["branch_key"] = branchkey
 
-	params["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	params["agent_key"] = agentkey
 	params["trans_status_key"] = "2"
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "3"
@@ -1907,7 +1955,8 @@ func CreateTransactionSwitching(c echo.Context) error {
 	//cek tr_account_agent / save
 	paramsNewProdAccAgent := make(map[string]string)
 	paramsNewProdAccAgent["acc_key"] = accNewKey
-	paramsNewProdAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	paramsNewProdAccAgent["agent_key"] = agentkey
+	paramsNewProdAccAgent["branch_key"] = branchkey
 	paramsNewProdAccAgent["rec_status"] = "1"
 
 	var acaNewProdKey string
@@ -1921,7 +1970,8 @@ func CreateTransactionSwitching(c echo.Context) error {
 		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
 		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+		paramsCreateAccAgent["agent_key"] = agentkey
+		paramsCreateAccAgent["branch_key"] = branchkey
 		paramsCreateAccAgent["rec_status"] = "1"
 		status, err, acaNewProdKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
 		if err != nil {
@@ -1930,7 +1980,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 		}
 	}
 
-	paramsSwIn["agent_key"] = strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	paramsSwIn["agent_key"] = agentkey
 	paramsSwIn["trans_status_key"] = "2"
 	paramsSwIn["trans_date"] = time.Now().Format(dateLayout)
 	paramsSwIn["trans_type_key"] = "4"

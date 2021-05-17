@@ -20364,6 +20364,14 @@
                       "max_score": 10000000,
                       "score_result": 70
                     },
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_name": "SALES MNC DUIT"
+                    },
                     "risk_profile_quiz": [
                       {
                         "risk_profile_quiz_key": 262,
@@ -20689,6 +20697,14 @@
                       "min_score": 65,
                       "max_score": 10000000,
                       "score_result": 70
+                    },
+                    "branch": {
+                      "branch_key": 1,
+                      "branch_name": "MNC ASSET HO (BRANCH)"
+                    },
+                    "agent": {
+                      "agent_key": 1,
+                      "agent_name": "SALES MNC DUIT"
                     },
                     "risk_profile_quiz": [
                       {

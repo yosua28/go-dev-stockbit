@@ -1363,6 +1363,16 @@ func LoginBo(c echo.Context) error {
 	}
 	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
 		atClaims["role_key"] = *accountData.RoleKey
+		atClaims["user_category_key"] = accountData.UserCategoryKey
+		atClaims["user_dept_key"] = accountData.UserDeptKey
+		var dept models.ScUserDept
+		strDept := strconv.FormatUint(*accountData.UserDeptKey, 10)
+		_, err = models.GetScUserDept(&dept, strDept)
+		if err == nil {
+			atClaims["user_branch"] = dept.BranchKey
+		} else {
+			atClaims["user_branch"] = 1
+		}
 		paramsRole := make(map[string]string)
 		paramsRole["role_key"] = strconv.FormatUint(*accountData.RoleKey, 10)
 		var role []models.ScRole
