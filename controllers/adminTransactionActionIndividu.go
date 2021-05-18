@@ -964,6 +964,42 @@ func GetTopupData(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
 	}
 
+	//set branch
+	var branch_key string
+	if customer.BranchKey != nil {
+		branch_key = strconv.FormatUint(*customer.BranchKey, 10)
+	} else {
+		branch_key = "1"
+	}
+	var branch models.MsBranch
+	var branchData models.MsBranchDropdown
+	status, err = models.GetMsBranch(&branch, branch_key)
+	if err != nil {
+		log.Error("Branch not found")
+		return lib.CustomError(http.StatusNotFound, "Branch not found", "Branch not found")
+	} else {
+		branchData.BranchKey = branch.BranchKey
+		branchData.BranchName = branch.BranchName
+	}
+
+	//set agent
+	var agent_key string
+	if customer.AgentKey != nil {
+		agent_key = strconv.FormatUint(*customer.AgentKey, 10)
+	} else {
+		agent_key = "1"
+	}
+	var agent models.MsAgent
+	var agentData models.MsAgentDropdown
+	status, err = models.GetMsAgent(&agent, agent_key)
+	if err != nil {
+		log.Error("Agent not found")
+		return lib.CustomError(http.StatusNotFound, "Agent not found", "Agent not found")
+	} else {
+		agentData.AgentKey = agent.AgentKey
+		agentData.AgentName = agent.AgentName
+	}
+
 	var productResponse models.ProductSubscription
 	productResponse.ProductKey = product.ProductKey
 	productResponse.FundTypeName = product.FundTypeName
@@ -990,6 +1026,8 @@ func GetTopupData(c echo.Context) error {
 
 	var responseData models.AdminTopupData
 
+	responseData.Branch = branchData
+	responseData.Agent = agentData
 	responseData.Customer = customer
 	responseData.Product = productResponse
 

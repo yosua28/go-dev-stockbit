@@ -1112,7 +1112,7 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 
 		//set agent
 		var agent_key string
-		if oareq.BranchKey != nil {
+		if oareq.AgentKey != nil {
 			agent_key = strconv.FormatUint(*oareq.AgentKey, 10)
 		} else {
 			agent_key = "1"
@@ -2426,7 +2426,7 @@ func ResultOaProfileRisiko(keyStr string, c echo.Context, isHistory bool) error 
 
 		//set agent
 		var agent_key string
-		if oareq.BranchKey != nil {
+		if oareq.AgentKey != nil {
 			agent_key = strconv.FormatUint(*oareq.AgentKey, 10)
 		} else {
 			agent_key = "1"
@@ -3139,7 +3139,7 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 
 		//set agent
 		var agent_key string
-		if oareq.BranchKey != nil {
+		if oareq.AgentKey != nil {
 			agent_key = strconv.FormatUint(*oareq.AgentKey, 10)
 		} else {
 			agent_key = "1"

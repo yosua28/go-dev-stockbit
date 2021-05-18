@@ -147,11 +147,15 @@ type CustomerDetailPersonalData struct {
 }
 
 type CustomerDropdown struct {
-	CustomerKey string `db:"customer_key"   json:"customer_key"`
-	Name        string `db:"name"           json:"name"`
+	CustomerKey string  `db:"customer_key"   json:"customer_key"`
+	Name        string  `db:"name"           json:"name"`
+	BranchKey   *uint64 `db:"branch_key"           json:"branch_key"`
+	AgentKey    *uint64 `db:"agent_key"           json:"agent_key"`
 }
 
 type AdminTopupData struct {
+	Branch   MsBranchDropdown    `json:"branch"`
+	Agent    MsAgentDropdown     `json:"agent"`
 	Customer CustomerDropdown    `json:"customer"`
 	Product  ProductSubscription `json:"product"`
 }
@@ -688,10 +692,11 @@ func GetCustomerDropdown(c *[]CustomerDropdown, params map[string]string, params
 
 	query := `SELECT 
 				c.customer_key as customer_key,
-				CONCAT(c.unit_holder_idno, " - ", c.full_name) AS name 
+				CONCAT(c.unit_holder_idno, " - ", c.full_name) AS name,
+				c.openacc_branch_key as branch_key,
+				c.openacc_agent_key as agent_key 
 			FROM ms_customer AS c
 			INNER JOIN sc_user_login AS l ON l.customer_key = c.customer_key 
-			INNER JOIN sc_user_dept AS d ON d.user_dept_key = l.user_dept_key 
 			WHERE c.rec_status = 1 AND l.rec_status = 1 AND c.investor_type IN (263, 264)`
 
 	var present bool
@@ -750,7 +755,9 @@ func GetCustomerRedemptionDropdown(c *[]CustomerDropdown, params map[string]stri
 
 	query := `SELECT 
 				c.customer_key AS customer_key,
-				CONCAT(c.unit_holder_idno, " - ", c.full_name) AS name 
+				CONCAT(c.unit_holder_idno, " - ", c.full_name) AS name,
+				c.openacc_branch_key as branch_key,
+				c.openacc_agent_key as agent_key 
 			FROM tr_balance AS b
 			INNER JOIN tr_transaction_confirmation AS tc  ON tc.tc_key = b.tc_key
 			INNER JOIN tr_transaction AS t ON t.transaction_key = tc.transaction_key

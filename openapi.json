@@ -19327,6 +19327,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "branch_key": {
+                    "type": "integer"
+                  },
+                  "agent_key": {
+                    "type": "integer"
+                  },
                   "customer_key": {
                     "type": "integer"
                   },
@@ -19371,6 +19377,8 @@
                   }
                 },
                 "required": [
+                  "branch_key",
+                  "agent_key",
                   "customer_key",
                   "product_key",
                   "trans_amount",
@@ -19474,6 +19482,14 @@
                     "message_client": "OK"
                   },
                   "data": {
+					"branch": {
+					  "branch_key": 10,
+					  "branch_name": "BANDUNG (BRANCH)"
+					},
+					"agent": {
+					  "agent_key": 1,
+					  "agent_name": "SALES MNC DUIT"
+					},
                     "customer": {
                       "customer_key": "55",
                       "name": "202010000001 - Annafrid MP Nikijuluw"
@@ -19985,6 +20001,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "branch_key": {
+                    "type": "integer"
+                  },
+                  "agent_key": {
+                    "type": "integer"
+                  },
                   "customer_key": {
                     "type": "integer"
                   },
@@ -20008,6 +20030,8 @@
                   }
                 },
                 "required": [
+                  "branch_key",
+                  "agent_key",
                   "customer_key",
                   "product_key",
                   "trans_amount",
@@ -20079,6 +20103,12 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "branch_key": {
+                    "type": "integer"
+                  },
+                  "agent_key": {
+                    "type": "integer"
+                  },
                   "customer_key": {
                     "type": "integer"
                   },
@@ -20102,6 +20132,8 @@
                   }
                 },
                 "required": [
+                  "branch_key",
+                  "agent_key",
                   "customer_key",
                   "product_from",
                   "metode_perhitungan",

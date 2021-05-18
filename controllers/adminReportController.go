@@ -223,16 +223,35 @@ func GetListCustomerDropDown(c echo.Context) error {
 	params := make(map[string]string)
 
 	//if user admin role 7 branch
-	var roleKeyBranchEntry uint64
-	roleKeyBranchEntry = 7
-	if lib.Profile.RoleKey == roleKeyBranchEntry {
-		log.Println(lib.Profile)
-		if lib.Profile.BranchKey != nil {
-			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["d.branch_key"] = strBranchKey
-		} else {
-			log.Error("User Branch haven't Branch")
-			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+	// var roleKeyBranchEntry uint64
+	// roleKeyBranchEntry = 7
+	// if lib.Profile.RoleKey == roleKeyBranchEntry {
+	// 	log.Println(lib.Profile)
+	// 	if lib.Profile.BranchKey != nil {
+	// 		strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+	// 		params["d.branch_key"] = strBranchKey
+	// 	} else {
+	// 		log.Error("User Branch haven't Branch")
+	// 		return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+	// 	}
+	// }
+
+	branchKey := c.QueryParam("branch_key")
+	if branchKey != "" {
+		params["c.openacc_branch_key"] = branchKey
+	} else {
+		//if user category  = 3 -> user branch, 2 = user HO
+		var userCategory uint64
+		userCategory = 3
+		if lib.Profile.UserCategoryKey == userCategory {
+			log.Println(lib.Profile)
+			if lib.Profile.BranchKey != nil {
+				strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
+				params["c.openacc_branch_key"] = strBranchKey
+			} else {
+				log.Error("User Branch haven't Branch")
+				return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
+			}
 		}
 	}
 
