@@ -17537,6 +17537,15 @@
             "schema": {
               "type": "string"
             }
+          },
+          {
+            "name": "branch_key",
+            "in": "query",
+            "description": "branch_key customer",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -19630,6 +19639,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "branch_key",
+            "in": "query",
+            "description": "branch_key customer",
+            "required": false,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {

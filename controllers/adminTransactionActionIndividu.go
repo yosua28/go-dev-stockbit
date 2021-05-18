@@ -655,7 +655,6 @@ func CreateTransactionSubscription(c echo.Context) error {
 	paramsAccAgent := make(map[string]string)
 	paramsAccAgent["acc_key"] = accKey
 	paramsAccAgent["agent_key"] = agentkey
-	paramsAccAgent["branch_key"] = branchkey
 	paramsAccAgent["rec_status"] = "1"
 
 	var acaKey string
@@ -1392,7 +1391,6 @@ func CreateTransactionRedemption(c echo.Context) error {
 	paramsAccAgent := make(map[string]string)
 	paramsAccAgent["acc_key"] = accKey
 	paramsAccAgent["agent_key"] = agentkey
-	paramsAccAgent["branch_key"] = branchkey
 	paramsAccAgent["rec_status"] = "1"
 
 	var acaKey string
@@ -1869,14 +1867,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	//cek tr_account_agent / save
 	paramsAccAgent := make(map[string]string)
 	paramsAccAgent["acc_key"] = accKey
-	// var agentCustomerDB models.MsAgentCustomer
-	// status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKeyStr)
-	// if err != nil {
-	// 	log.Error("Failed get data agent: " + err.Error())
-	// 	return lib.CustomError(status, err.Error(), "failed input data")
-	// }
 	paramsAccAgent["agent_key"] = agentkey
-	paramsAccAgent["branch_key"] = branchkey
 	paramsAccAgent["rec_status"] = "1"
 
 	var acaKey string
@@ -1899,22 +1890,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 			return lib.CustomError(status, err.Error(), "failed input data")
 		}
 	}
-	//save tr_transaction
-	// var roleKeyBranchEntry uint64
-	// roleKeyBranchEntry = 7
-	// if lib.Profile.RoleKey == roleKeyBranchEntry {
-	// 	if lib.Profile.BranchKey != nil {
-	// 		strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-	// 		params["branch_key"] = strBranchKey
-	// 		paramsSwIn["branch_key"] = strBranchKey
-	// 	} else {
-	// 		params["branch_key"] = "1"
-	// 		paramsSwIn["branch_key"] = "1"
-	// 	}
-	// } else {
-	// 	params["branch_key"] = "1"
-	// 	paramsSwIn["branch_key"] = "1"
-	// }
+
 	params["branch_key"] = branchkey
 	paramsSwIn["branch_key"] = branchkey
 
@@ -1994,7 +1970,6 @@ func CreateTransactionSwitching(c echo.Context) error {
 	paramsNewProdAccAgent := make(map[string]string)
 	paramsNewProdAccAgent["acc_key"] = accNewKey
 	paramsNewProdAccAgent["agent_key"] = agentkey
-	paramsNewProdAccAgent["branch_key"] = branchkey
 	paramsNewProdAccAgent["rec_status"] = "1"
 
 	var acaNewProdKey string
