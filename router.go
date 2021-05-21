@@ -326,6 +326,11 @@ func router() *echo.Echo {
 	admin.POST("/user-notif/delete", controllers.DeleteUserNotif).Name = "DeleteUserNotif"
 	admin.POST("/user-notif/update", controllers.UpdateAdminScUserNotif).Name = "UpdateAdminScUserNotif"
 	admin.GET("/user-notif/detail/:key", controllers.DetailUserNotif).Name = "DetailUserNotif"
+
+	//Admin Data Login
+	admin.GET("/user", controllers.GetDetailScUserLogin).Name = "GetDetailScUserLogin"
+	admin.POST("/user/changepassword", controllers.AdminChangePasswordUserLogin).Name = "AdminChangePasswordUserLogin"
+	admin.POST("/user/changedata", controllers.AdminChangeDataUserLogin).Name = "AdminChangeDataUserLogin"
 	return e
 }
 

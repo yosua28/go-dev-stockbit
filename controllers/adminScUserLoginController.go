@@ -11,6 +11,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/badoux/checkmail"
@@ -1031,4 +1032,344 @@ func DeleteUser(c echo.Context) error {
 	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 
+}
+
+func GetDetailScUserLogin(c echo.Context) error {
+	var err error
+	var status int
+
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	var scUserLogin models.ScUserLogin
+	status, err = models.GetScUserLoginByKey(&scUserLogin, strKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+
+	var responseData models.AdminDetailScUserLogin
+
+	responseData.UserLoginKey = scUserLogin.UserLoginKey
+	responseData.NoHp = scUserLogin.UloginMobileno
+
+	var scUserCategory models.ScUserCategory
+	strUCKey := strconv.FormatUint(scUserLogin.UserCategoryKey, 10)
+	status, err = models.GetScUserCategory(&scUserCategory, strUCKey)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status)
+		}
+	} else {
+		var ucat models.ScUserCategoryInfo
+		ucat.UserCategoryKey = scUserCategory.UserCategoryKey
+		ucat.UcategoryCode = scUserCategory.UcategoryCode
+		ucat.UcategoryName = scUserCategory.UcategoryName
+		ucat.UcategoryDesc = scUserCategory.UcategoryDesc
+		responseData.UserCategory = ucat
+	}
+
+	if scUserLogin.UserDeptKey != nil {
+		var scUserDept models.ScUserDept
+		strUDept := strconv.FormatUint(*scUserLogin.UserDeptKey, 10)
+		status, err = models.GetScUserDept(&scUserDept, strUDept)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var udept models.ScUserDeptInfo
+			udept.UserDeptKey = scUserDept.UserDeptKey
+			udept.UserDeptCode = scUserDept.UserDeptCode
+			udept.UserDeptName = scUserDept.UserDeptName
+			udept.UserDeptDesc = scUserDept.UserDeptDesc
+			responseData.UserDept = &udept
+		}
+	}
+
+	responseData.UloginName = scUserLogin.UloginName
+	responseData.UloginFullName = scUserLogin.UloginFullName
+	responseData.UloginEmail = scUserLogin.UloginEmail
+
+	if scUserLogin.RoleKey != nil {
+		var scRole models.ScRole
+		strRoleKey := strconv.FormatUint(*scUserLogin.RoleKey, 10)
+		status, err = models.GetScRole(&scRole, strRoleKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status)
+			}
+		} else {
+			var role models.ScRoleInfoLogin
+			role.RoleKey = scRole.RoleKey
+			role.RoleCode = scRole.RoleCode
+			role.RoleName = scRole.RoleName
+			role.RoleDesc = scRole.RoleDesc
+			responseData.Role = &role
+		}
+	}
+
+	if scUserLogin.UloginEnabled == uint8(1) {
+		responseData.Enabled = true
+	} else {
+		responseData.Enabled = false
+	}
+
+	if scUserLogin.UloginLocked == uint8(1) {
+		responseData.Locked = true
+	} else {
+		responseData.Locked = false
+	}
+
+	if scUserLogin.VerifiedEmail != nil {
+		if *scUserLogin.VerifiedEmail == uint8(1) {
+			responseData.VerifiedEmail = true
+		} else {
+			responseData.VerifiedEmail = false
+		}
+	} else {
+		responseData.VerifiedEmail = false
+	}
+
+	if scUserLogin.VerifiedMobileno == uint8(1) {
+		responseData.VerifiedMobileno = true
+	} else {
+		responseData.VerifiedMobileno = false
+	}
+
+	layout := "2006-01-02 15:04:05"
+	newLayout := "02 Jan 2006"
+	if scUserLogin.RecCreatedDate != nil {
+		date, err := time.Parse(layout, *scUserLogin.RecCreatedDate)
+		if err == nil {
+			oke := date.Format(newLayout)
+			responseData.CreatedDate = &oke
+		}
+	}
+
+	if scUserLogin.RecImage1 != nil && *scUserLogin.RecImage1 != "" {
+		responseData.RecImage = config.BaseUrl + "/images/user/" + strconv.FormatUint(scUserLogin.UserLoginKey, 10) + "/profile/" + *scUserLogin.RecImage1
+	} else {
+		responseData.RecImage = config.BaseUrl + "/images/post/default.png"
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminChangePasswordUserLogin(c echo.Context) error {
+	var err error
+	params := make(map[string]string)
+
+	currentPassword := c.FormValue("current_password")
+	if currentPassword == "" {
+		log.Error("Missing required parameter: current_password")
+		return lib.CustomError(http.StatusBadRequest, "current password can not be blank", "current password can not be blank")
+	}
+
+	newPassword := c.FormValue("new_password")
+	if newPassword == "" {
+		log.Error("Missing required parameter: new_password")
+		return lib.CustomError(http.StatusBadRequest, "new password can not be blank", "new password can not be blank")
+	}
+
+	confirmPassword := c.FormValue("confirm_password")
+	if confirmPassword == "" {
+		log.Error("Missing required parameter: confirm_password")
+		return lib.CustomError(http.StatusBadRequest, "confirm new password can not be blank", "confirm new password can not be blank")
+	}
+
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	var scUserLogin models.ScUserLogin
+	_, err = models.GetScUserLoginByKey(&scUserLogin, strKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+	params["user_login_key"] = strKey
+
+	length, number, upper, special := verifyPassword(newPassword)
+	if length == false || number == false || upper == false || special == false {
+		log.Error("New Password does meet the criteria")
+		return lib.CustomError(http.StatusBadRequest, "New Password does meet the criteria", "Your New password need at least 8 character length, has lower and upper case letter, has numeric letter, and has special character")
+	}
+
+	if strings.Contains(newPassword, confirmPassword) == false {
+		log.Error("Missing required parameter: conf_password must equal with password")
+		return lib.CustomError(http.StatusBadRequest, "conf_password must equal with password", "conf_password must equal with password")
+	}
+	// Check valid password
+	encryptedPasswordByte := sha256.Sum256([]byte(currentPassword))
+	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	if encryptedPassword != scUserLogin.UloginPassword {
+		log.Error("Missing required parameter: wrong current password")
+		return lib.CustomError(http.StatusBadRequest, "wrong current password", "wrong current password")
+	}
+
+	encryptedNewPasswordByte := sha256.Sum256([]byte(newPassword))
+	encryptedNewPassword := hex.EncodeToString(encryptedNewPasswordByte[:])
+
+	params["ulogin_password"] = encryptedNewPassword
+	params["ulogin_must_changepwd"] = "0"
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed update password")
+	}
+
+	if config.Envi == "PROD" {
+		//send email to user
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", scUserLogin.UloginEmail)
+		mailer.SetHeader("Subject", "[MNC Duit] Change Password")
+		mailer.SetBody("text/html", "<p>Password berhasil diubah.<p/><p>Apabila kamu tidak merasa mengganti password dengan password baru, segera hubungi admin MNC DUIT.<p/>")
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Error send email")
+			log.Error(err)
+		}
+		//end send email to user
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminChangeDataUserLogin(c echo.Context) error {
+	var err error
+	params := make(map[string]string)
+
+	username := c.FormValue("username")
+	if username == "" {
+		log.Error("Missing required parameter: username")
+		return lib.CustomError(http.StatusBadRequest, "username can not be blank", "username can not be blank")
+	}
+	params["ulogin_name"] = username
+
+	name := c.FormValue("name")
+	if name == "" {
+		log.Error("Missing required parameter: name")
+		return lib.CustomError(http.StatusBadRequest, "name can not be blank", "name can not be blank")
+	}
+	params["ulogin_full_name"] = name
+
+	email := c.FormValue("email")
+	if email == "" {
+		log.Error("Missing required parameter: email")
+		return lib.CustomError(http.StatusBadRequest, "email can not be blank", "email can not be blank")
+	}
+
+	err = checkmail.ValidateFormat(email)
+	if err != nil {
+		log.Error("Email format is not valid")
+		return lib.CustomError(http.StatusBadRequest, "Email format is not valid", "Email format is not valid")
+	}
+	params["ulogin_email"] = email
+
+	no_hp := c.FormValue("no_hp")
+	if no_hp == "" {
+		log.Error("Missing required parameter: no_hp")
+		return lib.CustomError(http.StatusBadRequest, "no_hp can not be blank", "no_hp can not be blank")
+	}
+	params["ulogin_mobileno"] = no_hp
+
+	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	//check unique ulogin_name
+	paramsScUserLogin := make(map[string]string)
+	paramsScUserLogin["ulogin_name"] = username
+
+	var countDataExisting models.CountData
+	status, err := models.AdminGetValidateUniqueInsertUpdateScUserLogin(&countDataExisting, paramsScUserLogin, &strKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataExisting.CountData) > 0 {
+		log.Error("Missing required parameter: username already existing, use other username")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: username already existing, use other username", "Missing required parameter: username already existing, use other username")
+	}
+
+	//check unique ulogin_email
+	paramsEmail := make(map[string]string)
+	paramsEmail["ulogin_email"] = email
+
+	var countDataEmail models.CountData
+	status, err = models.AdminGetValidateUniqueInsertUpdateScUserLogin(&countDataEmail, paramsEmail, &strKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if int(countDataEmail.CountData) > 0 {
+		log.Error("Missing required parameter: email already existing, use other email")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: email already existing, use other email", "Missing required parameter: email already existing, use other email")
+	}
+
+	var scUserLogin models.ScUserLogin
+	_, err = models.GetScUserLoginByKey(&scUserLogin, strKey)
+	if err != nil {
+		return lib.CustomError(http.StatusNotFound)
+	}
+	params["user_login_key"] = strKey
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScUserLogin(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create user")
+	}
+
+	if config.Envi == "PROD" {
+		//send email to user
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", email)
+		mailer.SetHeader("Subject", "[MNC Duit] Change Password")
+		mailer.SetBody("text/html", "<p>Data berhasil diubah.<p/><p>Apabila kamu tidak merasa mengganti data dengan data baru, segera hubungi admin MNC DUIT.<p/>")
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Error send email")
+			log.Error(err)
+		}
+		//end send email to user
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
 }
