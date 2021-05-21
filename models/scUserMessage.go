@@ -320,3 +320,42 @@ func CreateMultipleUserMessage(params []interface{}) (int, error) {
 	}
 	return http.StatusOK, nil
 }
+
+func CreateMultipleUserMessageFromUserNotif(params []interface{}) (int, error) {
+
+	q := `INSERT INTO sc_user_message (
+		umessage_type, 
+		notif_hdr_key,
+		umessage_recipient_key,
+		umessage_receipt_date,
+		flag_read,
+		flag_sent,
+		umessage_subject,
+		umessage_body,
+		umessage_category,
+		flag_archieved,
+		archieved_date,
+		rec_status,
+		rec_created_date,
+		rec_created_by) VALUES `
+
+	for i := 0; i < len(params); i++ {
+		q += "(?)"
+		if i < (len(params) - 1) {
+			q += ","
+		}
+	}
+	log.Info(q)
+	query, args, err := sqlx.In(q, params...)
+	if err != nil {
+		return http.StatusBadGateway, err
+	}
+
+	query = db.Db.Rebind(query)
+	_, err = db.Db.Query(query, args...)
+	if err != nil {
+		log.Error(err.Error())
+		return http.StatusBadGateway, err
+	}
+	return http.StatusOK, nil
+}

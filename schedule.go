@@ -20,6 +20,11 @@ func scheduler() {
 	gocron.Every(1).Day().At("09:02").Do(promoOnceAday)            //lookup:312
 	gocron.Every(1).Day().At("10:02").Do(promoOnceBeginOnceBefore) //lookup:311
 	gocron.Every(1).Day().At("11:02").Do(promoOnce)                //lookup:310
+
+	//sc_user_notif blast
+	gocron.Every(1).Day().At("12:02").Do(userNotifOnceAday)            //lookup:312
+	gocron.Every(1).Day().At("13:03").Do(userNotifOnceBeginOnceBefore) //lookup:311
+	gocron.Every(1).Day().At("14:04").Do(userNotifOnce)                //lookup:310
 	<-gocron.Start()
 }
 
@@ -37,4 +42,16 @@ func promoOnceBeginOnceBefore() {
 
 func promoOnce() {
 	lib.PromoOnce()
+}
+
+func userNotifOnceAday() {
+	lib.UserNotifOnceAday()
+}
+
+func userNotifOnceBeginOnceBefore() {
+	lib.UserNotifOnceBeginOnceBefore()
+}
+
+func userNotifOnce() {
+	lib.UserNotifOnce()
 }

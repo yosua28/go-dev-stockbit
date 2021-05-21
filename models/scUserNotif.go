@@ -40,12 +40,21 @@ type UserNotifField struct {
 	NotifHdrKey       uint64  `db:"notif_hdr_key"            json:"notif_hdr_key"`
 	NotifCategoryKey  *uint64 `db:"notif_category_key"       json:"notif_category_key"`
 	NotifCategory     *string `db:"notif_category"           json:"notif_category"`
-	NotifStart        *string `db:"notif_start"          json:"notif_start"`
-	NotifEnd          *string `db:"notif_end"          json:"notif_end"`
+	NotifStart        *string `db:"notif_start"              json:"notif_start"`
+	NotifEnd          *string `db:"notif_end"                json:"notif_end"`
 	UmessageSubject   *string `db:"umessage_subject"         json:"umessage_subject"`
 	UmessageBody      *string `db:"umessage_body"            json:"umessage_body"`
 	AlertNotifTypeKey uint64  `db:"alert_notif_type_key"     json:"alert_notif_type_key"`
 	AlertNotifType    string  `db:"alert_notif_type"         json:"alert_notif_type"`
+}
+
+type UserNotifCron struct {
+	NotifHdrKey       uint64  `db:"notif_hdr_key"            json:"notif_hdr_key"`
+	NotifCategoryKey  *uint64 `db:"notif_category_key"       json:"notif_category_key"`
+	NotifCategory     *string `db:"notif_category"           json:"notif_category"`
+	UmessageSubject   *string `db:"umessage_subject"         json:"umessage_subject"`
+	UmessageBody      *string `db:"umessage_body"            json:"umessage_body"`
+	AlertNotifTypeKey uint64  `db:"alert_notif_type_key"     json:"alert_notif_type_key"`
 }
 
 func CreateScUserNotif(params map[string]string) (int, error) {
@@ -276,6 +285,78 @@ func AdminGetDetailUserNotif(c *UserNotifField, key string) (int, error) {
 	// Main query
 	log.Println(query)
 	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllUserNotifOnceCron(c *[]UserNotifCron) (int, error) {
+	query := `SELECT 
+				s.notif_hdr_key AS notif_hdr_key,
+				s.notif_category AS notif_category_key,
+				cat.lkp_name AS notif_category,
+				s.umessage_subject AS umessage_subject,
+				s.umessage_body AS umessage_body,
+				s.alert_notif_type AS alert_notif_type_key 
+			FROM sc_user_notif AS s
+			INNER JOIN gen_lookup AS cat ON cat.lookup_key = s.notif_category 
+			WHERE s.rec_status = 1 and s.alert_notif_type = '310'
+			AND DATE(NOW()) = DATE(s.notif_start)`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllUserNotifOnceBeginOnceBefore(c *[]UserNotifCron) (int, error) {
+	query := `SELECT 
+				s.notif_hdr_key AS notif_hdr_key,
+				s.notif_category AS notif_category_key,
+				cat.lkp_name AS notif_category,
+				s.umessage_subject AS umessage_subject,
+				s.umessage_body AS umessage_body,
+				s.alert_notif_type AS alert_notif_type_key 
+			FROM sc_user_notif AS s
+			INNER JOIN gen_lookup AS cat ON cat.lookup_key = s.notif_category 
+			WHERE s.rec_status = 1 and s.alert_notif_type = '311' AND 
+			((DATE(NOW()) = DATE(s.notif_start)) OR (DATE(NOW()) = DATE(s.notif_end)))`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetAllUserNotifOnceAday(c *[]UserNotifCron) (int, error) {
+	query := `SELECT 
+				s.notif_hdr_key AS notif_hdr_key,
+				s.notif_category AS notif_category_key,
+				cat.lkp_name AS notif_category,
+				s.umessage_subject AS umessage_subject,
+				s.umessage_body AS umessage_body,
+				s.alert_notif_type AS alert_notif_type_key 
+			FROM sc_user_notif AS s
+			INNER JOIN gen_lookup AS cat ON cat.lookup_key = s.notif_category 
+			WHERE s.rec_status = 1 and s.alert_notif_type = '312' AND 
+			(DATE(NOW()) <= DATE(s.notif_end)) AND (DATE(NOW()) >= DATE(s.notif_start))`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
