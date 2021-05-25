@@ -363,7 +363,7 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 			LEFT JOIN ms_agent AS ag ON ag.agent_key = r.agent_key 
 			LEFT JOIN sc_user_login AS u1 ON u1.user_login_key = r.rec_created_by 
 			LEFT JOIN sc_user_login AS u2 ON u2.user_login_key = r.rec_modified_by 
-			WHERE r.rec_status = 1 AND r.branch_key = 10 AND r.customer_key IS NULL ` + conditionNoCus +
+			WHERE r.rec_status = 1 AND r.customer_key IS NULL ` + conditionNoCus +
 		` UNION ALL` +
 		` SELECT 
 				r.oa_request_key as oa_request_key,
@@ -399,7 +399,7 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 			LEFT JOIN ms_agent AS ag ON ag.agent_key = r.agent_key 
 			LEFT JOIN sc_user_login AS u1 ON u1.user_login_key = r.rec_created_by 
 			LEFT JOIN sc_user_login AS u2 ON u2.user_login_key = r.rec_modified_by 
-			WHERE r.rec_status = 1 AND r.branch_key = 10 AND r.customer_key IS NOT NULL` + condition +
+			WHERE r.rec_status = 1 AND r.customer_key IS NOT NULL` + condition +
 		` GROUP BY r.customer_key ) AS dat`
 
 	var orderBy string
