@@ -332,6 +332,30 @@ func CreateTransaction(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_method", "Missing required parameter: payment_method")
 	}
 
+	var promoKey *string
+	promoCode := c.FormValue("promo_code")
+	if promoCode != "" {
+		err, enable, text, promoKeyRes := validatePromo(promoCode, customerKey, productKeyStr)
+		if err != nil {
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+		} else {
+			if enable == false {
+				return lib.CustomError(http.StatusBadRequest, text, text)
+			} else {
+				promoKey = promoKeyRes
+			}
+		}
+	}
+
+	transCalcMethod := c.FormValue("trans_calc_method")
+	if transCalcMethod != "" {
+		transCalcMethodKey, _ := strconv.ParseUint(transCalcMethod, 10, 64)
+		if transCalcMethodKey == 0 {
+			log.Error("Wrong value for parameter: trans_calc_method")
+			return lib.CustomError(http.StatusBadRequest, "Wrong value for parameter: trans_calc_method", "Missing required parameter: trans_calc_method")
+		}
+	}
+
 	var accKey string
 	var trAccountDB []models.TrAccount
 	status, err = models.GetAllTrAccount(&trAccountDB, params)
@@ -389,7 +413,7 @@ func CreateTransaction(c echo.Context) error {
 	params["trans_date"] = dateStr
 	params["trans_type_key"] = "1"
 	params["trx_code"] = "137"
-	params["trans_calc_method"] = "288"
+	params["trans_calc_method"] = transCalcMethod
 
 	layout := "2006-01-02"
 	now := time.Now()
@@ -443,6 +467,7 @@ func CreateTransaction(c echo.Context) error {
 	params["aca_key"] = acaKey
 	params["rec_status"] = "1"
 
+	settlementParams := make(map[string]string)
 	if typeKeyStr == "1" {
 		err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transfer", 0755)
 		if err != nil {
@@ -474,8 +499,10 @@ func CreateTransaction(c echo.Context) error {
 						return lib.CustomError(http.StatusInternalServerError)
 					}
 					params["rec_image1"] = filename + extension
+					settlementParams["rec_image1"] = filename + extension
 					dateLayout := "2006-01-02 15:04:05"
 					params["file_upload_date"] = time.Now().Format(dateLayout)
+					settlementParams["settle_realized_date"] = time.Now().Format(dateLayout)
 				}
 			}
 		}
@@ -513,10 +540,31 @@ func CreateTransaction(c echo.Context) error {
 		}
 	}
 
+	if promoKey != nil {
+		params["promo_code"] = promoCode
+	}
 	status, err, transactionID := models.CreateTrTransaction(params)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	//save to promo used
+	if promoKey != nil {
+		paramsPromoUsed := make(map[string]string)
+		paramsPromoUsed["used_date"] = time.Now().Format(dateLayout)
+		paramsPromoUsed["promo_key"] = *promoKey
+		paramsPromoUsed["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsPromoUsed["customer_key"] = customerKey
+		paramsPromoUsed["transaction_key"] = transactionID
+		paramsPromoUsed["used_status"] = "317"
+		paramsPromoUsed["rec_status"] = "1"
+		paramsPromoUsed["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsPromoUsed["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		_, err := models.CreateTrPromoUsed(paramsPromoUsed)
+		if err != nil {
+			log.Error(err.Error())
+		}
 	}
 
 	paramsTransaction["transaction_key"] = transactionID
@@ -534,7 +582,7 @@ func CreateTransaction(c echo.Context) error {
 		paramsTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
 	}
 
-	settlementParams := make(map[string]string)
+	
 	if paymentChannel == "285" {
 		orderID := c.FormValue("order_id")
 		if orderID == "" {

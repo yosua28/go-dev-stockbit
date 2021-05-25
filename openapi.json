@@ -2002,6 +2002,9 @@
                   "trans_source": {
                     "type": "integer"
                   },
+                  "trans_calc_method": {
+                    "type": "integer"
+                  },
                   "risk_waiver": {
                     "type": "integer",
                     "enum": [
@@ -2010,6 +2013,9 @@
                     ]
                   },
                   "trans_remarks": {
+                    "type": "string"
+                  },
+                  "promo_code": {
                     "type": "string"
                   },
                   "transfer_pic": {
