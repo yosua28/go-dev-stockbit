@@ -106,6 +106,9 @@ func router() *echo.Echo {
 
 	// SPIN
 	auth.POST("/spincreateorder", controllers.SpinCreateOrder).Name = "SpinCreateOrder"
+	
+	// Promo
+	auth.GET("/promo", controllers.GetPromoList).Name = "GetPromoList"
 
 	//Admin OA Request
 	admin.GET("/oarequestlist", controllers.GetOaRequestList).Name = "GetOaRequestList"
