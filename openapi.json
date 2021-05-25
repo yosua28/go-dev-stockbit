@@ -4008,88 +4008,63 @@
                   },
                   "data": [
                     {
-                      "product_key": 3,
-                      "product_id": 12,
-                      "product_code": "BDLSATU",
-                      "product_name": "MNC DANA LIKUID",
-                      "product_name_alt": "Dana Likuid",
-                      "min_sub_amount": 100000,
-                      "rec_image1": "https://devapi.mncasset.com/images/product/bdlsatu.jpg",
-                      "fund_type": {
-                        "fund_type_key": 2,
-                        "fund_type_code": "FI",
-                        "fund_type_name": "Pendapatan Tetap"
-                      },
-                      "nav_performance": {
-                        "nav_date": "2020-12-02 00:00:00.000000",
-                        "1d": "0.06%",
-                        "mtd": "0.06%",
-                        "1m": "1.31%",
-                        "3m": "2.12%",
-                        "6m": "4.80%",
-                        "1y": "-8.68%",
-                        "3y": "-0.27%",
-                        "5y": "19.11%",
-                        "ytd": "6.13%",
-                        "cagr": "6.81%",
-                        "all": "60.05%"
-                      },
-                      "nav": {
-                        "nav_date": "2020-12-02 00:00:00",
-                        "nav_value": 2503.2495
-                      },
-                      "risk_profile": {
-                        "risk_profile_key": 2,
-                        "risk_code": "RendahMenengah",
-                        "risk_name": "Moderat",
-                        "risk_desc": "Nasabah masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi lebih baik dibandingkan dengan produk regular perbankan.",
-                        "score": 0
-                      },
-                      "is_allow_redemption": true,
-                      "is_allow_switchin": true,
-                      "is_allow_product_destination": true
+                      "description": "fgddf dgf",
+                      "promo_code": "MAM04",
+                      "promo_key": 4,
+                      "promo_title": "sdff",
+                      "tnc": "rtytry",
+                      "valid_date": "12 Juni 2021"
                     },
                     {
-                      "product_key": 2,
-                      "product_id": 11,
-                      "product_code": "BDM",
-                      "product_name": "MNC DANA SYARIAH",
-                      "product_name_alt": "Dana Syariah",
-                      "min_sub_amount": 100000,
-                      "rec_image1": "https://devapi.mncasset.com/images/product/bdm.jpg",
-                      "fund_type": {
-                        "fund_type_key": 2,
-                        "fund_type_code": "FI",
-                        "fund_type_name": "Pendapatan Tetap"
-                      },
-                      "nav_performance": {
-                        "nav_date": "2020-12-02 00:00:00.000000",
-                        "1d": "-0.01%",
-                        "mtd": "-0.01%",
-                        "1m": "0.96%",
-                        "3m": "2.03%",
-                        "6m": "4.88%",
-                        "1y": "-6.42%",
-                        "3y": "2.57%",
-                        "5y": "20.91%",
-                        "ytd": "5.61%",
-                        "cagr": "7.26%",
-                        "all": "63.68%"
-                      },
-                      "nav": {
-                        "nav_date": "2020-12-02 00:00:00",
-                        "nav_value": 2753.589
-                      },
-                      "risk_profile": {
-                        "risk_profile_key": 2,
-                        "risk_code": "RendahMenengah",
-                        "risk_name": "Moderat",
-                        "risk_desc": "Nasabah masih tetap mengutamakan tingkat keutuhan nilai pokok investasi, namun bersedia menerima fluktuasi investasi jangka pendek untuk mendapatkan hasil investasi lebih baik dibandingkan dengan produk regular perbankan.",
-                        "score": 0
-                      },
-                      "is_allow_redemption": true,
-                      "is_allow_switchin": true,
-                      "is_allow_product_destination": true
+                      "description": "trgfyhfg",
+                      "promo_code": "dfds",
+                      "promo_key": 5,
+                      "promo_title": "dsfds",
+                      "tnc": " tghfgh",
+                      "valid_date": "31 Juli 2021"
+                    },
+                    {
+                      "description": "43ewds",
+                      "promo_code": "qwqw",
+                      "promo_key": 6,
+                      "promo_title": "dsf",
+                      "tnc": "ewrewr",
+                      "valid_date": "10 Agustus 2021"
+                    },
+                    {
+                      "description": "Hahaha ini promo tes image",
+                      "image": "https://devapi.mncasset.com/images/promo/LwEtyHR6KrBzGiPBT2m6.jpg",
+                      "promo_code": "QQWWEE",
+                      "promo_key": 8,
+                      "promo_title": "Oke gas pokoknya",
+                      "tnc": "Isi aja dulu",
+                      "valid_date": "30 September 2021"
+                    },
+                    {
+                      "description": "Hahaha ini promo tes image",
+                      "image": "https://devapi.mncasset.com/images/promo/WMWxk2QozY5Ll5l7vJhT.jpg",
+                      "promo_code": "QQWWEERR",
+                      "promo_key": 9,
+                      "promo_title": "Oke gas pokoknya",
+                      "tnc": "Isi aja dulu",
+                      "valid_date": "30 Oktober 2021"
+                    },
+                    {
+                      "description": "dfsd sdfsd",
+                      "promo_code": "UUYYTT",
+                      "promo_key": 10,
+                      "promo_title": "Okes",
+                      "tnc": "dsfgd dfgdf",
+                      "valid_date": "30 November 2021"
+                    },
+                    {
+                      "description": "dsfgd dsfsd ",
+                      "image": "https://devapi.mncasset.com/images/promo/LC932nQiHBFqi27kzjkk.jpg",
+                      "promo_code": "UUYYTTAA",
+                      "promo_key": 11,
+                      "promo_title": "Ha Ha Ha",
+                      "tnc": "ddgfd dfgfdgfgf",
+                      "valid_date": "30 Desember 2021"
                     }
                   ]
                 }
