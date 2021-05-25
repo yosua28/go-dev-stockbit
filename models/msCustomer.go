@@ -63,7 +63,8 @@ type MsCustomer struct {
 }
 
 type CustomerIndividuInquiry struct {
-	CustomerKey      uint64  `db:"customer_key"                json:"customer_key"`
+	OaRequestKey     uint64  `db:"oa_request_key"              json:"oa_request_key"`
+	CustomerKey      *uint64 `db:"customer_key"                json:"customer_key"`
 	Cif              string  `db:"cif"                         json:"cif"`
 	FullName         string  `db:"full_name"                   json:"full_name"`
 	DateBirth        string  `db:"date_birth"                  json:"date_birth"`
@@ -76,6 +77,10 @@ type CustomerIndividuInquiry struct {
 	BranchKey        *uint64 `db:"branch_key"                  json:"branch_key"`
 	BranchName       *string `db:"branch_name"                 json:"branch_name"`
 	AgentName        *string `db:"agent_name"                  json:"agent_name"`
+	CreatedDate      *string `db:"created_date"                json:"created_date"`
+	CreatedBy        *string `db:"created_by"                  json:"created_by"`
+	ModifiedDate     *string `db:"modified_date"               json:"modified_date"`
+	ModifiedBy       *string `db:"modified_by"                 json:"modified_by"`
 }
 
 type CustomerInstituionInquiry struct {
@@ -288,46 +293,26 @@ func GetLastUnitHolder(c *MsCustomer, value string) (int, error) {
 }
 
 func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint64, offset uint64, params map[string]string, paramsLike map[string]string, nolimit bool) (int, error) {
-	query := `SELECT 
-				c.customer_key AS customer_key, 
-				c.unit_holder_idno AS cif, 
-				c.full_name AS full_name, 
-				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
-				pd.idcard_no AS ktp, 
-				pd.phone_mobile AS phone_mobile, 
-				(CASE
-					WHEN c.sid_no IS NULL THEN ""
-					ELSE c.sid_no
-				END) AS sid,
-				(CASE
-					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
-					ELSE "Ya"
-				END) AS cif_suspend_flag, 
-				pd.mother_maiden_name AS mother_maiden_name,
-				r.oa_status as oa_status, 
-				br.branch_key as branch_key, 
-				br.branch_name as branch_name, 
-				ag.agent_name as agent_name  
-			FROM ms_customer AS c 
-			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
-			AS t2 ON c.customer_key = t2.customer_key
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
-			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
-			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
-			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
-			WHERE c.rec_status = 1`
 	var present bool
 	var whereClause []string
+	var whereClauseNoCus []string
 	var condition string
+	var conditionNoCus string
+	var limitOffset string
+	var orderCondition string
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
+			if field != "c.investor_type" {
+				whereClauseNoCus = append(whereClauseNoCus, field+" = '"+value+"'")
+			}
 			whereClause = append(whereClause, field+" = '"+value+"'")
 		}
 	}
 
 	for fieldLike, valueLike := range paramsLike {
 		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+		whereClauseNoCus = append(whereClauseNoCus, fieldLike+" like '%"+valueLike+"%'")
 	}
 
 	// Combile where clause
@@ -340,24 +325,100 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 			}
 		}
 	}
+	if len(whereClauseNoCus) > 0 {
+		conditionNoCus += " AND "
+		for index, where := range whereClauseNoCus {
+			conditionNoCus += where
+			if (len(whereClauseNoCus) - 1) > index {
+				conditionNoCus += " AND "
+			}
+		}
+	}
 	// Check order by
+
+	query := ` SELECT dat.* FROM 
+			(SELECT 
+				r.oa_request_key as oa_request_key, 
+				c.customer_key as customer_key,
+				'-' AS cif, 
+				pd.full_name AS full_name, 
+				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
+				pd.idcard_no AS ktp, 
+				pd.phone_mobile AS phone_mobile, 
+				'-' AS sid, 
+				'Tidak' AS cif_suspend_flag, 
+				pd.mother_maiden_name AS mother_maiden_name, 
+				r.oa_status AS oa_status, 
+				br.branch_key AS branch_key, 
+				br.branch_name AS branch_name, 
+				ag.agent_name AS agent_name, 
+				DATE_FORMAT(r.rec_created_date, '%d %M %Y') AS created_date, 
+				u1.ulogin_full_name as created_by, 
+				DATE_FORMAT(r.rec_modified_date, '%d %M %Y') AS modified_date, 
+				u2.ulogin_full_name as modified_by 
+			FROM oa_request AS r 
+			left join ms_customer as c on c.customer_key = r.customer_key 
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key 
+			LEFT JOIN ms_branch AS br ON br.branch_key = r.branch_key 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = r.agent_key 
+			LEFT JOIN sc_user_login AS u1 ON u1.user_login_key = r.rec_created_by 
+			LEFT JOIN sc_user_login AS u2 ON u2.user_login_key = r.rec_modified_by 
+			WHERE r.rec_status = 1 AND r.branch_key = 10 AND r.customer_key IS NULL ` + conditionNoCus +
+		` UNION ALL` +
+		` SELECT 
+				r.oa_request_key as oa_request_key,
+				c.customer_key as customer_key,
+				c.unit_holder_idno AS cif, 
+				pd.full_name AS full_name, 
+				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
+				pd.idcard_no AS ktp, 
+				pd.phone_mobile AS phone_mobile, 
+				(CASE
+					WHEN c.sid_no IS NULL THEN "-"
+					ELSE c.sid_no
+				END) AS sid,
+				(CASE
+					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
+					ELSE "Ya"
+				END) AS cif_suspend_flag, 
+				pd.mother_maiden_name AS mother_maiden_name,
+				r.oa_status AS oa_status, 
+				br.branch_key AS branch_key, 
+				br.branch_name AS branch_name, 
+				ag.agent_name AS agent_name, 
+				DATE_FORMAT(r.rec_created_date, '%d %M %Y') AS created_date, 
+				u1.ulogin_full_name as created_by, 
+				DATE_FORMAT(r.rec_modified_date, '%d %M %Y') AS modified_date, 
+				u2.ulogin_full_name as modified_by 
+			FROM oa_request AS r
+			INNER JOIN ms_customer AS c ON r.customer_key = c.customer_key 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key)
+			AS t2 ON r.oa_request_key = t2.oa_request_key
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
+			LEFT JOIN ms_branch AS br ON br.branch_key = r.branch_key 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = r.agent_key 
+			LEFT JOIN sc_user_login AS u1 ON u1.user_login_key = r.rec_created_by 
+			LEFT JOIN sc_user_login AS u2 ON u2.user_login_key = r.rec_modified_by 
+			WHERE r.rec_status = 1 AND r.branch_key = 10 AND r.customer_key IS NOT NULL` + condition +
+		` GROUP BY r.customer_key ) AS dat`
+
 	var orderBy string
 	var orderType string
 	if orderBy, present = params["orderBy"]; present == true {
-		condition += " ORDER BY " + orderBy
+		orderCondition += " ORDER BY " + orderBy
 		if orderType, present = params["orderType"]; present == true {
-			condition += " " + orderType
+			orderCondition += " " + orderType
 		}
 	}
-	query += condition
 
-	// Query limit and offset
 	if !nolimit {
-		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		limitOffset += " LIMIT " + strconv.FormatUint(limit, 10)
 		if offset > 0 {
-			query += " OFFSET " + strconv.FormatUint(offset, 10)
+			limitOffset += " OFFSET " + strconv.FormatUint(offset, 10)
 		}
 	}
+
+	query += orderCondition + limitOffset
 
 	// Main query
 	log.Println(query)
@@ -371,26 +432,23 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 }
 
 func CountAdminGetAllCustomerIndividuInquery(c *CountData, params map[string]string, paramsLike map[string]string) (int, error) {
-	query := `SELECT 
-				count(c.customer_key) AS count_data 
-			FROM ms_customer AS c
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key
-			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
-			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
-			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
-			WHERE c.rec_status = 1`
-
 	var whereClause []string
+	var whereClauseNoCus []string
 	var condition string
+	var conditionNoCus string
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
+			if field != "c.investor_type" {
+				whereClauseNoCus = append(whereClauseNoCus, field+" = '"+value+"'")
+			}
 			whereClause = append(whereClause, field+" = '"+value+"'")
 		}
 	}
 
 	for fieldLike, valueLike := range paramsLike {
 		whereClause = append(whereClause, fieldLike+" like '%"+valueLike+"%'")
+		whereClauseNoCus = append(whereClauseNoCus, fieldLike+" like '%"+valueLike+"%'")
 	}
 
 	// Combile where clause
@@ -403,6 +461,34 @@ func CountAdminGetAllCustomerIndividuInquery(c *CountData, params map[string]str
 			}
 		}
 	}
+	if len(whereClauseNoCus) > 0 {
+		conditionNoCus += " AND "
+		for index, where := range whereClauseNoCus {
+			conditionNoCus += where
+			if (len(whereClauseNoCus) - 1) > index {
+				conditionNoCus += " AND "
+			}
+		}
+	}
+	// Check order by
+
+	query := ` SELECT COUNT(dat.oa_request_key)AS count_data FROM 
+			(SELECT 
+				r.oa_request_key as oa_request_key 
+			FROM oa_request AS r 
+			left join ms_customer as c on c.customer_key = r.customer_key 
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key 
+			WHERE r.rec_status = 1 AND r.customer_key IS NULL ` + conditionNoCus +
+		` UNION ALL` +
+		` SELECT 
+				r.oa_request_key as oa_request_key 
+			FROM oa_request AS r
+			INNER JOIN ms_customer AS c ON r.customer_key = c.customer_key 
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key)
+			AS t2 ON r.oa_request_key = t2.oa_request_key
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key 
+			WHERE r.rec_status = 1 AND r.customer_key IS NOT NULL` + condition +
+		` GROUP BY r.customer_key ) AS dat`
 
 	// Main query
 	log.Println(query)
@@ -541,16 +627,20 @@ func CountAdminGetAllCustomerInstitutionInquery(c *CountData, params map[string]
 	return http.StatusOK, nil
 }
 
-func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, customerKey string) (int, error) {
+func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, requestKey string) (int, error) {
 	query := `SELECT 
-				c.customer_key AS customer_key, 
-				c.unit_holder_idno AS cif, 
-				c.full_name AS full_name, 
+				r.oa_request_key as oa_request_key, 
+				c.customer_key as customer_key, 
+				(CASE
+					WHEN c.unit_holder_idno IS NULL THEN "-"
+					ELSE c.unit_holder_idno
+				END) AS cif,
+				pd.full_name AS full_name, 
 				DATE_FORMAT(pd.date_birth, '%d %M %Y') AS date_birth, 
 				pd.idcard_no AS ktp, 
 				pd.phone_mobile AS phone_mobile, 
 				(CASE
-					WHEN c.sid_no IS NULL THEN ""
+					WHEN c.sid_no IS NULL THEN "-"
 					ELSE c.sid_no
 				END) AS sid,
 				(CASE
@@ -558,17 +648,22 @@ func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, customerKey stri
 					ELSE "Ya"
 				END) AS cif_suspend_flag, 
 				pd.mother_maiden_name AS mother_maiden_name, 
-				br.branch_key as branch_key,  
-				br.branch_name as branch_name, 
-				ag.agent_name as agent_name  
-			FROM ms_customer AS c 
-			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request WHERE rec_status = 1 GROUP BY customer_key) 
-			AS t2 ON c.customer_key = t2.customer_key
-			INNER JOIN oa_request AS r ON c.customer_key = r.customer_key AND r.oa_request_key = t2.oa_request_key
-			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key
-			LEFT JOIN ms_branch AS br ON br.branch_key = c.openacc_branch_key AND br.rec_status = 1 
-			LEFT JOIN ms_agent AS ag ON ag.agent_key = c.openacc_agent_key AND ag.rec_status = 1 
-			WHERE c.rec_status = 1 AND c.investor_type = 263 AND c.customer_key = ` + customerKey
+				r.oa_status AS oa_status, 
+				r.branch_key AS branch_key, 
+				br.branch_name AS branch_name, 
+				ag.agent_name AS agent_name, 
+				DATE_FORMAT(r.rec_created_date, '%d %M %Y') AS created_date, 
+				u1.ulogin_full_name as created_by, 
+				DATE_FORMAT(r.rec_modified_date, '%d %M %Y') AS modified_date, 
+				u2.ulogin_full_name as modified_by 
+			FROM oa_request AS r 
+			left join ms_customer as c on c.customer_key = r.customer_key 
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key 
+			LEFT JOIN ms_branch AS br ON br.branch_key = r.branch_key 
+			LEFT JOIN ms_agent AS ag ON ag.agent_key = r.agent_key 
+			LEFT JOIN sc_user_login AS u1 ON u1.user_login_key = r.rec_created_by 
+			LEFT JOIN sc_user_login AS u2 ON u2.user_login_key = r.rec_modified_by 
+			WHERE r.rec_status = 1 AND r.oa_request_key = ` + requestKey
 
 	// Main query
 	log.Println(query)

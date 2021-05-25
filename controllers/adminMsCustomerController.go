@@ -82,35 +82,13 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 		noLimit = false
 	}
 
-	items := []string{"cif", "full_name", "sid", "date_birth", "customer_key", "phone_mobile", "cif_suspend_flag", "mother_maiden_name", "ktp"}
+	items := []string{"oa_request_key", "cif", "full_name", "sid", "date_birth", "customer_key", "phone_mobile", "cif_suspend_flag", "mother_maiden_name", "ktp"}
 
 	params := make(map[string]string)
 	orderBy := c.QueryParam("order_by")
 	if orderBy != "" {
 		_, found := lib.Find(items, orderBy)
 		if found {
-
-			var orderByJoin string
-			orderByJoin = "c.customer_key"
-			if orderBy == "cif" {
-				orderByJoin = "c.unit_holder_idno"
-			} else if orderBy == "full_name" {
-				orderByJoin = "c.full_name"
-			} else if orderBy == "sid" {
-				orderByJoin = "c.sid"
-			} else if orderBy == "date_birth" {
-				orderByJoin = "pd.date_birth"
-			} else if orderBy == "phone_mobile" {
-				orderByJoin = "pd.phone_mobile"
-			} else if orderBy == "cif_suspend_flag" {
-				orderByJoin = "c.cif_suspend_flag"
-			} else if orderBy == "mother_maiden_name" {
-				orderByJoin = "pd.mother_maiden_name"
-			} else if orderBy == "ktp" {
-				orderByJoin = "pd.idcard_no"
-			}
-
-			params["orderBy"] = orderByJoin
 			params["orderBy"] = orderBy
 			orderType := c.QueryParam("order_type")
 			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
@@ -121,7 +99,7 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter order_by", "Wrong input for parameter order_by")
 		}
 	} else {
-		params["orderBy"] = "c.customer_key"
+		params["orderBy"] = "oa_request_key"
 		params["orderType"] = "DESC"
 	}
 
@@ -135,7 +113,7 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 	}
 	fullname := c.QueryParam("full_name")
 	if fullname != "" {
-		paramsLike["c.full_name"] = fullname
+		paramsLike["pd.full_name"] = fullname
 	}
 	datebirth := c.QueryParam("date_birth")
 	if datebirth != "" {
@@ -157,7 +135,7 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 		log.Println(lib.Profile)
 		if lib.Profile.BranchKey != nil {
 			strBranchKey := strconv.FormatUint(*lib.Profile.BranchKey, 10)
-			params["c.openacc_branch_key"] = strBranchKey
+			params["r.branch_key"] = strBranchKey
 		} else {
 			log.Error("User Branch haven't Branch")
 			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
@@ -376,7 +354,7 @@ func GetListCustomerInstitutionInquiry(c echo.Context) error {
 func GetDetailCustomerIndividu(c echo.Context) error {
 	var err error
 
-	keyStr := c.Param("key")
+	keyStr := c.Param("key") //oa_request_key
 	if keyStr == "" {
 		log.Error("Missing required parameter: key")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: key", "Missing required parameter: key")
@@ -410,11 +388,21 @@ func GetDetailCustomerIndividu(c echo.Context) error {
 	}
 
 	var oaCustomer []models.OaCustomer
-	_, err = models.AdminGetAllOaByCustomerKey(&oaCustomer, keyStr)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			return lib.CustomError(http.StatusNotFound)
+	if customer.CustomerKey != nil {
+		_, err = models.AdminGetAllOaByCustomerKey(&oaCustomer, strconv.FormatUint(*customer.CustomerKey, 10))
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(http.StatusNotFound)
+			}
 		}
+	} else {
+		_, err = models.AdminGetAllOaByOaKey(&oaCustomer, strconv.FormatUint(customer.OaRequestKey, 10))
+		if err != nil {
+			if err != sql.ErrNoRows {
+				return lib.CustomError(http.StatusNotFound)
+			}
+		}
+
 	}
 
 	var responseData models.DetailCustomerIndividuInquiry
@@ -563,10 +551,10 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
-	if oareq.CustomerKey == nil {
-		log.Println("data belum jadi customer")
-		return lib.CustomError(http.StatusNotFound)
-	}
+	// if oareq.CustomerKey == nil {
+	// 	log.Println("data belum jadi customer")
+	// 	return lib.CustomError(http.StatusNotFound)
+	// }
 
 	var responseData models.DetailPersonalDataCustomerIndividu
 
@@ -578,7 +566,11 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 	responseData.OaEntryStart = date.Format(newLayout)
 	date, _ = time.Parse(layout, oareq.OaEntryEnd)
 	responseData.OaEntryEnd = date.Format(newLayout)
-	responseData.SalesCode = *oareq.SalesCode
+	if oareq.SalesCode != nil {
+		responseData.SalesCode = *oareq.SalesCode
+	} else {
+		responseData.SalesCode = ""
+	}
 
 	var oaRequestLookupIds []string
 
@@ -1242,16 +1234,16 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 	}
 
 	//set customer
-	var customer models.CustomerDetailPersonalData
-	strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
-	_, err = models.GetCustomerDetailPersonalData(&customer, strCustomerKey)
-	if err == nil {
-		responseData.Customer = &customer
-	}
+	// var customer models.CustomerDetailPersonalData
+	// strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
+	// _, err = models.GetCustomerDetailPersonalData(&customer, strCustomerKey)
+	// if err == nil {
+	// 	responseData.Customer = &customer
+	// }
 
-	if customer.InvestorType != "263" { //individu
-		return lib.CustomError(http.StatusNotFound)
-	}
+	// if customer.InvestorType != "263" { //individu
+	// 	return lib.CustomError(http.StatusNotFound)
+	// }
 
 	//mapping user approval
 	var userApprovalIds []string
@@ -1905,6 +1897,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsUserLogin["user_category_key"] = "1"
 	paramsUserLogin["last_access"] = time.Now().Format(dateLayout)
 	paramsUserLogin["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserLogin["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	paramsUserLogin["accept_login_tnc"] = "1"
 	paramsUserLogin["allowed_sharing_login"] = "1"
 	paramsUserLogin["string_token"] = verifyKey
@@ -1925,6 +1918,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsOaRequest["agent_key"] = agentkey
 	paramsOaRequest["oa_request_type"] = "127"
 	paramsOaRequest["rec_status"] = "1"
+	paramsOaRequest["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsOaRequest["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//OA_POSTAL_ADDRESS CARD ID
 	addressIDParams := make(map[string]string)
@@ -1943,6 +1938,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	addressDomicileParams["kecamatan_key"] = kecamatandomicile
 	addressDomicileParams["postal_code"] = postaldomicile
 	addressDomicileParams["rec_status"] = "1"
+	addressDomicileParams["rec_created_date"] = time.Now().Format(dateLayout)
+	addressDomicileParams["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//MS_BANK_ACCOUNT
 	paramsBank := make(map[string]string)
@@ -1954,6 +1951,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsBank["bank_account_type"] = "1"
 	paramsBank["rec_domain"] = "1"
 	paramsBank["rec_status"] = "1"
+	paramsBank["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsBank["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//OA_PERSONAL_DATA
 	log.Info("dateBirth: " + dateBirth)
@@ -1984,6 +1983,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsOaPersonalData["mother_maiden_name"] = motherMaidenName
 	paramsOaPersonalData["emergency_full_name"] = emergencyName
 	paramsOaPersonalData["rec_status"] = "1"
+	paramsOaPersonalData["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsOaPersonalData["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	tx, _ := db.Db.Begin()
 
@@ -2234,6 +2235,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	paramsOaRiskProfile["risk_profile_key"] = strconv.FormatUint(riskProfile.RiskProfileKey, 10)
 	paramsOaRiskProfile["score_result"] = scoreStr
 	paramsOaRiskProfile["rec_status"] = "1"
+	paramsOaRiskProfile["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsOaRiskProfile["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	status, err = models.CreateOaRiskProfile(paramsOaRiskProfile)
 	if err != nil {

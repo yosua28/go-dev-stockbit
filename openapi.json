@@ -16455,6 +16455,7 @@
             "schema": {
               "type": "string",
               "enum": [
+                "oa_request_key",
                 "cif",
                 "full_name",
                 "sid",
@@ -16568,34 +16569,44 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "customer_key": 230,
-                      "cif": "202012000007",
-                      "full_name": "adsadasdas",
-                      "date_birth": "01 August 1980",
-                      "ktp": "3171040000000003",
-                      "phone_mobile": "081318696023",
-                      "sid": "",
+                      "oa_request_key": 153,
+                      "customer_key": null,
+                      "cif": "-",
+                      "full_name": "Hizkia Pudjapurna",
+                      "date_birth": "21 September 1987",
+                      "ktp": "3174072109870001",
+                      "phone_mobile": "081284305875",
+                      "sid": "-",
                       "cif_suspend_flag": "Tidak",
-                      "mother_maiden_name": "asdasdas",
-                      "oa_status": "260",
-                      "branch_key": 1,
-                      "branch_name": "MNC ASSET HO (BRANCH)",
-                      "agent_name": "SALES MNC DUIT"
+                      "mother_maiden_name": "Mami",
+                      "oa_status": "258",
+                      "branch_key": 10,
+                      "branch_name": "BANDUNG (BRANCH)",
+                      "agent_name": "SALES MOHAMAD RAZAB",
+                      "created_date": "17 May 2021",
+                      "created_by": "yosua.role.12@gmail.com",
+                      "modified_date": "17 May 2021",
+                      "modified_by": "yosua.role.12@gmail.com"
                     },
                     {
-                      "customer_key": 229,
-                      "cif": "202012000006",
-                      "full_name": "Muhammad khair",
-                      "date_birth": "01 August 1980",
-                      "ktp": "3171040404040003",
-                      "phone_mobile": "081318696023",
-                      "sid": "",
+                      "oa_request_key": 152,
+                      "customer_key": 269,
+                      "cif": "20215000002",
+                      "full_name": "Yooo Naaa",
+                      "date_birth": "01 March 2021",
+                      "ktp": "532424234324563",
+                      "phone_mobile": "081987665432",
+                      "sid": "-",
                       "cif_suspend_flag": "Tidak",
-                      "mother_maiden_name": "sadasdasd",
-                      "oa_status": "260",
-                      "branch_key": 1,
-                      "branch_name": "MNC ASSET HO (BRANCH)",
-                      "agent_name": "SALES MNC DUIT"
+                      "mother_maiden_name": "tyr rtyrt",
+                      "oa_status": "258",
+                      "branch_key": 10,
+                      "branch_name": "BANDUNG (BRANCH)",
+                      "agent_name": "SALES APERD-PHILLIP SECURITIES",
+                      "created_date": "17 May 2021",
+                      "created_by": "yosua.role.12@gmail.com",
+                      "modified_date": "17 May 2021",
+                      "modified_by": "yosua.role.12@gmail.com"
                     }
                   ]
                 }
@@ -16829,7 +16840,7 @@
           {
             "name": "key",
             "in": "path",
-            "description": "customer key",
+            "description": "oa request key",
             "required": true,
             "schema": {
               "type": "integer"
@@ -16849,26 +16860,39 @@
                   },
                   "data": {
                     "header": {
-                      "customer_key": 55,
-                      "cif": "202010000001",
-                      "full_name": "Annafrid MP Nikijuluw",
-                      "date_birth": "06 January 1979",
-                      "ktp": "3175074601790009",
-                      "phone_mobile": "087877991679",
-                      "sid": "",
+                      "oa_request_key": 152,
+                      "customer_key": 269,
+                      "cif": "20215000002",
+                      "full_name": "Yooo Naaa",
+                      "date_birth": "01 March 2021",
+                      "ktp": "532424234324563",
+                      "phone_mobile": "081987665432",
+                      "sid": "-",
                       "cif_suspend_flag": "Tidak",
-                      "mother_maiden_name": "Yati",
-                      "branch_key": 1,
-                      "branch_name": "MNC ASSET HO (BRANCH)",
-                      "agent_name": "SALES MNC DUIT"
+                      "mother_maiden_name": "tyr rtyrt",
+                      "oa_status": "258",
+                      "branch_key": 10,
+                      "branch_name": "BANDUNG (BRANCH)",
+                      "agent_name": "SALES APERD-PHILLIP SECURITIES",
+                      "created_date": "17 May 2021",
+                      "created_by": "yosua.role.12@gmail.com",
+                      "modified_date": "17 May 2021",
+                      "modified_by": "yosua.role.12@gmail.com"
                     },
                     "personal_data": [
                       {
-                        "oa_request_key": 55,
+                        "oa_request_key": 151,
                         "jenis": "NEW",
-                        "tahun": "2020",
-                        "tgl_pengajuan": "26 November 2020",
-                        "status_oa": "CUSTOMER_BUILD"
+                        "tahun": "2021",
+                        "tgl_pengajuan": "17 May 2021",
+                        "status_oa": "KYC_APPROVED"
+                      },
+                      {
+                        "oa_request_key": 152,
+                        "jenis": "PENGKINIAN PROFILE RISIKO",
+                        "tahun": "2021",
+                        "tgl_pengajuan": "17 May 2021",
+                        "status_oa": "OA_ENTRIED"
                       }
                     ]
                   }
