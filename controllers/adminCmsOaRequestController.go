@@ -2494,11 +2494,6 @@ func GetDetailPengkinianPersonalDataLastHistory(c echo.Context) error {
 }
 
 func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
-	errorAuth := initAuthCsKycFundAdmin()
-	if errorAuth != nil {
-		log.Error("User Autorizer")
-		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
-	}
 	var err error
 	var status int
 	decimal.MarshalJSONWithoutQuotes = true

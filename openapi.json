@@ -23268,6 +23268,7 @@
                     "message_client": "OK"
                   },
                   "data": {
+                    "customer_key": 269,
                     "branch_key": 1,
                     "agent_key": 1,
                     "annual_income": 62,
@@ -23678,6 +23679,144 @@
                     "risk_name": "Agresif",
                     "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
                     "score": 70
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/customer/check-unique-email": {
+      "post": {
+        "description": "Validate Unique Email",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "email": {
+                    "type": "string"
+                  },
+                  "user_login_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "email"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "valid": true,
+                    "message": "Email valid"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/customer/check-unique-no-id": {
+      "post": {
+        "description": "Validate Unique ID Card No",
+        "tags": [
+          "Admin Customer"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "no_id": {
+                    "type": "string"
+                  },
+                  "customer_key": {
+                    "type": "integer"
+                  }
+                },
+                "required": [
+                  "no_id"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "valid": true,
+                    "message": "ID Card valid"
                   }
                 }
               }

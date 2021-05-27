@@ -2433,6 +2433,11 @@ func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
 
 	responseData := make(map[string]interface{})
 	responseData["full_name"] = personalDataDB.FullName
+	if oaData.CustomerKey != nil {
+		responseData["customer_key"] = *oaData.CustomerKey
+	} else {
+		responseData["customer_key"] = nil
+	}
 	if oaData.BranchKey != nil {
 		responseData["branch_key"] = *oaData.BranchKey
 	} else {
@@ -3583,6 +3588,88 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	responseData.RiskName = riskProfile.RiskName
 	responseData.RiskDesc = riskProfile.RiskDesc
 	responseData.Score = score
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func CheckUniqueEmail(c echo.Context) error {
+	email := c.FormValue("email")
+	if email == "" {
+		log.Error("Wrong input for parameter: email")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: email", "Missing required parameter: email")
+	}
+
+	var userKey *string
+	userLoginKey := c.FormValue("user_login_key")
+	if userLoginKey != "" {
+		userKey = &userLoginKey
+	}
+
+	var countData models.CountData
+	status, err := models.ValidateUniqueData(&countData, "ulogin_email", email, userKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	var valid bool
+	var message string
+	if int(countData.CountData) > int(0) {
+		valid = false
+		message = "Email sudah digunakan"
+	} else {
+		valid = true
+		message = "Email valid"
+	}
+	responseData := make(map[string]interface{})
+	responseData["valid"] = valid
+	responseData["message"] = message
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func CheckUniqueNoId(c echo.Context) error {
+	noId := c.FormValue("no_id")
+	if noId == "" {
+		log.Error("Wrong input for parameter: no_id")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: no_id", "Missing required parameter: no_id")
+	}
+
+	var cusKey *string
+	customerKey := c.FormValue("customer_key")
+	if customerKey != "" {
+		cusKey = &customerKey
+	}
+
+	var countData models.CountData
+	status, err := models.ValidateUniquePersonalData(&countData, "b.idcard_no", noId, cusKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	var valid bool
+	var message string
+	if int(countData.CountData) > int(0) {
+		valid = false
+		message = "ID Card sudah digunakan"
+	} else {
+		valid = true
+		message = "ID Card valid"
+	}
+	responseData := make(map[string]interface{})
+	responseData["valid"] = valid
+	responseData["message"] = message
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
