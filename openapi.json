@@ -2126,28 +2126,7 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "post_key": 1,
-                    "post_subtype": {
-                      "post_subtype_key": 1,
-                      "post_subtype_code": "JUMBOTRON",
-                      "post_subtype_name": "Top Home Banner"
-                    },
-                    "post_title": "",
-                    "post_sub_title": "",
-                    "post_content": "",
-                    "post_content_author": "QA",
-                    "post_content_sources": "-",
-                    "post_publish_start": "01 Jan 2020",
-                    "post_publish_thru": "31 Dec 2500",
-                    "post_page_allowed": false,
-                    "post_comment_allowed": false,
-                    "post_comment_displayed": false,
-                    "post_files_allowed": false,
-                    "post_video_allowed": false,
-                    "post_video_url": "",
-                    "post_pinned": true,
-                    "rec_image1": "/ibanner1.jpg",
-                    "rec_image2": "/banner1.jpg"
+                    "message": "Promo berlaku sampai tanggal yang sudah disepakati sebelumnya"
                   }
                 }
               }
