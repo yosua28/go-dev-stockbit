@@ -182,11 +182,11 @@ func CreateTransaction(c echo.Context) error {
 			}
 			if unitValue.Cmp(product.MinRedUnit) == -1 {
 				log.Error("red unit < minimum red")
-				return lib.CustomError(http.StatusBadRequest, "red unit < minum red", "Minimum redemption untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinRedUnit)+"unit")
+				return lib.CustomError(http.StatusBadRequest, "red unit < minum red", "Minimum redemption untuk product ini adalah: "+product.MinRedUnit.Truncate(2).String()+"unit")
 			}
 			if balanceUnit.Sub(unitValue).Cmp(product.MinUnitAfterRed) == -1 {
 				log.Error("unit after redemption < minimum unit after red")
-				return lib.CustomError(http.StatusBadRequest, "unit after redemption < minimum unit after red", "Minumum unit setelah redemption untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinUnitAfterRed)+"unit")
+				return lib.CustomError(http.StatusBadRequest, "unit after redemption < minimum unit after red", "Minumum unit setelah redemption untuk product ini adalah: "+product.MinUnitAfterRed.Truncate(2).String()+"unit")
 			}
 		}
 	} else {
@@ -208,7 +208,7 @@ func CreateTransaction(c echo.Context) error {
 			}
 			if value.Cmp(product.MinSubAmount) == -1 {
 				log.Error("sub amount < minimum sub")
-				return lib.CustomError(http.StatusBadRequest, "sub amount < minum sub", "Minumum subscription untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinSubAmount))
+				return lib.CustomError(http.StatusBadRequest, "sub amount < minum sub", "Minumum subscription untuk product ini adalah: "+product.MinSubAmount.Truncate(2).String())
 			}
 		} else if typeKeyStr == "2" {
 			typeStr = "redemption"
@@ -218,7 +218,7 @@ func CreateTransaction(c echo.Context) error {
 			}
 			if unitValue == zero && value.Cmp(product.MinRedAmount) == -1 {
 				log.Error("red amount < minimum red")
-				return lib.CustomError(http.StatusBadRequest, "red amount < minimum red", "Minumum redemption untuk product ini adalah: "+fmt.Sprintf("%.3f", product.MinRedAmount))
+				return lib.CustomError(http.StatusBadRequest, "red amount < minimum red", "Minumum redemption untuk product ini adalah: "+product.MinRedAmount.Truncate(2).String())
 			}
 		}
 	} else {
@@ -1173,6 +1173,54 @@ func GetTransactionList(c echo.Context) error {
 			}
 			responseData = append(responseData, data)
 		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+}
+
+func ValidatePromoTransaction(c echo.Context) error {
+
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	}
+
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+
+	productKeyStr := c.QueryParam("product_key")
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err == nil && productKey > 0 {
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+			}
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	responseData := make(map[string]string)
+	promoCode := c.QueryParam("promo_code")
+	if promoCode != "" {
+		err, enable, text, _ := validatePromo(promoCode, customerKey, productKeyStr)
+		if err != nil {
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+		} else {
+			if enable == false {
+				return lib.CustomError(http.StatusBadRequest, text, text)
+			}
+		}
+		responseData["message"] = text
 	}
 
 	var response lib.Response
