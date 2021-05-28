@@ -11,15 +11,15 @@ import (
 )
 
 type UserProfile struct {
-	FullName            string              `json:"full_name"`
-	SID                 string              `json:"sid"`
-	Email               string              `json:"email"`
-	CIF                 string              `json:"cif"`
-	PhoneNumber         string              `json:"phone_number"`
-	CifSuspendFlag      bool                `json:"cif_suspend_flag"`
-	RiskProfile         MsRiskProfileInfo   `json:"risk_profile"`
-	RecImage1           string              `json:"rec_image1"`
-	BankAcc             BankAccount         `json:"bank_account"`
+	FullName       string            `json:"full_name"`
+	SID            string            `json:"sid"`
+	Email          string            `json:"email"`
+	CIF            string            `json:"cif"`
+	PhoneNumber    string            `json:"phone_number"`
+	CifSuspendFlag bool              `json:"cif_suspend_flag"`
+	RiskProfile    MsRiskProfileInfo `json:"risk_profile"`
+	RecImage1      string            `json:"rec_image1"`
+	BankAcc        BankAccount       `json:"bank_account"`
 }
 
 type OaPersonalData struct {
@@ -216,6 +216,28 @@ func GetOaPersonalDataIn(c *[]OaPersonalData, value []string, field string) (int
 	err := db.Db.Select(c, query)
 	if err != nil {
 		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func ValidateUniquePersonalData(c *CountData, field string, value string, customerKey *string) (int, error) {
+	var query string
+	query = `SELECT COUNT(a.oa_request_key)AS count_data
+				FROM oa_request a
+			INNER JOIN oa_personal_data b ON a.oa_request_key = b.oa_request_key
+            where ` + field + ` = '` + value + `'`
+
+	if customerKey != nil {
+		query += ` AND a.customer_key != '` + *customerKey + `'`
+	}
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
 		return http.StatusBadGateway, err
 	}
 

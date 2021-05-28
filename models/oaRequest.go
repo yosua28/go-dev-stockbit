@@ -791,6 +791,29 @@ func AdminGetAllOaByCustomerKey(c *[]OaCustomer, customerKey string) (int, error
 	return http.StatusOK, nil
 }
 
+func AdminGetAllOaByOaKey(c *[]OaCustomer, requestKey string) (int, error) {
+	query := `SELECT 
+				o.oa_request_key AS oa_request_key,
+				g.lkp_name AS jenis,
+				YEAR(o.oa_entry_start) AS tahun,
+				DATE_FORMAT(o.oa_entry_end, '%d %M %Y') AS tgl_pengajuan,
+				s.lkp_name AS status_oa 
+			FROM oa_request AS o 
+			LEFT JOIN gen_lookup AS g ON g.lookup_key = o.oa_request_type
+			LEFT JOIN gen_lookup AS s ON s.lookup_key = o.oa_status 
+			WHERE o.rec_status = 1 AND o.oa_request_key = ` + requestKey
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
 type OaRequestKeyLastHistory struct {
 	OaRequestKey uint64  `db:"oa_request_key"             json:"oa_request_key"`
 	RecOrder     *uint64 `db:"rec_order"                  json:"rec_order"`

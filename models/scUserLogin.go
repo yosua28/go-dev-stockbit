@@ -722,3 +722,24 @@ func AdminGetAllUserBlastPromo(c *[]UserBlastPromo) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func ValidateUniqueData(c *CountData, field string, value string, userLoginKey *string) (int, error) {
+	var query string
+	query = `SELECT
+				count(user_login_key) AS count_data
+              FROM sc_user_login where ` + field + ` = '` + value + `'`
+
+	if userLoginKey != nil {
+		query += ` AND user_login_key != '` + *userLoginKey + `'`
+	}
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
