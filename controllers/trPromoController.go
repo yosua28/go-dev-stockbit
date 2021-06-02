@@ -6,8 +6,8 @@ import (
 	"api/models"
 	"net/http"
 	"strconv"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/shopspring/decimal"
@@ -69,6 +69,7 @@ func GetPromoList(c echo.Context) error {
 		noLimit = false
 	}
 	params := make(map[string]string)
+	params["rec_status"] = "1"
 
 	var promoDB []models.TrPromo
 	status, err = models.GetAllTrPromoActive(&promoDB, limit, offset, params, noLimit)
@@ -79,7 +80,7 @@ func GetPromoList(c echo.Context) error {
 	var responseData []map[string]interface{}
 	for _, promo := range promoDB {
 		data := make(map[string]interface{})
-		
+
 		data["promo_key"] = promo.PromoKey
 		data["promo_code"] = promo.PromoCode
 		data["promo_title"] = promo.PromoTitle
@@ -123,4 +124,3 @@ func GetPromoList(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
-
