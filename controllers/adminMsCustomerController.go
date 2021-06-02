@@ -1740,10 +1740,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	}
 
 	corespondence := c.FormValue("corespondence")
-	if corespondence == "" {
-		log.Error("Missing required parameter: corespondence")
-		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
-	} else {
+	if corespondence != "" {
 		n, err := strconv.ParseUint(corespondence, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["correspondence"] = corespondence
@@ -1751,6 +1748,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 			log.Error("Wrong input for parameter: corespondence")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: corespondence", "Wrong input for parameter: corespondence")
 		}
+		log.Error("Missing required parameter: corespondence")
+		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
 	}
 
 	//TAB 4
@@ -1765,7 +1764,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_occupation")
 		return lib.CustomError(http.StatusBadRequest, "relation_occupation can not be blank", "relation_occupation can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationOccupation, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_occupation"] = relationOccupation
 		} else {
@@ -1779,7 +1778,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_type")
 		return lib.CustomError(http.StatusBadRequest, "relation_type can not be blank", "relation_type can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationType, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_type"] = relationType
 		} else {
@@ -1796,7 +1795,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 
 	relationBusinessField := c.FormValue("relation_business_field")
 	if relationBusinessField != "" {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationBusinessField, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_business_fields"] = relationBusinessField
 		} else {
@@ -2000,7 +1999,12 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	log.Info("dateBirth: " + dateStr)
 
 	paramsOaPersonalData["full_name"] = fullname
-	paramsOaPersonalData["idcard_type"] = "12"
+
+	if nationality == "97" { //indonesia
+		paramsOaPersonalData["idcard_type"] = "12"
+	} else {
+		paramsOaPersonalData["idcard_type"] = "13"
+	}
 	paramsOaPersonalData["place_birth"] = placeBirth
 	paramsOaPersonalData["date_birth"] = dateStr
 	paramsOaPersonalData["nationality"] = nationality
@@ -3020,10 +3024,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	}
 
 	corespondence := c.FormValue("corespondence")
-	if corespondence == "" {
-		log.Error("Missing required parameter: corespondence")
-		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
-	} else {
+	if corespondence != "" {
 		n, err := strconv.ParseUint(corespondence, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["correspondence"] = corespondence
@@ -3079,7 +3080,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_type")
 		return lib.CustomError(http.StatusBadRequest, "relation_type can not be blank", "relation_type can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationType, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_type"] = relationType
 		} else {
@@ -3256,7 +3257,11 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	log.Info("dateBirth: " + dateStr)
 
 	paramsOaPersonalData["full_name"] = fullname
-	paramsOaPersonalData["idcard_type"] = "12"
+	if nationality == "97" { //indonesia
+		paramsOaPersonalData["idcard_type"] = "12"
+	} else {
+		paramsOaPersonalData["idcard_type"] = "13"
+	}
 	paramsOaPersonalData["place_birth"] = placeBirth
 	paramsOaPersonalData["date_birth"] = dateBirth
 	paramsOaPersonalData["nationality"] = nationality
@@ -3636,11 +3641,16 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func CheckUniqueEmail(c echo.Context) error {
-	email := c.FormValue("email")
-	if email == "" {
-		log.Error("Wrong input for parameter: email")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: email", "Missing required parameter: email")
+func CheckUniqueEmailNoHp(c echo.Context) error {
+	field := c.FormValue("field")
+	if field == "" {
+		log.Error("Wrong input for parameter: field")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: field", "Missing required parameter: field")
+	}
+	value := c.FormValue("value")
+	if value == "" {
+		log.Error("Wrong input for parameter: value")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: value", "Missing required parameter: value")
 	}
 
 	var userKey *string
@@ -3650,19 +3660,28 @@ func CheckUniqueEmail(c echo.Context) error {
 	}
 
 	var countData models.CountData
-	status, err := models.ValidateUniqueData(&countData, "ulogin_email", email, userKey)
+	status, err := models.ValidateUniqueData(&countData, field, value, userKey)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
+
+	var ff string
+
+	if field == "email" {
+		ff = "Email"
+	} else {
+		ff = "Mobile Number"
+	}
+
 	var valid bool
 	var message string
 	if int(countData.CountData) > int(0) {
 		valid = false
-		message = "Email sudah digunakan"
+		message = ff + " sudah digunakan"
 	} else {
 		valid = true
-		message = "Email valid"
+		message = ff + " valid"
 	}
 	responseData := make(map[string]interface{})
 	responseData["valid"] = valid

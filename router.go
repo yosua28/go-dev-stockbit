@@ -256,7 +256,7 @@ func router() *echo.Echo {
 	admin.GET("/customer/redemption/dropdown", controllers.GetAdminListCustomerRedemption).Name = "GetAdminListCustomerRedemption"
 	admin.GET("/customer/individu/data/:key", controllers.GetAdminOaRequestPersonalDataRiskProfile).Name = "GetAdminOaRequestPersonalDataRiskProfile"
 	admin.POST("/customer/pengkinian/create", controllers.AdminSavePengkinianCustomerIndividu).Name = "AdminSavePengkinianCustomerIndividu"
-	admin.POST("/customer/check-unique-email", controllers.CheckUniqueEmail).Name = "CheckUniqueEmail"
+	admin.POST("/customer/check-unique-email-nohp", controllers.CheckUniqueEmailNoHp).Name = "CheckUniqueEmailNoHp"
 	admin.POST("/customer/check-unique-no-id", controllers.CheckUniqueNoId).Name = "CheckUniqueNoId"
 
 	//Admin Transaction Report

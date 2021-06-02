@@ -227,7 +227,7 @@ func ValidateUniquePersonalData(c *CountData, field string, value string, custom
 	query = `SELECT COUNT(a.oa_request_key)AS count_data
 				FROM oa_request a
 			INNER JOIN oa_personal_data b ON a.oa_request_key = b.oa_request_key
-            where ` + field + ` = '` + value + `'`
+            where a.rec_status = '1' AND b.rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if customerKey != nil {
 		query += ` AND a.customer_key != '` + *customerKey + `'`

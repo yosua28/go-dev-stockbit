@@ -726,7 +726,7 @@ func ValidateUniqueData(c *CountData, field string, value string, userLoginKey *
 	var query string
 	query = `SELECT
 				count(user_login_key) AS count_data
-              FROM sc_user_login where ` + field + ` = '` + value + `'`
+              FROM sc_user_login where rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if userLoginKey != nil {
 		query += ` AND user_login_key != '` + *userLoginKey + `'`
