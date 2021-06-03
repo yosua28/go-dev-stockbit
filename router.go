@@ -73,6 +73,7 @@ func router() *echo.Echo {
 	// Request
 	auth.POST("/oarequest", controllers.CreateOaPersonalData).Name = "CreateOaPersonalData"
 	auth.GET("/oadata", controllers.GetOaPersonalData).Name = "GetOaPersonalData"
+	auth.GET("/idcardvalidation", controllers.IDCardNumberValidation).Name = "IDCardNumberValidation"
 
 	// Invest
 	auth.GET("/investpurpose", controllers.GetCmsInvestPurpose).Name = "GetCmsInvestPurpose"

@@ -1131,3 +1131,27 @@ func GetOaPersonalData(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
+
+func IDCardNumberValidation(c echo.Context) error{
+	idcardNumber := c.QueryParam("idcard_number")
+	paramsPersonalData := make(map[string]string)
+	paramsPersonalData["idcard_no"] = idcardNumber
+	paramsPersonalData["rec_status"] = "1"
+	var personalDataDB []models.OaPersonalData
+	_, err := models.GetAllOaPersonalData(&personalDataDB, 0, 0, paramsPersonalData, true)
+	if err != nil {
+		log.Error("error get data")
+		return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+	}
+	if len(personalDataDB) > 0 {
+		log.Error("idcard_number alredy used")
+		return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
