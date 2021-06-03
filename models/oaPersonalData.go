@@ -230,7 +230,7 @@ func ValidateUniquePersonalData(c *CountData, field string, value string, custom
             where a.rec_status = '1' AND b.rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if customerKey != nil {
-		query += ` AND a.customer_key != '` + *customerKey + `'`
+		query += ` AND (a.customer_key != '` + *customerKey + `' or a.customer_key IS NULL)`
 	}
 
 	// Main query

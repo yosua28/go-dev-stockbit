@@ -119,3 +119,17 @@ func GetMsCity(c *MsCity, key string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func GetMsCityByParent(c *MsCity, key string) (int, error) {
+	query := `SELECT * 
+			FROM ms_city 
+			WHERE city_key = (SELECT parent_key FROM ms_city WHERE city_key = '` + key + `')`
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

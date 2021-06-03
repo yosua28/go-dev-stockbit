@@ -1241,13 +1241,20 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		} else {
 			sliceName := strings.Fields(oapersonal.FullName)
 			if len(sliceName) > 0 {
-				responseData.FirstName = &sliceName[0]
-				if len(sliceName) > 1 {
-					responseData.MiddleName = &sliceName[1]
-					if len(sliceName) > 2 {
-						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
-						responseData.LastName = &lastName
-					}
+				if len(sliceName) == 1 {
+					responseData.FirstName = &sliceName[0]
+					responseData.LastName = &sliceName[0]
+				}
+				if len(sliceName) == 2 {
+					responseData.FirstName = &sliceName[0]
+					responseData.LastName = &sliceName[1]
+				}
+				if len(sliceName) > 2 {
+					ln := len(sliceName)
+					responseData.FirstName = &sliceName[0]
+					responseData.LastName = &sliceName[1]
+					lastName := strings.Join(sliceName[2:ln], " ")
+					responseData.LastName = &lastName
 				}
 			}
 		}
@@ -2491,6 +2498,7 @@ func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
 		responseData["agent_key"] = 1
 	}
 
+	responseData["user_login_key"] = oaData.UserLoginKey
 	responseData["place_birth"] = personalDataDB.PlaceBirth
 	responseData["date_birth"] = personalDataDB.DateBirth
 	responseData["nationality"] = personalDataDB.Nationality
@@ -2505,6 +2513,13 @@ func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
 	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.IDcardAddressKey, 10))
 	if err == nil {
 		addressID := make(map[string]interface{})
+		var city models.MsCity
+		_, err = models.GetMsCityByParent(&city, strconv.FormatUint(*address.KabupatenKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		addressID["provinsi_key"] = city.CityKey
 		addressID["postal_address_key"] = address.PostalAddressKey
 		addressID["kabupaten_key"] = address.KabupatenKey
 		addressID["kecamatan_key"] = address.KecamatanKey
@@ -2516,7 +2531,14 @@ func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
 	}
 	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.DomicileAddressKey, 10))
 	if err == nil {
+		var city models.MsCity
+		_, err = models.GetMsCityByParent(&city, strconv.FormatUint(*address.KabupatenKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
 		addressID := make(map[string]interface{})
+		addressID["provinsi_key"] = city.CityKey
 		addressID["postal_address_key"] = address.PostalAddressKey
 		addressID["kabupaten_key"] = address.KabupatenKey
 		addressID["kecamatan_key"] = address.KecamatanKey
@@ -3590,7 +3612,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
-		mailer.SetHeader("To", email)
+		mailer.SetHeader("To", scUserLogin.UloginEmail)
 		mailer.SetHeader("Subject", "[MNC Duit] Pengkinian Data Kamu sedang Diproses")
 		mailer.SetBody("text/html", result)
 		dialer := gomail.NewDialer(
