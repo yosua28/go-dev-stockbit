@@ -69,6 +69,7 @@ func Register(c echo.Context) error {
 	var user []models.ScUserLogin
 	params := make(map[string]string)
 	params["ulogin_email"] = email
+	params["rec_status"] = "1"
 	status, err = models.GetAllScUserLogin(&user, 0, 0, params, true)
 	if err != nil {
 		log.Error("Error get email " + email)
@@ -77,6 +78,18 @@ func Register(c echo.Context) error {
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
 		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar.\nSilahkan masukkan email lainnya atau hubungi Customer.")
+	}
+	params = make(map[string]string)
+	params["ulogin_mobileno"] = phone
+	params["rec_status"] = "1"
+	status, err = models.GetAllScUserLogin(&user, 0, 0, params, true)
+	if err != nil {
+		log.Error("Error get phone number " + phone)
+		return lib.CustomError(status, err.Error(), "Error get phone number")
+	}
+	if len(user) > 0 {
+		log.Error("Phone number " + phone + " already registered")
+		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "Nomor telepon kamu sudah terdaftar.\nSilahkan masukkan nomor telepon lain lainnya atau hubungi Customer.")
 	}
 
 	// Validate password

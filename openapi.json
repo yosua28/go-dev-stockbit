@@ -1823,6 +1823,9 @@
                   "relation_name": {
                     "type": "string"
                   },
+                  "relation_type": {
+                    "type": "integer"
+                  },
                   "relation_occupation": {
                     "type": "integer"
                   },

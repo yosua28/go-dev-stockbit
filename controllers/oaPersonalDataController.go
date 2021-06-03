@@ -198,8 +198,22 @@ func CreateOaPersonalData(c echo.Context) error {
 	if idcardNumber == "" {
 		log.Error("Missing required parameter: idcard_number")
 		return lib.CustomError(http.StatusBadRequest)
+	}else{
+		paramsPersonalData := make(map[string]string)
+		paramsPersonalData["idcard_no"] = idcardNumber
+		paramsPersonalData["rec_status"] = "1"
+		var personalDataDB []models.OaPersonalData
+		_, err = models.GetAllOaPersonalData(&personalDataDB, 0, 0, paramsPersonalData, true)
+		if err != nil {
+			log.Error("error get data")
+			return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+		}
+		if len(personalDataDB) > 0 {
+			log.Error("idcard_number alredy used")
+			return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+		}
+		params["idcard_no"] = idcardNumber
 	}
-	params["idcard_no"] = idcardNumber
 
 	gender := c.FormValue("gender")
 	if gender == "" {
@@ -709,6 +723,20 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	relationType := c.FormValue("relation_type")
+	if relationType == "" {
+		log.Error("Missing required parameter: relation_type")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: relation_type", "Missing required parameter: relation_type")
+	} else {
+		n, err := strconv.ParseUint(relationType, 10, 64)
+		if err == nil && n > 0 {
+			params["relation_type"] = relationType
+		} else {
+			log.Error("Wrong input for parameter: relation_type")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: relation_type", "Wrong input for parameter: relation_type")
+		}
+	}
+
 	beneficialRelationOther := c.FormValue("beneficial_relation_other")
 	if beneficialRelationOther != "" {
 		var row []string
@@ -792,9 +820,27 @@ func CreateOaPersonalData(c echo.Context) error {
 	paramsRequest["oa_entry_start"] = dateNow
 	paramsRequest["oa_entry_end"] = dateNow
 	paramsRequest["oa_request_type"] = requestTypeStr
+	paramsRequest["branch_key"] = "1"
+	paramsRequest["agent_key"] = "1"
 	salesCode := c.FormValue("sales_code")
 	if salesCode != "" {
 		paramsRequest["sales_code"] = salesCode
+		paramsAgent := []string{salesCode}
+		var agentDB []models.MsAgent
+		_, err = models.GetMsAgentIn(&agentDB, paramsAgent, "sales_code")
+		if err == nil && len(agentDB) > 0 {
+			agentKeyStr := strconv.FormatUint(agentDB[0].AgentKey,10)
+			paramsAgentBranch := make(map[string]string)
+			paramsAgentBranch["agent_key"] = agentKeyStr
+			paramsAgentBranch["orderBy"] = "eff_date"
+			paramsAgentBranch["orderType"] = "DESC"
+			var agentBranchDB []models.MsAgentBranch
+			_, err = models.GetAllMsAgentBranch(&agentBranchDB, 0,0, paramsAgentBranch, true)
+			if err == nil && len(agentDB) > 0 {
+				paramsRequest["branch_key"] = strconv.FormatUint(agentBranchDB[0].BranchKey,10)
+				paramsRequest["agent_key"] = agentKeyStr
+			}
+		}
 	} 
 	paramsRequest["rec_status"] = "1"
 	status, err, requestID := models.CreateOaRequest(paramsRequest)
