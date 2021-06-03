@@ -198,7 +198,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	if idcardNumber == "" {
 		log.Error("Missing required parameter: idcard_number")
 		return lib.CustomError(http.StatusBadRequest)
-	}else{
+	} else {
 		paramsPersonalData := make(map[string]string)
 		paramsPersonalData["idcard_no"] = idcardNumber
 		paramsPersonalData["rec_status"] = "1"
@@ -315,14 +315,14 @@ func CreateOaPersonalData(c echo.Context) error {
 		row = append(row, educationOther)
 		bindVar = append(bindVar, row)
 	}
-	
+
 	requestTypeStr := c.FormValue("request_type")
 	if requestTypeStr == "" {
 		log.Error("Missing required parameter: request_type")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: request_type", "Missing required parameter: request_type")
 	} else {
 		_, err := strconv.ParseUint(requestTypeStr, 10, 64)
-		if err != nil  {
+		if err != nil {
 			log.Error("Wrong input for parameter: request_type")
 			return lib.CustomError(http.StatusBadRequest)
 		}
@@ -430,27 +430,27 @@ func CreateOaPersonalData(c echo.Context) error {
 		} else {
 			return lib.CustomError(http.StatusBadRequest)
 		}
-		
+
 	} else {
 		picKtp := c.FormValue("pic_ktp_str")
 		if picKtp == "" {
 			log.Error("Missing required parameter: pic_ktp_str")
 			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp_str", "Missing required parameter: pic_ktp_str")
-		}else{
+		} else {
 			params["pic_ktp"] = picKtp
 		}
 		picSelfie := c.FormValue("pic_selfie_ktp_str")
 		if picSelfie == "" {
 			log.Error("Missing required parameter: pic_selfie_ktp_str")
 			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp_str")
-		}else{
+		} else {
 			params["pic_selfie_ktp"] = picSelfie
 		}
 		signature := c.FormValue("signature_str")
 		if signature == "" {
 			log.Error("Missing required parameter: signature_str")
 			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature_str", "Missing required parameter: signature_str")
-		}else{
+		} else {
 			params["rec_image1"] = signature
 		}
 	}
@@ -829,20 +829,22 @@ func CreateOaPersonalData(c echo.Context) error {
 		var agentDB []models.MsAgent
 		_, err = models.GetMsAgentIn(&agentDB, paramsAgent, "sales_code")
 		if err == nil && len(agentDB) > 0 {
-			agentKeyStr := strconv.FormatUint(agentDB[0].AgentKey,10)
+			agentKeyStr := strconv.FormatUint(agentDB[0].AgentKey, 10)
 			paramsAgentBranch := make(map[string]string)
 			paramsAgentBranch["agent_key"] = agentKeyStr
 			paramsAgentBranch["orderBy"] = "eff_date"
 			paramsAgentBranch["orderType"] = "DESC"
 			var agentBranchDB []models.MsAgentBranch
-			_, err = models.GetAllMsAgentBranch(&agentBranchDB, 0,0, paramsAgentBranch, true)
+			_, err = models.GetAllMsAgentBranch(&agentBranchDB, 0, 0, paramsAgentBranch, true)
 			if err == nil && len(agentDB) > 0 {
-				paramsRequest["branch_key"] = strconv.FormatUint(agentBranchDB[0].BranchKey,10)
+				paramsRequest["branch_key"] = strconv.FormatUint(agentBranchDB[0].BranchKey, 10)
 				paramsRequest["agent_key"] = agentKeyStr
 			}
 		}
-	} 
+	}
 	paramsRequest["rec_status"] = "1"
+	paramsRequest["rec_created_date"] = dateNow
+	paramsRequest["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	status, err, requestID := models.CreateOaRequest(paramsRequest)
 	if err != nil {
 		log.Error("Failed create request data: " + err.Error())
@@ -855,6 +857,8 @@ func CreateOaPersonalData(c echo.Context) error {
 	}
 	params["oa_request_key"] = requestID
 	params["rec_status"] = "1"
+	params["rec_created_date"] = dateNow
+	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	status, err, requestKey := models.CreateOaPersonalData(params)
 	if err != nil {

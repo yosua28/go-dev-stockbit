@@ -3228,6 +3228,8 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	addressIDParams["kecamatan_key"] = kecamatanid
 	addressIDParams["postal_code"] = postalid
 	addressIDParams["rec_status"] = "1"
+	addressIDParams["rec_created_date"] = time.Now().Format(dateLayout)
+	addressIDParams["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//OA_POSTAL_ADDRESS DOMICILE
 	addressDomicileParams := make(map[string]string)
@@ -3236,6 +3238,8 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	addressDomicileParams["kabupaten_key"] = kabupatendomicile
 	addressDomicileParams["kecamatan_key"] = kecamatandomicile
 	addressDomicileParams["postal_code"] = postaldomicile
+	addressDomicileParams["rec_created_date"] = time.Now().Format(dateLayout)
+	addressDomicileParams["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	addressDomicileParams["rec_status"] = "1"
 
 	//MS_BANK_ACCOUNT
@@ -3248,6 +3252,8 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	paramsBank["bank_account_type"] = "1"
 	paramsBank["rec_domain"] = "1"
 	paramsBank["rec_status"] = "1"
+	paramsBank["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsBank["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//OA_PERSONAL_DATA
 	log.Info("dateBirth: " + dateBirth)
@@ -3282,6 +3288,8 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	paramsOaPersonalData["mother_maiden_name"] = motherMaidenName
 	paramsOaPersonalData["emergency_full_name"] = emergencyName
 	paramsOaPersonalData["rec_status"] = "1"
+	paramsOaPersonalData["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsOaPersonalData["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	tx, _ := db.Db.Begin()
 
@@ -3296,7 +3304,10 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	} else {
 		idUserLogin = strconv.FormatUint(scUserLogin.UserLoginKey, 10)
 	}
+
 	paramsOaRequest["user_login_key"] = idUserLogin
+	paramsOaRequest["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsOaRequest["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//SAVE AO_PORTAL_ADDRESS IDCARD
 	status, err, addressidID := models.CreateOaPostalAddress(addressIDParams)
@@ -3335,6 +3346,8 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		addressCompanyParams["address_type"] = "19"
 		addressCompanyParams["address_line1"] = companyAddress
 		addressCompanyParams["rec_status"] = "1"
+		addressCompanyParams["rec_created_date"] = time.Now().Format(dateLayout)
+		addressCompanyParams["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 		status, err, addressCompanyID := models.CreateOaPostalAddress(addressCompanyParams)
 		if err != nil {
@@ -3536,6 +3549,8 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	paramsOaRiskProfile["risk_profile_key"] = strconv.FormatUint(riskProfile.RiskProfileKey, 10)
 	paramsOaRiskProfile["score_result"] = scoreStr
 	paramsOaRiskProfile["rec_status"] = "1"
+	paramsOaRiskProfile["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsOaRiskProfile["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	status, err = models.CreateOaRiskProfile(paramsOaRiskProfile)
 	if err != nil {
