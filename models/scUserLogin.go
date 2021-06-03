@@ -708,9 +708,8 @@ func AdminGetAllUserBlastPromo(c *[]UserBlastPromo) (int, error) {
 				u.token_notif,
 				c.first_name 
 			FROM sc_user_login AS u 
-			INNER JOIN ms_customer AS c ON u.customer_key = c.customer_key
-			WHERE u.customer_key IS NOT NULL AND
-			u.user_category_key = 1 AND u.rec_status = 1 AND u.token_notif IS NOT NULL AND c.rec_status = 1`
+			LEFT JOIN ms_customer AS c ON u.customer_key = c.customer_key
+			WHERE u.user_category_key = 1 AND u.rec_status = 1 AND u.token_notif IS NOT NULL`
 
 	// Main query
 	log.Println(query)
@@ -727,7 +726,7 @@ func ValidateUniqueData(c *CountData, field string, value string, userLoginKey *
 	var query string
 	query = `SELECT
 				count(user_login_key) AS count_data
-              FROM sc_user_login where ` + field + ` = '` + value + `'`
+              FROM sc_user_login where rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if userLoginKey != nil {
 		query += ` AND user_login_key != '` + *userLoginKey + `'`

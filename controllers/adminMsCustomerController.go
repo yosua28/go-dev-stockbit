@@ -127,6 +127,10 @@ func GetListCustomerIndividuInquiry(c echo.Context) error {
 	if mothermaidenname != "" {
 		paramsLike["pd.mother_maiden_name"] = mothermaidenname
 	}
+	branchKey := c.QueryParam("branch_key")
+	if branchKey != "" {
+		params["r.branch_key"] = branchKey
+	}
 
 	//if user category  = 3 -> user branch, 2 = user HO
 	var userCategory uint64
@@ -661,7 +665,7 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		}
 
 		if oapersonal.RecImage1 != nil && *oapersonal.RecImage1 != "" {
-			path := dir + "/signature/" + *oapersonal.PicSelfieKtp
+			path := dir + "/signature/" + *oapersonal.RecImage1
 			responseData.Signature = &path
 		}
 
@@ -677,6 +681,9 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
 			}
+		}
+		if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10)); !ok {
+			personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10))
 		}
 		if oapersonal.PepStatus != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10)); !ok {
@@ -809,6 +816,9 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		} else {
 			responseData.Nationality = &country.CouName
 		}
+		if n, ok := pData[oapersonal.IDcardType]; ok {
+			responseData.IDCardType = n.LkpName
+		}
 
 		if oapersonal.Education != nil {
 			if n, ok := pData[*oapersonal.Education]; ok {
@@ -922,6 +932,11 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 						cityData[city.CityKey] = city
 					}
 					if c, ok := cityData[*p.KabupatenKey]; ok {
+						var prov models.MsCity
+						status, err = models.GetMsCity(&prov, strconv.FormatUint(*c.ParentKey, 10))
+						if err == nil {
+							responseData.IDcardAddress.Provinsi = &prov.CityName
+						}
 						responseData.IDcardAddress.Kabupaten = &c.CityName
 					}
 					if c, ok := cityData[*p.KecamatanKey]; ok {
@@ -962,6 +977,11 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 					}
 					if p.KabupatenKey != nil {
 						if c, ok := cityData[*p.KabupatenKey]; ok {
+							var prov models.MsCity
+							status, err = models.GetMsCity(&prov, strconv.FormatUint(*c.ParentKey, 10))
+							if err == nil {
+								responseData.DomicileAddress.Provinsi = &prov.CityName
+							}
 							responseData.DomicileAddress.Kabupaten = &c.CityName
 						}
 					}
@@ -1295,6 +1315,15 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 					approvecs.ApproveDate = &oke
 				}
 				approvecs.ApproveNotes = oareq.Check1Notes
+				if oareq.Check1Flag != nil {
+					if *oareq.Check1Flag == 1 {
+						approvecs.ApproveStatus = "Approved"
+					} else {
+						approvecs.ApproveStatus = "Rejected"
+					}
+				} else {
+					approvecs.ApproveStatus = "-"
+				}
 
 				responseData.ApproveCS = &approvecs
 			}
@@ -1314,6 +1343,15 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 					approvekyc.ApproveDate = &oke
 				}
 				approvekyc.ApproveNotes = oareq.Check2Notes
+				if oareq.Check2Flag != nil {
+					if *oareq.Check2Flag == 1 {
+						approvekyc.ApproveStatus = "Approved"
+					} else {
+						approvekyc.ApproveStatus = "Rejected"
+					}
+				} else {
+					approvekyc.ApproveStatus = "-"
+				}
 
 				responseData.ApproveKYC = &approvekyc
 			}
@@ -1702,10 +1740,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	}
 
 	corespondence := c.FormValue("corespondence")
-	if corespondence == "" {
-		log.Error("Missing required parameter: corespondence")
-		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
-	} else {
+	if corespondence != "" {
 		n, err := strconv.ParseUint(corespondence, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["correspondence"] = corespondence
@@ -1713,6 +1748,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 			log.Error("Wrong input for parameter: corespondence")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: corespondence", "Wrong input for parameter: corespondence")
 		}
+		log.Error("Missing required parameter: corespondence")
+		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
 	}
 
 	//TAB 4
@@ -1727,7 +1764,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_occupation")
 		return lib.CustomError(http.StatusBadRequest, "relation_occupation can not be blank", "relation_occupation can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationOccupation, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_occupation"] = relationOccupation
 		} else {
@@ -1741,7 +1778,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_type")
 		return lib.CustomError(http.StatusBadRequest, "relation_type can not be blank", "relation_type can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationType, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_type"] = relationType
 		} else {
@@ -1758,7 +1795,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 
 	relationBusinessField := c.FormValue("relation_business_field")
 	if relationBusinessField != "" {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationBusinessField, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_business_fields"] = relationBusinessField
 		} else {
@@ -1962,7 +1999,12 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 	log.Info("dateBirth: " + dateStr)
 
 	paramsOaPersonalData["full_name"] = fullname
-	paramsOaPersonalData["idcard_type"] = "12"
+
+	if nationality == "97" { //indonesia
+		paramsOaPersonalData["idcard_type"] = "12"
+	} else {
+		paramsOaPersonalData["idcard_type"] = "13"
+	}
 	paramsOaPersonalData["place_birth"] = placeBirth
 	paramsOaPersonalData["date_birth"] = dateStr
 	paramsOaPersonalData["nationality"] = nationality
@@ -2982,10 +3024,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	}
 
 	corespondence := c.FormValue("corespondence")
-	if corespondence == "" {
-		log.Error("Missing required parameter: corespondence")
-		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
-	} else {
+	if corespondence != "" {
 		n, err := strconv.ParseUint(corespondence, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["correspondence"] = corespondence
@@ -3041,7 +3080,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		log.Error("Missing required parameter: relation_type")
 		return lib.CustomError(http.StatusBadRequest, "relation_type can not be blank", "relation_type can not be blank")
 	} else {
-		n, err := strconv.ParseUint(corespondence, 10, 64)
+		n, err := strconv.ParseUint(relationType, 10, 64)
 		if err == nil && n > 0 {
 			paramsOaPersonalData["relation_type"] = relationType
 		} else {
@@ -3218,7 +3257,11 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	log.Info("dateBirth: " + dateStr)
 
 	paramsOaPersonalData["full_name"] = fullname
-	paramsOaPersonalData["idcard_type"] = "12"
+	if nationality == "97" { //indonesia
+		paramsOaPersonalData["idcard_type"] = "12"
+	} else {
+		paramsOaPersonalData["idcard_type"] = "13"
+	}
 	paramsOaPersonalData["place_birth"] = placeBirth
 	paramsOaPersonalData["date_birth"] = dateBirth
 	paramsOaPersonalData["nationality"] = nationality
@@ -3598,11 +3641,16 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
-func CheckUniqueEmail(c echo.Context) error {
-	email := c.FormValue("email")
-	if email == "" {
-		log.Error("Wrong input for parameter: email")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: email", "Missing required parameter: email")
+func CheckUniqueEmailNoHp(c echo.Context) error {
+	field := c.FormValue("field")
+	if field == "" {
+		log.Error("Wrong input for parameter: field")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: field", "Missing required parameter: field")
+	}
+	value := c.FormValue("value")
+	if value == "" {
+		log.Error("Wrong input for parameter: value")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: value", "Missing required parameter: value")
 	}
 
 	var userKey *string
@@ -3612,19 +3660,28 @@ func CheckUniqueEmail(c echo.Context) error {
 	}
 
 	var countData models.CountData
-	status, err := models.ValidateUniqueData(&countData, "ulogin_email", email, userKey)
+	status, err := models.ValidateUniqueData(&countData, field, value, userKey)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
 	}
+
+	var ff string
+
+	if field == "email" {
+		ff = "Email"
+	} else {
+		ff = "Mobile Number"
+	}
+
 	var valid bool
 	var message string
 	if int(countData.CountData) > int(0) {
 		valid = false
-		message = "Email sudah digunakan"
+		message = ff + " sudah digunakan"
 	} else {
 		valid = true
-		message = "Email valid"
+		message = ff + " valid"
 	}
 	responseData := make(map[string]interface{})
 	responseData["valid"] = valid

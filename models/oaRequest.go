@@ -129,6 +129,7 @@ type Address struct {
 	Kabupaten  *string `json:"kabupaten"`
 	Kecamatan  *string `json:"kecamatan"`
 	PostalCode *string `json:"postal_code"`
+	Provinsi   *string `json:"provinsi"`
 }
 
 type BankAccount struct {
@@ -188,6 +189,7 @@ type DetailPersonalDataCustomerIndividu struct {
 	PhoneNumber         string                      `json:"phone_mobile"`
 	DateBirth           string                      `json:"date_birth"`
 	FullName            string                      `json:"full_name"`
+	IDCardType          *string                     `json:"idcard_type"`
 	IDCardNo            string                      `json:"idcard_no"`
 	Nationality         *string                     `json:"nationality"`
 	Gender              *string                     `json:"gender"`
@@ -261,9 +263,10 @@ type OaRequestDetailRiskProfil struct {
 }
 
 type ApprovalData struct {
-	ApproveUser  string  `json:"approve_user"`
-	ApproveDate  *string `json:"approve_date"`
-	ApproveNotes *string `json:"approve_notes"`
+	ApproveStatus string  `json:"approve_status"`
+	ApproveUser   string  `json:"approve_user"`
+	ApproveDate   *string `json:"approve_date"`
+	ApproveNotes  *string `json:"approve_notes"`
 }
 
 func CreateOaRequest(params map[string]string) (int, error, string) {

@@ -1,12 +1,12 @@
 package controllers
 
 import (
-	"api/models"
 	"api/lib"
+	"api/models"
 	"net/http"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 func GetMsBankList(c echo.Context) error {
@@ -14,7 +14,7 @@ func GetMsBankList(c echo.Context) error {
 	var status int
 
 	params := make(map[string]string)
-	params["orderBy"] = "bank_name"
+	params["orderBy"] = "rec_order"
 	params["orderType"] = "ASC"
 	params["rec_status"] = "1"
 	var bankDB []models.MsBank
@@ -28,7 +28,7 @@ func GetMsBankList(c echo.Context) error {
 		return lib.CustomError(http.StatusNotFound, "Data not found", "Data not found")
 	}
 	var responseData []models.MsBankList
-	
+
 	for _, bank := range bankDB {
 		var data models.MsBankList
 
@@ -46,6 +46,6 @@ func GetMsBankList(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
-	
+
 	return c.JSON(http.StatusOK, response)
 }

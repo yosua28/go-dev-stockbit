@@ -352,9 +352,9 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 				br.branch_key AS branch_key, 
 				br.branch_name AS branch_name, 
 				ag.agent_name AS agent_name, 
-				DATE_FORMAT(r.rec_created_date, '%d %M %Y') AS created_date, 
+				DATE_FORMAT(r.rec_created_date, '%d %M %Y %H:%i') AS created_date, 
 				u1.ulogin_full_name as created_by, 
-				DATE_FORMAT(r.rec_modified_date, '%d %M %Y') AS modified_date, 
+				DATE_FORMAT(r.rec_modified_date, '%d %M %Y %H:%i') AS modified_date, 
 				u2.ulogin_full_name as modified_by 
 			FROM oa_request AS r 
 			left join ms_customer as c on c.customer_key = r.customer_key 
@@ -386,9 +386,9 @@ func AdminGetAllCustomerIndividuInquery(c *[]CustomerIndividuInquiry, limit uint
 				br.branch_key AS branch_key, 
 				br.branch_name AS branch_name, 
 				ag.agent_name AS agent_name, 
-				DATE_FORMAT(r.rec_created_date, '%d %M %Y') AS created_date, 
+				DATE_FORMAT(r.rec_created_date, '%d %M %Y %H:%i') AS created_date, 
 				u1.ulogin_full_name as created_by, 
-				DATE_FORMAT(r.rec_modified_date, '%d %M %Y') AS modified_date, 
+				DATE_FORMAT(r.rec_modified_date, '%d %M %Y %H:%i') AS modified_date, 
 				u2.ulogin_full_name as modified_by 
 			FROM oa_request AS r
 			INNER JOIN ms_customer AS c ON r.customer_key = c.customer_key 
@@ -644,8 +644,9 @@ func AdminGetHeaderCustomerIndividu(c *CustomerIndividuInquiry, requestKey strin
 					ELSE c.sid_no
 				END) AS sid,
 				(CASE
-					WHEN c.cif_suspend_flag = 0 THEN "Tidak"
-					ELSE "Ya"
+					WHEN c.cif_suspend_flag IS NOT NULL AND c.cif_suspend_flag = 0 THEN "Tidak"
+					WHEN c.cif_suspend_flag IS NOT NULL AND c.cif_suspend_flag = 1 THEN "Ya"
+					ELSE "Tidak"
 				END) AS cif_suspend_flag, 
 				pd.mother_maiden_name AS mother_maiden_name, 
 				r.oa_status AS oa_status, 
