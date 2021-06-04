@@ -1141,11 +1141,11 @@ func IDCardNumberValidation(c echo.Context) error {
 	_, err := models.GetAllOaPersonalData(&personalDataDB, 0, 0, paramsPersonalData, true)
 	if err != nil {
 		log.Error("error get data")
-		return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "No. Identitas kamu telah terdaftar.")
+		return lib.CustomError(http.StatusBadRequest, "No. Identitas kamu telah terdaftar.", "No. Identitas kamu telah terdaftar.")
 	}
 	if len(personalDataDB) > 0 {
 		log.Error("idcard_number alredy used")
-		return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "No. Identitas kamu telah terdaftar.")
+		return lib.CustomError(http.StatusBadRequest, "No. Identitas kamu telah terdaftar.", "No. Identitas kamu telah terdaftar.")
 	}
 
 	var response lib.Response
