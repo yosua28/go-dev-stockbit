@@ -603,7 +603,7 @@ func AdminGetProductSubscription(c *[]ProductSubscription) (int, error) {
 			LEFT JOIN ms_product_fee AS mpf ON mpf.product_key = p.product_key AND mpf.fee_type = '183' AND mpf.rec_status = 1 
 			LEFT JOIN ms_product_fee_item AS mpfi ON mpfi.product_fee_key = mpf.fee_key AND mpfi.rec_status = 1
 			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
-			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1 AND cur.rec_status = 1
+			WHERE p.rec_status = 1 AND p.flag_subscription = 1 AND cur.rec_status = 1
 			ORDER BY f.rec_order ASC`
 
 	// Main query

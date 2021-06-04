@@ -230,7 +230,7 @@ func ValidateUniquePersonalData(c *CountData, field string, value string, custom
             where a.rec_status = '1' AND b.rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if customerKey != nil {
-		query += ` AND a.customer_key != '` + *customerKey + `'`
+		query += ` AND (a.customer_key != '` + *customerKey + `' or a.customer_key IS NULL)`
 	}
 
 	// Main query
@@ -241,5 +241,40 @@ func ValidateUniquePersonalData(c *CountData, field string, value string, custom
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateOaPersonalData(params map[string]string) (int, error) {
+	query := "UPDATE oa_personal_data SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "personal_data_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE personal_data_key = " + params["personal_data_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
 	return http.StatusOK, nil
 }

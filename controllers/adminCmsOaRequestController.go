@@ -1178,6 +1178,9 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		params["rec_status"] = "0"
 		params["rec_deleted_date"] = time.Now().Format(dateLayout)
 		params["rec_deleted_by"] = strKey
+		params["check1_flag"] = "0"
+	} else {
+		params["check1_flag"] = "1"
 	}
 
 	oarequestkey := c.FormValue("oa_request_key")
@@ -1195,7 +1198,6 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 
 	params["check1_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
-	params["check1_flag"] = "1"
 	params["check1_references"] = strKey
 	params["rec_modified_by"] = strKey
 
@@ -1221,15 +1223,16 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 
 	log.Info("Success update approved CS")
 
+	var oapersonal models.OaPersonalData
+	strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
+	status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
+	if err != nil {
+		log.Error("Error Personal Data not Found")
+		return lib.CustomError(status, err.Error(), "Personal data not found")
+	}
+
 	if oastatus == "259" { //jika approve
 		//send email to KYC
-		var oapersonal models.OaPersonalData
-		strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
-		status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
-		if err != nil {
-			log.Error("Error Personal Data not Found")
-			return lib.CustomError(status, err.Error(), "Personal data not found")
-		}
 
 		paramsScLogin := make(map[string]string)
 		paramsScLogin["role_key"] = "12"
@@ -1266,10 +1269,39 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		}
 		//end send email to KYC
 	} else {
+		//update personal data -> delete
+		paramsPersonalDataDelete := make(map[string]string)
+		paramsPersonalDataDelete["personal_data_key"] = strconv.FormatUint(oapersonal.PersonalDataKey, 10)
+		paramsPersonalDataDelete["rec_status"] = "0"
+		paramsPersonalDataDelete["rec_deleted_date"] = time.Now().Format(dateLayout)
+		paramsPersonalDataDelete["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+		_, err = models.UpdateOaPersonalData(paramsPersonalDataDelete)
+		if err != nil {
+			log.Error("Error update personal data delete")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		}
+
+		strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
+
+		if oareq.CustomerKey == nil {
+			//UPDATE SC_USER_LOGIN
+			paramsScUserLogin := make(map[string]string)
+			paramsScUserLogin["user_login_key"] = strUserLoginKey
+			paramsScUserLogin["rec_status"] = "0"
+			paramsScUserLogin["rec_deleted_date"] = time.Now().Format(dateLayout)
+			paramsScUserLogin["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+			_, err = models.UpdateScUserLogin(paramsScUserLogin)
+			if err != nil {
+				log.Error("Error update user data")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
+		}
+
 		//create user message
 		paramsUserMessage := make(map[string]string)
 		paramsUserMessage["umessage_type"] = "245"
-		strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
 		if oareq.UserLoginKey != nil {
 			paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
 		} else {
@@ -1380,9 +1412,16 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 
 	params["check2_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
-	params["check2_flag"] = "1"
-	params["check2_references"] = strKey
 	params["rec_modified_by"] = strKey
+	params["check2_references"] = strKey
+	if oastatus == "260" { //approve
+		params["check2_flag"] = "1"
+	} else { //reject
+		params["check2_flag"] = "0"
+		params["rec_status"] = "0"
+		params["rec_deleted_date"] = time.Now().Format(dateLayout)
+		params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	}
 
 	var oareq models.OaRequest
 	status, err = models.GetOaRequest(&oareq, oarequestkey)
@@ -1426,15 +1465,16 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 	}
 	log.Info("Success update approved Compliance Transaction")
 
+	var oapersonal models.OaPersonalData
+	strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
+	status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Error Personal Data not Found")
+		return lib.CustomError(status, err.Error(), "Personal data not found")
+	}
+
 	if oastatus == "260" {
-		var oapersonal models.OaPersonalData
-		strKeyOa := strconv.FormatUint(oareq.OaRequestKey, 10)
-		status, err = models.GetOaPersonalDataByOaRequestKey(&oapersonal, strKeyOa)
-		if err != nil {
-			tx.Rollback()
-			log.Error("Error Personal Data not Found")
-			return lib.CustomError(status, err.Error(), "Personal data not found")
-		}
 
 		if oareq.CustomerKey == nil { //NEW OA
 			//create customer
@@ -1499,13 +1539,20 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			sliceName := strings.Fields(oapersonal.FullName)
 
 			if len(sliceName) > 0 {
-				paramsCustomer["first_name"] = sliceName[0]
-				if len(sliceName) > 1 {
+				if len(sliceName) == 1 {
+					paramsCustomer["first_name"] = sliceName[0]
+					paramsCustomer["last_name"] = sliceName[0]
+				}
+				if len(sliceName) == 2 {
+					paramsCustomer["first_name"] = sliceName[0]
+					paramsCustomer["last_name"] = sliceName[1]
+				}
+				if len(sliceName) > 2 {
+					ln := len(sliceName)
+					paramsCustomer["first_name"] = sliceName[0]
 					paramsCustomer["middle_name"] = sliceName[1]
-					if len(sliceName) > 2 {
-						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
-						paramsCustomer["last_name"] = lastName
-					}
+					lastName := strings.Join(sliceName[2:ln], " ")
+					paramsCustomer["last_name"] = lastName
 				}
 			}
 
@@ -1752,6 +1799,22 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				}
 			}
 
+			//UPDATE SC_USER_LOGIN
+			paramsScUserLogin := make(map[string]string)
+			paramsScUserLogin["user_login_key"] = strUserLoginKey
+			paramsScUserLogin["ulogin_name"] = oapersonal.EmailAddress
+			paramsScUserLogin["ulogin_full_name"] = oapersonal.EmailAddress
+			paramsScUserLogin["ulogin_email"] = oapersonal.EmailAddress
+			paramsScUserLogin["ulogin_mobileno"] = oapersonal.PhoneMobile
+			paramsScUserLogin["rec_modified_date"] = time.Now().Format(dateLayout)
+			paramsScUserLogin["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+			_, err = models.UpdateScUserLogin(paramsScUserLogin)
+			if err != nil {
+				log.Error("Error update user data")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
+
 		}
 	} else { //reject
 		//create user message
@@ -1792,6 +1855,45 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			log.Error("Error create user message")
 		}
 		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
+
+		//SET REC STATUS = 0, oa_request, oa_personal_data,
+		//delete OA = udah di atas
+		//delete personal data
+		paramsPersonalDataDelete := make(map[string]string)
+		paramsPersonalDataDelete["personal_data_key"] = strconv.FormatUint(oapersonal.PersonalDataKey, 10)
+		paramsPersonalDataDelete["rec_status"] = "0"
+		paramsPersonalDataDelete["rec_deleted_date"] = time.Now().Format(dateLayout)
+		paramsPersonalDataDelete["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+		_, err = models.UpdateOaPersonalData(paramsPersonalDataDelete)
+		if err != nil {
+			tx.Rollback()
+			log.Error("Error update personal data delete")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		}
+
+		if oareq.CustomerKey == nil { //NEW OA -> delete sc_user_login
+			//UPDATE SC_USER_LOGIN
+			paramsScUserLogin := make(map[string]string)
+			paramsScUserLogin["user_login_key"] = strUserLoginKey
+			paramsScUserLogin["rec_status"] = "0"
+			paramsScUserLogin["rec_deleted_date"] = time.Now().Format(dateLayout)
+			paramsScUserLogin["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+			_, err = models.UpdateScUserLogin(paramsScUserLogin)
+			if err != nil {
+				tx.Rollback()
+				log.Error("Error update user login delete")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
+
+			_, err = models.UpdateScUserLogin(paramsScUserLogin)
+			if err != nil {
+				log.Error("Error update user data")
+				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+			}
+		}
+
 		tx.Commit()
 	}
 
