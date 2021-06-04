@@ -99,7 +99,9 @@ type CheckPromo struct {
 func GetAllTrPromoActive(c *[]TrPromo, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
 	query := `SELECT
               tr_promo.* FROM 
-			  tr_promo WHERE tr_promo.promo_valid_date2 >= NOW()`
+			  tr_promo WHERE 
+			  tr_promo.promo_valid_date2 >= NOW() AND
+			  rec_status = 1`
 	var present bool
 	var whereClause []string
 	var condition string
@@ -112,7 +114,7 @@ func GetAllTrPromoActive(c *[]TrPromo, limit uint64, offset uint64, params map[s
 
 	// Combile where clause
 	if len(whereClause) > 0 {
-		condition += " WHERE "
+		condition += " AND "
 		for index, where := range whereClause {
 			condition += where
 			if (len(whereClause) - 1) > index {
