@@ -89,7 +89,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Phone number " + phone + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "Nomor telepon kamu sudah terdaftar.\nSilahkan masukkan nomor telepon lain lainnya atau hubungi Customer.")
+		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "No. Ponsel kamu sudah terdaftar.\nSilahkan masukkan No. Ponsel lainnya atau hubungi Customer Service - 021 29709696.")
 	}
 
 	// Validate password
