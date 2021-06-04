@@ -77,7 +77,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Email kamu sudah terdaftar.\nSilahkan masukkan email lainnya atau hubungi Customer Service - 021 29709696.")
+		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Data yang kamu masukkan sudah terdaftar.\nSilahkan masukkan data lainnya atau hubungi Customer Service - 021 29709696.")
 	}
 	params = make(map[string]string)
 	params["ulogin_mobileno"] = phone
@@ -89,7 +89,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Phone number " + phone + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "No. Ponsel kamu sudah terdaftar.\nSilahkan masukkan No. Ponsel lainnya atau hubungi Customer Service - 021 29709696.")
+		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "Data yang kamu masukkan sudah terdaftar.\nSilahkan masukkan data lainnya atau hubungi Customer Service - 021 29709696.")
 	}
 
 	// Validate password
