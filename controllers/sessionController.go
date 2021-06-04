@@ -77,7 +77,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Email " + email + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Data yang kamu masukkan sudah terdaftar.\nSilahkan masukkan data lainnya atau hubungi Customer Service - 021 29709696.")
+		return lib.CustomError(http.StatusBadRequest, "Email "+email+" already registered", "Data yang kamu masukkan sudah terdaftar.\nSilakan masukkan data lainnya atau hubungi Customer Service - 021 29709696.")
 	}
 	params = make(map[string]string)
 	params["ulogin_mobileno"] = phone
@@ -89,7 +89,7 @@ func Register(c echo.Context) error {
 	}
 	if len(user) > 0 {
 		log.Error("Phone number " + phone + " already registered")
-		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "Data yang kamu masukkan sudah terdaftar.\nSilahkan masukkan data lainnya atau hubungi Customer Service - 021 29709696.")
+		return lib.CustomError(http.StatusBadRequest, "Phone number "+phone+" already registered", "Data yang kamu masukkan sudah terdaftar.\nSilakan masukkan data lainnya atau hubungi Customer Service - 021 29709696.")
 	}
 
 	// Validate password
@@ -224,7 +224,7 @@ func VerifyEmail(c echo.Context) error {
 	now := time.Now()
 	if now.After(expired) {
 		log.Error("Token is expired")
-		return lib.CustomError(http.StatusInternalServerError, "Token is expired", "Token anda sudah kadaluarsa. Silahkan kirim ulang email verifikasi.")
+		return lib.CustomError(http.StatusInternalServerError, "Token is expired", "Token anda sudah kadaluarsa. Silakan kirim ulang email verifikasi.")
 	}
 	log.Info("Success verify email")
 	// Set expired for otp

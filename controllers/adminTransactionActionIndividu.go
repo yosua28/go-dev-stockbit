@@ -1299,8 +1299,8 @@ func CreateTransactionRedemption(c echo.Context) error {
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
 			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
-				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All")
-				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All. Sisa unit harus minimal : "+minSisa.String())
+				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
+				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
 			}
 
 			params["trans_unit"] = transUnitStr
@@ -1330,8 +1330,8 @@ func CreateTransactionRedemption(c echo.Context) error {
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
 			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
-				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All")
-				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All. Sisa unit harus minimal : "+minSisa.String())
+				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
+				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
 			}
 
 			params["trans_amount"] = transAmountStr
@@ -1746,8 +1746,8 @@ func CreateTransactionSwitching(c echo.Context) error {
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
 			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
-				log.Error("Sisa unit setelah switching kurang dari minimal unit, Silahkan switch All")
-				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah switching kurang dari minimal unit, Silahkan switching All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah switching kurang dari minimal unit, Silahkan switching All. Sisa unit harus minimal : "+minSisa.String())
+				log.Error("Sisa unit setelah switching kurang dari minimal unit, Silakan switch All")
+				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah switching kurang dari minimal unit, Silakan switching All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah switching kurang dari minimal unit, Silakan switching All. Sisa unit harus minimal : "+minSisa.String())
 			}
 
 			params["trans_unit"] = transUnitStr
@@ -1777,8 +1777,8 @@ func CreateTransactionSwitching(c echo.Context) error {
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
 			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
-				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All")
-				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silahkan redemption All. Sisa unit harus minimal : "+minSisa.String())
+				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
+				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
 			}
 			params["trans_amount"] = transAmountStr
 			params["total_amount"] = transAmountStr
