@@ -4949,26 +4949,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 2,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "yosua@mnc.com",
-                      "phone_mobile": "081353455",
-                      "date_birth": "2020-08-04 13:01:33",
-                      "full_name": "Yosua",
-                      "idcard_no": "6543543534"
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     },
                     {
-                      "oa_request_key": 1,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "",
-                      "phone_mobile": "",
-                      "date_birth": "",
-                      "full_name": "",
-                      "idcard_no": ""
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
+                      "phone_mobile": "085328481220",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -5055,6 +5057,7 @@
                     "date_birth": "30 Oct 1996",
                     "full_name": "Jojo Susanto",
                     "idcard_no": "323546234432445",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Approved",
                     "place_birth": "7",
@@ -5085,13 +5088,15 @@
                       "address": "6",
                       "kabupaten": "Bengkulu",
                       "kecamatan": "Kabupaten Bireuen",
-                      "postal_code": "78654"
+                      "postal_code": "78654",
+                      "provinsi": "Bengkulu"
                     },
                     "domicile_address": {
                       "address": "gfuh fghvv",
                       "kabupaten": "Kalimantan Tengah",
                       "kecamatan": "Kota Medan",
-                      "postal_code": "54645"
+                      "postal_code": "54645",
+                      "provinsi": "Bengkulu"
                     },
                     "occup_address_key": {
                       "address": "df dfg rter",
@@ -5453,6 +5458,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga",
                     "idcard_no": "3403162510960003",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -5483,13 +5489,15 @@
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "postal_code": "5583",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "kebon sirih",
@@ -6078,15 +6086,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 17,
-                      "oa_entry_start": "08 Oct 2020",
-                      "oa_entry_end": "08 Oct 2020",
-                      "oa_status": "KYC_APPROVED",
-                      "email_address": "aldy.alfianta@mncgroup.com",
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
+                    },
+                    {
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
                       "phone_mobile": "085328481220",
-                      "date_birth": "25 Oct 1996",
-                      "full_name": "Aldy Yoga",
-                      "idcard_no": "3403162510960003"
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -17292,6 +17313,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga Alfianta",
                     "idcard_no": "1234567890123456",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -17321,13 +17343,15 @@
                       "address": "tileng",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "55883"
+                      "postal_code": "55883",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "mnc financial",
@@ -20612,26 +20636,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 2,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "yosua@mnc.com",
-                      "phone_mobile": "081353455",
-                      "date_birth": "2020-08-04 13:01:33",
-                      "full_name": "Yosua",
-                      "idcard_no": "6543543534"
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     },
                     {
-                      "oa_request_key": 1,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "",
-                      "phone_mobile": "",
-                      "date_birth": "",
-                      "full_name": "",
-                      "idcard_no": ""
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
+                      "phone_mobile": "085328481220",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -20718,6 +20744,7 @@
                     "date_birth": "30 Oct 1994",
                     "full_name": "Joko Susilo",
                     "idcard_no": "3242432411223344",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Solo",
@@ -21052,6 +21079,7 @@
                     "date_birth": "30 Oct 1994",
                     "full_name": "Joko Susilo",
                     "idcard_no": "3242432411223344",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Solo",
@@ -21426,26 +21454,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 2,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "yosua@mnc.com",
-                      "phone_mobile": "081353455",
-                      "date_birth": "2020-08-04 13:01:33",
-                      "full_name": "Yosua",
-                      "idcard_no": "6543543534"
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     },
                     {
-                      "oa_request_key": 1,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "",
-                      "phone_mobile": "",
-                      "date_birth": "",
-                      "full_name": "",
-                      "idcard_no": ""
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
+                      "phone_mobile": "085328481220",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -21532,6 +21562,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga",
                     "idcard_no": "3403162510960003",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -21559,13 +21590,15 @@
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "postal_code": "5583",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "kebon sirih",
@@ -21691,6 +21724,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga",
                     "idcard_no": "3403162510960003",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -21718,13 +21752,15 @@
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "postal_code": "5583",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "kebon sirih",

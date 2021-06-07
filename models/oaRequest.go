@@ -52,14 +52,17 @@ type OaRequest struct {
 
 type OaRequestListResponse struct {
 	OaRequestKey uint64 `json:"oa_request_key"`
-	OaEntryStart string `json:"oa_entry_start"`
-	OaEntryEnd   string `json:"oa_entry_end"`
+	// OaEntryStart string `json:"oa_entry_start"`
+	// OaEntryEnd   string `json:"oa_entry_end"`
 	Oastatus     string `json:"oa_status"`
 	EmailAddress string `json:"email_address"`
 	PhoneNumber  string `json:"phone_mobile"`
 	DateBirth    string `json:"date_birth"`
 	FullName     string `json:"full_name"`
 	IDCardNo     string `json:"idcard_no"`
+	OaDate       string `json:"oa_date"`
+	Branch       string `json:"branch"`
+	Agent        string `json:"agent"`
 }
 
 type OaRequestCountData struct {
@@ -79,6 +82,7 @@ type OaRequestDetailResponse struct {
 	FullName            string               `json:"full_name"`
 	IDCardNo            string               `json:"idcard_no"`
 	Nationality         *string              `json:"nationality"`
+	IDCardType          *string              `json:"idcard_type"`
 	Gender              *string              `json:"gender"`
 	PlaceBirth          string               `json:"place_birth"`
 	MaritalStatus       *string              `json:"marital_status"`
@@ -248,6 +252,7 @@ type OaRequestDetailRiskProfil struct {
 	PhoneNumber     string             `json:"phone_mobile"`
 	DateBirth       string             `json:"date_birth"`
 	FullName        string             `json:"full_name"`
+	IDCardType      string             `json:"idcard_type"`
 	IDCardNo        string             `json:"idcard_no"`
 	Nationality     *string            `json:"nationality"`
 	Gender          *string            `json:"gender"`
