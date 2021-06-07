@@ -17604,11 +17604,13 @@
                       "cif_suspend_flag": "Tidak"
                     },
                     "approve_cs": {
+                      "approve_status": "Approved",
                       "approve_user": "yosua.role.11@gmail.com",
                       "approve_date": "03 Dec 2020",
                       "approve_notes": "sdffsd"
                     },
                     "approve_kyc": {
+                      "approve_status": "Approved",
                       "approve_user": "yosua.role.12@gmail.com",
                       "approve_date": "03 Dec 2020",
                       "approve_notes": "dsfsdfds"
@@ -23430,6 +23432,7 @@
                       "address_line1": "gfhfgh",
                       "address_line2": null,
                       "address_line3": null,
+                      "provinsi_key": 16,
                       "kabupaten_key": 42,
                       "kecamatan_key": 608,
                       "postal_address_key": 414,
@@ -23446,6 +23449,7 @@
                       "address_line1": "rtytfgy",
                       "address_line2": null,
                       "address_line3": null,
+                      "provinsi_key": 16,
                       "kabupaten_key": 41,
                       "kecamatan_key": 598,
                       "postal_address_key": 413,
@@ -23529,7 +23533,8 @@
                     },
                     "signature": "K6qGdCkiH4Cg2u4VtSbv.jpg",
                     "signature_path": "https://devapi.mncasset.com/images/user/7396/signature/K6qGdCkiH4Cg2u4VtSbv.jpg",
-                    "sourceof_fund": 67
+                    "sourceof_fund": 67,
+                    "user_login_key": 7432
                   }
                 }
               }
@@ -23847,7 +23852,7 @@
         }
       }
     },
-    "/admin/customer/check-unique-email": {
+    "/admin/customer/check-unique-email-nohp": {
       "post": {
         "description": "Validate Unique Email",
         "tags": [
@@ -23864,7 +23869,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "value": {
                     "type": "string"
                   },
                   "user_login_key": {
@@ -23872,7 +23880,8 @@
                   }
                 },
                 "required": [
-                  "email"
+                  "field",
+                  "value"
                 ]
               }
             }
