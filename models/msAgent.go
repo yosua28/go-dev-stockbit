@@ -2,9 +2,11 @@ package models
 
 import (
 	"api/db"
-	"log"
 	"net/http"
 	"strings"
+	"strconv"
+	
+	log "github.com/sirupsen/logrus"
 )
 
 type MsAgent struct {
@@ -41,6 +43,60 @@ type MsAgentDropdown struct {
 	AgentName string `db:"agent_name"           json:"agent_name"`
 }
 
+func GetAllMsAgent(c *[]MsAgent, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
+	query := `SELECT
+              ms_agent.* FROM 
+			  ms_agent`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "ms_agent."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Query limit and offset
+	if !nolimit {
+		query += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			query += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
 func GetMsAgentIn(c *[]MsAgent, value []string, field string) (int, error) {
 	inQuery := strings.Join(value, ",")
 	query2 := `SELECT
@@ -49,10 +105,10 @@ func GetMsAgentIn(c *[]MsAgent, value []string, field string) (int, error) {
 	query := query2 + " WHERE ms_agent.rec_status = 1 AND ms_agent." + field + " IN(" + inQuery + ")"
 
 	// Main query
-	log.Println(query)
+	log.Info(query)
 	err := db.Db.Select(c, query)
 	if err != nil {
-		log.Println(err)
+		log.Info(err)
 		return http.StatusBadGateway, err
 	}
 
@@ -61,10 +117,10 @@ func GetMsAgentIn(c *[]MsAgent, value []string, field string) (int, error) {
 
 func GetMsAgent(c *MsAgent, key string) (int, error) {
 	query := `SELECT ms_agent.* FROM ms_agent WHERE ms_agent.rec_status = 1 AND ms_agent.agent_key = ` + key
-	log.Println(query)
+	log.Info(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
-		log.Println(err)
+		log.Info(err)
 		return http.StatusNotFound, err
 	}
 
@@ -73,10 +129,10 @@ func GetMsAgent(c *MsAgent, key string) (int, error) {
 
 func GetMsAgentByField(c *MsAgent, value string, field string) (int, error) {
 	query := `SELECT ms_agent.* FROM ms_agent WHERE ms_agent.rec_status = 1 AND ms_agent.` + field + ` = ` + value
-	log.Println(query)
+	log.Info(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
-		log.Println(err)
+		log.Info(err)
 		return http.StatusNotFound, err
 	}
 
@@ -88,10 +144,10 @@ func GetMsAgentDropdown(c *[]MsAgentDropdown) (int, error) {
 				agent_key, 
  				CONCAT(agent_code, " - ", agent_name) AS agent_name 
 			FROM ms_agent WHERE ms_agent.rec_status = 1`
-	log.Println(query)
+	log.Info(query)
 	err := db.Db.Select(c, query)
 	if err != nil {
-		log.Println(err)
+		log.Info(err)
 		return http.StatusNotFound, err
 	}
 

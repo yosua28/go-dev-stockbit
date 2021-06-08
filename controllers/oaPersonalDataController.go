@@ -825,13 +825,16 @@ func CreateOaPersonalData(c echo.Context) error {
 	salesCode := c.FormValue("sales_code")
 	if salesCode != "" {
 		paramsRequest["sales_code"] = salesCode
-		paramsAgent := []string{salesCode}
+		paramsAgent := make(map[string]string)
+		paramsAgent["agent_code"] = salesCode
+		paramsAgent["rec_status"] = "1"
 		var agentDB []models.MsAgent
-		_, err = models.GetMsAgentIn(&agentDB, paramsAgent, "sales_code")
+		_, err = models.GetAllMsAgent(&agentDB, 0, 0, paramsAgent, true)
 		if err == nil && len(agentDB) > 0 {
 			agentKeyStr := strconv.FormatUint(agentDB[0].AgentKey, 10)
 			paramsAgentBranch := make(map[string]string)
 			paramsAgentBranch["agent_key"] = agentKeyStr
+			paramsAgentBranch["rec_status"] = "1"
 			paramsAgentBranch["orderBy"] = "eff_date"
 			paramsAgentBranch["orderType"] = "DESC"
 			var agentBranchDB []models.MsAgentBranch
@@ -1146,6 +1149,32 @@ func IDCardNumberValidation(c echo.Context) error {
 	if len(personalDataDB) > 0 {
 		log.Error("idcard_number alredy used")
 		return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "No. Identitas kamu telah terdaftar.")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
+	return c.JSON(http.StatusOK, response)
+}
+
+func SalesCodeValidation(c echo.Context) error {
+	salesCode := c.FormValue("sales_code")
+	if salesCode != "" {
+		paramsAgent := make(map[string]string)
+		paramsAgent["agent_code"] = salesCode
+		paramsAgent["rec_status"] = "1"
+		var agentDB []models.MsAgent
+		_, err := models.GetAllMsAgent(&agentDB, 0, 0, paramsAgent, true)
+		if err != nil {
+			log.Error("error get data")
+			return lib.CustomError(http.StatusNotFound, "Sales code tidak dapat digunakan", "Sales code tidak dapat digunakan")
+		}
+		if len(agentDB) == 0 {
+			log.Error("error get data")
+			return lib.CustomError(http.StatusNotFound, "Sales code tidak dapat digunakan", "Sales code tidak dapat digunakan")
+		}
 	}
 
 	var response lib.Response
