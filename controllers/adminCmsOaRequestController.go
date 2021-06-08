@@ -205,6 +205,10 @@ func GetOaRequestListAdmin(c echo.Context, oaRequestType string) error {
 	}
 
 	var lookupIds []string
+	var branchIds []string
+	branchIds = append(branchIds, strconv.FormatUint(uint64(1), 10))
+	var agentIds []string
+	agentIds = append(agentIds, strconv.FormatUint(uint64(1), 10))
 	var oaRequestIds []string
 	for _, oareq := range oaRequestDB {
 
@@ -216,6 +220,18 @@ func GetOaRequestListAdmin(c echo.Context, oaRequestType string) error {
 
 		if _, ok := lib.Find(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10)); !ok {
 			oaRequestIds = append(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10))
+		}
+
+		if oareq.BranchKey != nil {
+			if _, ok := lib.Find(branchIds, strconv.FormatUint(*oareq.BranchKey, 10)); !ok {
+				branchIds = append(branchIds, strconv.FormatUint(*oareq.BranchKey, 10))
+			}
+		}
+
+		if oareq.AgentKey != nil {
+			if _, ok := lib.Find(agentIds, strconv.FormatUint(*oareq.AgentKey, 10)); !ok {
+				agentIds = append(agentIds, strconv.FormatUint(*oareq.AgentKey, 10))
+			}
 		}
 	}
 
@@ -231,6 +247,34 @@ func GetOaRequestListAdmin(c echo.Context, oaRequestType string) error {
 	gData := make(map[uint64]models.GenLookup)
 	for _, gen := range genLookup {
 		gData[gen.LookupKey] = gen
+	}
+
+	//mapping branch
+	var branchs []models.MsBranch
+	if len(branchIds) > 0 {
+		status, err = models.GetMsBranchIn(&branchs, branchIds, "branch_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	bData := make(map[uint64]models.MsBranch)
+	for _, br := range branchs {
+		bData[br.BranchKey] = br
+	}
+
+	//mapping agent
+	var agents []models.MsAgent
+	if len(agentIds) > 0 {
+		status, err = models.GetMsAgentIn(&agents, agentIds, "agent_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	aData := make(map[uint64]models.MsAgent)
+	for _, ag := range agents {
+		aData[ag.AgentKey] = ag
 	}
 
 	//mapping personal data
@@ -260,19 +304,40 @@ func GetOaRequestListAdmin(c echo.Context, oaRequestType string) error {
 		data.OaRequestKey = oareq.OaRequestKey
 
 		layout := "2006-01-02 15:04:05"
-		newLayout := "02 Jan 2006"
+		newLayout := "02 Jan 2006 15:04"
+		newLayoutDateBirth := "02 Jan 2006"
 		date, _ := time.Parse(layout, oareq.OaEntryStart)
-		data.OaEntryStart = date.Format(newLayout)
-		date, _ = time.Parse(layout, oareq.OaEntryEnd)
-		data.OaEntryEnd = date.Format(newLayout)
+		data.OaDate = date.Format(newLayout)
 
 		if n, ok := pdData[oareq.OaRequestKey]; ok {
 			data.EmailAddress = n.EmailAddress
 			data.PhoneNumber = n.PhoneMobile
 			date, _ = time.Parse(layout, n.DateBirth)
-			data.DateBirth = date.Format(newLayout)
+			data.DateBirth = date.Format(newLayoutDateBirth)
 			data.FullName = n.FullName
 			data.IDCardNo = n.IDcardNo
+		}
+
+		var branchKey uint64
+		if oareq.BranchKey != nil {
+			branchKey = *oareq.BranchKey
+		} else {
+			branchKey = uint64(1)
+		}
+
+		var agentKey uint64
+		if oareq.AgentKey != nil {
+			agentKey = *oareq.AgentKey
+		} else {
+			agentKey = uint64(1)
+		}
+
+		if b, ok := bData[branchKey]; ok {
+			data.Branch = b.BranchName
+		}
+
+		if a, ok := aData[agentKey]; ok {
+			data.Agent = a.AgentName
 		}
 
 		responseData = append(responseData, data)
@@ -420,10 +485,11 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
+	newLayoutOACreate := "02 Jan 2006 15:04"
 
 	responseData.OaRequestKey = oareq.OaRequestKey
 	date, _ := time.Parse(layout, oareq.OaEntryStart)
-	responseData.OaEntryStart = date.Format(newLayout)
+	responseData.OaEntryStart = date.Format(newLayoutOACreate)
 	date, _ = time.Parse(layout, oareq.OaEntryEnd)
 	responseData.OaEntryEnd = date.Format(newLayout)
 	responseData.SalesCode = oareq.SalesCode
@@ -529,6 +595,10 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 
 		//mapping gen lookup
 		var personalDataLookupIds []string
+
+		if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10)); !ok {
+			personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10))
+		}
 		if oapersonal.Gender != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
@@ -631,6 +701,9 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 			pData[genLook.LookupKey] = genLook
 		}
 
+		if n, ok := pData[oapersonal.IDcardType]; ok {
+			responseData.IDCardType = n.LkpName
+		}
 		if oapersonal.Gender != nil {
 			if n, ok := pData[*oapersonal.Gender]; ok {
 				responseData.Gender = n.LkpName
@@ -788,6 +861,14 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 							responseData.IDcardAddress.Kecamatan = &c.CityName
 						}
 					}
+
+					var city models.MsCity
+					_, err = models.GetMsCityByParent(&city, strconv.FormatUint(*p.KabupatenKey, 10))
+					if err != nil {
+						log.Error(err.Error())
+					} else {
+						responseData.IDcardAddress.Provinsi = &city.CityName
+					}
 				}
 			}
 			if oapersonal.DomicileAddressKey != nil {
@@ -830,6 +911,14 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 						if c, ok := cityData[*p.KecamatanKey]; ok {
 							responseData.DomicileAddress.Kecamatan = &c.CityName
 						}
+					}
+
+					var city models.MsCity
+					_, err = models.GetMsCityByParent(&city, strconv.FormatUint(*p.KabupatenKey, 10))
+					if err != nil {
+						log.Error(err.Error())
+					} else {
+						responseData.DomicileAddress.Provinsi = &city.CityName
 					}
 				}
 			}
@@ -2005,6 +2094,10 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 
 	var lookupIds []string
 	var oaRequestIds []string
+	var branchIds []string
+	branchIds = append(branchIds, strconv.FormatUint(uint64(1), 10))
+	var agentIds []string
+	agentIds = append(agentIds, strconv.FormatUint(uint64(1), 10))
 	for _, oareq := range oaRequestDB {
 
 		if oareq.Oastatus != nil {
@@ -2015,6 +2108,18 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 
 		if _, ok := lib.Find(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10)); !ok {
 			oaRequestIds = append(oaRequestIds, strconv.FormatUint(oareq.OaRequestKey, 10))
+		}
+
+		if oareq.BranchKey != nil {
+			if _, ok := lib.Find(branchIds, strconv.FormatUint(*oareq.BranchKey, 10)); !ok {
+				branchIds = append(branchIds, strconv.FormatUint(*oareq.BranchKey, 10))
+			}
+		}
+
+		if oareq.AgentKey != nil {
+			if _, ok := lib.Find(agentIds, strconv.FormatUint(*oareq.AgentKey, 10)); !ok {
+				agentIds = append(agentIds, strconv.FormatUint(*oareq.AgentKey, 10))
+			}
 		}
 	}
 
@@ -2046,6 +2151,34 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 		pdData[oaPD.OaRequestKey] = oaPD
 	}
 
+	//mapping branch
+	var branchs []models.MsBranch
+	if len(branchIds) > 0 {
+		status, err = models.GetMsBranchIn(&branchs, branchIds, "branch_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	bData := make(map[uint64]models.MsBranch)
+	for _, br := range branchs {
+		bData[br.BranchKey] = br
+	}
+
+	//mapping agent
+	var agents []models.MsAgent
+	if len(agentIds) > 0 {
+		status, err = models.GetMsAgentIn(&agents, agentIds, "agent_key")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	aData := make(map[uint64]models.MsAgent)
+	for _, ag := range agents {
+		aData[ag.AgentKey] = ag
+	}
+
 	var responseData []models.OaRequestListResponse
 	for _, oareq := range oaRequestDB {
 		var data models.OaRequestListResponse
@@ -2059,19 +2192,40 @@ func GetOaRequestListDoTransaction(c echo.Context) error {
 		data.OaRequestKey = oareq.OaRequestKey
 
 		layout := "2006-01-02 15:04:05"
-		newLayout := "02 Jan 2006"
+		newLayout := "02 Jan 2006 15:04"
+		newLayoutDateBirth := "02 Jan 2006"
 		date, _ := time.Parse(layout, oareq.OaEntryStart)
-		data.OaEntryStart = date.Format(newLayout)
-		date, _ = time.Parse(layout, oareq.OaEntryEnd)
-		data.OaEntryEnd = date.Format(newLayout)
+		data.OaDate = date.Format(newLayout)
 
 		if n, ok := pdData[oareq.OaRequestKey]; ok {
 			data.EmailAddress = n.EmailAddress
 			data.PhoneNumber = n.PhoneMobile
 			date, _ = time.Parse(layout, n.DateBirth)
-			data.DateBirth = date.Format(newLayout)
+			data.DateBirth = date.Format(newLayoutDateBirth)
 			data.FullName = n.FullName
 			data.IDCardNo = n.IDcardNo
+		}
+
+		var branchKey uint64
+		if oareq.BranchKey != nil {
+			branchKey = *oareq.BranchKey
+		} else {
+			branchKey = uint64(1)
+		}
+
+		var agentKey uint64
+		if oareq.AgentKey != nil {
+			agentKey = *oareq.AgentKey
+		} else {
+			agentKey = uint64(1)
+		}
+
+		if b, ok := bData[branchKey]; ok {
+			data.Branch = b.BranchName
+		}
+
+		if a, ok := aData[agentKey]; ok {
+			data.Agent = a.AgentName
 		}
 
 		responseData = append(responseData, data)
@@ -2260,10 +2414,11 @@ func ResultOaProfileRisiko(keyStr string, c echo.Context, isHistory bool) error 
 
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
+	newLayoutOACreate := "02 Jan 2006 15:04"
 
 	responseData.OaRequestKey = oareq.OaRequestKey
 	date, _ := time.Parse(layout, oareq.OaEntryStart)
-	responseData.OaEntryStart = date.Format(newLayout)
+	responseData.OaEntryStart = date.Format(newLayoutOACreate)
 	date, _ = time.Parse(layout, oareq.OaEntryEnd)
 	responseData.OaEntryEnd = date.Format(newLayout)
 
@@ -2340,6 +2495,9 @@ func ResultOaProfileRisiko(keyStr string, c echo.Context, isHistory bool) error 
 
 		//mapping gen lookup
 		var personalDataLookupIds []string
+		if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10)); !ok {
+			personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10))
+		}
 		if oapersonal.Gender != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
@@ -2375,6 +2533,10 @@ func ResultOaProfileRisiko(keyStr string, c echo.Context, isHistory bool) error 
 		pData := make(map[uint64]models.GenLookup)
 		for _, genLook := range lookupPersonData {
 			pData[genLook.LookupKey] = genLook
+		}
+
+		if n, ok := pData[oapersonal.IDcardType]; ok {
+			responseData.IDCardType = *n.LkpName
 		}
 
 		if oapersonal.Gender != nil {
@@ -2599,8 +2761,6 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 	var err error
 	var status int
 	decimal.MarshalJSONWithoutQuotes = true
-	//Get parameter limit
-	// keyStr := c.Param("key")
 	key, _ := strconv.ParseUint(keyStr, 10, 64)
 	if key == 0 {
 		return lib.CustomError(http.StatusNotFound)
@@ -2658,10 +2818,11 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 
 	layout := "2006-01-02 15:04:05"
 	newLayout := "02 Jan 2006"
+	newLayoutOACreate := "02 Jan 2006 15:04"
 
 	responseData.OaRequestKey = oareq.OaRequestKey
 	date, _ := time.Parse(layout, oareq.OaEntryStart)
-	responseData.OaEntryStart = date.Format(newLayout)
+	responseData.OaEntryStart = date.Format(newLayoutOACreate)
 	date, _ = time.Parse(layout, oareq.OaEntryEnd)
 	responseData.OaEntryEnd = date.Format(newLayout)
 
@@ -2753,6 +2914,11 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 			responseData.PicSelfieKtp = &path
 		}
 
+		if oapersonal.RecImage1 != nil && *oapersonal.RecImage1 != "" {
+			path := dir + "signature/" + *oapersonal.RecImage1
+			responseData.Signature = &path
+		}
+
 		responseData.OccupCompany = oapersonal.OccupCompany
 		responseData.OccupPhone = oapersonal.OccupPhone
 		responseData.OccupWebURL = oapersonal.OccupWebUrl
@@ -2761,6 +2927,10 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 
 		//mapping gen lookup
 		var personalDataLookupIds []string
+
+		if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10)); !ok {
+			personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(oapersonal.IDcardType, 10))
+		}
 		if oapersonal.Gender != nil {
 			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10)); !ok {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.Gender, 10))
@@ -2856,6 +3026,10 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 		pData := make(map[uint64]models.GenLookup)
 		for _, genLook := range lookupPersonData {
 			pData[genLook.LookupKey] = genLook
+		}
+
+		if n, ok := pData[oapersonal.IDcardType]; ok {
+			responseData.IDCardType = n.LkpName
 		}
 
 		if oapersonal.Gender != nil {
@@ -3009,6 +3183,14 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 							responseData.IDcardAddress.Kecamatan = &c.CityName
 						}
 					}
+
+					var city models.MsCity
+					_, err = models.GetMsCityByParent(&city, strconv.FormatUint(*p.KabupatenKey, 10))
+					if err != nil {
+						log.Error(err.Error())
+					} else {
+						responseData.IDcardAddress.Provinsi = &city.CityName
+					}
 				}
 			}
 			if oapersonal.DomicileAddressKey != nil {
@@ -3051,6 +3233,14 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 						if c, ok := cityData[*p.KecamatanKey]; ok {
 							responseData.DomicileAddress.Kecamatan = &c.CityName
 						}
+					}
+
+					var city models.MsCity
+					_, err = models.GetMsCityByParent(&city, strconv.FormatUint(*p.KabupatenKey, 10))
+					if err != nil {
+						log.Error(err.Error())
+					} else {
+						responseData.DomicileAddress.Provinsi = &city.CityName
 					}
 				}
 			}

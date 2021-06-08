@@ -227,6 +227,7 @@ type AdminTransactionDetail struct {
 	IsEnableUnposting           bool                                 `json:"is_enable_unposting"`
 	MessageEnableUnposting      string                               `json:"message_enable_unposting"`
 	TransactionConfirmationInfo *TrTransactionConfirmationInfo       `json:"transaction_confirmation_info"`
+	Promo                       *TrPromoData                         `json:"promo"`
 }
 
 type DownloadFormatExcelList struct {

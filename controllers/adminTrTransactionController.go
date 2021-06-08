@@ -974,7 +974,7 @@ func GetTransactionDetail(c echo.Context) error {
 	strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
 	if transaction.AcaKey != nil {
 		var tc models.TrTransactionConfirmation
-		status, err = models.GetTrTransactionConfirmation(&tc, strTrKey)
+		status, err = models.GetTrTransactionConfirmationByTransactionKey(&tc, strTrKey)
 		if err != nil {
 			if err != sql.ErrNoRows {
 				return lib.CustomError(status)
@@ -987,6 +987,26 @@ func GetTransactionDetail(c echo.Context) error {
 			transTc.ConfirmedUnit = tc.ConfirmedUnit
 
 			responseData.TransactionConfirmation = &transTc
+
+			var transTcInfo models.TrTransactionConfirmationInfo
+			transTcInfo.TcKey = tc.TcKey
+			date, _ := time.Parse(layout, tc.ConfirmDate)
+			transTcInfo.ConfirmDate = date.Format(newLayout)
+			transTcInfo.ConfirmedAmount = tc.ConfirmedAmount
+			transTcInfo.ConfirmedUnit = tc.ConfirmedUnit
+			transTcInfo.ConfirmedAmountDiff = tc.ConfirmedAmountDiff
+			transTcInfo.ConfirmedUnitDiff = tc.ConfirmedUnitDiff
+
+			responseData.TransactionConfirmationInfo = &transTcInfo
+		}
+	}
+
+	//cek promo
+	if transaction.PromoCode != nil {
+		var promo models.TrPromoData
+		status, err = models.AdminGetDetailTransactionPromo(&promo, strTrKey, *transaction.PromoCode)
+		if err == nil {
+			responseData.Promo = &promo
 		}
 	}
 
@@ -3813,11 +3833,11 @@ func DataTransaksiInquiry(c echo.Context) error {
 
 func DetailTransaksiInquiry(c echo.Context) error {
 
-	errorAuth := initAuthCsKycFundAdmin()
-	if errorAuth != nil {
-		log.Error("User Autorizer")
-		return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
-	}
+	// errorAuth := initAuthCsKycFundAdmin()
+	// if errorAuth != nil {
+	// 	log.Error("User Autorizer")
+	// 	return lib.CustomError(http.StatusUnauthorized, "User Not Allowed to access this page", "User Not Allowed to access this page")
+	// }
 
 	var err error
 	var status int
@@ -4212,6 +4232,15 @@ func DetailTransaksiInquiry(c echo.Context) error {
 			transTc.ConfirmedUnitDiff = tc.ConfirmedUnitDiff
 
 			responseData.TransactionConfirmationInfo = &transTc
+		}
+	}
+
+	//cek promo
+	if transaction.PromoCode != nil {
+		var promo models.TrPromoData
+		status, err = models.AdminGetDetailTransactionPromo(&promo, strTrKey, *transaction.PromoCode)
+		if err == nil {
+			responseData.Promo = &promo
 		}
 	}
 

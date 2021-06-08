@@ -427,6 +427,39 @@ func CreateTransactionSubscription(c echo.Context) error {
 		}
 	}
 
+	navdate := c.FormValue("nav_date")
+	if navdate == "" {
+		log.Error("Missing required parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "nav_date can not be blank", "nav_date can not be blank")
+	} else {
+		paramHoliday := make(map[string]string)
+		paramHoliday["holiday_date"] = navdate
+
+		var holiday []models.MsHoliday
+		status, err = models.GetAllMsHoliday(&holiday, paramHoliday)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		}
+		if len(holiday) > 0 {
+			log.Error("nav_date is Bursa Holiday")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date is Bursa Holiday", "Missing required parameter: nav_date is Bursa Holiday")
+		}
+
+		layoutISO := "2006-01-02"
+		t, _ := time.Parse(layoutISO, navdate)
+		strDate := t.Format(layoutISO)
+		w, _ := time.Parse(layoutISO, strDate)
+		w = time.Date(w.Year(), w.Month(), w.Day(), 0, 0, 0, 0, time.UTC)
+		cek := lib.IsWeekend(w)
+		if cek {
+			log.Error("nav_date is Weekend")
+			return lib.CustomError(http.StatusBadRequest, "nav_date is Weekend", "nav_date is Weekend")
+		}
+	}
+
 	customerKeyStr := c.FormValue("customer_key")
 	var cus models.MsCustomer
 	if customerKeyStr != "" {
@@ -637,8 +670,8 @@ func CreateTransactionSubscription(c echo.Context) error {
 		params["flag_newsub"] = "0"
 		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
 		if trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag == 1 {
-			log.Error("Account suspended")
-			return lib.CustomError(status, "Account suspended", "Account suspended")
+			log.Error("Account suspended to this product")
+			return lib.CustomError(http.StatusBadRequest, "Account suspended to this product", "Account suspended to this product")
 		}
 	} else {
 		params["flag_newsub"] = "1"
@@ -686,17 +719,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 	params["trans_date"] = time.Now().Format(dateLayout)
 	params["trans_type_key"] = "1"
 	params["trx_code"] = "137"
-	layout := "2006-01-02"
-	now := time.Now()
-	nowString := now.Format(layout)
-	t, _ := time.Parse(layout, now.AddDate(0, 0, -1).Format(layout))
-	dateBursa := SettDate(t, int(1))
-	if nowString == dateBursa && (now.Hour() == 12 && now.Minute() > 0) || now.Hour() > 12 {
-		t, _ := time.Parse(layout, dateBursa)
-		params["nav_date"] = SettDate(t, int(1)) + " 00:00:00"
-	} else {
-		params["nav_date"] = dateBursa + " 00:00:00"
-	}
+	params["nav_date"] = navdate + " 00:00:00"
 	params["entry_mode"] = "140"
 	params["trans_unit"] = "0"
 	params["aca_key"] = acaKey
@@ -813,13 +836,13 @@ func CreateTransactionSubscription(c echo.Context) error {
 	settlementParams["settle_realized_date"] = time.Now().Format(dateLayout)
 	settlementParams["transaction_key"] = transactionID
 	settlementParams["settle_purposed"] = "297"
-	settlementParams["settle_date"] = dateBursa + " 00:00:00"
+	settlementParams["settle_date"] = navdate + " 00:00:00"
 	settlementParams["settle_nominal"] = totalAmountStr
 	settlementParams["client_subaccount_no"] = ""
-	settlementParams["settled_status"] = "243"
+	settlementParams["settled_status"] = "244"
 	settlementParams["target_bank_account_key"] = bankStr
 	settlementParams["settle_channel"] = "323"
-	settlementParams["settle_payment_method"] = "308"
+	settlementParams["settle_payment_method"] = "304"
 	settlementParams["rec_status"] = "1"
 	settlementParams["rec_created_date"] = time.Now().Format(dateLayout)
 	settlementParams["rec_created_by"] = strIDUserLogin
@@ -945,6 +968,20 @@ func GetTopupData(c echo.Context) error {
 	customer = customerList[0]
 
 	productKeyStr := c.Param("product_key")
+
+	//cek tr_account / save
+	paramsAcc := make(map[string]string)
+	paramsAcc["customer_key"] = customerKeyStr
+	paramsAcc["product_key"] = productKeyStr
+	paramsAcc["rec_status"] = "1"
+	paramsAcc["sub_suspend_flag"] = "1"
+	var trAccountDB []models.TrAccount
+	status, err = models.GetAllTrAccount(&trAccountDB, paramsAcc)
+	if len(trAccountDB) > 0 {
+		log.Error("Account suspended to this product")
+		return lib.CustomError(http.StatusNotFound, "Account suspended to this product", "Account suspended to this product")
+	}
+
 	var product models.ProductSubscription
 	if productKeyStr != "" {
 		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
@@ -1005,9 +1042,6 @@ func GetTopupData(c echo.Context) error {
 	productResponse.ProductName = product.ProductName
 	productResponse.NavDate = product.NavDate
 	productResponse.NavValue = product.NavValue.Truncate(2)
-	productResponse.PerformD1 = product.PerformD1.Truncate(2)
-	productResponse.PerformM1 = product.PerformM1.Truncate(2)
-	productResponse.PerformY1 = product.PerformY1.Truncate(2)
 	productResponse.ProductImage = product.ProductImage
 	productResponse.MinSubAmount = product.MinSubAmount.Truncate(2)
 	productResponse.MinRedAmount = product.MinRedAmount.Truncate(2)
@@ -1015,8 +1049,6 @@ func GetTopupData(c echo.Context) error {
 	productResponse.ProspectusLink = product.ProspectusLink
 	productResponse.FfsLink = product.FfsLink
 	productResponse.RiskName = product.RiskName
-	productResponse.FeeService = product.FeeService.Truncate(0)
-	productResponse.FeeTransfer = product.FeeTransfer.Truncate(0)
 	productResponse.CurrencyKey = product.CurrencyKey
 	productResponse.Symbol = product.Symbol
 	productResponse.FlagShowOntnc = product.FlagShowOntnc

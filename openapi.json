@@ -5014,26 +5014,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 2,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "yosua@mnc.com",
-                      "phone_mobile": "081353455",
-                      "date_birth": "2020-08-04 13:01:33",
-                      "full_name": "Yosua",
-                      "idcard_no": "6543543534"
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     },
                     {
-                      "oa_request_key": 1,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "",
-                      "phone_mobile": "",
-                      "date_birth": "",
-                      "full_name": "",
-                      "idcard_no": ""
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
+                      "phone_mobile": "085328481220",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -5120,6 +5122,7 @@
                     "date_birth": "30 Oct 1996",
                     "full_name": "Jojo Susanto",
                     "idcard_no": "323546234432445",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Approved",
                     "place_birth": "7",
@@ -5150,13 +5153,15 @@
                       "address": "6",
                       "kabupaten": "Bengkulu",
                       "kecamatan": "Kabupaten Bireuen",
-                      "postal_code": "78654"
+                      "postal_code": "78654",
+                      "provinsi": "Bengkulu"
                     },
                     "domicile_address": {
                       "address": "gfuh fghvv",
                       "kabupaten": "Kalimantan Tengah",
                       "kecamatan": "Kota Medan",
-                      "postal_code": "54645"
+                      "postal_code": "54645",
+                      "provinsi": "Bengkulu"
                     },
                     "occup_address_key": {
                       "address": "df dfg rter",
@@ -5518,6 +5523,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga",
                     "idcard_no": "3403162510960003",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -5548,13 +5554,15 @@
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "postal_code": "5583",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "kebon sirih",
@@ -6143,15 +6151,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 17,
-                      "oa_entry_start": "08 Oct 2020",
-                      "oa_entry_end": "08 Oct 2020",
-                      "oa_status": "KYC_APPROVED",
-                      "email_address": "aldy.alfianta@mncgroup.com",
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
+                    },
+                    {
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
                       "phone_mobile": "085328481220",
-                      "date_birth": "25 Oct 1996",
-                      "full_name": "Aldy Yoga",
-                      "idcard_no": "3403162510960003"
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -7704,6 +7725,30 @@
         ],
         "parameters": [
           {
+            "name": "nav_date",
+            "in": "query",
+            "description": "nav_date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2021-06-15"
+            }
+          },
+          {
+            "name": "trans_type_key",
+            "in": "query",
+            "description": "trans_type_key",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2",
+                "3"
+              ]
+            }
+          },
+          {
             "name": "order_by",
             "in": "query",
             "description": "Order By",
@@ -8170,7 +8215,29 @@
                       "account_name": "bsjsbshshs"
                     },
                     "is_enable_unposting": true,
-                    "message_enable_unposting": ""
+                    "message_enable_unposting": "",
+                    "transaction_confirmation_info": {
+                      "tc_key": 96,
+                      "confirm_date": "17 Dec 2020",
+                      "confirmed_amount": 8754.56,
+                      "confirmed_unit": 10.06,
+                      "confirmed_amount_diff": 8754.56,
+                      "confirmed_unit_diff": 0
+                    },
+                    "promo": {
+                      "promo_key": 1,
+                      "category": "SPIN Points",
+                      "promo_code": "MAM01",
+                      "promo_title": "Promo Lebaran",
+                      "promo_nominal": 10000,
+                      "promo_max_nominal": 20000,
+                      "value_type": "Percentage",
+                      "promo_maxuser": 50,
+                      "start_valid": "15 March 2021",
+                      "end_valid": "01 May 2021",
+                      "promo_notif_start": "30 March 2021",
+                      "promo_notif_end": "30 April 2021"
+                    }
                   }
                 }
               }
@@ -15932,6 +15999,20 @@
                       "confirmed_unit": 10.06,
                       "confirmed_amount_diff": 8754.56,
                       "confirmed_unit_diff": 0
+                    },
+                    "promo": {
+                      "promo_key": 1,
+                      "category": "SPIN Points",
+                      "promo_code": "MAM01",
+                      "promo_title": "Promo Lebaran",
+                      "promo_nominal": 10000,
+                      "promo_max_nominal": 20000,
+                      "value_type": "Percentage",
+                      "promo_maxuser": 50,
+                      "start_valid": "15 March 2021",
+                      "end_valid": "01 May 2021",
+                      "promo_notif_start": "30 March 2021",
+                      "promo_notif_end": "30 April 2021"
                     }
                   }
                 }
@@ -17357,6 +17438,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga Alfianta",
                     "idcard_no": "1234567890123456",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -17386,13 +17468,15 @@
                       "address": "tileng",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "55883"
+                      "postal_code": "55883",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "mnc financial",
@@ -17669,11 +17753,13 @@
                       "cif_suspend_flag": "Tidak"
                     },
                     "approve_cs": {
+                      "approve_status": "Approved",
                       "approve_user": "yosua.role.11@gmail.com",
                       "approve_date": "03 Dec 2020",
                       "approve_notes": "sdffsd"
                     },
                     "approve_kyc": {
+                      "approve_status": "Approved",
                       "approve_user": "yosua.role.12@gmail.com",
                       "approve_date": "03 Dec 2020",
                       "approve_notes": "dsfsdfds"
@@ -19503,7 +19589,7 @@
         }
       }
     },
-    "/admin/product/subscription": {
+    "/admin/product/subscription/{fund_type_key}": {
       "get": {
         "description": "Get All Product Subscription",
         "tags": [
@@ -19512,6 +19598,17 @@
         "security": [
           {
             "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "fund_type_key",
+            "in": "path",
+            "description": "fund_type_key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
           }
         ],
         "responses": {
@@ -19529,51 +19626,11 @@
                   "data": [
                     {
                       "product_key": 9,
-                      "fund_type_name": "Saham",
-                      "product_name": "Dana Syariah Ekuitas",
-                      "nav_date": "18 January 2021",
-                      "nav_value": 903.33,
-                      "perform_d1": -1.37,
-                      "perform_m1": 2.32,
-                      "perform_y1": -11.72,
-                      "product_image": "https://devapi.mncasset.com/images/product/mdse.jpg",
-                      "min_sub_amount": 100000,
-                      "min_red_amount": 100000,
-                      "min_red_unit": 0,
-                      "prospectus_link": "https://www.mncasset.com/downloads/271-Prospektus-MNC-Dana-Syariah-Ekuitas.pdf",
-                      "ffs_link": "https://www.mncasset.com/downloads/699-FFS_MDSE_300720.pdf",
-                      "risk_name": "Agresif",
-                      "fee_service": 0,
-                      "fee_transfer": 0,
-                      "currency_key": 1,
-                      "symbol": "Rp",
-                      "flag_show_ontnc": 1,
-                      "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
-                      "fee_value": 0
+                      "product_name": "Dana Syariah Ekuitas"
                     },
                     {
                       "product_key": 5,
-                      "fund_type_name": "Saham",
-                      "product_name": "Dana Ekuitas",
-                      "nav_date": "18 January 2021",
-                      "nav_value": 2746.28,
-                      "perform_d1": -0.36,
-                      "perform_m1": 2.21,
-                      "perform_y1": -23.46,
-                      "product_image": "https://devapi.mncasset.com/images/product/bbe.jpg",
-                      "min_sub_amount": 100000,
-                      "min_red_amount": 100000,
-                      "min_red_unit": 0,
-                      "prospectus_link": "https://www.mncasset.com/downloads/232-Prospektus-MNC-Dana-Ekuitas.pdf",
-                      "ffs_link": "https://www.mncasset.com/downloads/588-FFS_BBE_300720.pdf",
-                      "risk_name": "Agresif",
-                      "fee_service": 0,
-                      "fee_transfer": 0,
-                      "currency_key": 1,
-                      "symbol": "Rp",
-                      "flag_show_ontnc": 1,
-                      "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
-                      "fee_value": 0
+                      "product_name": "Dana Ekuitas"
                     }
                   ]
                 }
@@ -19765,6 +19822,10 @@
                   },
                   "trans_remarks": {
                     "type": "string"
+                  },
+                  "nav_date": {
+                    "type": "string",
+                    "example": "2021-06-14"
                   }
                 },
                 "required": [
@@ -19781,7 +19842,8 @@
                   "total_amount",
                   "payment_method",
                   "bank_transaction",
-                  "transfer_pic"
+                  "transfer_pic",
+                  "nav_date"
                 ]
               }
             }
@@ -19891,9 +19953,6 @@
                       "product_name": "Dana Syariah",
                       "nav_date": "18 January 2021",
                       "nav_value": 2768.77,
-                      "perform_d1": 0.11,
-                      "perform_m1": 0.51,
-                      "perform_y1": 6.16,
                       "product_image": "https://devapi.mncasset.com/images/product/bdm.jpg",
                       "min_sub_amount": 100000,
                       "min_red_amount": 100000,
@@ -19901,14 +19960,95 @@
                       "prospectus_link": "https://www.mncasset.com/downloads/332-Prospektus-MNC-Dana-Syariah.pdf",
                       "ffs_link": "https://www.mncasset.com/downloads/531-FFS_BDM_300720.pdf",
                       "risk_name": "Moderat",
-                      "fee_service": 0,
-                      "fee_transfer": 0,
                       "currency_key": 1,
                       "symbol": "Rp",
                       "flag_show_ontnc": 1,
                       "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
                       "fee_value": 0
                     }
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/product/detail-subscription/{product_key}": {
+      "get": {
+        "description": "Get Detail Product Subscription",
+        "tags": [
+          "Transaction Action Admin Subscription"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "product_key",
+            "in": "path",
+            "description": "Product key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "product_key": 2,
+                    "fund_type_name": "Pendapatan Tetap",
+                    "product_name": "Dana Syariah",
+                    "nav_date": "18 January 2021",
+                    "nav_value": 2768.77,
+                    "product_image": "https://devapi.mncasset.com/images/product/bdm.jpg",
+                    "min_sub_amount": 100000,
+                    "min_red_amount": 100000,
+                    "min_red_unit": 0,
+                    "prospectus_link": "https://www.mncasset.com/downloads/332-Prospektus-MNC-Dana-Syariah.pdf",
+                    "ffs_link": "https://www.mncasset.com/downloads/531-FFS_BDM_300720.pdf",
+                    "risk_name": "Moderat",
+                    "currency_key": 1,
+                    "symbol": "Rp",
+                    "flag_show_ontnc": 1,
+                    "fee_annotation": "<p>A. SUBSCRIPTION</p><ul style=\"list-style-type: disc;\"><li>Tidak dikenakan biaya subscription.</li><li>Min. subscription Rp. 100.000.</li><li>Min. top up Rp. 100.000.</li><li>Batas waktu transaksi paling lambat pukul 12:00 WIB, apabila telah melewati batas waktu tersebut, transaksi akan diproses pada hari bursa berikutnya.</li></ul><br/><p><br/>B. REDEMPTION</p><ul><li>&lt; 3 bulan, biaya redemption 0.5%.</li><li>&gt; 3 bulan, biaya redemption 0%.</li><li>Min. redemption Rp. 100.000.</li><li>Transfer antar bank akan dikenakan biaya mengikuti kebijakan bank.</li></ul>",
+                    "fee_value": 0
                   }
                 }
               }
@@ -20675,26 +20815,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 2,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "yosua@mnc.com",
-                      "phone_mobile": "081353455",
-                      "date_birth": "2020-08-04 13:01:33",
-                      "full_name": "Yosua",
-                      "idcard_no": "6543543534"
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     },
                     {
-                      "oa_request_key": 1,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "",
-                      "phone_mobile": "",
-                      "date_birth": "",
-                      "full_name": "",
-                      "idcard_no": ""
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
+                      "phone_mobile": "085328481220",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -20781,6 +20923,7 @@
                     "date_birth": "30 Oct 1994",
                     "full_name": "Joko Susilo",
                     "idcard_no": "3242432411223344",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Solo",
@@ -21115,6 +21258,7 @@
                     "date_birth": "30 Oct 1994",
                     "full_name": "Joko Susilo",
                     "idcard_no": "3242432411223344",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Solo",
@@ -21489,26 +21633,28 @@
                   "pagination": 1,
                   "data": [
                     {
-                      "oa_request_key": 2,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "yosua@mnc.com",
-                      "phone_mobile": "081353455",
-                      "date_birth": "2020-08-04 13:01:33",
-                      "full_name": "Yosua",
-                      "idcard_no": "6543543534"
+                      "oa_request_key": 162,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "annafrid.nikijuluw@gmail.com",
+                      "phone_mobile": "087877991679",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Annafrid MP Nikijuluw",
+                      "idcard_no": "1231567890999999",
+                      "oa_date": "04 Jun 2021 19:45",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     },
                     {
-                      "oa_request_key": 1,
-                      "oa_entry_start": "01 Jan 2020",
-                      "oa_entry_end": "01 Jan 2020",
-                      "oa_status": "Waiting",
-                      "email_address": "",
-                      "phone_mobile": "",
-                      "date_birth": "",
-                      "full_name": "",
-                      "idcard_no": ""
+                      "oa_request_key": 159,
+                      "oa_status": "OA_ENTRIED",
+                      "email_address": "elyoga1996@gmail.com",
+                      "phone_mobile": "085328481220",
+                      "date_birth": "01 Aug 1980 00:00",
+                      "full_name": "Aldy Yoga Alfianta",
+                      "idcard_no": "1234567890123456",
+                      "oa_date": "03 Jun 2021 08:17",
+                      "branch": "MNC ASSET HO (BRANCH)",
+                      "agent": "SALES MNC DUIT"
                     }
                   ]
                 }
@@ -21595,6 +21741,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga",
                     "idcard_no": "3403162510960003",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -21622,13 +21769,15 @@
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "postal_code": "5583",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "kebon sirih",
@@ -21754,6 +21903,7 @@
                     "date_birth": "25 Oct 1996",
                     "full_name": "Aldy Yoga",
                     "idcard_no": "3403162510960003",
+                    "idcard_type": "KTP",
                     "nationality": "Indonesia",
                     "gender": "Pria",
                     "place_birth": "Gunungkidul",
@@ -21781,13 +21931,15 @@
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": "5583"
+                      "postal_code": "5583",
+                      "provinsi": "Yogyakarta"
                     },
                     "domicile_address": {
                       "address": "tileng, girisubo",
                       "kabupaten": "Kota Yogyakarta",
                       "kecamatan": "Kotagede",
-                      "postal_code": null
+                      "postal_code": null,
+                      "provinsi": "Yogyakarta"
                     },
                     "occup_address_key": {
                       "address": "kebon sirih",
@@ -23495,6 +23647,7 @@
                       "address_line1": "gfhfgh",
                       "address_line2": null,
                       "address_line3": null,
+                      "provinsi_key": 16,
                       "kabupaten_key": 42,
                       "kecamatan_key": 608,
                       "postal_address_key": 414,
@@ -23511,6 +23664,7 @@
                       "address_line1": "rtytfgy",
                       "address_line2": null,
                       "address_line3": null,
+                      "provinsi_key": 16,
                       "kabupaten_key": 41,
                       "kecamatan_key": 598,
                       "postal_address_key": 413,
@@ -23594,7 +23748,8 @@
                     },
                     "signature": "K6qGdCkiH4Cg2u4VtSbv.jpg",
                     "signature_path": "https://devapi.mncasset.com/images/user/7396/signature/K6qGdCkiH4Cg2u4VtSbv.jpg",
-                    "sourceof_fund": 67
+                    "sourceof_fund": 67,
+                    "user_login_key": 7432
                   }
                 }
               }
@@ -23912,7 +24067,7 @@
         }
       }
     },
-    "/admin/customer/check-unique-email": {
+    "/admin/customer/check-unique-email-nohp": {
       "post": {
         "description": "Validate Unique Email",
         "tags": [
@@ -23929,7 +24084,10 @@
               "schema": {
                 "type": "object",
                 "properties": {
-                  "email": {
+                  "field": {
+                    "type": "string"
+                  },
+                  "value": {
                     "type": "string"
                   },
                   "user_login_key": {
@@ -23937,7 +24095,8 @@
                   }
                 },
                 "required": [
-                  "email"
+                  "field",
+                  "value"
                 ]
               }
             }

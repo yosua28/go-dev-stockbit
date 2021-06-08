@@ -2171,10 +2171,22 @@ func GetListProductAdminDropdown(c echo.Context) error {
 func AdminGetProductSubscription(c echo.Context) error {
 	var err error
 	var status int
-	decimal.MarshalJSONWithoutQuotes = true
 
-	var products []models.ProductSubscription
-	status, err = models.AdminGetProductSubscription(&products)
+	//fund_type_key
+	fundtype := c.Param("fund_type_key")
+	if fundtype != "" {
+		sub, err := strconv.ParseUint(fundtype, 10, 64)
+		if err != nil || sub == 0 {
+			log.Error("Wrong input for parameter: fund_type_key number")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: fund_type_key must number", "Missing required parameter: fund_type_key number")
+		}
+	} else {
+		log.Error("Wrong input for parameter: fund_type_key number")
+		return lib.CustomError(http.StatusBadRequest, "fund_type_key required", "fund_type_key required")
+	}
+
+	var products []models.ProductSubscriptionFundType
+	status, err = models.AdminGetProductSubscription(&products, fundtype)
 
 	if err != nil {
 		log.Error(err.Error())
@@ -2185,39 +2197,11 @@ func AdminGetProductSubscription(c echo.Context) error {
 		return lib.CustomError(http.StatusNotFound, "Product not found", "Product not found")
 	}
 
-	var productList []models.ProductSubscription
-	for _, pr := range products {
-		var prod models.ProductSubscription
-		prod.ProductKey = pr.ProductKey
-		prod.FundTypeName = pr.FundTypeName
-		prod.ProductName = pr.ProductName
-		prod.NavDate = pr.NavDate
-		prod.NavValue = pr.NavValue.Truncate(2)
-		prod.PerformD1 = pr.PerformD1.Truncate(2)
-		prod.PerformM1 = pr.PerformM1.Truncate(2)
-		prod.PerformY1 = pr.PerformY1.Truncate(2)
-		prod.ProductImage = pr.ProductImage
-		prod.MinSubAmount = pr.MinSubAmount.Truncate(2)
-		prod.MinRedAmount = pr.MinRedAmount.Truncate(2)
-		prod.MinRedUnit = pr.MinRedUnit.Truncate(2)
-		prod.ProspectusLink = pr.ProspectusLink
-		prod.FfsLink = pr.FfsLink
-		prod.RiskName = pr.RiskName
-		prod.FeeService = pr.FeeService.Truncate(0)
-		prod.FeeTransfer = pr.FeeTransfer.Truncate(0)
-		prod.CurrencyKey = pr.CurrencyKey
-		prod.Symbol = pr.Symbol
-		prod.FlagShowOntnc = pr.FlagShowOntnc
-		prod.FeeAnnotation = pr.FeeAnnotation
-		prod.FeeValue = pr.FeeValue.Truncate(2)
-		productList = append(productList, prod)
-	}
-
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = productList
+	response.Data = products
 
 	return c.JSON(http.StatusOK, response)
 }
@@ -2352,5 +2336,54 @@ func AdminGetProductRedemption(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = productList
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func GetProductDetailTransactionSubscription(c echo.Context) error {
+	decimal.MarshalJSONWithoutQuotes = true
+
+	productKeyStr := c.Param("product_key")
+	var product models.ProductSubscription
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err == nil && productKey > 0 {
+			_, err = models.AdminGetProductSubscriptionByProductKey(&product, productKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+			}
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	var productResponse models.ProductSubscription
+	productResponse.ProductKey = product.ProductKey
+	productResponse.FundTypeName = product.FundTypeName
+	productResponse.ProductName = product.ProductName
+	productResponse.NavDate = product.NavDate
+	productResponse.NavValue = product.NavValue.Truncate(2)
+	productResponse.ProductImage = product.ProductImage
+	productResponse.MinSubAmount = product.MinSubAmount.Truncate(2)
+	productResponse.MinRedAmount = product.MinRedAmount.Truncate(2)
+	productResponse.MinRedUnit = product.MinRedUnit.Truncate(2)
+	productResponse.ProspectusLink = product.ProspectusLink
+	productResponse.FfsLink = product.FfsLink
+	productResponse.RiskName = product.RiskName
+	productResponse.CurrencyKey = product.CurrencyKey
+	productResponse.Symbol = product.Symbol
+	productResponse.FlagShowOntnc = product.FlagShowOntnc
+	productResponse.FeeAnnotation = product.FeeAnnotation
+	productResponse.FeeValue = product.FeeValue.Truncate(2)
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = productResponse
 	return c.JSON(http.StatusOK, response)
 }
