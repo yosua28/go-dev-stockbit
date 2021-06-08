@@ -8127,6 +8127,28 @@
                     },
                     "is_enable_unposting": true,
                     "message_enable_unposting": ""
+                    "transaction_confirmation_info": {
+                      "tc_key": 96,
+                      "confirm_date": "17 Dec 2020",
+                      "confirmed_amount": 8754.56,
+                      "confirmed_unit": 10.06,
+                      "confirmed_amount_diff": 8754.56,
+                      "confirmed_unit_diff": 0
+                    },
+                    "promo": {
+                      "promo_key": 1,
+                      "category": "SPIN Points",
+                      "promo_code": "MAM01",
+                      "promo_title": "Promo Lebaran",
+                      "promo_nominal": 10000,
+                      "promo_max_nominal": 20000,
+                      "value_type": "Percentage",
+                      "promo_maxuser": 50,
+                      "start_valid": "15 March 2021",
+                      "end_valid": "01 May 2021",
+                      "promo_notif_start": "30 March 2021",
+                      "promo_notif_end": "30 April 2021"
+                    }
                   }
                 }
               }
@@ -15888,6 +15910,20 @@
                       "confirmed_unit": 10.06,
                       "confirmed_amount_diff": 8754.56,
                       "confirmed_unit_diff": 0
+                    },
+                    "promo": {
+                      "promo_key": 1,
+                      "category": "SPIN Points",
+                      "promo_code": "MAM01",
+                      "promo_title": "Promo Lebaran",
+                      "promo_nominal": 10000,
+                      "promo_max_nominal": 20000,
+                      "value_type": "Percentage",
+                      "promo_maxuser": 50,
+                      "start_valid": "15 March 2021",
+                      "end_valid": "01 May 2021",
+                      "promo_notif_start": "30 March 2021",
+                      "promo_notif_end": "30 April 2021"
                     }
                   }
                 }
@@ -19697,6 +19733,10 @@
                   },
                   "trans_remarks": {
                     "type": "string"
+                  },
+                  "nav_date": {
+                    "type": "string",
+                    "example": "2021-06-14"
                   }
                 },
                 "required": [
@@ -19713,7 +19753,8 @@
                   "total_amount",
                   "payment_method",
                   "bank_transaction",
-                  "transfer_pic"
+                  "transfer_pic",
+                  "nav_date"
                 ]
               }
             }

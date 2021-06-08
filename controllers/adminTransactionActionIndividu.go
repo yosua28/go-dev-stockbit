@@ -671,7 +671,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
 		if trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag == 1 {
 			log.Error("Account suspended to this product")
-			return lib.CustomError(status, "Account suspended to this product", "Account suspended to this product")
+			return lib.CustomError(http.StatusBadRequest, "Account suspended to this product", "Account suspended to this product")
 		}
 	} else {
 		params["flag_newsub"] = "1"
@@ -839,10 +839,10 @@ func CreateTransactionSubscription(c echo.Context) error {
 	settlementParams["settle_date"] = navdate + " 00:00:00"
 	settlementParams["settle_nominal"] = totalAmountStr
 	settlementParams["client_subaccount_no"] = ""
-	settlementParams["settled_status"] = "243"
+	settlementParams["settled_status"] = "244"
 	settlementParams["target_bank_account_key"] = bankStr
 	settlementParams["settle_channel"] = "323"
-	settlementParams["settle_payment_method"] = "308"
+	settlementParams["settle_payment_method"] = "304"
 	settlementParams["rec_status"] = "1"
 	settlementParams["rec_created_date"] = time.Now().Format(dateLayout)
 	settlementParams["rec_created_by"] = strIDUserLogin
@@ -979,7 +979,7 @@ func GetTopupData(c echo.Context) error {
 	status, err = models.GetAllTrAccount(&trAccountDB, paramsAcc)
 	if len(trAccountDB) > 0 {
 		log.Error("Account suspended to this product")
-		return lib.CustomError(status, "Account suspended to this product", "Account suspended to this product")
+		return lib.CustomError(http.StatusNotFound, "Account suspended to this product", "Account suspended to this product")
 	}
 
 	var product models.ProductSubscription

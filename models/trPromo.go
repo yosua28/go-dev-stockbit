@@ -454,3 +454,34 @@ func GetTrPromoProductActive(c *TrPromo, promoCode string, productKey string) (i
 
 	return http.StatusOK, nil
 }
+
+func AdminGetDetailTransactionPromo(c *TrPromoData, trKey string, promoCode string) (int, error) {
+	query := `SELECT 
+				p.promo_key as promo_key,
+				c.lkp_name AS category,
+				p.promo_code as promo_code,
+				p.promo_title as promo_title,
+				p.promo_nominal as promo_nominal,
+				p.promo_max_nominal as promo_max_nominal,
+				v.lkp_name AS value_type,
+				p.promo_maxuser as promo_maxuser,
+				DATE_FORMAT(p.promo_valid_date1, '%d %M %Y') AS start_valid,
+				DATE_FORMAT(p.promo_valid_date2, '%d %M %Y') AS end_valid,
+				DATE_FORMAT(p.promo_notif_start, '%d %M %Y') as promo_notif_start,
+				DATE_FORMAT(p.promo_notif_end, '%d %M %Y') as promo_notif_end 
+			FROM tr_promo AS p 
+			INNER JOIN tr_promo_used as pu on pu.promo_key = p.promo_key AND pu.transaction_key = '` + trKey + `'
+			LEFT JOIN gen_lookup AS c ON c.lookup_key = p.promo_category 
+			LEFT JOIN gen_lookup AS v ON v.lookup_key = p.promo_values_type 
+			WHERE p.promo_code = '` + promoCode + `'`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
