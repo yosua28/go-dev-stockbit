@@ -241,9 +241,6 @@ type ProductSubscription struct {
 	ProductName    string          `db:"product_name"            json:"product_name"`
 	NavDate        string          `db:"nav_date"                json:"nav_date"`
 	NavValue       decimal.Decimal `db:"nav_value"               json:"nav_value"`
-	PerformD1      decimal.Decimal `db:"perform_d1"              json:"perform_d1"`
-	PerformM1      decimal.Decimal `db:"perform_m1"              json:"perform_m1"`
-	PerformY1      decimal.Decimal `db:"perform_y1"              json:"perform_y1"`
 	ProductImage   *string         `db:"product_image"           json:"product_image"`
 	MinSubAmount   decimal.Decimal `db:"min_sub_amount"          json:"min_sub_amount"`
 	MinRedAmount   decimal.Decimal `db:"min_red_amount"          json:"min_red_amount"`
@@ -251,13 +248,16 @@ type ProductSubscription struct {
 	ProspectusLink string          `db:"prospectus_link"         json:"prospectus_link"`
 	FfsLink        *string         `db:"ffs_link"                json:"ffs_link"`
 	RiskName       string          `db:"risk_name"               json:"risk_name"`
-	FeeService     decimal.Decimal `db:"fee_service"             json:"fee_service"`
-	FeeTransfer    decimal.Decimal `db:"fee_transfer"            json:"fee_transfer"`
 	CurrencyKey    uint64          `db:"currency_key"            json:"currency_key"`
 	Symbol         string          `db:"symbol"                  json:"symbol"`
 	FlagShowOntnc  uint64          `db:"flag_show_ontnc"         json:"flag_show_ontnc"`
 	FeeAnnotation  *string         `db:"fee_annotation"          json:"fee_annotation"`
 	FeeValue       decimal.Decimal `db:"fee_value"               json:"fee_value"`
+}
+
+type ProductSubscriptionFundType struct {
+	ProductKey  uint64 `db:"product_key"             json:"product_key"`
+	ProductName string `db:"product_name"            json:"product_name"`
 }
 
 func GetAllMsProduct(c *[]MsProduct, limit uint64, offset uint64, params map[string]string, nolimit bool) (int, error) {
@@ -552,59 +552,13 @@ func AdminGetValidateUniqueDataInsertUpdate(c *CountData, paramsOr map[string]st
 	return http.StatusOK, nil
 }
 
-func AdminGetProductSubscription(c *[]ProductSubscription) (int, error) {
+func AdminGetProductSubscription(c *[]ProductSubscriptionFundType, fundtypeKey string) (int, error) {
 	query := `SELECT 
 				p.product_key as product_key,
-				f.fund_type_name as fund_type_name,
-				p.product_name_alt as product_name,
-				DATE_FORMAT(nav.nav_date, '%d %M %Y') AS nav_date, 
-				nav.nav_value as nav_value,
-				ffs.perform_d1 as perform_d1,
-				ffs.perform_m1 as perform_m1,
-				ffs.perform_y1 as perform_y1,
-				(CASE
-					WHEN p.rec_image1 IS NULL THEN CONCAT('` + config.BaseUrl + `', '/images/product/default.png')
-					ELSE CONCAT('` + config.BaseUrl + `', '/images/product/', p.rec_image1)
-				END) AS product_image,
-				p.min_sub_amount as min_sub_amount, 
-				p.min_red_amount as min_red_amount,
-				p.min_red_unit as min_red_unit,
-				p.prospectus_link as prospectus_link,
-				pub.ffs_link as ffs_link,
-				pr.risk_name as risk_name,
-				ft.app_config_value AS fee_transfer,
-				fc.app_config_value AS fee_service,
-				cur.currency_key AS currency_key,
-				cur.symbol AS symbol, 
-				mpf.flag_show_ontnc AS flag_show_ontnc, 
-				mpf.fee_annotation AS fee_annotation, 
-				mpfi.fee_value AS fee_value  
+				p.product_name_alt as product_name 
 			FROM ms_product AS p 
-			LEFT JOIN sc_app_config AS ft ON ft.app_config_code = 'BANK_CHARGES' 
-			LEFT JOIN sc_app_config AS fc ON fc.app_config_code = 'SERVICE_CHARGES' 
-			INNER JOIN ms_fund_type AS f ON p.fund_type_key = f.fund_type_key 
-			INNER JOIN (
-				SELECT MAX(nav_date) AS nav_date, product_key 
-				FROM tr_nav
-				WHERE rec_status = 1
-				AND publish_mode = 236
-				GROUP BY product_key
-			) b ON (b.product_key = p.product_key)
-			INNER JOIN tr_nav AS nav ON nav.product_key = p.product_key AND nav.nav_date = b.nav_date
-			INNER JOIN (
-				SELECT product_key, MAX(nav_date) AS nav_date
-				FROM ffs_nav_performance
-				WHERE rec_status = 1
-				GROUP BY product_key
-			) c ON (c.product_key = p.product_key)
-			INNER JOIN ffs_nav_performance AS ffs ON ffs.product_key = p.product_key AND ffs.nav_date = c.nav_date
-			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key 
-			INNER JOIN ms_currency AS cur ON cur.currency_key = p.currency_key 
-			LEFT JOIN ms_product_fee AS mpf ON mpf.product_key = p.product_key AND mpf.fee_type = '183' AND mpf.rec_status = 1 
-			LEFT JOIN ms_product_fee_item AS mpfi ON mpfi.product_fee_key = mpf.fee_key AND mpfi.rec_status = 1
-			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
-			WHERE p.rec_status = 1 AND p.flag_subscription = 1 AND cur.rec_status = 1
-			ORDER BY f.rec_order ASC`
+			WHERE p.rec_status = 1 AND p.flag_subscription = 1 AND p.fund_type_key = '` + fundtypeKey + `'
+			ORDER BY p.rec_order ASC`
 
 	// Main query
 	log.Println(query)
@@ -624,9 +578,6 @@ func AdminGetProductSubscriptionByProductKey(c *ProductSubscription, productKey 
 				p.product_name_alt as product_name,
 				DATE_FORMAT(nav.nav_date, '%d %M %Y') AS nav_date, 
 				nav.nav_value as nav_value,
-				ffs.perform_d1 as perform_d1,
-				ffs.perform_m1 as perform_m1,
-				ffs.perform_y1 as perform_y1,
 				(CASE
 					WHEN p.rec_image1 IS NULL THEN CONCAT('` + config.BaseUrl + `', '/images/product/default.png')
 					ELSE CONCAT('` + config.BaseUrl + `', '/images/product/', p.rec_image1)
@@ -637,16 +588,12 @@ func AdminGetProductSubscriptionByProductKey(c *ProductSubscription, productKey 
 				p.prospectus_link as prospectus_link,
 				pub.ffs_link as ffs_link,
 				pr.risk_name as risk_name,
-				ft.app_config_value AS fee_transfer,
-				fc.app_config_value AS fee_service, 
 				cur.currency_key AS currency_key,
 				cur.symbol AS symbol, 
 				mpf.flag_show_ontnc AS flag_show_ontnc, 
 				mpf.fee_annotation AS fee_annotation, 
 				mpfi.fee_value AS fee_value 
 			FROM ms_product AS p 
-			LEFT JOIN sc_app_config AS ft ON ft.app_config_code = 'BANK_CHARGES' 
-			LEFT JOIN sc_app_config AS fc ON fc.app_config_code = 'SERVICE_CHARGES' 
 			INNER JOIN ms_fund_type AS f ON p.fund_type_key = f.fund_type_key 
 			INNER JOIN (
 				SELECT MAX(nav_date) AS nav_date, product_key 
@@ -662,13 +609,12 @@ func AdminGetProductSubscriptionByProductKey(c *ProductSubscription, productKey 
 				WHERE rec_status = 1
 				GROUP BY product_key
 			) c ON (c.product_key = p.product_key)
-			INNER JOIN ffs_nav_performance AS ffs ON ffs.product_key = p.product_key AND ffs.nav_date = c.nav_date
 			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key 
-			INNER JOIN ms_currency AS cur ON cur.currency_key = p.currency_key 
+			LEFT JOIN ms_currency AS cur ON cur.currency_key = p.currency_key 
 			LEFT JOIN ms_product_fee AS mpf ON mpf.product_key = p.product_key AND mpf.fee_type = '183' AND mpf.rec_status = 1 
 			LEFT JOIN ms_product_fee_item AS mpfi ON mpfi.product_fee_key = mpf.fee_key AND mpfi.rec_status = 1
 			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
-			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND p.flag_subscription = 1 AND f.show_home = 1 AND cur.rec_status = 1
+			WHERE p.rec_status = 1 AND p.flag_subscription = 1 
 			AND p.product_key = '` + productKey + `'
 			ORDER BY f.rec_order ASC`
 
