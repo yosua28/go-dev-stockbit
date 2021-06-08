@@ -7660,6 +7660,30 @@
         ],
         "parameters": [
           {
+            "name": "nav_date",
+            "in": "query",
+            "description": "nav_date",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "example": "2021-06-15"
+            }
+          },
+          {
+            "name": "trans_type_key",
+            "in": "query",
+            "description": "trans_type_key",
+            "required": false,
+            "schema": {
+              "type": "string",
+              "enum": [
+                "1",
+                "2",
+                "3"
+              ]
+            }
+          },
+          {
             "name": "order_by",
             "in": "query",
             "description": "Order By",
@@ -8126,7 +8150,7 @@
                       "account_name": "bsjsbshshs"
                     },
                     "is_enable_unposting": true,
-                    "message_enable_unposting": ""
+                    "message_enable_unposting": "",
                     "transaction_confirmation_info": {
                       "tc_key": 96,
                       "confirm_date": "17 Dec 2020",
