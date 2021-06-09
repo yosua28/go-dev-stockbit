@@ -115,12 +115,13 @@ func GetLastBalanceCustomerByProductKey(c *[]TrBalanceCustomerProduk, customerKe
 				tr.transaction_key as transaction_key, 
 				tr.nav_date as nav_date 
 				FROM tr_balance AS tb
-				JOIN (SELECT MAX(balance_key) balance_key FROM tr_balance GROUP BY tc_key) AS t2 ON tb.balance_key = t2.balance_key 
+				JOIN (SELECT MAX(balance_key) balance_key FROM tr_balance where rec_status = 1 GROUP BY tc_key) AS t2 ON tb.balance_key = t2.balance_key 
 				INNER JOIN tr_transaction_confirmation AS tc ON tb.tc_key = tc.tc_key
 				INNER JOIN tr_transaction AS tr ON tc.transaction_key = tr.transaction_key
 				WHERE tr.customer_key = ` + customerKey +
 		` AND tr.product_key = ` + productKey +
-		` AND tr.trans_status_key = 9 AND tr.rec_status = 1 AND tr.trans_type_key = 1 AND tb.balance_unit > 0 
+		` AND tr.trans_status_key = 9 AND tr.rec_status = 1 AND tb.rec_status = 1 
+		  AND tc.rec_status = 1 AND tr.trans_type_key = 1 AND tb.balance_unit > 0 
 				GROUP BY tb.tc_key  ORDER BY tc.tc_key ASC`
 
 	log.Println(query)
@@ -134,7 +135,7 @@ func GetLastBalanceCustomerByProductKey(c *[]TrBalanceCustomerProduk, customerKe
 }
 
 func GetLastTrBalanceByTcRed(c *TrBalance, tcKeyRed string) (int, error) {
-	query := `SELECT * FROM tr_balance WHERE tc_key_red = ` + tcKeyRed + ` ORDER BY rec_order DESC LIMIT 1`
+	query := `SELECT * FROM tr_balance WHERE rec_status = 1 AND tc_key_red = ` + tcKeyRed + ` ORDER BY rec_order DESC LIMIT 1`
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -153,7 +154,7 @@ func GetLastAvgNavTrBalanceCustomerByProductKey(c *AvgNav, customerKey string, p
 				INNER JOIN tr_transaction AS tr ON tc.transaction_key = tr.transaction_key
 				WHERE tr.customer_key = ` + customerKey +
 		` AND tr.product_key = ` + productKey +
-		` AND tr.trans_status_key = 9 AND tr.rec_status = 1 
+		` AND tr.trans_status_key = 9 AND tr.rec_status = 1 AND tb.rec_status = 1 AND tc.rec_status = 1 
 				ORDER BY tb.balance_key DESC LIMIT 1`
 
 	log.Println(query)

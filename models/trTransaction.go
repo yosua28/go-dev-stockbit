@@ -1208,3 +1208,60 @@ func AdminGetDetailHeaderTransaksiCustomer(c *DetailHeaderTransaksiCustomer, dat
 
 	return http.StatusOK, nil
 }
+
+func AdminGetAllTrTransactionPosting(c *[]TrTransaction, params map[string]string, valueIn []string, fieldIn string, isAll bool) (int, error) {
+	query := `SELECT
+              t.*
+			  FROM tr_transaction as t
+			  WHERE t.rec_status = 1 AND t.trans_status_key != 3`
+
+	if isAll == false {
+		query += " AND t.trans_type_key != 3"
+	}
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "t."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if len(valueIn) > 0 {
+		inQuery := strings.Join(valueIn, ",")
+		condition += " AND t." + fieldIn + " IN(" + inQuery + ")"
+	}
+
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
