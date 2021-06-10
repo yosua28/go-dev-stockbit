@@ -949,7 +949,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 
 	responseData := make(map[string]string)
-	responseData["request_key"] = requestKey
+	responseData["request_key"] = requestID
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
