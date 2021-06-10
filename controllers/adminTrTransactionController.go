@@ -144,7 +144,14 @@ func GetTransactionPostingList(c echo.Context) error {
 	var transStatusKey []string
 	transStatusKey = append(transStatusKey, "8")
 
-	return getListAdmin(transStatusKey, c, nil)
+	//date
+	postnavdate := c.QueryParam("nav_date")
+	if postnavdate != "" {
+		return getListAdmin(transStatusKey, c, &postnavdate)
+	} else {
+		return getListAdmin(transStatusKey, c, nil)
+	}
+
 }
 
 func GetTransactionUnpostingList(c echo.Context) error {
@@ -254,6 +261,11 @@ func getListAdmin(transStatusKey []string, c echo.Context, postnavdate *string) 
 			log.Error("User Branch haven't Branch")
 			return lib.CustomError(http.StatusBadRequest, "Wrong User Branch haven't Branch", "Wrong User Branch haven't Branch")
 		}
+	}
+
+	transTypeKey := c.QueryParam("trans_type_key")
+	if transTypeKey != "" {
+		params["trans_type_key"] = transTypeKey
 	}
 
 	var trTransaction []models.TrTransaction
@@ -3037,221 +3049,223 @@ func sendEmailTransactionPosted(
 	userLogin models.ScUserLogin,
 	strCustomerKey string,
 	strTransTypeKey string) {
-	decimal.MarshalJSONWithoutQuotes = true
+	if config.Envi != "DEV" {
+		decimal.MarshalJSONWithoutQuotes = true
 
-	var subject string
-	var tpl bytes.Buffer
-	layout := "2006-01-02 15:04:05"
-	newLayout := "02 Jan 2006"
-	timeLayout := "15:04"
+		var subject string
+		var tpl bytes.Buffer
+		layout := "2006-01-02 15:04:05"
+		newLayout := "02 Jan 2006"
+		timeLayout := "15:04"
 
-	productFrom := "-"
+		productFrom := "-"
 
-	var customer models.MsCustomer
-	_, err := models.GetMsCustomer(&customer, strCustomerKey)
-	if err != nil {
-		if err != sql.ErrNoRows {
+		var customer models.MsCustomer
+		_, err := models.GetMsCustomer(&customer, strCustomerKey)
+		if err != nil {
+			if err != sql.ErrNoRows {
+				log.Error(err.Error())
+			}
+		}
+
+		strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+
+		var product models.MsProduct
+		_, err = models.GetMsProduct(&product, strProductKey)
+		if err != nil {
 			log.Error(err.Error())
 		}
-	}
 
-	strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+		var trNavData models.TrNav
 
-	var product models.MsProduct
-	_, err = models.GetMsProduct(&product, strProductKey)
-	if err != nil {
-		log.Error(err.Error())
-	}
+		var trNav []models.TrNav
+		_, err = models.GetTrNavByProductKeyAndNavDate(&trNav, strProductKey, transaction.NavDate)
 
-	var trNavData models.TrNav
-
-	var trNav []models.TrNav
-	_, err = models.GetTrNavByProductKeyAndNavDate(&trNav, strProductKey, transaction.NavDate)
-
-	if err == nil {
-		trNavData = trNav[0]
-	}
-
-	var currencyDB models.MsCurrency
-	_, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
-	if err != nil {
-		log.Error(err.Error())
-	}
-
-	date, _ := time.Parse(layout, transaction.TransDate)
-	nabDate, _ := time.Parse(layout, transaction.NavDate)
-
-	var transactionParent models.TrTransaction
-	if strTransTypeKey == "4" { // SWITCH IN
-		if transaction.ParentKey != nil {
-			strTrParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
-			_, err := models.GetTrTransaction(&transactionParent, strTrParentKey)
-			if err == nil {
-				strProductParentKey := strconv.FormatUint(transactionParent.ProductKey, 10)
-
-				var productparent models.MsProduct
-				_, err = models.GetMsProduct(&productparent, strProductParentKey)
-				if err == nil {
-					productFrom = productparent.ProductNameAlt
-				}
-			}
-		}
-	}
-
-	bankNameCus := "-"
-	noRekCus := "-"
-	namaRekCus := "-"
-	cabangRek := "-"
-
-	//bank account customer
-	strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
-	if strTransTypeKey == "2" { //redm
-		var trBankAccount models.TrTransactionBankAccount
-		_, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
 		if err == nil {
-			strCustBankAcc := strconv.FormatUint(trBankAccount.CustBankaccKey, 10)
-			var trBankCust models.MsCustomerBankAccountInfo
-			_, err = models.GetMsCustomerBankAccountTransactionByKey(&trBankCust, strCustBankAcc)
-			if err == nil {
-				bankNameCus = trBankCust.BankName
-				noRekCus = trBankCust.AccountNo
-				namaRekCus = trBankCust.AccountName
-				if trBankCust.BranchName != nil {
-					cabangRek = *trBankCust.BranchName
+			trNavData = trNav[0]
+		}
+
+		var currencyDB models.MsCurrency
+		_, err = models.GetMsCurrency(&currencyDB, strconv.FormatUint(*product.CurrencyKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+		}
+
+		date, _ := time.Parse(layout, transaction.TransDate)
+		nabDate, _ := time.Parse(layout, transaction.NavDate)
+
+		var transactionParent models.TrTransaction
+		if strTransTypeKey == "4" { // SWITCH IN
+			if transaction.ParentKey != nil {
+				strTrParentKey := strconv.FormatUint(*transaction.ParentKey, 10)
+				_, err := models.GetTrTransaction(&transactionParent, strTrParentKey)
+				if err == nil {
+					strProductParentKey := strconv.FormatUint(transactionParent.ProductKey, 10)
+
+					var productparent models.MsProduct
+					_, err = models.GetMsProduct(&productparent, strProductParentKey)
+					if err == nil {
+						productFrom = productparent.ProductNameAlt
+					}
 				}
 			}
 		}
-	}
 
-	transType := "Subscription"
-	if strTransTypeKey == "1" { // SUBS
-		if transaction.FlagNewSub != nil {
-			if *transaction.FlagNewSub == 0 {
-				transType = "Top Up"
+		bankNameCus := "-"
+		noRekCus := "-"
+		namaRekCus := "-"
+		cabangRek := "-"
+
+		//bank account customer
+		strTrKey := strconv.FormatUint(transaction.TransactionKey, 10)
+		if strTransTypeKey == "2" { //redm
+			var trBankAccount models.TrTransactionBankAccount
+			_, err := models.GetTrTransactionBankAccountByField(&trBankAccount, strTrKey, "transaction_key")
+			if err == nil {
+				strCustBankAcc := strconv.FormatUint(trBankAccount.CustBankaccKey, 10)
+				var trBankCust models.MsCustomerBankAccountInfo
+				_, err = models.GetMsCustomerBankAccountTransactionByKey(&trBankCust, strCustBankAcc)
+				if err == nil {
+					bankNameCus = trBankCust.BankName
+					noRekCus = trBankCust.AccountNo
+					namaRekCus = trBankCust.AccountName
+					if trBankCust.BranchName != nil {
+						cabangRek = *trBankCust.BranchName
+					}
+				}
 			}
 		}
-	}
 
-	ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
+		transType := "Subscription"
+		if strTransTypeKey == "1" { // SUBS
+			if transaction.FlagNewSub != nil {
+				if *transaction.FlagNewSub == 0 {
+					transType = "Top Up"
+				}
+			}
+		}
 
-	dataReplace := struct {
-		FileUrl        string
-		Name           string
-		Cif            string
-		Date           string
-		Time           string
-		ProductName    string
-		Symbol         *string
-		Amount         string
-		Fee            string
-		RedmUnit       string
-		NabUnit        string
-		BankName       string
-		NoRek          string
-		NamaRek        string
-		Cabang         string
-		ProductFrom    string
-		ProductTo      string
-		NABDate        string
-		UnitPenyertaan string
-		TransType      string
-	}{
-		FileUrl:        config.FileUrl + "/images/mail",
-		Name:           customer.FullName,
-		Cif:            customer.UnitHolderIDno,
-		Date:           date.Format(newLayout),
-		Time:           date.Format(timeLayout) + " WIB",
-		ProductName:    product.ProductNameAlt,
-		Symbol:         currencyDB.Symbol,
-		Amount:         ac.FormatMoney(transactionConf.ConfirmedAmount),
-		Fee:            ac.FormatMoney(transaction.TransFeeAmount),
-		RedmUnit:       ac.FormatMoney(transactionConf.ConfirmedUnit),
-		NabUnit:        ac.FormatMoney(trNavData.NavValue),
-		BankName:       bankNameCus,
-		NoRek:          noRekCus,
-		NamaRek:        namaRekCus,
-		Cabang:         cabangRek,
-		ProductFrom:    productFrom,
-		ProductTo:      product.ProductNameAlt,
-		NABDate:        nabDate.Format(newLayout),
-		UnitPenyertaan: ac.FormatMoney(transactionConf.ConfirmedUnit),
-		TransType:      transType}
+		ac := accounting.Accounting{Symbol: "", Precision: 2, Thousand: ".", Decimal: ","}
 
-	if strTransTypeKey == "1" { // SUBS
-		if transaction.FlagNewSub != nil {
-			if *transaction.FlagNewSub == 1 {
-				subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+		dataReplace := struct {
+			FileUrl        string
+			Name           string
+			Cif            string
+			Date           string
+			Time           string
+			ProductName    string
+			Symbol         *string
+			Amount         string
+			Fee            string
+			RedmUnit       string
+			NabUnit        string
+			BankName       string
+			NoRek          string
+			NamaRek        string
+			Cabang         string
+			ProductFrom    string
+			ProductTo      string
+			NABDate        string
+			UnitPenyertaan string
+			TransType      string
+		}{
+			FileUrl:        config.FileUrl + "/images/mail",
+			Name:           customer.FullName,
+			Cif:            customer.UnitHolderIDno,
+			Date:           date.Format(newLayout),
+			Time:           date.Format(timeLayout) + " WIB",
+			ProductName:    product.ProductNameAlt,
+			Symbol:         currencyDB.Symbol,
+			Amount:         ac.FormatMoney(transactionConf.ConfirmedAmount),
+			Fee:            ac.FormatMoney(transaction.TransFeeAmount),
+			RedmUnit:       ac.FormatMoney(transactionConf.ConfirmedUnit),
+			NabUnit:        ac.FormatMoney(trNavData.NavValue),
+			BankName:       bankNameCus,
+			NoRek:          noRekCus,
+			NamaRek:        namaRekCus,
+			Cabang:         cabangRek,
+			ProductFrom:    productFrom,
+			ProductTo:      product.ProductNameAlt,
+			NABDate:        nabDate.Format(newLayout),
+			UnitPenyertaan: ac.FormatMoney(transactionConf.ConfirmedUnit),
+			TransType:      transType}
+
+		if strTransTypeKey == "1" { // SUBS
+			if transaction.FlagNewSub != nil {
+				if *transaction.FlagNewSub == 1 {
+					subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+				} else {
+					subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+				}
 			} else {
 				subject = "[MNC Duit] Top Up Kamu telah Berhasil"
 			}
+
+			t := template.New("email-subscription-posted.html")
+
+			t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
+			if err != nil {
+				log.Println(err)
+			}
+
+			if err := t.Execute(&tpl, dataReplace); err != nil {
+				log.Println(err)
+			}
+		}
+
+		if strTransTypeKey == "2" { // REDM
+			subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
+			t := template.New("email-redemption-posted.html")
+
+			t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
+			if err != nil {
+				log.Println(err)
+			}
+
+			if err := t.Execute(&tpl, dataReplace); err != nil {
+				log.Println(err)
+			}
+
+		}
+
+		if strTransTypeKey == "4" { // SWITCH
+			subject = "[MNC Duit] Switching Kamu telah Berhasil"
+			t := template.New("email-switching-posted.html")
+
+			t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")
+			if err != nil {
+				log.Println(err)
+			}
+
+			if err := t.Execute(&tpl, dataReplace); err != nil {
+				log.Println(err)
+			}
+
+		}
+
+		// Send email
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", userLogin.UloginEmail)
+		mailer.SetHeader("Subject", subject)
+		mailer.SetBody("text/html", result)
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Info("Email sent error")
+			log.Error(err)
 		} else {
-			subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+			log.Info("Email sent")
 		}
-
-		t := template.New("email-subscription-posted.html")
-
-		t, err := t.ParseFiles(config.BasePath + "/mail/email-subscription-posted.html")
-		if err != nil {
-			log.Println(err)
-		}
-
-		if err := t.Execute(&tpl, dataReplace); err != nil {
-			log.Println(err)
-		}
-	}
-
-	if strTransTypeKey == "2" { // REDM
-		subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
-		t := template.New("email-redemption-posted.html")
-
-		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
-		if err != nil {
-			log.Println(err)
-		}
-
-		if err := t.Execute(&tpl, dataReplace); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	if strTransTypeKey == "4" { // SWITCH
-		subject = "[MNC Duit] Switching Kamu telah Berhasil"
-		t := template.New("email-switching-posted.html")
-
-		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")
-		if err != nil {
-			log.Println(err)
-		}
-
-		if err := t.Execute(&tpl, dataReplace); err != nil {
-			log.Println(err)
-		}
-
-	}
-
-	// Send email
-	result := tpl.String()
-
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", userLogin.UloginEmail)
-	mailer.SetHeader("Subject", subject)
-	mailer.SetBody("text/html", result)
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Info("Email sent error")
-		log.Error(err)
-	} else {
-		log.Info("Email sent")
 	}
 }
 
@@ -4284,5 +4298,323 @@ func DetailTransaksiInquiry(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = responseData
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func ProsesPostingAll(c echo.Context) error {
+	zero := decimal.NewFromInt(0)
+
+	var err error
+	var status int
+
+	paramsSearch := make(map[string]string)
+
+	transTypeKey := c.FormValue("trans_type_key")
+	if transTypeKey == "" {
+		log.Error("Missing required parameter: trans_type_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_type_key", "Missing required parameter: trans_type_key")
+	}
+
+	navDate := c.FormValue("nav_date")
+	if navDate == "" {
+		log.Error("Missing required parameter: nav_date")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: nav_date", "Missing required parameter: nav_date")
+	}
+	paramsSearch["nav_date"] = navDate
+	paramsSearch["rec_status"] = "1"
+	paramsSearch["trans_status_key"] = "8"
+
+	var trTransaction []models.TrTransaction
+	var transTypeIds []string
+
+	if transTypeKey == "3" {
+		paramsSearch["orderBy"] = "trans_type_key"
+		paramsSearch["orderType"] = "ASC"
+		transTypeIds = append(transTypeIds, "3")
+		transTypeIds = append(transTypeIds, "4")
+		status, err = models.AdminGetAllTrTransactionPosting(&trTransaction, paramsSearch, transTypeIds, "trans_type_key", true)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if len(trTransaction) < 1 {
+			log.Error("transaction switching not found")
+			return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+		}
+	} else {
+		paramsSearch["orderBy"] = "transaction_key"
+		paramsSearch["orderType"] = "ASC"
+		transTypeIds = append(transTypeIds, transTypeKey)
+		status, err = models.AdminGetAllTrTransactionPosting(&trTransaction, paramsSearch, transTypeIds, "trans_type_key", false)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if len(trTransaction) < 1 {
+			log.Error("transaction sub/redm not found")
+			return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+		}
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	for _, transaction := range trTransaction {
+		strTransTypeKey := strconv.FormatUint(transaction.TransTypeKey, 10)
+
+		var transactionConf models.TrTransactionConfirmation
+		strTransactionKey := strconv.FormatUint(transaction.TransactionKey, 10)
+		_, err = models.GetTrTransactionConfirmationByTransactionKey(&transactionConf, strTransactionKey)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest)
+		}
+
+		var trBalanceCustomer []models.TrBalanceCustomerProduk
+		strProductKey := strconv.FormatUint(transaction.ProductKey, 10)
+		strCustomerKey := strconv.FormatUint(transaction.CustomerKey, 10)
+
+		if strTransTypeKey == "2" || strTransTypeKey == "3" { // REDM
+			_, err = models.GetLastBalanceCustomerByProductKey(&trBalanceCustomer, strCustomerKey, strProductKey)
+			if err != nil {
+				if err != sql.ErrNoRows {
+					log.Error("Transaction have not balance")
+					return lib.CustomError(http.StatusBadRequest)
+				} else {
+					log.Error(err.Error())
+					return lib.CustomError(http.StatusBadRequest)
+				}
+			}
+		}
+
+		// strTransUnit := fmt.Sprintf("%g", transactionConf.ConfirmedUnit)
+
+		//create tr_balance
+		if (strTransTypeKey == "1") || (strTransTypeKey == "4") { // SUB & SWIN
+			paramsBalance := make(map[string]string)
+			strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+			paramsBalance["aca_key"] = strAcaKey
+			strTransactionConf := strconv.FormatUint(transactionConf.TcKey, 10)
+			paramsBalance["tc_key"] = strTransactionConf
+
+			newlayout := "2006-01-02"
+			t, _ := time.Parse(dateLayout, transactionConf.ConfirmDate)
+			balanceDate := t.Format(newlayout)
+
+			paramsBalance["balance_date"] = balanceDate + " 00:00:00"
+			paramsBalance["balance_unit"] = transactionConf.ConfirmedUnit.String()
+			paramsBalance["rec_order"] = "0"
+			paramsBalance["rec_status"] = "1"
+			paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsBalance["rec_created_by"] = strIDUserLogin
+
+			//calculate avg_nag tr_balance
+			//sum balance unit
+
+			balanceUnitSum := zero
+			for _, trBalance := range trBalanceCustomer {
+				balanceUnitSum = balanceUnitSum.Add(trBalance.BalanceUnit)
+			}
+
+			//avg nav balance last
+			avgNavLast := zero
+			var avgNav models.AvgNav
+			_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
+			if err == nil {
+				if avgNav.AvgNav != nil {
+					avgNavLast = *avgNav.AvgNav
+				}
+			}
+
+			variable1 := balanceUnitSum.Mul(avgNavLast)
+			variable2 := transactionConf.ConfirmedUnit.Mul(*transactionConf.AvgNav)
+
+			balanceUnitSumAll := balanceUnitSum.Add(transactionConf.ConfirmedUnit)
+
+			countAvgNavBalance := variable1.Add(variable2).Div(balanceUnitSumAll)
+			// strAvgNav := fmt.Sprintf("%g", countAvgNavBalance)
+			paramsBalance["avg_nav"] = countAvgNavBalance.String()
+			//end calculate avg_nag tr_balance
+
+			status, err := models.CreateTrBalance(paramsBalance)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(status, err.Error(), "Failed input data")
+			}
+		}
+
+		if (strTransTypeKey == "2") || (strTransTypeKey == "3") { // REDM & SWOUT
+			sisaFifo := transactionConf.ConfirmedUnit
+			//avg nav balance last
+			avgNavLast := zero
+			var avgNav models.AvgNav
+			_, err = models.GetLastAvgNavTrBalanceCustomerByProductKey(&avgNav, strCustomerKey, strProductKey)
+			if err == nil {
+				if avgNav.AvgNav != nil {
+					avgNavLast = *avgNav.AvgNav
+				}
+			}
+			// strAvgNav := fmt.Sprintf("%g", avgNavLast)
+
+			for _, trBalance := range trBalanceCustomer {
+				if sisaFifo.Cmp(zero) == 1 {
+					var sisaBalance decimal.Decimal
+
+					if trBalance.BalanceUnit.Cmp(sisaFifo) == 1 {
+						sisaBalance = trBalance.BalanceUnit.Sub(sisaFifo)
+						sisaFifo = zero
+					}
+
+					if trBalance.BalanceUnit.Cmp(sisaFifo) == -1 {
+						sisaBalance = zero
+						sisaFifo = sisaFifo.Sub(trBalance.BalanceUnit)
+					}
+
+					if trBalance.BalanceUnit == sisaFifo {
+						sisaBalance = zero
+						sisaFifo = zero
+					}
+
+					paramsBalance := make(map[string]string)
+					strAcaKey := strconv.FormatUint(*transaction.AcaKey, 10)
+					paramsBalance["aca_key"] = strAcaKey
+					strTransactionSubs := strconv.FormatUint(trBalance.TcKey, 10)
+					paramsBalance["tc_key"] = strTransactionSubs
+					strTransactionRed := strconv.FormatUint(transactionConf.TcKey, 10)
+					paramsBalance["tc_key_red"] = strTransactionRed
+
+					newlayout := "2006-01-02"
+					t, _ := time.Parse(dateLayout, transactionConf.ConfirmDate)
+					balanceDate := t.Format(newlayout)
+
+					// strTransUnitSisa := fmt.Sprintf("%g", sisaBalance)
+
+					paramsBalance["balance_date"] = balanceDate + " 00:00:00"
+					paramsBalance["balance_unit"] = sisaBalance.String()
+					paramsBalance["avg_nav"] = avgNavLast.String()
+
+					var balance models.TrBalance
+					status, err = models.GetLastTrBalanceByTcRed(&balance, strTransactionRed)
+					if err != nil {
+						paramsBalance["rec_order"] = "0"
+					} else {
+						if balance.RecOrder == nil {
+							paramsBalance["rec_order"] = "0"
+						} else {
+							orderNext := int(*balance.RecOrder) + 1
+							strOrderNext := strconv.FormatInt(int64(orderNext), 10)
+							paramsBalance["rec_order"] = strOrderNext
+						}
+					}
+
+					paramsBalance["rec_status"] = "1"
+					paramsBalance["rec_created_date"] = time.Now().Format(dateLayout)
+					paramsBalance["rec_created_by"] = strIDUserLogin
+					status, err := models.CreateTrBalance(paramsBalance)
+					if err != nil {
+						log.Error(err.Error())
+						return lib.CustomError(status, err.Error(), "Failed input data")
+					}
+				} else {
+					break
+				}
+			}
+		}
+
+		//update tr_transaction
+		params := make(map[string]string)
+		params["posted_units"] = transactionConf.ConfirmedUnit.String()
+		params["trans_status_key"] = "9"
+		params["transaction_key"] = strTransactionKey
+		params["posted_date"] = time.Now().Format(dateLayout)
+		params["rec_modified_by"] = strIDUserLogin
+		params["rec_modified_date"] = time.Now().Format(dateLayout)
+
+		_, err = models.UpdateTrTransaction(params)
+		if err != nil {
+			log.Error("Error update tr transaction")
+			return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		}
+
+		//create user message
+		if strTransTypeKey != "3" { // SELAIN SWITCH-OUT
+			paramsUserMessage := make(map[string]string)
+			paramsUserMessage["umessage_type"] = "245"
+
+			var userLogin models.ScUserLogin
+			_, err = models.GetScUserLoginByCustomerKey(&userLogin, strCustomerKey)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest)
+			}
+
+			strUserLoginKey := strconv.FormatUint(userLogin.UserLoginKey, 10)
+			paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
+			paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_read"] = "0"
+			paramsUserMessage["umessage_sender_key"] = strIDUserLogin
+			paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_sent"] = "1"
+			var subject string
+			var body string
+			if strTransTypeKey == "1" { // SUBS
+				if transaction.FlagNewSub != nil {
+					if *transaction.FlagNewSub == 1 {
+						subject = "Subscription Berhasil"
+						body = "Subscription kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+						paramsUserMessage["umessage_subject"] = subject
+						paramsUserMessage["umessage_body"] = body
+					} else {
+						subject = "Top Up Berhasil"
+						body = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+						paramsUserMessage["umessage_subject"] = subject
+						paramsUserMessage["umessage_body"] = body
+					}
+				} else {
+					subject = "Top Up Berhasil"
+					body = "Top Up kamu telah efektif dibukukan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+					paramsUserMessage["umessage_subject"] = subject
+					paramsUserMessage["umessage_body"] = body
+				}
+			}
+
+			if strTransTypeKey == "2" { // REDM
+				subject = "Redemption Berhasil"
+				body = "Redemption kamu telah berhasil dijalankan. Dana akan ditransfer ke rekening bank kamu maks. 7 hari bursa. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+				paramsUserMessage["umessage_subject"] = subject
+				paramsUserMessage["umessage_body"] = body
+			}
+			if strTransTypeKey == "4" { // SWITCH
+				subject = "Switching Berhasil"
+				body = "Switching kamu telah berhasil dijalankan. Silakan cek portofolio di akun kamu untuk melihat transaksi."
+				paramsUserMessage["umessage_subject"] = subject
+				paramsUserMessage["umessage_body"] = body
+			}
+
+			paramsUserMessage["umessage_category"] = "248"
+			paramsUserMessage["flag_archieved"] = "0"
+			paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_status"] = "1"
+			paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+			status, err = models.CreateScUserMessage(paramsUserMessage)
+			if err != nil {
+				log.Error("Error create user message")
+				return lib.CustomError(status, err.Error(), "failed input data user message")
+			}
+			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
+
+			sendEmailTransactionPosted(transaction, transactionConf, userLogin, strCustomerKey, strTransTypeKey)
+		}
+
+		log.Info("Success update transaksi")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
 	return c.JSON(http.StatusOK, response)
 }
