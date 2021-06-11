@@ -1049,29 +1049,29 @@ func GetOaPersonalData(c echo.Context) error {
 	dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(lib.Profile.UserID, 10) + "/"
 	selfie := make(map[string]interface{})
 	if personalDataDB.PicSelfie != nil && *personalDataDB.PicSelfie != "" {
-		selfie["file_name"] = personalDataDB.PicSelfie
+		selfie["file_name"] = *personalDataDB.PicSelfie
 		selfie["full_url"] = dir + *personalDataDB.PicSelfie
 	}
 	responseData["pic_selfie"] = selfie
 
 	ktp := make(map[string]interface{})
 	if personalDataDB.PicKtp != nil && *personalDataDB.PicKtp != "" {
-		selfie["file_name"] = personalDataDB.PicKtp
-		selfie["full_url"] = dir + *personalDataDB.PicKtp
+		ktp["file_name"] = *personalDataDB.PicKtp
+		ktp["full_url"] = dir + *personalDataDB.PicKtp
 	}
 	responseData["pic_ktp"] = ktp
 
 	selfie_ktp := make(map[string]interface{})
 	if personalDataDB.PicSelfieKtp != nil && *personalDataDB.PicSelfieKtp != "" {
-		selfie["file_name"] = personalDataDB.PicSelfieKtp
-		selfie["full_url"] = dir + *personalDataDB.PicSelfieKtp
+		selfie_ktp["file_name"] = *personalDataDB.PicSelfieKtp
+		selfie_ktp["full_url"] = dir + *personalDataDB.PicSelfieKtp
 	}
 	responseData["pic_selfie_ktp"] = selfie_ktp
 
 	signature := make(map[string]interface{})
 	if personalDataDB.RecImage1 != nil && *personalDataDB.RecImage1 != "" {
-		selfie["file_name"] = personalDataDB.RecImage1
-		selfie["full_url"] = dir + "signature/" + *personalDataDB.RecImage1
+		signature["file_name"] = *personalDataDB.RecImage1
+		signature["full_url"] = dir + "signature/" + *personalDataDB.RecImage1
 	}
 	responseData["signature"] = signature
 

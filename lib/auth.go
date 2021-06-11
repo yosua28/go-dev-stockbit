@@ -69,6 +69,7 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 
 			paramsUser := make(map[string]string)
 			paramsUser["user_login_key"] = strconv.FormatUint(loginSession[0].UserLoginKey, 10)
+			paramsUser["rec_status"] = "1"
 			var userLogin []models.ScUserLogin
 			_, err = models.GetAllScUserLogin(&userLogin, config.LimitQuery, 0, paramsUser, true)
 			if err != nil {
