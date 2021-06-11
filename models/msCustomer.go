@@ -472,7 +472,7 @@ func CountAdminGetAllCustomerIndividuInquery(c *CountData, params map[string]str
 	}
 	// Check order by
 
-	query := ` SELECT COUNT(dat.oa_request_key)AS count_data FROM 
+	query := ` SELECT COUNT(dat.oa_request_key) AS count_data FROM 
 			(SELECT 
 				r.oa_request_key as oa_request_key 
 			FROM oa_request AS r 
