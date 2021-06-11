@@ -226,6 +226,23 @@ func AdminSuspendUnsuspendCustomer(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed update data")
 	}
 
+	//update tr_account
+	paramsTrAccount := make(map[string]string)
+	paramsTrAccount["sub_suspend_flag"] = suspendFlag
+	paramsTrAccount["sub_suspend_modified_date"] = time.Now().Format(dateLayout)
+	paramsTrAccount["sub_suspend_reason"] = reason
+	paramsTrAccount["sub_suspend_reference"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsTrAccount["red_suspend_flag"] = suspendFlag
+	paramsTrAccount["red_suspend_modified_date"] = time.Now().Format(dateLayout)
+	paramsTrAccount["red_suspend_reason"] = reason
+	paramsTrAccount["red_suspend_reference"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsTrAccount["rec_modified_date"] = time.Now().Format(dateLayout)
+	paramsTrAccount["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	_, err = models.UpdateTrAccountUploadSinvest(paramsTrAccount, "customer_key", customerKeyStr)
+	if err != nil {
+		log.Println(err.Error())
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"

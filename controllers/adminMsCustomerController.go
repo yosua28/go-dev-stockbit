@@ -269,7 +269,6 @@ func GetListCustomerInstitutionInquiry(c echo.Context) error {
 			}
 
 			params["orderBy"] = orderByJoin
-			params["orderBy"] = orderBy
 			orderType := c.QueryParam("order_type")
 			if (orderType == "asc") || (orderType == "ASC") || (orderType == "desc") || (orderType == "DESC") {
 				params["orderType"] = orderType

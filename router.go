@@ -343,10 +343,16 @@ func router() *echo.Echo {
 	admin.POST("/user/changepassword", controllers.AdminChangePasswordUserLogin).Name = "AdminChangePasswordUserLogin"
 	admin.POST("/user/changedata", controllers.AdminChangeDataUserLogin).Name = "AdminChangeDataUserLogin"
 
-	//Admin Data Suspend Status Customer
+	//Admin Data Suspend Status Customer (CIF)
 	admin.GET("/customer/suspendstatuslist", controllers.GetListCustomerIndividuStatusSuspend).Name = "GetListCustomerIndividuStatusSuspend"
 	admin.GET("/customer/detail/status-suspend/:customer_key", controllers.AdminGetDetailCustomer).Name = "AdminGetDetailCustomer"
 	admin.POST("/customer/suspend-unsuspend", controllers.AdminSuspendUnsuspendCustomer).Name = "AdminSuspendUnsuspendCustomer"
+
+	//Admin Data Suspend Account
+	admin.GET("/accountlist", controllers.GetListTrAccount).Name = "GetListTrAccount"
+	admin.GET("/acount/detail/:acc_key", controllers.AdminGetDetailAccount).Name = "AdminGetDetailAccount"
+	admin.POST("/account/update", controllers.AdminUpdateTrAccount).Name = "AdminUpdateTrAccount"
+	admin.GET("/acount/customerlist/:product_key", controllers.AdminGetCustomerAccount).Name = "AdminGetCustomerAccount"
 	return e
 }
 
