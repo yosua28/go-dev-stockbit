@@ -331,7 +331,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10), 0755)
 	if err != nil {
 		log.Error(err.Error())
-	} else if requestTypeStr == "127" {
+	} else { //if requestTypeStr == "127"
 		var file *multipart.FileHeader
 		file, err = c.FormFile("pic_ktp")
 		if file != nil {
@@ -361,7 +361,13 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 			params["pic_ktp"] = filename + extension
 		} else {
-			return lib.CustomError(http.StatusBadRequest)
+			picKtp := c.FormValue("pic_ktp_str")
+			if picKtp == "" {
+				log.Error("Missing required parameter: pic_ktp/pic_ktp_str")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp/pic_ktp_str", "Missing required parameter: pic_ktp_str")
+			} else {
+				params["pic_ktp"] = picKtp
+			}
 		}
 
 		file, err = c.FormFile("pic_selfie_ktp")
@@ -392,7 +398,13 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 			params["pic_selfie_ktp"] = filename + extension
 		} else {
-			return lib.CustomError(http.StatusBadRequest)
+			picSelfie := c.FormValue("pic_selfie_ktp_str")
+			if picSelfie == "" {
+				log.Error("Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str")
+			} else {
+				params["pic_selfie_ktp"] = picSelfie
+			}
 		}
 
 		err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/signature", 0755)
@@ -428,32 +440,39 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 			params["rec_image1"] = filename + extension
 		} else {
-			return lib.CustomError(http.StatusBadRequest)
+			signature := c.FormValue("signature_str")
+			if signature == "" {
+				log.Error("Missing required parameter: signature/signature_str")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature/signature_str", "Missing required parameter: signature/signature_str")
+			} else {
+				params["rec_image1"] = signature
+			}
 		}
 
-	} else {
-		picKtp := c.FormValue("pic_ktp_str")
-		if picKtp == "" {
-			log.Error("Missing required parameter: pic_ktp_str")
-			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp_str", "Missing required parameter: pic_ktp_str")
-		} else {
-			params["pic_ktp"] = picKtp
-		}
-		picSelfie := c.FormValue("pic_selfie_ktp_str")
-		if picSelfie == "" {
-			log.Error("Missing required parameter: pic_selfie_ktp_str")
-			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp_str")
-		} else {
-			params["pic_selfie_ktp"] = picSelfie
-		}
-		signature := c.FormValue("signature_str")
-		if signature == "" {
-			log.Error("Missing required parameter: signature_str")
-			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature_str", "Missing required parameter: signature_str")
-		} else {
-			params["rec_image1"] = signature
-		}
-	}
+	} 
+	// else {
+	// 	picKtp := c.FormValue("pic_ktp_str")
+	// 	if picKtp == "" {
+	// 		log.Error("Missing required parameter: pic_ktp_str")
+	// 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp_str", "Missing required parameter: pic_ktp_str")
+	// 	} else {
+	// 		params["pic_ktp"] = picKtp
+	// 	}
+	// 	picSelfie := c.FormValue("pic_selfie_ktp_str")
+	// 	if picSelfie == "" {
+	// 		log.Error("Missing required parameter: pic_selfie_ktp_str")
+	// 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp_str")
+	// 	} else {
+	// 		params["pic_selfie_ktp"] = picSelfie
+	// 	}
+	// 	signature := c.FormValue("signature_str")
+	// 	if signature == "" {
+	// 		log.Error("Missing required parameter: signature_str")
+	// 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature_str", "Missing required parameter: signature_str")
+	// 	} else {
+	// 		params["rec_image1"] = signature
+	// 	}
+	// }
 
 	job := c.FormValue("job")
 	if job == "" {
@@ -1027,9 +1046,35 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["phone_mobile"] = personalDataDB.PhoneMobile
 	responseData["email"] = personalDataDB.EmailAddress
 	responseData["religion"] = personalDataDB.Religion
-	responseData["pic_selfie"] = personalDataDB.PicSelfie
-	responseData["pic_ktp"] = personalDataDB.PicKtp
-	responseData["pic_selfie_ktp"] = personalDataDB.PicSelfieKtp
+	dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(lib.Profile.UserID, 10) + "/"
+	selfie := make(map[string]interface{})
+	if personalDataDB.PicSelfie != nil && *personalDataDB.PicSelfie != ""{
+		selfie["file_name"] = personalDataDB.PicSelfie
+		selfie["full_url"] = dir + *personalDataDB.PicSelfie
+	}
+	responseData["pic_selfie"] = selfie
+
+	ktp := make(map[string]interface{})
+	if personalDataDB.PicKtp != nil && *personalDataDB.PicKtp != ""{
+		selfie["file_name"] = personalDataDB.PicKtp
+		selfie["full_url"] = dir + *personalDataDB.PicKtp
+	}
+	responseData["pic_ktp"] = ktp
+
+	selfie_ktp := make(map[string]interface{})
+	if personalDataDB.PicSelfieKtp != nil && *personalDataDB.PicSelfieKtp != ""{
+		selfie["file_name"] = personalDataDB.PicSelfieKtp
+		selfie["full_url"] = dir + *personalDataDB.PicSelfieKtp
+	}
+	responseData["pic_selfie_ktp"] = selfie_ktp
+	
+	signature := make(map[string]interface{})
+	if personalDataDB.RecImage1 != nil && *personalDataDB.RecImage1 != ""{
+		selfie["file_name"] = personalDataDB.RecImage1
+		selfie["full_url"] = dir + "signature/" + *personalDataDB.RecImage1
+	}
+	responseData["signature"] = signature
+
 	responseData["education"] = personalDataDB.Education
 	responseData["occup_job"] = personalDataDB.OccupJob
 	responseData["occup_company"] = personalDataDB.OccupCompany
@@ -1071,6 +1116,7 @@ func GetOaPersonalData(c echo.Context) error {
 			bankAccount["bank_key"] = bankAccountDB.BankKey
 			bankAccount["account_no"] = bankAccountDB.AccountNo
 			bankAccount["account_holder_name"] = bankAccountDB.AccountHolderName
+			bankAccount["branch_name"] = bankAccountDB.BranchName
 			responseData["bank_account"] = bankAccount
 		}
 	}
