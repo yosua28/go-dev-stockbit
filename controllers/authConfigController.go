@@ -26,6 +26,22 @@ func GetUserConfig(c echo.Context) error {
 	}
 	responseData["idle_time"] = idle
 
+	//cek status oa
+	var risk models.StatusRiskProfil
+	status, err = models.CheckStatusRiskProfilNewOA(&risk, strconv.FormatUint(lib.Profile.UserID, 10))
+	if err != nil {
+		responseData["risk_prifil_status"] = true
+		responseData["request_key"] = nil
+	} else {
+		if risk.OaRiskProfileKey != nil {
+			responseData["risk_prifil_status"] = true
+			responseData["request_key"] = nil
+		} else {
+			responseData["risk_prifil_status"] = false
+			responseData["request_key"] = *risk.OaRequestKey
+		}
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"

@@ -449,7 +449,7 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 		}
 
-	} 
+	}
 	// else {
 	// 	picKtp := c.FormValue("pic_ktp_str")
 	// 	if picKtp == "" {
@@ -1048,28 +1048,28 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["religion"] = personalDataDB.Religion
 	dir := config.BaseUrl + "/images/user/" + strconv.FormatUint(lib.Profile.UserID, 10) + "/"
 	selfie := make(map[string]interface{})
-	if personalDataDB.PicSelfie != nil && *personalDataDB.PicSelfie != ""{
+	if personalDataDB.PicSelfie != nil && *personalDataDB.PicSelfie != "" {
 		selfie["file_name"] = personalDataDB.PicSelfie
 		selfie["full_url"] = dir + *personalDataDB.PicSelfie
 	}
 	responseData["pic_selfie"] = selfie
 
 	ktp := make(map[string]interface{})
-	if personalDataDB.PicKtp != nil && *personalDataDB.PicKtp != ""{
+	if personalDataDB.PicKtp != nil && *personalDataDB.PicKtp != "" {
 		selfie["file_name"] = personalDataDB.PicKtp
 		selfie["full_url"] = dir + *personalDataDB.PicKtp
 	}
 	responseData["pic_ktp"] = ktp
 
 	selfie_ktp := make(map[string]interface{})
-	if personalDataDB.PicSelfieKtp != nil && *personalDataDB.PicSelfieKtp != ""{
+	if personalDataDB.PicSelfieKtp != nil && *personalDataDB.PicSelfieKtp != "" {
 		selfie["file_name"] = personalDataDB.PicSelfieKtp
 		selfie["full_url"] = dir + *personalDataDB.PicSelfieKtp
 	}
 	responseData["pic_selfie_ktp"] = selfie_ktp
-	
+
 	signature := make(map[string]interface{})
-	if personalDataDB.RecImage1 != nil && *personalDataDB.RecImage1 != ""{
+	if personalDataDB.RecImage1 != nil && *personalDataDB.RecImage1 != "" {
 		selfie["file_name"] = personalDataDB.RecImage1
 		selfie["full_url"] = dir + "signature/" + *personalDataDB.RecImage1
 	}
@@ -1123,7 +1123,7 @@ func GetOaPersonalData(c echo.Context) error {
 
 	var requestDB []models.OaRequest
 	paramRequest := make(map[string]string)
-	paramRequest["customer_key"] = strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+	paramRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	paramRequest["orderBy"] = "oa_request_key"
 	paramRequest["orderType"] = "DESC"
 	_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)

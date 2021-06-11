@@ -132,3 +132,28 @@ func GetRiskProfilCustomer(c *RiskProfilCustomer, customerKey string) (int, erro
 
 	return http.StatusOK, nil
 }
+
+type StatusRiskProfil struct {
+	OaRequestKey     *uint64 `db:"oa_request_key"                json:"oa_request_key"`
+	OaRiskProfileKey *uint64 `db:"oa_risk_profile_key"           json:"oa_risk_profile_key"`
+}
+
+func CheckStatusRiskProfilNewOA(c *StatusRiskProfil, userLoginKey string) (int, error) {
+	query := `SELECT 
+				o.oa_request_key,
+				r.oa_risk_profile_key 
+			FROM oa_request AS o
+			INNER JOIN sc_user_login AS u ON o.user_login_key = u.user_login_key
+			LEFT JOIN oa_risk_profile AS r ON r.oa_request_key = o.oa_request_key
+			WHERE u.rec_status = 1 AND o.rec_status = 1 AND o.oa_request_type = '127' AND u.user_login_key = '` + userLoginKey + `'`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
