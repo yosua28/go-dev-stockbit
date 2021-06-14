@@ -102,10 +102,6 @@ func GetListCustomerIndividuStatusSuspend(c echo.Context) error {
 	if fullname != "" {
 		paramsLike["c.full_name"] = fullname
 	}
-	datebirth := c.QueryParam("date_birth")
-	if datebirth != "" {
-		paramsLike["pd.date_birth"] = datebirth
-	}
 	ktp := c.QueryParam("ktp")
 	if ktp != "" {
 		paramsLike["pd.idcard_no"] = ktp
@@ -114,12 +110,8 @@ func GetListCustomerIndividuStatusSuspend(c echo.Context) error {
 	if branchKey != "" {
 		params["c.openacc_branch_key"] = branchKey
 	}
-	agentKey := c.QueryParam("agent_key ")
-	if agentKey != "" {
-		params["c.openacc_agent_key"] = agentKey
-	}
 	suspendFlag := c.QueryParam("cif_suspend_flag")
-	if branchKey != "" {
+	if suspendFlag != "" {
 		params["c.cif_suspend_flag"] = suspendFlag
 	}
 

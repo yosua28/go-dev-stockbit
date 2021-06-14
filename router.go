@@ -350,9 +350,9 @@ func router() *echo.Echo {
 
 	//Admin Data Suspend Account
 	admin.GET("/accountlist", controllers.GetListTrAccount).Name = "GetListTrAccount"
-	admin.GET("/acount/detail/:acc_key", controllers.AdminGetDetailAccount).Name = "AdminGetDetailAccount"
+	admin.GET("/account/detail/:acc_key", controllers.AdminGetDetailAccount).Name = "AdminGetDetailAccount"
 	admin.POST("/account/update", controllers.AdminUpdateTrAccount).Name = "AdminUpdateTrAccount"
-	admin.GET("/acount/customerlist/:product_key", controllers.AdminGetCustomerAccount).Name = "AdminGetCustomerAccount"
+	admin.GET("/account/customerlist/:product_key", controllers.AdminGetCustomerAccount).Name = "AdminGetCustomerAccount"
 	return e
 }
 
