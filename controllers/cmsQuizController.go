@@ -10,6 +10,7 @@ import (
 	"bytes"
 	"crypto/tls"
 	"html/template"
+	"time"
 
 	"github.com/labstack/echo"
 	"github.com/shopspring/decimal"
@@ -245,6 +246,36 @@ func PostQuizAnswer(c echo.Context) error {
 	}else{
 		log.Info("Email sent")
 	}
+
+	//insert message notif in app
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	dateLayout := "2006-01-02 15:04:05"
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	subject := "Pembukaan Rekening sedang Diproses"
+	body := "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 
 	var responseData models.MsRiskProfileInfo
 
