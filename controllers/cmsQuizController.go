@@ -3,13 +3,18 @@ package controllers
 import (
 	"api/lib"
 	"api/models"
+	"api/config"
 	"fmt"
 	"net/http"
 	"strconv"
+	"bytes"
+	"crypto/tls"
+	"html/template"
 
 	"github.com/labstack/echo"
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
+	"gopkg.in/gomail.v2"
 )
 
 func GetCmsQuiz(c echo.Context) error {
@@ -141,13 +146,21 @@ func PostQuizAnswer(c echo.Context) error {
 	var err error
 	var status int
 	decimal.MarshalJSONWithoutQuotes = true
-
+	
 	m := echo.Map{}
 	if err := c.Bind(&m); err != nil {
 		return err
 	}
 	requestKey := m["request_key"].(string)
 	fmt.Println(requestKey)
+
+	var personalData models.OaPersonalData
+	status, err = models.GetOaPersonalData(&personalData, requestKey, "oa_request_key")
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get oa data")
+	}
+
 	data := m["quiz"].([]interface{})
 	var bindVar []interface{}
 	var score uint64 = 0
@@ -192,6 +205,47 @@ func PostQuizAnswer(c echo.Context) error {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed input data")
 	}
+
+	// Send email
+
+	t := template.New("index-registration.html")
+	
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+	if err != nil {
+		log.Println(err)
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, struct {
+		Name    string
+		FileUrl string
+	}{Name: personalData.FullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+		log.Println(err)
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+	mailer.SetBody("text/html", result)
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Failed send email: ",err)
+		// return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
+	}else{
+		log.Info("Email sent")
+	}
+
 	var responseData models.MsRiskProfileInfo
 
 	responseData.RiskCode = riskProfile.RiskCode
