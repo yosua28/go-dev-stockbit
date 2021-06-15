@@ -201,7 +201,7 @@ func CreateOaPersonalData(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest)
 		}
 	}
-	
+
 	idcardNumber := c.FormValue("idcard_number")
 	if idcardNumber == "" {
 		log.Error("Missing required parameter: idcard_number")
@@ -1097,7 +1097,7 @@ func GetOaPersonalData(c echo.Context) error {
 		quiz := make(map[string]interface{})
 		quiz["question_key"] = q.QuizQuestionKey
 		quiz["option_key"] = q.QuizOptionKey
-		quiz["option_score"] = q.QuizOptionScore
+		quiz["score"] = q.QuizOptionScore
 		quizData = append(quizData, quiz)
 	}
 	riskProfileData["quiz"] = quizData
