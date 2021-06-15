@@ -155,6 +155,12 @@ func PostQuizAnswer(c echo.Context) error {
 	requestKey := m["request_key"].(string)
 	fmt.Println(requestKey)
 
+	var oaRequest models.OaRequest
+	status, err = models.GetOaRequest(&oaRequest, requestKey)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get request data")
+	}
 	var personalData models.OaPersonalData
 	status, err = models.GetOaPersonalData(&personalData, requestKey, "oa_request_key")
 	if err != nil {
@@ -208,74 +214,75 @@ func PostQuizAnswer(c echo.Context) error {
 	}
 
 	// Send email
+	if *oaRequest.OaRequestType == uint64(127) {
+		t := template.New("index-registration.html")
+		
+		t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+		if err != nil {
+			log.Println(err)
+		}
 
-	t := template.New("index-registration.html")
-	
-	t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
-	if err != nil {
-		log.Println(err)
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, struct {
+			Name    string
+			FileUrl string
+		}{Name: personalData.FullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+			log.Println(err)
+		}
+
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", lib.Profile.Email)
+		mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+		mailer.SetBody("text/html", result)
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Failed send email: ",err)
+			// return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
+		}else{
+			log.Info("Email sent")
+		}
+
+		//insert message notif in app
+		strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+		dateLayout := "2006-01-02 15:04:05"
+		paramsUserMessage := make(map[string]string)
+		paramsUserMessage["umessage_type"] = "245"
+		paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+		paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["flag_read"] = "0"
+		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["flag_sent"] = "1"
+		subject := "Pembukaan Rekening sedang Diproses"
+		body := "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+		paramsUserMessage["umessage_subject"] = subject
+		paramsUserMessage["umessage_body"] = body
+
+		paramsUserMessage["umessage_category"] = "248"
+		paramsUserMessage["flag_archieved"] = "0"
+		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["rec_status"] = "1"
+		paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+		status, err = models.CreateScUserMessage(paramsUserMessage)
+		if err != nil {
+			log.Error("Error create user message")
+		} else {
+			log.Error("Sukses insert user message")
+		}
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 	}
-
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, struct {
-		Name    string
-		FileUrl string
-	}{Name: personalData.FullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
-		log.Println(err)
-	}
-
-	result := tpl.String()
-
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
-	mailer.SetBody("text/html", result)
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error("Failed send email: ",err)
-		// return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
-	}else{
-		log.Info("Email sent")
-	}
-
-	//insert message notif in app
-	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
-	dateLayout := "2006-01-02 15:04:05"
-	paramsUserMessage := make(map[string]string)
-	paramsUserMessage["umessage_type"] = "245"
-	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
-	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_read"] = "0"
-	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_sent"] = "1"
-	subject := "Pembukaan Rekening sedang Diproses"
-	body := "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
-	paramsUserMessage["umessage_subject"] = subject
-	paramsUserMessage["umessage_body"] = body
-
-	paramsUserMessage["umessage_category"] = "248"
-	paramsUserMessage["flag_archieved"] = "0"
-	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_status"] = "1"
-	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_created_by"] = strIDUserLogin
-
-	status, err = models.CreateScUserMessage(paramsUserMessage)
-	if err != nil {
-		log.Error("Error create user message")
-	} else {
-		log.Error("Sukses insert user message")
-	}
-	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 
 	var responseData models.MsRiskProfileInfo
 

@@ -190,23 +190,37 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	requestTypeStr := c.FormValue("request_type")
+	if requestTypeStr == "" {
+		log.Error("Missing required parameter: request_type")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: request_type", "Missing required parameter: request_type")
+	} else {
+		_, err := strconv.ParseUint(requestTypeStr, 10, 64)
+		if err != nil {
+			log.Error("Wrong input for parameter: request_type")
+			return lib.CustomError(http.StatusBadRequest)
+		}
+	}
+	
 	idcardNumber := c.FormValue("idcard_number")
 	if idcardNumber == "" {
 		log.Error("Missing required parameter: idcard_number")
 		return lib.CustomError(http.StatusBadRequest)
 	} else {
-		paramsPersonalData := make(map[string]string)
-		paramsPersonalData["idcard_no"] = idcardNumber
-		paramsPersonalData["rec_status"] = "1"
-		var personalDataDB []models.OaPersonalData
-		_, err = models.GetAllOaPersonalData(&personalDataDB, 0, 0, paramsPersonalData, true)
-		if err != nil {
-			log.Error("error get data")
-			return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
-		}
-		if len(personalDataDB) > 0 {
-			log.Error("idcard_number alredy used")
-			return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+		if requestTypeStr == "127" {
+			paramsPersonalData := make(map[string]string)
+			paramsPersonalData["idcard_no"] = idcardNumber
+			paramsPersonalData["rec_status"] = "1"
+			var personalDataDB []models.OaPersonalData
+			_, err = models.GetAllOaPersonalData(&personalDataDB, 0, 0, paramsPersonalData, true)
+			if err != nil {
+				log.Error("error get data")
+				return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+			}
+			if len(personalDataDB) > 0 {
+				log.Error("idcard_number alredy used")
+				return lib.CustomError(http.StatusBadRequest, "Nomor kartu ID sudah pernah digunakan", "Nomor kartu ID sudah pernah digunakan")
+			}
 		}
 		params["idcard_no"] = idcardNumber
 	}
@@ -310,18 +324,6 @@ func CreateOaPersonalData(c echo.Context) error {
 		row = append(row, "0")
 		row = append(row, educationOther)
 		bindVar = append(bindVar, row)
-	}
-
-	requestTypeStr := c.FormValue("request_type")
-	if requestTypeStr == "" {
-		log.Error("Missing required parameter: request_type")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: request_type", "Missing required parameter: request_type")
-	} else {
-		_, err := strconv.ParseUint(requestTypeStr, 10, 64)
-		if err != nil {
-			log.Error("Wrong input for parameter: request_type")
-			return lib.CustomError(http.StatusBadRequest)
-		}
 	}
 
 	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10), 0755)
