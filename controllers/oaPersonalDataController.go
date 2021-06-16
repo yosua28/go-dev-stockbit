@@ -946,6 +946,11 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["idcard_expired_date"] = personalDataDB.IDcardExpiredDate
 	responseData["idcard_never_expired"] = personalDataDB.IDcardNeverExpired
 	responseData["gender"] = personalDataDB.Gender
+	if personalDataDB.PepStatus == nil {
+		responseData["pep_status"] = uint64(322)
+	} else {
+		responseData["pep_status"] = personalDataDB.PepStatus
+	}
 	responseData["marital_status"] = personalDataDB.MaritalStatus
 	var address models.OaPostalAddress
 	_, err = models.GetOaPostalAddress(&address, strconv.FormatUint(*personalDataDB.IDcardAddressKey, 10))
