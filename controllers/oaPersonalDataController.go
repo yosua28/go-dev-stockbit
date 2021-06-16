@@ -202,6 +202,30 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	if requestTypeStr != "127" {
+		var oaRequestDB []models.OaRequest
+		paramsCek := make(map[string]string)
+		paramsCek["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsCek["orderBy"] = "oa_request_key"
+		paramsCek["rec_status"] = "1"
+		paramsCek["orderType"] = "DESC"
+		status, err := models.GetAllOaRequest(&oaRequestDB, 0, 0, true, paramsCek)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Oa Request not found")
+		}
+
+		if len(oaRequestDB) > 0 {
+			if *oaRequestDB[0].Oastatus == uint64(258) || *oaRequestDB[0].Oastatus == uint64(259) {
+				log.Error("last oa/pengkinian belum di approve")
+				return lib.CustomError(http.StatusNotFound, "Data terakhir belum diapprove", "Data terakhir belum diapprove")
+			}
+		} else {
+			log.Error("oa not found")
+			return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
+		}
+	}
+
 	idcardNumber := c.FormValue("idcard_number")
 	if idcardNumber == "" {
 		log.Error("Missing required parameter: idcard_number")
@@ -913,6 +937,7 @@ func GetOaPersonalData(c echo.Context) error {
 	params := make(map[string]string)
 	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["orderBy"] = "oa_request_key"
+	params["rec_status"] = "1"
 	params["orderType"] = "DESC"
 	status, err := models.GetAllOaRequest(&oaRequestDB, 0, 0, true, params)
 	if err != nil {
