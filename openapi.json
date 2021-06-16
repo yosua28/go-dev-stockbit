@@ -580,7 +580,8 @@
                   "data": {
                     "idle_time": 120,
                     "risk_prifil_status": true,
-                    "request_key": 169
+                    "request_key": 169,
+                    "create_pin": false
                   }
                 }
               }

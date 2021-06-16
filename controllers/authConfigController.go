@@ -41,6 +41,18 @@ func GetUserConfig(c echo.Context) error {
 			responseData["request_key"] = *risk.OaRequestKey
 		}
 	}
+	var countData models.CountData
+	status, err = models.CheckCreatePin(&countData, strconv.FormatUint(lib.Profile.UserID, 10))
+	if err != nil {
+		responseData["create_pin"] = false
+	} else {
+
+		if int(countData.CountData) < int(1) {
+			responseData["create_pin"] = false
+		} else {
+			responseData["create_pin"] = true
+		}
+	}
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK

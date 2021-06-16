@@ -742,3 +742,25 @@ func ValidateUniqueData(c *CountData, field string, value string, userLoginKey *
 
 	return http.StatusOK, nil
 }
+
+func CheckCreatePin(c *CountData, userLoginKey string) (int, error) {
+	var query string
+	query = `SELECT 
+				COUNT(u.user_login_key) AS count_data
+			FROM sc_user_login AS u
+			INNER JOIN oa_request AS o ON o.user_login_key = u.user_login_key
+			INNER JOIN ms_customer AS c ON c.customer_key = o.customer_key
+			WHERE u.rec_status = 1 AND o.rec_status = 1 AND c.rec_status = 1 
+			AND u.ulogin_pin IS NULL AND c.customer_key IS NOT NULL 
+			AND u.user_login_key = '` + userLoginKey + `' GROUP BY u.user_login_key`
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
