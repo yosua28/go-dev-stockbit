@@ -1,15 +1,15 @@
 package controllers
 
 import (
+	"api/config"
 	"api/lib"
 	"api/models"
-	"api/config"
-	"fmt"
-	"net/http"
-	"strconv"
 	"bytes"
 	"crypto/tls"
+	"fmt"
 	"html/template"
+	"net/http"
+	"strconv"
 	"time"
 
 	"github.com/labstack/echo"
@@ -147,7 +147,7 @@ func PostQuizAnswer(c echo.Context) error {
 	var err error
 	var status int
 	decimal.MarshalJSONWithoutQuotes = true
-	
+
 	m := echo.Map{}
 	if err := c.Bind(&m); err != nil {
 		return err
@@ -216,7 +216,7 @@ func PostQuizAnswer(c echo.Context) error {
 	// Send email
 	if *oaRequest.OaRequestType == uint64(127) {
 		t := template.New("index-registration.html")
-		
+
 		t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
 		if err != nil {
 			log.Println(err)
@@ -247,42 +247,60 @@ func PostQuizAnswer(c echo.Context) error {
 
 		err = dialer.DialAndSend(mailer)
 		if err != nil {
-			log.Error("Failed send email: ",err)
+			log.Error("Failed send email: ", err)
 			// return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
-		}else{
+		} else {
 			log.Info("Email sent")
 		}
-
-		//insert message notif in app
-		strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
-		dateLayout := "2006-01-02 15:04:05"
-		paramsUserMessage := make(map[string]string)
-		paramsUserMessage["umessage_type"] = "245"
-		paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
-		paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["flag_read"] = "0"
-		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["flag_sent"] = "1"
-		subject := "Pembukaan Rekening sedang Diproses"
-		body := "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
-		paramsUserMessage["umessage_subject"] = subject
-		paramsUserMessage["umessage_body"] = body
-
-		paramsUserMessage["umessage_category"] = "248"
-		paramsUserMessage["flag_archieved"] = "0"
-		paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["rec_status"] = "1"
-		paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsUserMessage["rec_created_by"] = strIDUserLogin
-
-		status, err = models.CreateScUserMessage(paramsUserMessage)
-		if err != nil {
-			log.Error("Error create user message")
-		} else {
-			log.Error("Sukses insert user message")
-		}
-		lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 	}
+
+	//send notif
+
+	var subject string
+	var body string
+
+	if oaRequest.OaRequestType != nil {
+		if *oaRequest.OaRequestType == uint64(127) {
+			subject = "Pembukaan Rekening sedang Diproses"
+			body = "Terima kasih telah mendaftar. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+		}
+		if *oaRequest.OaRequestType == uint64(128) {
+			subject = "Pengkinian Profil Risiko sedang Diproses"
+			body = "Terima kasih telah melakukan pengkinian. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+		}
+		if *oaRequest.OaRequestType == uint64(196) {
+			subject = "Pengkinian Personal Data sedang Diproses"
+			body = "Terima kasih telah melakukan pengkinian. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
+		}
+	}
+
+	//insert message notif in app
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	dateLayout := "2006-01-02 15:04:05"
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 
 	var responseData models.MsRiskProfileInfo
 
