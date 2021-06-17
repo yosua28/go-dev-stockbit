@@ -51,6 +51,8 @@ func Register(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest)
 	}
 
+	token := c.FormValue("token") //player_id
+
 	// Validate email
 	err = checkmail.ValidateFormat(email)
 	if err != nil {
@@ -113,6 +115,9 @@ func Register(c echo.Context) error {
 	verifyKey := hex.EncodeToString(verifyKeyByte[:])
 
 	// Input to database
+	if token != "" {
+		params["token_notif"] = token
+	}
 	params["ulogin_email"] = email
 	params["ulogin_name"] = email
 	params["ulogin_full_name"] = email

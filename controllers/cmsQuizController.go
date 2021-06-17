@@ -268,7 +268,7 @@ func PostQuizAnswer(c echo.Context) error {
 			subject = "Pengkinian Profil Risiko sedang Diproses"
 			body = "Terima kasih telah melakukan pengkinian. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
 		}
-		if *oaRequest.OaRequestType == uint64(196) {
+		if *oaRequest.OaRequestType == uint64(296) {
 			subject = "Pengkinian Personal Data sedang Diproses"
 			body = "Terima kasih telah melakukan pengkinian. Kami sedang melakukan proses verifikasi data kamu max. 1X24 jam. Mohon ditunggu ya."
 		}

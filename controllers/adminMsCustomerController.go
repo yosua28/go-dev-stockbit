@@ -2300,6 +2300,22 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(status, err.Error(), "Failed input data")
 	}
 
+	//create oa_request_bank_account
+	paramsBankRquest := make(map[string]string)
+	paramsBankRquest["oa_request_key"] = bankKey
+	paramsBankRquest["bank_account_key"] = bankAccountID
+	paramsBankRquest["flag_priority"] = "1"
+	paramsBankRquest["bank_account_name"] = accountName
+	paramsBankRquest["rec_status"] = "1"
+	paramsBankRquest["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsBankRquest["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	status, err, _ = models.CreateOaRequestBankAccount(paramsBankRquest)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create oa request bank acc: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
 	tx.Commit()
 
 	// Send email

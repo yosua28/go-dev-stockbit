@@ -1068,6 +1068,7 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["emergency_phone_no"] = personalDataDB.EmergencyPhoneNo
 	responseData["beneficial_full_name"] = personalDataDB.BeneficialFullName
 	responseData["beneficial_relation"] = personalDataDB.BeneficialRelation
+	responseData["sales_code"] = oaRequestDB[0].SalesCode
 	var bankAccountDB models.MsBankAccount
 	if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
 		_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
@@ -1125,9 +1126,9 @@ func GetOaPersonalData(c echo.Context) error {
 	var quizData []interface{}
 	for _, q := range quizDB {
 		quiz := make(map[string]interface{})
-		quiz["question_key"] = q.QuizQuestionKey
-		quiz["option_key"] = q.QuizOptionKey
-		quiz["score"] = q.QuizOptionScore
+		quiz["question_key"] = strconv.FormatUint(*q.QuizQuestionKey, 10)
+		quiz["option_key"] = strconv.FormatUint(*q.QuizOptionKey, 10)
+		quiz["score"] = strconv.FormatUint(*q.QuizOptionScore, 10)
 		quizData = append(quizData, quiz)
 	}
 	riskProfileData["quiz"] = quizData

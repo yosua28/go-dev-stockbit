@@ -37,6 +37,9 @@
                   },
                   "phone": {
                     "type": "string"
+                  },
+                  "token": {
+                    "type": "string"
                   }
                 },
                 "required": [
@@ -645,73 +648,124 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "annual_income": 1,
+                    "annual_income": 61,
                     "bank_account": {
-                      "account_holder_name": "entah",
-                      "account_no": "123",
-                      "bank_key": 1
+                      "account_holder_name": "Aldy Yoga Alfianta",
+                      "account_no": "15364997852231",
+                      "bank_key": 116,
+                      "branch_name": "Kebon Sirih"
                     },
-                    "beneficial_full_name": "entah",
-                    "beneficial_relation": 1,
-                    "correspondence": 1,
-                    "date_birth": "1991-02-09 00:00:00",
+                    "beneficial_full_name": "Aldy Yoga Alfianta",
+                    "beneficial_relation": 101,
+                    "correspondence": 85,
+                    "date_birth": "1996-10-25 00:00:00",
                     "domicile_address": {
-                      "address_line1": "tangerang",
+                      "address_line1": "Tileng",
                       "address_line2": null,
                       "address_line3": null,
-                      "kabupaten_key": 1,
-                      "kecamatan_key": 1,
-                      "postal_address_key": 215,
-                      "postal_code": "123"
+                      "kabupaten_key": 264,
+                      "kecamatan_key": 3764,
+                      "postal_address_key": 244,
+                      "postal_code": null
                     },
-                    "education": 1,
-                    "email": "yogasutrisna@gmail.com",
-                    "emergency_full_name": "entah",
-                    "emergency_phone_no": "123",
-                    "emergency_relation": 1,
-                    "full_name": "yoga",
-                    "gender": 1,
+                    "education": 40,
+                    "email": "elyoga1996@gmail.com",
+                    "emergency_full_name": "Alea",
+                    "emergency_phone_no": "08126494637",
+                    "emergency_relation": 99,
+                    "full_name": "Aldy Yoga Alfianta",
+                    "gender": 10,
                     "idcard_address": {
-                      "address_line1": "tangerang",
+                      "address_line1": "Tileng",
                       "address_line2": null,
                       "address_line3": null,
-                      "kabupaten_key": 1,
-                      "kecamatan_key": 1,
-                      "postal_address_key": 214,
-                      "postal_code": "123"
+                      "kabupaten_key": 264,
+                      "kecamatan_key": 3764,
+                      "postal_address_key": 243,
+                      "postal_code": "55883"
                     },
                     "idcard_expired_date": null,
                     "idcard_never_expired": null,
-                    "idcard_no": "123",
-                    "idcard_type": 1,
-                    "invesment_objectives": 1,
-                    "marital_status": 1,
-                    "mother_maiden_name": "entah",
-                    "nationality": 1,
+                    "idcard_no": "3403162510960003",
+                    "idcard_type": 12,
+                    "invesment_objectives": 77,
+                    "marital_status": 14,
+                    "mother_maiden_name": "Rina",
+                    "nationality": 97,
                     "occup_address": {
-                      "address_line1": "jakarta",
+                      "address_line1": "Kebon Sirih",
                       "address_line2": null,
                       "address_line3": null,
                       "kabupaten_key": null,
                       "kecamatan_key": null,
-                      "postal_address_key": 216,
+                      "postal_address_key": 245,
                       "postal_code": null
                     },
-                    "occup_business_field": 1,
-                    "occup_company": "mnc",
-                    "occup_job": 1,
+                    "occup_business_field": 53,
+                    "occup_company": "MNC",
+                    "occup_job": 34,
                     "occup_phone": null,
-                    "occup_position": 1,
+                    "occup_position": 107,
                     "occup_web_url": null,
-                    "phone_home": "123",
-                    "phone_mobile": "123",
-                    "place_birth": "tangerang",
-                    "relation_business_fields": 1,
-                    "relation_full_name": "entah",
-                    "relation_occupation": 1,
+                    "pep_status": 322,
+                    "phone_home": "085328481220",
+                    "phone_mobile": "085328481220",
+                    "pic_ktp": {
+                      "file_name": "uVfCIoR6GSblw1kNYkkS.png",
+                      "full_url": "https://devapi.mncasset.com/images/user/7327/uVfCIoR6GSblw1kNYkkS.png"
+                    },
+                    "pic_selfie": {},
+                    "pic_selfie_ktp": {
+                      "file_name": "MUsT0SwMqzcGfJXLOVzY.638123",
+                      "full_url": "https://devapi.mncasset.com/images/user/7327/MUsT0SwMqzcGfJXLOVzY.638123"
+                    },
+                    "place_birth": "Gunungkidul",
+                    "relation_business_fields": 168,
+                    "relation_full_name": "Heru",
+                    "relation_occupation": 154,
                     "relation_type": null,
-                    "religion": 1,
-                    "sourceof_fund": 1
+                    "religion": 20,
+                    "risk_profile": {
+                      "quiz": [
+                        {
+                          "option_key": "7",
+                          "question_key": "3",
+                          "score": "10"
+                        },
+                        {
+                          "option_key": "10",
+                          "question_key": "4",
+                          "score": "10"
+                        },
+                        {
+                          "option_key": "13",
+                          "question_key": "5",
+                          "score": "10"
+                        },
+                        {
+                          "option_key": "16",
+                          "question_key": "6",
+                          "score": "10"
+                        },
+                        {
+                          "option_key": "19",
+                          "question_key": "7",
+                          "score": "10"
+                        },
+                        {
+                          "option_key": "22",
+                          "question_key": "8",
+                          "score": "10"
+                        }
+                      ],
+                      "risk_code": "MenengahTinggi",
+                      "risk_desc": "Nasabah mulai mencoba alternatif untuk mendapatkan hasil investasi yang relatif tinggi dan risiko fluktuasi investasi yang juga relatif tinggi.",
+                      "risk_name": "Moderat Agresif",
+                      "score_result": 60
+                    },
+                    "sales_code": null,
+                    "signature": {},
+                    "sourceof_fund": 67
                   }
                 }
               }
