@@ -224,6 +224,8 @@ func CreateOaPersonalData(c echo.Context) error {
 			log.Error("oa not found")
 			return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
 		}
+
+		params["customer_key"] = strconv.FormatUint(*oaRequestDB[0].CustomerKey, 10)
 	}
 
 	idcardNumber := c.FormValue("idcard_number")
