@@ -2,8 +2,11 @@ package models
 
 import (
 	"api/db"
+	"database/sql"
 	"log"
 	"net/http"
+
+	"github.com/jmoiron/sqlx"
 )
 
 type MsCustomerBankAccount struct {
@@ -207,5 +210,71 @@ func GetMsCustomerBankAccountTransactionByCustBankaccKey(c *MsCustomerBankAccoun
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateDataByField(params map[string]string, field string, value string) (int, error) {
+	query := "UPDATE ms_customer_bank_account SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE rec_status = '1' AND " + field + " = '" + value + "'"
+	log.Println(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	tx.Commit()
+	if row > 0 {
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func CreateMultipleMsCustomerBankkAccount(params []interface{}) (int, error) {
+
+	q := `INSERT INTO ms_customer_bank_account (
+		customer_key, 
+		bank_account_key,
+		flag_priority,
+		bank_account_name,
+		rec_status,
+		rec_created_date,
+		rec_created_by) VALUES `
+
+	for i := 0; i < len(params); i++ {
+		q += "(?)"
+		if i < (len(params) - 1) {
+			q += ","
+		}
+	}
+	query, args, err := sqlx.In(q, params...)
+	if err != nil {
+		return http.StatusBadGateway, err
+	}
+
+	query = db.Db.Rebind(query)
+	_, err = db.Db.Query(query, args...)
+	if err != nil {
+		log.Println(err.Error())
+		return http.StatusBadGateway, err
+	}
 	return http.StatusOK, nil
 }

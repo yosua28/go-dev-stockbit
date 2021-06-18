@@ -1,0 +1,120 @@
+<html>
+
+<head>
+    <style>
+        body {
+            line-height: 25px;
+        }
+
+        .right td {
+            text-align: right;
+        }
+
+        .right {
+            text-align: right;
+        }
+
+        .data-table td {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+
+<body>
+    <table width="100%">
+        <tr>
+            <td style="text-align:left">
+                <table>
+                    <tr>
+                        <td>
+                            Nama Produk
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.ProductName}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Tanggal
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.DateStart}} - {{.DateEnd}}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        <tr>
+        <tr>
+            <td height="20px">
+            <td>
+        </tr>
+        <tr>
+            <td>
+                <table width="100%" cellpadding="5" cellspacing="0" class="data-table">
+                    <tr>
+                        <td style="text-align:center">
+                            No
+                        </td>
+                        <td style="text-align:center">
+                            Tanggal Transaksi
+                        </td>
+                        <td style="text-align:center">
+                            Type Transaksi
+                        </td>
+                        <td style="text-align:center">
+                            Unit Transaksi
+                        </td>
+                        <td style="text-align:center">
+                            NAB
+                        </td>
+                        <td style="text-align:center">
+                            Nominal Transaksi
+                        </td>
+                        <td style="text-align:center">
+                            Nominal Fee
+                        </td>
+                        <td style="text-align:center">
+                            Total
+                        </td>
+                    </tr>
+                    {{range .Datas}}
+                    <tr>
+                        <td align="Right">
+                            {{.No}}
+                        </td>
+                        <td>
+                            {{.Date}}
+                        </td>
+                        <td>
+                            {{.Type}}
+                        </td>
+                        <td align="Right">
+                            {{.Unit}}
+                        </td>
+                        <td align="Right">
+                            {{.Nav}}
+                        </td>
+                        <td align="Right">
+                            {{.Amount}}
+                        </td>
+                        <td align="Right">
+                            {{.Fee}}
+                        </td>
+                        <td align="Right">
+                            {{.Total}}
+                        </td>
+                    </tr>
+                    {{end}}
+                </table>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

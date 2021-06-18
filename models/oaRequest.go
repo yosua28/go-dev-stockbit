@@ -111,7 +111,6 @@ type OaRequestDetailResponse struct {
 	IDcardAddress       Address              `json:"idcard_address"`
 	DomicileAddress     Address              `json:"domicile_address"`
 	OccupAddressKey     Address              `json:"occup_address_key"`
-	BankAccount         BankAccount          `json:"bank_account"`
 	Relation            Relation             `json:"relation"`
 	Emergency           Emergency            `json:"emergency"`
 	RiskProfile         []AdminOaRiskProfile `json:"risk_profile,omitempty"`
@@ -126,6 +125,7 @@ type OaRequestDetailResponse struct {
 	FatcaStatus         *string              `json:"fatca_status"`
 	Branch              *MsBranchDropdown    `json:"branch,omitempty"`
 	Agent               *MsAgentDropdown     `json:"agent,omitempty"`
+	BankRequest         *[]OaRequestByField  `json:"bank_request"`
 }
 
 type Address struct {
@@ -223,7 +223,6 @@ type DetailPersonalDataCustomerIndividu struct {
 	IDcardAddress       Address                     `json:"idcard_address"`
 	DomicileAddress     Address                     `json:"domicile_address"`
 	OccupAddressKey     Address                     `json:"occup_address_key"`
-	BankAccount         BankAccount                 `json:"bank_account"`
 	Relation            Relation                    `json:"relation"`
 	Emergency           Emergency                   `json:"emergency"`
 	RiskProfile         []AdminOaRiskProfile        `json:"risk_profile"`
@@ -239,6 +238,7 @@ type DetailPersonalDataCustomerIndividu struct {
 	Customer            *CustomerDetailPersonalData `json:"customer"`
 	ApproveCS           *ApprovalData               `json:"approve_cs"`
 	ApproveKYC          *ApprovalData               `json:"approve_kyc"`
+	BankRequest         *[]OaRequestByField         `json:"bank_request"`
 }
 
 type OaRequestDetailRiskProfil struct {

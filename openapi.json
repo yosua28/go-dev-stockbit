@@ -5167,320 +5167,79 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "oa_request_key": 131,
+                    "oa_request_key": 169,
                     "oa_request_type": "NEW",
                     "oa_risk_level": null,
-                    "oa_entry_start": "15 Apr 2021",
-                    "oa_entry_end": "15 Apr 2021",
+                    "oa_entry_start": "11 Jun 2021 15:16",
+                    "oa_entry_end": "11 Jun 2021",
                     "oa_status": "OA_ENTRIED",
-                    "email_address": "yohaha@gm.com",
-                    "phone_mobile": "0842356554654",
-                    "date_birth": "30 Oct 1996",
-                    "full_name": "Jojo Susanto",
-                    "idcard_no": "323546234432445",
-                    "idcard_type": "KTP",
+                    "email_address": "annafrid.nikijuluw@gmail.com",
+                    "phone_mobile": "087877991679",
+                    "date_birth": "01 Aug 1980",
+                    "full_name": "Annafrid MP Nikijuluw",
+                    "idcard_no": "1334567890112233",
                     "nationality": "Indonesia",
-                    "gender": "Approved",
-                    "place_birth": "7",
-                    "marital_status": "Approved",
-                    "pep_status": "Reject",
-                    "sales_code": "PUIOY",
-                    "phone_home": "07654324543",
-                    "religion": "Waiting",
-                    "education": "Waiting",
-                    "pic_ktp": "https://devapi.mncasset.com/images/user/7391/F2KRUQvtQGYsuBnosgU6.jpg",
+                    "idcard_type": "KTP",
+                    "gender": "Pria",
+                    "place_birth": "jakarta",
+                    "marital_status": "Lajang ",
+                    "pep_status": "Tidak",
+                    "sales_code": null,
+                    "phone_home": "087877991679",
+                    "religion": "Protestan",
+                    "education": "Sarjana S1",
+                    "pic_ktp": "https://devapi.mncasset.com/images/user/7171/WjKUuWgQUFakqbkCVn4H.png",
                     "pic_selfie": null,
-                    "signature": "https://devapi.mncasset.com/images/user/7391/signature/Q9oGjVNb4T2NA0h5E1Zw.jpg",
-                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/7391/iKyq3ZEV1xZZnWMErn9M.jpg",
-                    "occup_job": "Waiting",
+                    "signature": "https://devapi.mncasset.com/images/user/7171/signature/r55dMNDEkEi9jehD0tA1.png",
+                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/7171/Q5miHfYoDlBIMi2bcQkj.jpg",
+                    "occup_job": "Karyawan Swasta",
                     "occup_company": "MNC",
-                    "occup_position": "SD",
+                    "occup_position": "Pemilik Usaha/Owner",
                     "occup_phone": null,
                     "occup_web_url": null,
-                    "annual_income": "Spekulasi",
-                    "sourceof_fund": "WNI",
-                    "invesment_objectives": "Saudara Kandung",
-                    "correspondence": "Gaji",
-                    "mother_maiden_name": "ghf fth",
-                    "beneficial_relation": "Waiting",
-                    "beneficial_full_name": "try rtyrt",
-                    "occup_business_fields": "Pedagang Isi Pulsa",
+                    "annual_income": "> Rp 500 - 1 Milyar",
+                    "sourceof_fund": "Gaji",
+                    "invesment_objectives": "Mendapatkan Pemasukan/Keuntungan",
+                    "correspondence": "Teman",
+                    "mother_maiden_name": "ibu kandung",
+                    "beneficial_relation": "Orang Tua",
+                    "beneficial_full_name": "orang tua",
+                    "occup_business_fields": "Lainnya",
                     "idcard_address": {
-                      "address": "6",
-                      "kabupaten": "Bengkulu",
-                      "kecamatan": "Kabupaten Bireuen",
-                      "postal_code": "78654",
-                      "provinsi": "Bengkulu"
+                      "address": "jl bambu mas raya I 14",
+                      "kabupaten": "Kota Adm. Jakarta Timur",
+                      "kecamatan": "Duren Sawit",
+                      "postal_code": "14045",
+                      "provinsi": "Daerah Khusus Ibukota Jakarta"
                     },
                     "domicile_address": {
-                      "address": "gfuh fghvv",
-                      "kabupaten": "Kalimantan Tengah",
-                      "kecamatan": "Kota Medan",
-                      "postal_code": "54645",
-                      "provinsi": "Bengkulu"
+                      "address": "jl bambu mas raya I 14",
+                      "kabupaten": "Kota Adm. Jakarta Timur",
+                      "kecamatan": "Duren Sawit",
+                      "postal_code": "14045",
+                      "provinsi": "Daerah Khusus Ibukota Jakarta"
                     },
                     "occup_address_key": {
-                      "address": "df dfg rter",
+                      "address": "jl kebon sirih",
                       "kabupaten": null,
                       "kecamatan": null,
-                      "postal_code": null
-                    },
-                    "bank_account": {
-                      "bank_name": "BANK AGRO NIAGA",
-                      "account_no": "987645354",
-                      "account_holder_name": "ftrrr",
-                      "branch_name": "fyrt rter"
+                      "postal_code": null,
+                      "provinsi": null
                     },
                     "relation": {
-                      "relation_type": null,
-                      "relation_full_name": "gtta",
-                      "relation_occupation": "Saudara Kandung",
-                      "relation_business_fields": "Pinjaman"
+                      "relation_type": "Orangtua",
+                      "relation_full_name": "orang tua",
+                      "relation_occupation": "Karyawan Swasta",
+                      "relation_business_fields": "Agen Perjalanan"
                     },
                     "emergency": {
-                      "emergency_full_name": "hgf gg",
-                      "emergency_relation": "Waiting",
-                      "emergency_phone_no": "546754563"
+                      "emergency_full_name": "orang tua",
+                      "emergency_relation": "Orang tua",
+                      "emergency_phone_no": "084542164"
                     },
-                    "risk_profile": [
-                      {
-                        "oa_risk_profile_key": 61,
-                        "risk_profile_key": 4,
-                        "risk_code": "Tinggi",
-                        "risk_name": "Agresif",
-                        "risk_desc": "Nasabah mengutamakan hasil investasi yang tinggi dalam jangka panjang dan siap menerima tingginya risiko investasi.",
-                        "min_score": 65,
-                        "max_score": 10000000,
-                        "score_result": 70
-                      }
-                    ],
-                    "risk_profile_quiz": [
-                      {
-                        "risk_profile_quiz_key": 292,
-                        "quiz_option_user": {
-                          "quiz_option_key": 7,
-                          "quiz_option_label": "B",
-                          "quiz_option_title": "Pendapatan dan Pertumbuhan Nilai",
-                          "quiz_option_score": 10,
-                          "quiz_option_default": 0
-                        },
-                        "quiz_option_score_user": 10,
-                        "quiz_question_key": 3,
-                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
-                        "quiz_title": "Apa Tujuan Investasi Kamu?",
-                        "options": [
-                          {
-                            "quiz_option_key": 6,
-                            "quiz_option_label": "A",
-                            "quiz_option_title": "Pendapatan Berkala",
-                            "quiz_option_score": 5,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 7,
-                            "quiz_option_label": "B",
-                            "quiz_option_title": "Pendapatan dan Pertumbuhan Nilai",
-                            "quiz_option_score": 10,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 8,
-                            "quiz_option_label": "C",
-                            "quiz_option_title": "Investasi Jangka Panjang",
-                            "quiz_option_score": 15,
-                            "quiz_option_default": 0
-                          }
-                        ]
-                      },
-                      {
-                        "risk_profile_quiz_key": 293,
-                        "quiz_option_user": {
-                          "quiz_option_key": 10,
-                          "quiz_option_label": "B",
-                          "quiz_option_title": "2 - 5 Tahun",
-                          "quiz_option_score": 10,
-                          "quiz_option_default": 0
-                        },
-                        "quiz_option_score_user": 10,
-                        "quiz_question_key": 4,
-                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
-                        "quiz_title": "Berapa Lama Jangka Waktu Kamu untuk Investasi?",
-                        "options": [
-                          {
-                            "quiz_option_key": 9,
-                            "quiz_option_label": "A",
-                            "quiz_option_title": "< 2 Tahun",
-                            "quiz_option_score": 5,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 10,
-                            "quiz_option_label": "B",
-                            "quiz_option_title": "2 - 5 Tahun",
-                            "quiz_option_score": 10,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 11,
-                            "quiz_option_label": "C",
-                            "quiz_option_title": "> 5 Tahun",
-                            "quiz_option_score": 15,
-                            "quiz_option_default": 0
-                          }
-                        ]
-                      },
-                      {
-                        "risk_profile_quiz_key": 294,
-                        "quiz_option_user": {
-                          "quiz_option_key": 14,
-                          "quiz_option_label": "C",
-                          "quiz_option_title": "> 70%",
-                          "quiz_option_score": 15,
-                          "quiz_option_default": 0
-                        },
-                        "quiz_option_score_user": 15,
-                        "quiz_question_key": 5,
-                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
-                        "quiz_title": "Persentase Dana yang Kamu Investasikan",
-                        "options": [
-                          {
-                            "quiz_option_key": 12,
-                            "quiz_option_label": "A",
-                            "quiz_option_title": "< 35%",
-                            "quiz_option_score": 5,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 13,
-                            "quiz_option_label": "B",
-                            "quiz_option_title": "35% - 70%",
-                            "quiz_option_score": 10,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 14,
-                            "quiz_option_label": "C",
-                            "quiz_option_title": "> 70%",
-                            "quiz_option_score": 15,
-                            "quiz_option_default": 0
-                          }
-                        ]
-                      },
-                      {
-                        "risk_profile_quiz_key": 295,
-                        "quiz_option_user": {
-                          "quiz_option_key": 16,
-                          "quiz_option_label": "B",
-                          "quiz_option_title": "Cukup Memahami",
-                          "quiz_option_score": 10,
-                          "quiz_option_default": 0
-                        },
-                        "quiz_option_score_user": 10,
-                        "quiz_question_key": 6,
-                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
-                        "quiz_title": "Pemahaman Kamu terhadap Produk Investasi dan Produk Reksa Dana di MNC Asset Management",
-                        "options": [
-                          {
-                            "quiz_option_key": 15,
-                            "quiz_option_label": "A",
-                            "quiz_option_title": "Kurang Memahami",
-                            "quiz_option_score": 5,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 16,
-                            "quiz_option_label": "B",
-                            "quiz_option_title": "Cukup Memahami",
-                            "quiz_option_score": 10,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 17,
-                            "quiz_option_label": "C",
-                            "quiz_option_title": "Sangat Memahami",
-                            "quiz_option_score": 15,
-                            "quiz_option_default": 0
-                          }
-                        ]
-                      },
-                      {
-                        "risk_profile_quiz_key": 296,
-                        "quiz_option_user": {
-                          "quiz_option_key": 20,
-                          "quiz_option_label": "C",
-                          "quiz_option_title": "Tinggi, Berani Menghadapi Risiko",
-                          "quiz_option_score": 15,
-                          "quiz_option_default": 0
-                        },
-                        "quiz_option_score_user": 15,
-                        "quiz_question_key": 7,
-                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
-                        "quiz_title": "Toleransi Risiko Kamu",
-                        "options": [
-                          {
-                            "quiz_option_key": 18,
-                            "quiz_option_label": "A",
-                            "quiz_option_title": "Rendah, Mengutamakan Kestabilan",
-                            "quiz_option_score": 5,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 19,
-                            "quiz_option_label": "B",
-                            "quiz_option_title": "Sedang, Bisa Menerima Sedikit Risiko",
-                            "quiz_option_score": 10,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 20,
-                            "quiz_option_label": "C",
-                            "quiz_option_title": "Tinggi, Berani Menghadapi Risiko",
-                            "quiz_option_score": 15,
-                            "quiz_option_default": 0
-                          }
-                        ]
-                      },
-                      {
-                        "risk_profile_quiz_key": 297,
-                        "quiz_option_user": {
-                          "quiz_option_key": 22,
-                          "quiz_option_label": "B",
-                          "quiz_option_title": "Dapat Menerima Kerugian dalam Jumlah Relatif Kecil",
-                          "quiz_option_score": 10,
-                          "quiz_option_default": 0
-                        },
-                        "quiz_option_score_user": 10,
-                        "quiz_question_key": 8,
-                        "header_quiz_name": "Quiz Risk Profile MNCDUIT 2.0",
-                        "quiz_title": "Kepentingan Atas Pokok Investasi",
-                        "options": [
-                          {
-                            "quiz_option_key": 21,
-                            "quiz_option_label": "A",
-                            "quiz_option_title": "Tidak Dapat Menerima Kerugian Apapun",
-                            "quiz_option_score": 5,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 22,
-                            "quiz_option_label": "B",
-                            "quiz_option_title": "Dapat Menerima Kerugian dalam Jumlah Relatif Kecil",
-                            "quiz_option_score": 10,
-                            "quiz_option_default": 0
-                          },
-                          {
-                            "quiz_option_key": 23,
-                            "quiz_option_label": "C",
-                            "quiz_option_title": "Dapat Menerima Kerugian Apapun",
-                            "quiz_option_score": 15,
-                            "quiz_option_default": 0
-                          }
-                        ]
-                      }
-                    ],
-                    "first_name": "Jojo",
-                    "middle_name": "Susanto",
-                    "last_name": null,
+                    "first_name": "Annafrid",
+                    "middle_name": "MP",
+                    "last_name": "Nikijuluw",
                     "client_code": null,
                     "tin_number": null,
                     "tin_issuance_date": null,
@@ -5493,7 +5252,20 @@
                     "agent": {
                       "agent_key": 1,
                       "agent_name": "SALES MNC DUIT"
-                    }
+                    },
+                    "bank_request": [
+                      {
+                        "req_bankacc_key": 135,
+                        "oa_request_key": 169,
+                        "bank_account_key": 1199,
+                        "flag_priority": 1,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "8457596",
+                        "account_holder_name": "hahshh",
+                        "branch_name": "hhshsbbs"
+                      }
+                    ]
                   }
                 }
               }
@@ -17615,12 +17387,6 @@
                       "kecamatan": null,
                       "postal_code": null
                     },
-                    "bank_account": {
-                      "bank_name": "MNC BANK",
-                      "account_no": "4946163461",
-                      "account_holder_name": "Aldy Yoga Alfianta",
-                      "branch_name": "duren sawit"
-                    },
                     "relation": {
                       "relation_type": null,
                       "relation_full_name": "bapak",
@@ -17894,7 +17660,42 @@
                       "approve_user": "yosua.role.12@gmail.com",
                       "approve_date": "03 Dec 2020",
                       "approve_notes": "dsfsdfds"
-                    }
+                    },
+                    "bank_request": [
+                      {
+                        "req_bankacc_key": 258,
+                        "oa_request_key": 188,
+                        "bank_account_key": 1218,
+                        "flag_priority": 1,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "666667777777",
+                        "account_holder_name": "Yosua",
+                        "branch_name": "Jakarta"
+                      },
+                      {
+                        "req_bankacc_key": 257,
+                        "oa_request_key": 188,
+                        "bank_account_key": 1217,
+                        "flag_priority": 0,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "784934783478",
+                        "account_holder_name": "Yosua",
+                        "branch_name": "Jakarta"
+                      },
+                      {
+                        "req_bankacc_key": 259,
+                        "oa_request_key": 188,
+                        "bank_account_key": 1219,
+                        "flag_priority": 0,
+                        "bank_key": 3,
+                        "bank_fullname": "ANZ BANK",
+                        "account_no": "54765757",
+                        "account_holder_name": "tryrty",
+                        "branch_name": "tryrty"
+                      }
+                    ]
                   }
                 }
               }
@@ -21861,94 +21662,127 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "oa_request_key": 17,
-                    "oa_request_type": "NEW",
-                    "oa_risk_level": "Risiko Tinggi",
-                    "oa_entry_start": "08 Oct 2020",
-                    "oa_entry_end": "08 Oct 2020",
-                    "oa_status": "KYC_APPROVED",
-                    "email_address": "aldy.alfianta@mncgroup.com",
-                    "phone_mobile": "085328481220",
-                    "date_birth": "25 Oct 1996",
-                    "full_name": "Aldy Yoga",
-                    "idcard_no": "3403162510960003",
-                    "idcard_type": "KTP",
+                    "oa_request_key": 188,
+                    "oa_request_type": "PENGKINIAN PERSONAL DATA",
+                    "oa_risk_level": null,
+                    "oa_entry_start": "18 Jun 2021 14:15",
+                    "oa_entry_end": "18 Jun 2021",
+                    "oa_status": "OA_ENTRIED",
+                    "email_address": "yosua.h.susanto@gmail.com",
+                    "phone_mobile": "081904765875",
+                    "date_birth": "01 Apr 2000",
+                    "full_name": "Yosua Susanto",
+                    "idcard_no": "3311022802940002",
                     "nationality": "Indonesia",
+                    "idcard_type": "KTP",
                     "gender": "Pria",
-                    "place_birth": "Gunungkidul",
+                    "place_birth": "Solo",
                     "marital_status": "Lajang ",
-                    "phone_home": "021532846",
+                    "pep_status": "Tidak",
+                    "sales_code": null,
+                    "phone_home": "081904765875",
                     "religion": "Islam",
                     "education": "Sarjana S1",
-                    "pic_ktp": "https://devapi.mncasset.com/images/user/44/gqHqiQGSbvPhtiHbJ0ec.png",
+                    "pic_ktp": "https://devapi.mncasset.com/images/user/7410/srN8Kzsy1DVGz3VXBaJl.jpg",
                     "pic_selfie": null,
-                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/44/5BAHhHhzzmJanACsFpQP.649023",
+                    "signature": "https://devapi.mncasset.com/images/user/7410/signature/T2wFVEQEBAu6k47D2HDT.jpg",
+                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/7410/RyMLSuJEB25GvXXttxlN.jpg",
                     "occup_job": "Karyawan Swasta",
                     "occup_company": "MNC",
-                    "occup_position": "Staff atau officer",
+                    "occup_position": "Supervisor s.d Manager",
                     "occup_phone": null,
                     "occup_web_url": null,
-                    "annual_income": "< Rp 10 Juta",
+                    "annual_income": "> Rp 50 - 100 Juta",
                     "sourceof_fund": "Gaji",
-                    "invesment_objectives": "Investasi Jangka Panjang",
-                    "correspondence": "Teman",
-                    "mother_maiden_name": "rina",
-                    "beneficial_relation": "Suami/Istri",
-                    "beneficial_full_name": "heru",
-                    "occup_business_fields": "Lainnya",
+                    "invesment_objectives": "Mendapatkan Pemasukan/Keuntungan",
+                    "correspondence": "Webinar/Seminar",
+                    "mother_maiden_name": "Iriana",
+                    "beneficial_relation": "Diri Sendiri",
+                    "beneficial_full_name": "Yosua",
+                    "occup_business_fields": "Mini Market",
                     "idcard_address": {
-                      "address": "tileng, girisubo",
-                      "kabupaten": "Kota Yogyakarta",
-                      "kecamatan": "Kotagede",
-                      "postal_code": "5583",
-                      "provinsi": "Yogyakarta"
+                      "address": "Solo raya",
+                      "kabupaten": "Kabupaten Sukoharjo",
+                      "kecamatan": "Sukoharjo",
+                      "postal_code": "454234",
+                      "provinsi": "Jawa Tengah"
                     },
                     "domicile_address": {
-                      "address": "tileng, girisubo",
-                      "kabupaten": "Kota Yogyakarta",
-                      "kecamatan": "Kotagede",
-                      "postal_code": null,
-                      "provinsi": "Yogyakarta"
+                      "address": "Jakarta pusat",
+                      "kabupaten": "Kota Adm. Jakarta Pusat",
+                      "kecamatan": "Gambir",
+                      "postal_code": "45633",
+                      "provinsi": "Daerah Khusus Ibukota Jakarta"
                     },
                     "occup_address_key": {
-                      "address": "kebon sirih",
+                      "address": "Jakarta",
                       "kabupaten": null,
                       "kecamatan": null,
-                      "postal_code": null
-                    },
-                    "bank_account": {
-                      "bank_name": "BANK MANDIRI",
-                      "account_no": "1462576464",
-                      "account_holder_name": "heru",
-                      "branch_name": "jogjakarta"
+                      "postal_code": null,
+                      "provinsi": null
                     },
                     "relation": {
-                      "relation_type": null,
-                      "relation_full_name": "heru",
-                      "relation_occupation": "Pensiunan",
-                      "relation_business_fields": "Lainnya"
+                      "relation_type": "Orangtua",
+                      "relation_full_name": "Anya",
+                      "relation_occupation": "Karyawan Swasta",
+                      "relation_business_fields": "Dealer Mobil"
                     },
                     "emergency": {
-                      "emergency_full_name": "heru",
-                      "emergency_relation": "Orangtua",
-                      "emergency_phone_no": "08536843484"
+                      "emergency_full_name": "ANya",
+                      "emergency_relation": "Saudara Kandung",
+                      "emergency_phone_no": "081234783628"
                     },
-                    "first_name": "Aldy",
-                    "middle_name": "Yoga",
-                    "last_name": "Putra",
+                    "first_name": "Yosua",
+                    "middle_name": "Susanto",
+                    "last_name": null,
                     "client_code": null,
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
                     "fatca_status": "Domestic (WNA)",
                     "branch": {
-                      "branch_key": 1,
-                      "branch_name": "MNC ASSET HO (BRANCH)"
+                      "branch_key": 10,
+                      "branch_name": "BANDUNG (BRANCH)"
                     },
                     "agent": {
-                      "agent_key": 1,
-                      "agent_name": "SALES MNC DUIT"
-                    }
+                      "agent_key": 6,
+                      "agent_name": "SALES MOHAMAD RAZAB"
+                    },
+                    "bank_request": [
+                      {
+                        "req_bankacc_key": 258,
+                        "oa_request_key": 188,
+                        "bank_account_key": 1218,
+                        "flag_priority": 1,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "666667777777",
+                        "account_holder_name": "Yosua",
+                        "branch_name": "Jakarta"
+                      },
+                      {
+                        "req_bankacc_key": 257,
+                        "oa_request_key": 188,
+                        "bank_account_key": 1217,
+                        "flag_priority": 0,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "784934783478",
+                        "account_holder_name": "Yosua",
+                        "branch_name": "Jakarta"
+                      },
+                      {
+                        "req_bankacc_key": 259,
+                        "oa_request_key": 188,
+                        "bank_account_key": 1219,
+                        "flag_priority": 0,
+                        "bank_key": 3,
+                        "bank_fullname": "ANZ BANK",
+                        "account_no": "54765757",
+                        "account_holder_name": "tryrty",
+                        "branch_name": "tryrty"
+                      }
+                    ]
                   }
                 }
               }
@@ -22023,94 +21857,116 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "oa_request_key": 17,
+                    "oa_request_key": 154,
                     "oa_request_type": "NEW",
-                    "oa_risk_level": "Risiko Tinggi",
-                    "oa_entry_start": "08 Oct 2020",
-                    "oa_entry_end": "08 Oct 2020",
+                    "oa_risk_level": "Risiko Rendah",
+                    "oa_entry_start": "28 May 2021 15:57",
+                    "oa_entry_end": "28 May 2021",
                     "oa_status": "KYC_APPROVED",
-                    "email_address": "aldy.alfianta@mncgroup.com",
-                    "phone_mobile": "085328481220",
-                    "date_birth": "25 Oct 1996",
-                    "full_name": "Aldy Yoga",
-                    "idcard_no": "3403162510960003",
-                    "idcard_type": "KTP",
+                    "email_address": "yosua.h.susanto@gmail.com",
+                    "phone_mobile": "081904765875",
+                    "date_birth": "01 Apr 2000",
+                    "full_name": "Yosua Susanto",
+                    "idcard_no": "3311022802940002",
                     "nationality": "Indonesia",
+                    "idcard_type": "KTP",
                     "gender": "Pria",
-                    "place_birth": "Gunungkidul",
+                    "place_birth": "Solo",
                     "marital_status": "Lajang ",
-                    "phone_home": "021532846",
+                    "pep_status": "Tidak",
+                    "sales_code": null,
+                    "phone_home": "081904765875",
                     "religion": "Islam",
                     "education": "Sarjana S1",
-                    "pic_ktp": "https://devapi.mncasset.com/images/user/44/gqHqiQGSbvPhtiHbJ0ec.png",
+                    "pic_ktp": "https://devapi.mncasset.com/images/user/7410/srN8Kzsy1DVGz3VXBaJl.jpg",
                     "pic_selfie": null,
-                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/44/5BAHhHhzzmJanACsFpQP.649023",
+                    "signature": "https://devapi.mncasset.com/images/user/7410/signature/T2wFVEQEBAu6k47D2HDT.jpg",
+                    "pic_selfie_ktp": "https://devapi.mncasset.com/images/user/7410/RyMLSuJEB25GvXXttxlN.jpg",
                     "occup_job": "Karyawan Swasta",
                     "occup_company": "MNC",
-                    "occup_position": "Staff atau officer",
+                    "occup_position": "Supervisor s.d Manager",
                     "occup_phone": null,
                     "occup_web_url": null,
-                    "annual_income": "< Rp 10 Juta",
+                    "annual_income": "> Rp 50 - 100 Juta",
                     "sourceof_fund": "Gaji",
-                    "invesment_objectives": "Investasi Jangka Panjang",
-                    "correspondence": "Teman",
-                    "mother_maiden_name": "rina",
-                    "beneficial_relation": "Suami/Istri",
-                    "beneficial_full_name": "heru",
-                    "occup_business_fields": "Lainnya",
+                    "invesment_objectives": "Mendapatkan Pemasukan/Keuntungan",
+                    "correspondence": "Webinar/Seminar",
+                    "mother_maiden_name": "Iriana",
+                    "beneficial_relation": "Diri Sendiri",
+                    "beneficial_full_name": "Yosua",
+                    "occup_business_fields": "Mini Market",
                     "idcard_address": {
-                      "address": "tileng, girisubo",
-                      "kabupaten": "Kota Yogyakarta",
-                      "kecamatan": "Kotagede",
-                      "postal_code": "5583",
-                      "provinsi": "Yogyakarta"
+                      "address": "Solo raya",
+                      "kabupaten": "Kabupaten Sukoharjo",
+                      "kecamatan": "Sukoharjo",
+                      "postal_code": "454234",
+                      "provinsi": "Jawa Tengah"
                     },
                     "domicile_address": {
-                      "address": "tileng, girisubo",
-                      "kabupaten": "Kota Yogyakarta",
-                      "kecamatan": "Kotagede",
-                      "postal_code": null,
-                      "provinsi": "Yogyakarta"
+                      "address": "Jakarta pusat",
+                      "kabupaten": "Kota Adm. Jakarta Pusat",
+                      "kecamatan": "Gambir",
+                      "postal_code": "45633",
+                      "provinsi": "Daerah Khusus Ibukota Jakarta"
                     },
                     "occup_address_key": {
-                      "address": "kebon sirih",
+                      "address": "Jakarta",
                       "kabupaten": null,
                       "kecamatan": null,
-                      "postal_code": null
-                    },
-                    "bank_account": {
-                      "bank_name": "BANK MANDIRI",
-                      "account_no": "1462576464",
-                      "account_holder_name": "heru",
-                      "branch_name": "jogjakarta"
+                      "postal_code": null,
+                      "provinsi": null
                     },
                     "relation": {
-                      "relation_type": null,
-                      "relation_full_name": "heru",
-                      "relation_occupation": "Pensiunan",
-                      "relation_business_fields": "Lainnya"
+                      "relation_type": "Orangtua",
+                      "relation_full_name": "Anya",
+                      "relation_occupation": "Karyawan Swasta",
+                      "relation_business_fields": "Dealer Mobil"
                     },
                     "emergency": {
-                      "emergency_full_name": "heru",
-                      "emergency_relation": "Orangtua",
-                      "emergency_phone_no": "08536843484"
+                      "emergency_full_name": "ANya",
+                      "emergency_relation": "Saudara Kandung",
+                      "emergency_phone_no": "081234783628"
                     },
-                    "first_name": "Aldy",
-                    "middle_name": "Yoga",
-                    "last_name": "Putra",
+                    "first_name": "Yosua",
+                    "middle_name": "Susanto",
+                    "last_name": null,
                     "client_code": null,
                     "tin_number": null,
                     "tin_issuance_date": null,
                     "tin_issuance_country": null,
                     "fatca_status": "Domestic (WNA)",
                     "branch": {
-                      "branch_key": 1,
-                      "branch_name": "MNC ASSET HO (BRANCH)"
+                      "branch_key": 10,
+                      "branch_name": "BANDUNG (BRANCH)"
                     },
                     "agent": {
-                      "agent_key": 1,
-                      "agent_name": "SALES MNC DUIT"
-                    }
+                      "agent_key": 6,
+                      "agent_name": "SALES MOHAMAD RAZAB"
+                    },
+                    "bank_request": [
+                      {
+                        "req_bankacc_key": 128,
+                        "oa_request_key": 154,
+                        "bank_account_key": 1184,
+                        "flag_priority": 1,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "784934783478",
+                        "account_holder_name": "Yosua",
+                        "branch_name": "Jakarta"
+                      },
+                      {
+                        "req_bankacc_key": 256,
+                        "oa_request_key": 154,
+                        "bank_account_key": 1190,
+                        "flag_priority": 0,
+                        "bank_key": 116,
+                        "bank_fullname": "MNC BANK INTERNASIONAL",
+                        "account_no": "666667777777",
+                        "account_holder_name": "Yosua",
+                        "branch_name": "Jakarta"
+                      }
+                    ]
                   }
                 }
               }
@@ -23760,84 +23616,94 @@
                     "message_client": "OK"
                   },
                   "data": {
-                    "customer_key": 269,
-                    "branch_key": 1,
-                    "agent_key": 1,
-                    "annual_income": 62,
-                    "bank_account": {
-                      "account_holder_name": "gfhgf fhfg",
-                      "account_no": "54654756",
-                      "branch_name": "Yosads ds",
-                      "bank_key": 3
-                    },
-                    "beneficial_full_name": "trytry rtytr",
-                    "beneficial_relation": 102,
-                    "correspondence": 83,
-                    "date_birth": "2021-04-06 00:00:00",
+                    "agent_key": 6,
+                    "annual_income": 63,
+                    "bank_request": [
+                      {
+                        "account_holder_name": "Yosua",
+                        "account_no": "784934783478",
+                        "bank_key": 116,
+                        "branch_name": "Jakarta",
+                        "flag_priority": 1
+                      },
+                      {
+                        "account_holder_name": "Yosua",
+                        "account_no": "666667777777",
+                        "bank_key": 116,
+                        "branch_name": "Jakarta",
+                        "flag_priority": 0
+                      }
+                    ],
+                    "beneficial_full_name": "Yosua",
+                    "beneficial_relation": 101,
+                    "branch_key": 10,
+                    "correspondence": 84,
+                    "customer_key": 270,
+                    "date_birth": "2000-04-01 00:00:00",
                     "domicile_address": {
-                      "address_line1": "gfhfgh",
+                      "address_line1": "Jakarta pusat",
                       "address_line2": null,
                       "address_line3": null,
-                      "provinsi_key": 16,
-                      "kabupaten_key": 42,
-                      "kecamatan_key": 608,
-                      "postal_address_key": 414,
-                      "postal_code": "67547"
+                      "kabupaten_key": 194,
+                      "kecamatan_key": 2463,
+                      "postal_address_key": 474,
+                      "postal_code": "45633",
+                      "provinsi_key": 14
                     },
-                    "education": 37,
-                    "email": "yonahaha@gmail.com",
-                    "emergency_full_name": "rtytry",
-                    "emergency_phone_no": "657456546754",
-                    "emergency_relation": 98,
-                    "full_name": "Yona haha Oke",
+                    "education": 40,
+                    "email": "yosua.h.susanto@gmail.com",
+                    "emergency_full_name": "ANya",
+                    "emergency_phone_no": "081234783628",
+                    "emergency_relation": 99,
+                    "full_name": "Yosua Susanto",
                     "gender": 10,
                     "idcard_address": {
-                      "address_line1": "rtytfgy",
+                      "address_line1": "Solo raya",
                       "address_line2": null,
                       "address_line3": null,
-                      "provinsi_key": 16,
-                      "kabupaten_key": 41,
-                      "kecamatan_key": 598,
-                      "postal_address_key": 413,
-                      "postal_code": "78655"
+                      "kabupaten_key": 249,
+                      "kecamatan_key": 3578,
+                      "postal_address_key": 473,
+                      "postal_code": "454234",
+                      "provinsi_key": 16
                     },
                     "idcard_expired_date": null,
                     "idcard_never_expired": null,
-                    "idcard_no": "89675433543564",
+                    "idcard_no": "3311022802940002",
                     "idcard_type": 12,
-                    "invesment_objectives": 78,
+                    "invesment_objectives": 79,
                     "marital_status": 14,
-                    "mother_maiden_name": "trytry",
+                    "mother_maiden_name": "Iriana",
                     "nationality": 97,
                     "occup_address": {
-                      "address_line1": "trytr",
+                      "address_line1": "Jakarta",
                       "address_line2": null,
                       "address_line3": null,
                       "kabupaten_key": null,
                       "kecamatan_key": null,
-                      "postal_address_key": 415,
+                      "postal_address_key": 475,
                       "postal_code": null
                     },
-                    "occup_business_field": 53,
-                    "occup_company": "trytryrty",
-                    "occup_job": 29,
+                    "occup_business_field": 44,
+                    "occup_company": "MNC",
+                    "occup_job": 34,
                     "occup_phone": null,
                     "occup_position": 108,
                     "occup_web_url": null,
-                    "pep_status": 320,
-                    "phone_home": "08765324324",
-                    "phone_mobile": "07327489375",
-                    "pic_ktp": "x4LOmKTHyCOn6w3AFKQO.jpg",
-                    "pic_ktp_path": "https://devapi.mncasset.com/images/user/7396/x4LOmKTHyCOn6w3AFKQO.jpg",
+                    "pep_status": 322,
+                    "phone_home": "081904765875",
+                    "phone_mobile": "081904765875",
+                    "pic_ktp": "srN8Kzsy1DVGz3VXBaJl.jpg",
+                    "pic_ktp_path": "https://devapi.mncasset.com/images/user/7410/srN8Kzsy1DVGz3VXBaJl.jpg",
                     "pic_selfie": null,
-                    "pic_selfie_ktp": "rDOSZaqaDBMPqNCgTWnH.jpg",
-                    "pic_selfie_ktp_path": "https://devapi.mncasset.com/images/user/7396/rDOSZaqaDBMPqNCgTWnH.jpg",
+                    "pic_selfie_ktp": "RyMLSuJEB25GvXXttxlN.jpg",
+                    "pic_selfie_ktp_path": "https://devapi.mncasset.com/images/user/7410/RyMLSuJEB25GvXXttxlN.jpg",
                     "pic_selfie_path": "",
-                    "place_birth": "pouigyfdg",
-                    "relation_business_fields": 54,
-                    "relation_full_name": "trytrytr",
-                    "relation_occupation": 29,
-                    "relation_type": null,
+                    "place_birth": "Solo",
+                    "relation_business_fields": 171,
+                    "relation_full_name": "Anya",
+                    "relation_occupation": 156,
+                    "relation_type": 95,
                     "religion": 20,
                     "risk_profile": {
                       "quiz": [
@@ -23847,14 +23713,39 @@
                           "question_key": 3
                         },
                         {
-                          "option_key": 11,
-                          "option_score": 15,
+                          "option_key": 19,
+                          "option_score": 10,
+                          "question_key": 7
+                        },
+                        {
+                          "option_key": 16,
+                          "option_score": 10,
+                          "question_key": 6
+                        },
+                        {
+                          "option_key": 12,
+                          "option_score": 5,
+                          "question_key": 5
+                        },
+                        {
+                          "option_key": 10,
+                          "option_score": 10,
                           "question_key": 4
                         },
                         {
-                          "option_key": 14,
+                          "option_key": 7,
+                          "option_score": 10,
+                          "question_key": 3
+                        },
+                        {
+                          "option_key": 23,
                           "option_score": 15,
-                          "question_key": 5
+                          "question_key": 8
+                        },
+                        {
+                          "option_key": 20,
+                          "option_score": 15,
+                          "question_key": 7
                         },
                         {
                           "option_key": 17,
@@ -23862,9 +23753,14 @@
                           "question_key": 6
                         },
                         {
-                          "option_key": 20,
+                          "option_key": 14,
                           "option_score": 15,
-                          "question_key": 7
+                          "question_key": 5
+                        },
+                        {
+                          "option_key": 11,
+                          "option_score": 15,
+                          "question_key": 4
                         },
                         {
                           "option_key": 23,
@@ -23877,10 +23773,10 @@
                       "risk_name": "Agresif",
                       "score_result": 90
                     },
-                    "signature": "K6qGdCkiH4Cg2u4VtSbv.jpg",
-                    "signature_path": "https://devapi.mncasset.com/images/user/7396/signature/K6qGdCkiH4Cg2u4VtSbv.jpg",
+                    "signature": "T2wFVEQEBAu6k47D2HDT.jpg",
+                    "signature_path": "https://devapi.mncasset.com/images/user/7410/signature/T2wFVEQEBAu6k47D2HDT.jpg",
                     "sourceof_fund": 67,
-                    "user_login_key": 7432
+                    "user_login_key": 7410
                   }
                 }
               }
@@ -24096,6 +23992,51 @@
                   },
                   "branch_name": {
                     "type": "string"
+                  },
+                  "flag_priority": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "bank_key_2": {
+                    "type": "integer"
+                  },
+                  "account_no_2": {
+                    "type": "string"
+                  },
+                  "account_name_2": {
+                    "type": "string"
+                  },
+                  "branch_name_2": {
+                    "type": "string"
+                  },
+                  "flag_priority_2": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "bank_key_3": {
+                    "type": "integer"
+                  },
+                  "account_no_3": {
+                    "type": "string"
+                  },
+                  "account_name_3": {
+                    "type": "string"
+                  },
+                  "branch_name_3": {
+                    "type": "string"
+                  },
+                  "flag_priority_3": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
                   },
                   "quiz_option": {
                     "type": "string",

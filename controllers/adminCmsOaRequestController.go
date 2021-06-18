@@ -967,30 +967,13 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 			}
 		}
 
-		//mapping bank account
-		if oapersonal.BankAccountKey != nil {
-			var bankaccount models.MsBankAccount
-			strBank := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
-			status, err = models.GetBankAccount(&bankaccount, strBank)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					return lib.CustomError(status)
-				}
-			} else {
-				var bank models.MsBank
-				strBankKey := strconv.FormatUint(bankaccount.BankKey, 10)
-				status, err = models.GetMsBank(&bank, strBankKey)
-				if err != nil {
-					if err != sql.ErrNoRows {
-						return lib.CustomError(status)
-					}
-				} else {
-					responseData.BankAccount.BankName = bank.BankName
-				}
-				responseData.BankAccount.AccountNo = bankaccount.AccountNo
-				responseData.BankAccount.AccountHolderName = bankaccount.AccountHolderName
-				responseData.BankAccount.BranchName = bankaccount.BranchName
-			}
+		//set bank_request
+		var accBank []models.OaRequestByField
+		status, err = models.GetOaRequestBankByField(&accBank, "oa_request_key", strconv.FormatUint(oareq.OaRequestKey, 10))
+		if err != nil {
+			responseData.BankRequest = nil
+		} else {
+			responseData.BankRequest = &accBank
 		}
 
 		//mapping relation
@@ -1333,30 +1316,32 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 			log.Error(err)
 		}
 
-		for _, scLogin := range userLogin {
-			strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-			if (strUserCat == "2") || (strUserCat == "3") {
-				mailer := gomail.NewMessage()
-				mailer.SetHeader("From", config.EmailFrom)
-				mailer.SetHeader("To", scLogin.UloginEmail)
-				mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
-				mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-				dialer := gomail.NewDialer(
-					config.EmailSMTPHost,
-					int(config.EmailSMTPPort),
-					config.EmailFrom,
-					config.EmailFromPassword,
-				)
-				dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+		if config.Envi == "PROD" {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
+					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-				err = dialer.DialAndSend(mailer)
-				if err != nil {
-					log.Error("Error send email")
-					log.Error(err)
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
 				}
 			}
+			//end send email to KYC
 		}
-		//end send email to KYC
 	} else {
 		//update personal data -> delete
 		paramsPersonalDataDelete := make(map[string]string)
@@ -1565,6 +1550,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 
 	if oastatus == "260" {
 
+		var customerKey string
+
 		if oareq.CustomerKey == nil { //NEW OA
 			//create customer
 
@@ -1666,6 +1653,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				log.Error("Failed create customer")
 				return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
 			}
+
+			customerKey = requestID
 
 			paramOaUpdate := make(map[string]string)
 			paramOaUpdate["customer_key"] = requestID
@@ -1774,54 +1763,34 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				log.Error(err)
 			}
 
-			for _, scLogin := range userLogin {
-				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-				if (strUserCat == "2") || (strUserCat == "3") {
-					mailer := gomail.NewMessage()
-					mailer.SetHeader("From", config.EmailFrom)
-					mailer.SetHeader("To", scLogin.UloginEmail)
-					mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
-					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-					dialer := gomail.NewDialer(
-						config.EmailSMTPHost,
-						int(config.EmailSMTPPort),
-						config.EmailFrom,
-						config.EmailFromPassword,
-					)
-					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+			if config.Envi == "PROD" {
+				for _, scLogin := range userLogin {
+					strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+					if (strUserCat == "2") || (strUserCat == "3") {
+						mailer := gomail.NewMessage()
+						mailer.SetHeader("From", config.EmailFrom)
+						mailer.SetHeader("To", scLogin.UloginEmail)
+						mailer.SetHeader("Subject", "[Motion Funds] Verifikasi Opening Account")
+						mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+						dialer := gomail.NewDialer(
+							config.EmailSMTPHost,
+							int(config.EmailSMTPPort),
+							config.EmailFrom,
+							config.EmailFromPassword,
+						)
+						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-					err = dialer.DialAndSend(mailer)
-					if err != nil {
-						log.Error("Error send email")
-						log.Error(err)
+						err = dialer.DialAndSend(mailer)
+						if err != nil {
+							log.Error("Error send email")
+							log.Error(err)
+						}
 					}
 				}
+				// end send email to fund admin
 			}
-			// end send email to fund admin
-
-			// insert into table ms_customer_bank_account
-			paramsCusBankAcc := make(map[string]string)
-			strBankAccKey := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
-			paramsCusBankAcc["customer_key"] = requestID
-			paramsCusBankAcc["bank_account_key"] = strBankAccKey
-			//get ms abank account
-			var bankaccount models.MsBankAccount
-			status, err = models.GetBankAccount(&bankaccount, strBankAccKey)
-			if err == nil {
-				paramsCusBankAcc["bank_account_name"] = bankaccount.AccountHolderName
-			}
-			paramsCusBankAcc["flag_priority"] = "1"
-			paramsCusBankAcc["rec_status"] = "1"
-			paramsCusBankAcc["rec_created_date"] = time.Now().Format(dateLayout)
-			paramsCusBankAcc["rec_created_by"] = strKey
-			status, err = models.CreateMsCustomerBankAccount(paramsCusBankAcc)
-			if err != nil {
-				tx.Rollback()
-				log.Error("Error create ms_customer_bank_account")
-				return lib.CustomError(status, err.Error(), "failed input data")
-			}
-			//end insert into table ms_customer_bank_account
 		} else { //create user message
+			customerKey = strconv.FormatUint(*oareq.CustomerKey, 10)
 			paramsUserMessage := make(map[string]string)
 			paramsUserMessage["umessage_type"] = "245"
 			strUserLoginKey := strconv.FormatUint(*oareq.UserLoginKey, 10)
@@ -1854,40 +1823,6 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			}
 			lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
-			// insert into table ms_customer_bank_account
-			paramsCusBankAcc := make(map[string]string)
-			strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
-			strBankAccKeyNew := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
-
-			var bankaccountnew models.MsBankAccount
-			status, err = models.GetBankAccount(&bankaccountnew, strBankAccKeyNew)
-			if err == nil {
-				//check bank is ready or no
-				bankKeyNew := strconv.FormatUint(bankaccountnew.BankKey, 10)
-				var cekBankCus models.CheckBankAccountPengkinianData
-				status, err = models.CheckMsBankAccountPengkinianData(&cekBankCus, strCustomerKey, strBankAccKeyNew,
-					bankKeyNew, bankaccountnew.AccountNo, bankaccountnew.AccountHolderName)
-				if err != nil {
-					if err == sql.ErrNoRows {
-						paramsCusBankAcc["customer_key"] = strCustomerKey
-						paramsCusBankAcc["bank_account_key"] = strBankAccKeyNew
-						paramsCusBankAcc["bank_account_name"] = bankaccountnew.AccountHolderName
-						paramsCusBankAcc["flag_priority"] = "0"
-						paramsCusBankAcc["rec_status"] = "1"
-						paramsCusBankAcc["rec_created_date"] = time.Now().Format(dateLayout)
-						paramsCusBankAcc["rec_created_by"] = strKey
-						status, err = models.CreateMsCustomerBankAccount(paramsCusBankAcc)
-						if err != nil {
-							tx.Rollback()
-							log.Error("Error create ms_customer_bank_account")
-							return lib.CustomError(status, err.Error(), "failed input data")
-						}
-						//end insert into table ms_customer_bank_account
-
-					}
-				}
-			}
-
 			//UPDATE SC_USER_LOGIN
 			paramsScUserLogin := make(map[string]string)
 			paramsScUserLogin["user_login_key"] = strUserLoginKey
@@ -1904,6 +1839,43 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 			}
 
+		}
+
+		//delete all ms_customer_bank_account by customer
+		deleteParam := make(map[string]string)
+		deleteParam["rec_status"] = "0"
+		deleteParam["rec_modified_date"] = time.Now().Format(dateLayout)
+		deleteParam["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		deleteParam["rec_deleted_date"] = time.Now().Format(dateLayout)
+		deleteParam["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		_, err = models.UpdateDataByField(deleteParam, "customer_key", customerKey)
+		if err != nil {
+			log.Error("Error delete all ms_customer_bank_account")
+		}
+		//create all ms_customer_bank_account by oa_req_key
+		var accBank []models.OaRequestByField
+		status, err = models.GetOaRequestBankByField(&accBank, "oa_request_key", strconv.FormatUint(oareq.OaRequestKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+		}
+		if len(accBank) > 0 {
+			var bindVarMsBank []interface{}
+			for _, value := range accBank {
+				var row []string
+				row = append(row, customerKey)                                  //customer_key
+				row = append(row, strconv.FormatUint(value.BankAccountKey, 10)) //bank_account_key
+				row = append(row, strconv.FormatUint(value.FlagPriority, 10))   //flag_priority
+				row = append(row, value.AccountHolderName)                      //bank_account_name
+				row = append(row, "1")                                          //rec_status
+				row = append(row, time.Now().Format(dateLayout))                //rec_created_date
+				row = append(row, strconv.FormatUint(lib.Profile.UserID, 10))   //rec_created_by
+				bindVarMsBank = append(bindVarMsBank, row)
+			}
+			_, err = models.CreateMultipleMsCustomerBankkAccount(bindVarMsBank)
+			if err != nil {
+				log.Error("Failed create promo product: " + err.Error())
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
 		}
 	} else { //reject
 		//create user message
@@ -2739,12 +2711,14 @@ func GetDetailPengkinianPersonalDataLastHistory(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest)
 	} else {
 		if oareq.CustomerKey == nil { //Error jika belum jadi customer
+			log.Println("Customer Null")
 			return lib.CustomError(http.StatusBadRequest)
 		}
 		var lastHistoryOareq models.OaRequestKeyLastHistory
 		customerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
 		status, err := models.AdminGetLastHistoryOaRequest(&lastHistoryOareq, customerKey, keyStr)
 		if err != nil {
+			log.Println(err)
 			return lib.CustomError(status)
 		}
 		lastKeyStr = strconv.FormatUint(lastHistoryOareq.OaRequestKey, 10)
@@ -3011,6 +2985,11 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.OccupBusinessFields, 10))
 			}
 		}
+		if oapersonal.PepStatus != nil {
+			if _, ok := lib.Find(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10)); !ok {
+				personalDataLookupIds = append(personalDataLookupIds, strconv.FormatUint(*oapersonal.PepStatus, 10))
+			}
+		}
 		//gen lookup personal data
 		var lookupPersonData []models.GenLookup
 		if len(personalDataLookupIds) > 0 {
@@ -3045,6 +3024,11 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 		if oapersonal.Religion != nil {
 			if n, ok := pData[*oapersonal.Religion]; ok {
 				responseData.Religion = n.LkpName
+			}
+		}
+		if oapersonal.PepStatus != nil {
+			if n, ok := pData[*oapersonal.PepStatus]; ok {
+				responseData.PepStatus = n.LkpName
 			}
 		}
 
@@ -3289,30 +3273,13 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 			}
 		}
 
-		//mapping bank account
-		if oapersonal.BankAccountKey != nil {
-			var bankaccount models.MsBankAccount
-			strBank := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
-			status, err = models.GetBankAccount(&bankaccount, strBank)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					return lib.CustomError(status)
-				}
-			} else {
-				var bank models.MsBank
-				strBankKey := strconv.FormatUint(bankaccount.BankKey, 10)
-				status, err = models.GetMsBank(&bank, strBankKey)
-				if err != nil {
-					if err != sql.ErrNoRows {
-						return lib.CustomError(status)
-					}
-				} else {
-					responseData.BankAccount.BankName = bank.BankName
-				}
-				responseData.BankAccount.AccountNo = bankaccount.AccountNo
-				responseData.BankAccount.AccountHolderName = bankaccount.AccountHolderName
-				responseData.BankAccount.BranchName = bankaccount.BranchName
-			}
+		//set bank_request
+		var accBank []models.OaRequestByField
+		status, err = models.GetOaRequestBankByField(&accBank, "oa_request_key", strconv.FormatUint(oareq.OaRequestKey, 10))
+		if err != nil {
+			responseData.BankRequest = nil
+		} else {
+			responseData.BankRequest = &accBank
 		}
 
 		//mapping relation

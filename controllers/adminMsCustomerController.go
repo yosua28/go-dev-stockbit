@@ -1036,32 +1036,6 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 			}
 		}
 
-		//mapping bank account
-		if oapersonal.BankAccountKey != nil {
-			var bankaccount models.MsBankAccount
-			strBank := strconv.FormatUint(*oapersonal.BankAccountKey, 10)
-			status, err = models.GetBankAccount(&bankaccount, strBank)
-			if err != nil {
-				if err != sql.ErrNoRows {
-					return lib.CustomError(status)
-				}
-			} else {
-				var bank models.MsBank
-				strBankKey := strconv.FormatUint(bankaccount.BankKey, 10)
-				status, err = models.GetMsBank(&bank, strBankKey)
-				if err != nil {
-					if err != sql.ErrNoRows {
-						return lib.CustomError(status)
-					}
-				} else {
-					responseData.BankAccount.BankName = bank.BankName
-				}
-				responseData.BankAccount.AccountNo = bankaccount.AccountNo
-				responseData.BankAccount.AccountHolderName = bankaccount.AccountHolderName
-				responseData.BankAccount.BranchName = bankaccount.BranchName
-			}
-		}
-
 		//mapping relation
 		if oapersonal.RelationType != nil {
 			if n, ok := pData[*oapersonal.RelationType]; ok {
@@ -1259,18 +1233,6 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 		}
 	}
 
-	//set customer
-	// var customer models.CustomerDetailPersonalData
-	// strCustomerKey := strconv.FormatUint(*oareq.CustomerKey, 10)
-	// _, err = models.GetCustomerDetailPersonalData(&customer, strCustomerKey)
-	// if err == nil {
-	// 	responseData.Customer = &customer
-	// }
-
-	// if customer.InvestorType != "263" { //individu
-	// 	return lib.CustomError(http.StatusNotFound)
-	// }
-
 	//mapping user approval
 	var userApprovalIds []string
 	if oareq.Check1References != nil {
@@ -1362,6 +1324,15 @@ func DetailPersonalDataCustomerIndividu(c echo.Context) error {
 				responseData.ApproveKYC = &approvekyc
 			}
 		}
+	}
+
+	//set bank_request
+	var accBank []models.OaRequestByField
+	status, err = models.GetOaRequestBankByField(&accBank, "oa_request_key", strconv.FormatUint(oareq.OaRequestKey, 10))
+	if err != nil {
+		responseData.BankRequest = nil
+	} else {
+		responseData.BankRequest = &accBank
 	}
 
 	var response lib.Response
@@ -2126,6 +2097,23 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		log.Error("Failed create oa request data")
 		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
 	}
+
+	//OA_REQUEST_BANK_ACCOUNT
+	bankReq := make(map[string]string)
+	bankReq["oa_request_key"] = requestID
+	bankReq["bank_account_key"] = bankAccountID
+	bankReq["flag_priority"] = "1"
+	bankReq["bank_account_name"] = accountName
+	bankReq["rec_status"] = "1"
+	bankReq["rec_created_date"] = time.Now().Format(dateLayout)
+	bankReq["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	status, err, _ = models.CreateOaRequestBankAccount(bankReq)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create OA_REQUEST_BANK_ACCOUNT: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
 	paramsOaPersonalData["oa_request_key"] = requestID
 
 	//SAVE OA_PERSONAL_DATA
@@ -2632,16 +2620,27 @@ func GetAdminOaRequestPersonalDataRiskProfile(c echo.Context) error {
 	responseData["emergency_phone_no"] = personalDataDB.EmergencyPhoneNo
 	responseData["beneficial_full_name"] = personalDataDB.BeneficialFullName
 	responseData["beneficial_relation"] = personalDataDB.BeneficialRelation
-	var bankAccountDB models.MsBankAccount
-	if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
-		_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
-		if err == nil {
-			bankAccount := make(map[string]interface{})
-			bankAccount["bank_key"] = bankAccountDB.BankKey
-			bankAccount["account_no"] = bankAccountDB.AccountNo
-			bankAccount["account_holder_name"] = bankAccountDB.AccountHolderName
-			bankAccount["branch_name"] = bankAccountDB.BranchName
-			responseData["bank_account"] = bankAccount
+
+	//get all bank request
+	var accBank []models.OaRequestByField
+	status, err = models.GetOaRequestBankByField(&accBank, "oa_request_key", strconv.FormatUint(personalDataDB.OaRequestKey, 10))
+	if err != nil {
+		responseData["bank_request"] = nil
+	} else {
+		if len(accBank) > 0 {
+			var bankAccount []interface{}
+			for _, value := range accBank {
+				bank := make(map[string]interface{})
+				bank["bank_key"] = value.BankKey
+				bank["account_no"] = value.AccountNo
+				bank["account_holder_name"] = value.AccountHolderName
+				bank["branch_name"] = value.BranchName
+				bank["flag_priority"] = value.FlagPriority
+				bankAccount = append(bankAccount, bank)
+			}
+			responseData["bank_request"] = bankAccount
+		} else {
+			responseData["bank_request"] = nil
 		}
 	}
 
@@ -3215,6 +3214,101 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "branch_name can not be blank", "branch_name can not be blank")
 	}
 
+	flagPriority := c.FormValue("flag_priority")
+	if flagPriority == "" {
+		log.Error("Missing required parameter: flag_priority")
+		return lib.CustomError(http.StatusBadRequest, "flag_priority can not be blank", "flag_priority can not be blank")
+	}
+
+	//bank account 2
+	bankKey2 := c.FormValue("bank_key_2")
+	accountNo2 := c.FormValue("account_no_2")
+	accountName2 := c.FormValue("account_name_2")
+	branchName2 := c.FormValue("branch_name_2")
+	flagPriority2 := c.FormValue("flag_priority_2")
+
+	if bankKey2 != "" || accountNo2 != "" || accountName2 != "" || branchName2 != "" || flagPriority2 != "" {
+		if bankKey2 == "" {
+			log.Error("Missing required parameter: bank_key_2")
+			return lib.CustomError(http.StatusBadRequest, "bank_key_2 can not be blank", "bank_key_2 can not be blank")
+		}
+
+		if accountNo2 == "" {
+			log.Error("Missing required parameter: account_no_2")
+			return lib.CustomError(http.StatusBadRequest, "account_no_2 can not be blank", "account_no_2 can not be blank")
+		}
+
+		if accountName2 == "" {
+			log.Error("Missing required parameter: account_name_2")
+			return lib.CustomError(http.StatusBadRequest, "account_name_2 can not be blank", "account_name_2 can not be blank")
+		}
+
+		if branchName2 == "" {
+			log.Error("Missing required parameter: branch_name_2")
+			return lib.CustomError(http.StatusBadRequest, "branch_name_2 can not be blank", "branch_name_2 can not be blank")
+		}
+
+		if flagPriority2 == "" {
+			log.Error("Missing required parameter: flag_priority_2")
+			return lib.CustomError(http.StatusBadRequest, "flag_priority_2 can not be blank", "flag_priority_2 can not be blank")
+		}
+	}
+
+	//bank account 3
+	bankKey3 := c.FormValue("bank_key_3")
+	accountNo3 := c.FormValue("account_no_3")
+	accountName3 := c.FormValue("account_name_3")
+	branchName3 := c.FormValue("branch_name_3")
+	flagPriority3 := c.FormValue("flag_priority_3")
+
+	if bankKey3 != "" || accountNo3 != "" || accountName3 != "" || branchName3 != "" || flagPriority3 != "" {
+		if bankKey3 == "" {
+			log.Error("Missing required parameter: bank_key_3")
+			return lib.CustomError(http.StatusBadRequest, "bank_key_3 can not be blank", "bank_key_3 can not be blank")
+		}
+
+		if accountNo3 == "" {
+			log.Error("Missing required parameter: account_no_3")
+			return lib.CustomError(http.StatusBadRequest, "account_no_3 can not be blank", "account_no_3 can not be blank")
+		}
+
+		if accountName3 == "" {
+			log.Error("Missing required parameter: account_name_3")
+			return lib.CustomError(http.StatusBadRequest, "account_name_3 can not be blank", "account_name_3 can not be blank")
+		}
+
+		if branchName3 == "" {
+			log.Error("Missing required parameter: branch_name_3")
+			return lib.CustomError(http.StatusBadRequest, "branch_name_3 can not be blank", "branch_name_3 can not be blank")
+		}
+
+		if flagPriority3 == "" {
+			log.Error("Missing required parameter: flag_priority_3")
+			return lib.CustomError(http.StatusBadRequest, "flag_priority_3 can not be blank", "flag_priority_3 can not be blank")
+		}
+	}
+
+	countPriority := 0
+	if flagPriority == "1" {
+		countPriority++
+	}
+	if flagPriority2 == "1" {
+		countPriority++
+	}
+	if flagPriority3 == "1" {
+		countPriority++
+	}
+
+	if countPriority == 0 {
+		log.Error("Missing required parameter: flag_prioriti must select 1")
+		return lib.CustomError(http.StatusBadRequest, "flag_prioriti must select 1", "flag_prioriti must select 1")
+	}
+
+	if countPriority > 1 {
+		log.Error("Missing required parameter: flag_prioriti must select 1")
+		return lib.CustomError(http.StatusBadRequest, "flag_prioriti must select 1", "flag_prioriti must select 1")
+	}
+
 	//QUIZ
 	quizOption := c.FormValue("quiz_option")
 	if quizOption == "" {
@@ -3278,19 +3372,6 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	addressDomicileParams["rec_created_date"] = time.Now().Format(dateLayout)
 	addressDomicileParams["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	addressDomicileParams["rec_status"] = "1"
-
-	//MS_BANK_ACCOUNT
-	paramsBank := make(map[string]string)
-	paramsBank["bank_key"] = bankKey
-	paramsBank["account_no"] = accountNo
-	paramsBank["account_holder_name"] = accountName
-	paramsBank["branch_name"] = branchName
-	paramsBank["currency_key"] = "1"
-	paramsBank["bank_account_type"] = "1"
-	paramsBank["rec_domain"] = "1"
-	paramsBank["rec_status"] = "1"
-	paramsBank["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsBank["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	//OA_PERSONAL_DATA
 	log.Info("dateBirth: " + dateBirth)
@@ -3401,21 +3482,6 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		paramsOaPersonalData["occup_address_key"] = addressCompanyID
 	}
 
-	//SAVE MS_BANK_ACCOUNT
-	status, err, bankAccountID := models.CreateMsBankAccount(paramsBank)
-	if err != nil {
-		tx.Rollback()
-		log.Error("Failed create bank account data: " + err.Error())
-		return lib.CustomError(status, err.Error(), "failed input data")
-	}
-	accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
-	if accountID == 0 {
-		tx.Rollback()
-		log.Error("Failed create bank account data")
-		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
-	}
-	paramsOaPersonalData["bank_account_key"] = bankAccountID
-
 	//SAVE OA_REQUEST
 	status, err, requestID := models.CreateOaRequest(paramsOaRequest)
 	if err != nil {
@@ -3430,6 +3496,149 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
 	}
 	paramsOaPersonalData["oa_request_key"] = requestID
+
+	//SAVE MS_BANK_ACCOUNT
+	var bankAccountIDPriority string
+
+	//MS_BANK_ACCOUNT 1
+	paramsBank := make(map[string]string)
+	paramsBank["bank_key"] = bankKey
+	paramsBank["account_no"] = accountNo
+	paramsBank["account_holder_name"] = accountName
+	paramsBank["branch_name"] = branchName
+	paramsBank["currency_key"] = "1"
+	paramsBank["bank_account_type"] = "1"
+	paramsBank["rec_domain"] = "1"
+	paramsBank["rec_status"] = "1"
+	paramsBank["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsBank["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	status, err, bankAccountID := models.CreateMsBankAccount(paramsBank)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create bank account data: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
+	if accountID == 0 {
+		tx.Rollback()
+		log.Error("Failed create bank account data")
+		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	}
+	if flagPriority == "1" {
+		bankAccountIDPriority = bankAccountID
+	}
+
+	//OA_REQUEST_BANK_ACCOUNT 1
+	bankReq := make(map[string]string)
+	bankReq["oa_request_key"] = requestID
+	bankReq["bank_account_key"] = bankAccountID
+	bankReq["flag_priority"] = flagPriority
+	bankReq["bank_account_name"] = accountName
+	bankReq["rec_status"] = "1"
+	bankReq["rec_created_date"] = time.Now().Format(dateLayout)
+	bankReq["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	status, err, _ = models.CreateOaRequestBankAccount(bankReq)
+	if err != nil {
+		tx.Rollback()
+		log.Error("Failed create OA_REQUEST_BANK_ACCOUNT 1: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	//MS_BANK_ACCOUNT 2
+	if bankKey2 != "" || accountNo2 != "" || accountName2 != "" || branchName2 != "" || flagPriority2 != "" {
+		//MS_BANK_ACCOUNT 2
+		paramsBank2 := make(map[string]string)
+		paramsBank2["bank_key"] = bankKey2
+		paramsBank2["account_no"] = accountNo2
+		paramsBank2["account_holder_name"] = accountName2
+		paramsBank2["branch_name"] = branchName2
+		paramsBank2["currency_key"] = "1"
+		paramsBank2["bank_account_type"] = "1"
+		paramsBank2["rec_domain"] = "1"
+		paramsBank2["rec_status"] = "1"
+		paramsBank2["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsBank2["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		status, err, bankAccountID2 := models.CreateMsBankAccount(paramsBank2)
+		if err != nil {
+			tx.Rollback()
+			log.Error("Failed create bank account data: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+		accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
+		if accountID == 0 {
+			tx.Rollback()
+			log.Error("Failed create bank account data")
+			return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+		}
+		if flagPriority2 == "1" {
+			bankAccountIDPriority = bankAccountID2
+		}
+
+		//OA_REQUEST_BANK_ACCOUNT 2
+		bankReq := make(map[string]string)
+		bankReq["oa_request_key"] = requestID
+		bankReq["bank_account_key"] = bankAccountID2
+		bankReq["flag_priority"] = flagPriority2
+		bankReq["bank_account_name"] = accountName2
+		bankReq["rec_status"] = "1"
+		bankReq["rec_created_date"] = time.Now().Format(dateLayout)
+		bankReq["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		status, err, _ = models.CreateOaRequestBankAccount(bankReq)
+		if err != nil {
+			tx.Rollback()
+			log.Error("Failed create OA_REQUEST_BANK_ACCOUNT 2: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+	}
+
+	//MS_BANK_ACCOUNT 3
+	if bankKey3 != "" || accountNo3 != "" || accountName3 != "" || branchName3 != "" || flagPriority3 != "" {
+		//MS_BANK_ACCOUNT 3
+		paramsBank3 := make(map[string]string)
+		paramsBank3["bank_key"] = bankKey3
+		paramsBank3["account_no"] = accountNo3
+		paramsBank3["account_holder_name"] = accountName3
+		paramsBank3["branch_name"] = branchName3
+		paramsBank3["currency_key"] = "1"
+		paramsBank3["bank_account_type"] = "1"
+		paramsBank3["rec_domain"] = "1"
+		paramsBank3["rec_status"] = "1"
+		paramsBank3["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsBank3["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		status, err, bankAccountID3 := models.CreateMsBankAccount(paramsBank3)
+		if err != nil {
+			tx.Rollback()
+			log.Error("Failed create bank account data: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+		accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
+		if accountID == 0 {
+			tx.Rollback()
+			log.Error("Failed create bank account data")
+			return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+		}
+		if flagPriority3 == "1" {
+			bankAccountIDPriority = bankAccountID3
+		}
+
+		//OA_REQUEST_BANK_ACCOUNT 3
+		bankReq := make(map[string]string)
+		bankReq["oa_request_key"] = requestID
+		bankReq["bank_account_key"] = bankAccountID3
+		bankReq["flag_priority"] = flagPriority3
+		bankReq["bank_account_name"] = accountName3
+		bankReq["rec_status"] = "1"
+		bankReq["rec_created_date"] = time.Now().Format(dateLayout)
+		bankReq["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		status, err, _ = models.CreateOaRequestBankAccount(bankReq)
+		if err != nil {
+			tx.Rollback()
+			log.Error("Failed create OA_REQUEST_BANK_ACCOUNT 3: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+	}
+
+	paramsOaPersonalData["bank_account_key"] = bankAccountIDPriority
 
 	//SAVE OA_PERSONAL_DATA
 	err = os.MkdirAll(config.BasePath+"/images/user/"+idUserLogin, 0755)
