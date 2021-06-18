@@ -1725,8 +1725,6 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 			log.Error("Wrong input for parameter: corespondence")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: corespondence", "Wrong input for parameter: corespondence")
 		}
-		log.Error("Missing required parameter: corespondence")
-		return lib.CustomError(http.StatusBadRequest, "corespondence can not be blank", "corespondence can not be blank")
 	}
 
 	//TAB 4
