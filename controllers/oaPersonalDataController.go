@@ -202,6 +202,7 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
+	paramsRequest := make(map[string]string)
 	if requestTypeStr != "127" {
 		var oaRequestDB []models.OaRequest
 		paramsCek := make(map[string]string)
@@ -225,7 +226,7 @@ func CreateOaPersonalData(c echo.Context) error {
 			return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
 		}
 
-		params["customer_key"] = strconv.FormatUint(*oaRequestDB[0].CustomerKey, 10)
+		paramsRequest["customer_key"] = strconv.FormatUint(*oaRequestDB[0].CustomerKey, 10)
 	}
 
 	idcardNumber := c.FormValue("idcard_number")
@@ -857,7 +858,6 @@ func CreateOaPersonalData(c echo.Context) error {
 
 	// Create Request
 	dateNow := time.Now().Format(layout)
-	paramsRequest := make(map[string]string)
 	paramsRequest["oa_status"] = "258"
 	paramsRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	paramsRequest["oa_entry_start"] = dateNow
