@@ -353,6 +353,10 @@ func router() *echo.Echo {
 	admin.GET("/account/detail/:acc_key", controllers.AdminGetDetailAccount).Name = "AdminGetDetailAccount"
 	admin.POST("/account/update", controllers.AdminUpdateTrAccount).Name = "AdminUpdateTrAccount"
 	admin.GET("/account/customerlist/:product_key", controllers.AdminGetCustomerAccount).Name = "AdminGetCustomerAccount"
+
+	//Admin Customer File
+	admin.POST("/customer-file-update", controllers.CustomerUpdateFile).Name = "CustomerUpdateFile"
+	admin.GET("/customef-file-detail/:customer_key", controllers.AdminGetDetailCustomerDocument).Name = "AdminGetDetailCustomerDocument"
 	return e
 }
 
