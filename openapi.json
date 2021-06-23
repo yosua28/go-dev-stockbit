@@ -25848,6 +25848,405 @@
           }
         }
       }
+    },
+    "/admin/customer-file-update": {
+      "post": {
+        "description": "Update Customer File",
+        "tags": [
+          "Customer File"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "customer_key": {
+                    "type": "integer"
+                  },
+                  "file_upload_1": {
+                    "type": "file"
+                  },
+                  "file_key_1": {
+                    "type": "integer"
+                  },
+                  "file_notes_1": {
+                    "type": "string"
+                  },
+                  "file_delete_1": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_2": {
+                    "type": "file"
+                  },
+                  "file_key_2": {
+                    "type": "integer"
+                  },
+                  "file_notes_2": {
+                    "type": "string"
+                  },
+                  "file_delete_2": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_3": {
+                    "type": "file"
+                  },
+                  "file_key_3": {
+                    "type": "integer"
+                  },
+                  "file_notes_3": {
+                    "type": "string"
+                  },
+                  "file_delete_3": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_4": {
+                    "type": "file"
+                  },
+                  "file_key_4": {
+                    "type": "integer"
+                  },
+                  "file_notes_4": {
+                    "type": "string"
+                  },
+                  "file_delete_4": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_5": {
+                    "type": "file"
+                  },
+                  "file_key_5": {
+                    "type": "integer"
+                  },
+                  "file_notes_5": {
+                    "type": "string"
+                  },
+                  "file_delete_5": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_6": {
+                    "type": "file"
+                  },
+                  "file_key_6": {
+                    "type": "integer"
+                  },
+                  "file_notes_6": {
+                    "type": "string"
+                  },
+                  "file_delete_6": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_7": {
+                    "type": "file"
+                  },
+                  "file_key_7": {
+                    "type": "integer"
+                  },
+                  "file_notes_7": {
+                    "type": "string"
+                  },
+                  "file_delete_7": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_8": {
+                    "type": "file"
+                  },
+                  "file_key_8": {
+                    "type": "integer"
+                  },
+                  "file_notes_8": {
+                    "type": "string"
+                  },
+                  "file_delete_8": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_9": {
+                    "type": "file"
+                  },
+                  "file_key_9": {
+                    "type": "integer"
+                  },
+                  "file_notes_9": {
+                    "type": "string"
+                  },
+                  "file_delete_9": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_10": {
+                    "type": "file"
+                  },
+                  "file_key_10": {
+                    "type": "integer"
+                  },
+                  "file_notes_10": {
+                    "type": "string"
+                  },
+                  "file_delete_10": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_11": {
+                    "type": "file"
+                  },
+                  "file_key_11": {
+                    "type": "integer"
+                  },
+                  "file_notes_11": {
+                    "type": "string"
+                  },
+                  "file_delete_11": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_12": {
+                    "type": "file"
+                  },
+                  "file_key_12": {
+                    "type": "integer"
+                  },
+                  "file_notes_12": {
+                    "type": "string"
+                  },
+                  "file_delete_12": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_13": {
+                    "type": "file"
+                  },
+                  "file_key_13": {
+                    "type": "integer"
+                  },
+                  "file_notes_13": {
+                    "type": "string"
+                  },
+                  "file_delete_13": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_14": {
+                    "type": "file"
+                  },
+                  "file_key_14": {
+                    "type": "integer"
+                  },
+                  "file_notes_14": {
+                    "type": "string"
+                  },
+                  "file_delete_14": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  },
+                  "file_upload_15": {
+                    "type": "file"
+                  },
+                  "file_key_15": {
+                    "type": "integer"
+                  },
+                  "file_notes_15": {
+                    "type": "string"
+                  },
+                  "file_delete_15": {
+                    "type": "string",
+                    "enum": [
+                      "0",
+                      "1"
+                    ]
+                  }
+                },
+                "required": [
+                  "customer_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get data"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/customef-file-detail/{customer_key}": {
+      "get": {
+        "description": "Detail Customer File",
+        "tags": [
+          "Customer File"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "customer_key",
+            "in": "path",
+            "description": "customer key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "customer": {
+                      "customer_key": 270,
+                      "cif": "20215000003",
+                      "full_name": "Yosua Susanto",
+                      "date_birth": "01 April 2000",
+                      "ktp": "3311022802940002",
+                      "phone_mobile": "081904765875",
+                      "email": "yosua.h.susanto@gmail.com",
+                      "sid": "-",
+                      "cif_suspend_flag": "Ya",
+                      "suspend_modified_date": "14 June 2021 17:22",
+                      "suspend_reason": "hfghgf",
+                      "oa_status": "260",
+                      "branch_key": 10,
+                      "branch_name": "BANDUNG (BRANCH)",
+                      "agent_key": 6,
+                      "agent_name": "SALES MOHAMAD RAZAB",
+                      "created_date": "28 May 2021 17:12"
+                    },
+                    "document": [
+                      {
+                        "file_key": 1,
+                        "ref_fk_key": 270,
+                        "file_name": "O8l8keR4kMEfG2AEqIHoti2VI1pDdZWAY7oivlYol9Z5sFe67B.jpg",
+                        "path": "https://devapi.mncasset.com/images/user/7410/ms_file/O8l8keR4kMEfG2AEqIHoti2VI1pDdZWAY7oivlYol9Z5sFe67B.jpg",
+                        "file_ext": ".jpg",
+                        "file_notes": "wewrwer",
+                        "rec_created_date": "22 June 2021 13:46"
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
