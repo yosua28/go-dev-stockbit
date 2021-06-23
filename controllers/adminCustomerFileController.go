@@ -128,6 +128,12 @@ func CustomerUpdateFile(c echo.Context) error {
 						updateFile["file_name"] = filename + extension
 						updateFile["file_ext"] = extension
 						updateFile["file_path"] = config.BasePath + "/images/user/" + strconv.FormatUint(userData.UserLoginKey, 10) + "/ms_file/" + filename + extension
+
+						err = lib.UploadImage(file, config.BasePath+"/images/user/"+strconv.FormatUint(userData.UserLoginKey, 10)+"/ms_file/"+filename+extension)
+						if err != nil {
+							log.Println(err)
+							return lib.CustomError(http.StatusInternalServerError)
+						}
 					}
 
 					_, err = models.UpdateMsFile(updateFile)
@@ -158,6 +164,12 @@ func CustomerUpdateFile(c echo.Context) error {
 						createFile["file_ext"] = extension
 						createFile["blob_mode"] = "0"
 						createFile["file_path"] = config.BasePath + "/images/user/" + strconv.FormatUint(userData.UserLoginKey, 10) + "/ms_file/" + filename + extension
+
+						err = lib.UploadImage(file, config.BasePath+"/images/user/"+strconv.FormatUint(userData.UserLoginKey, 10)+"/ms_file/"+filename+extension)
+						if err != nil {
+							log.Println(err)
+							return lib.CustomError(http.StatusInternalServerError)
+						}
 					}
 
 					_, err = models.CreateMsFile(createFile)
