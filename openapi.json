@@ -26254,6 +26254,11 @@
         "tags": [
           "Menu Admin"
         ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
         "parameters": [
           {
             "name": "search_like",
