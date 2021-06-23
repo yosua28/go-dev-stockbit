@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -173,6 +174,182 @@ func AdminGetMenuListRoleLogin(c *[]ListMenuRoleUser, roleKey string) (int, erro
 	// Main query
 	log.Info(query)
 	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type ListMenuAdmin struct {
+	MenuKey       uint64  `db:"menu_key"        json:"menu_key"`
+	ParentName    *string `db:"parent_name"     json:"parent_name"`
+	MenuCode      *string `db:"menu_code"       json:"menu_code"`
+	MenuName      *string `db:"menu_name"       json:"menu_name"`
+	MenuPage      *string `db:"menu_page"       json:"menu_page"`
+	MenuDesc      *string `db:"menu_desc"       json:"menu_desc"`
+	MenuUrl       *string `db:"menu_url"        json:"menu_url"`
+	AppModuleName *string `db:"app_module_name" json:"app_module_name"`
+	MenuTypeName  *string `db:"menu_type_name"  json:"menu_type_name"`
+}
+
+func AdminGetListMenu(c *[]ListMenuAdmin, limit uint64, offset uint64, params map[string]string, searchLike string, nolimit bool) (int, error) {
+	var present bool
+	var whereClause []string
+	var condition string
+	var limitOffset string
+	var orderCondition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (m.menu_key like '%" + searchLike + "%' OR"
+		condition += " par.menu_name like '%" + searchLike + "%' OR"
+		condition += " m.menu_code like '%" + searchLike + "%' OR"
+		condition += " m.menu_name like '%" + searchLike + "%' OR"
+		condition += " m.menu_page like '%" + searchLike + "%' OR"
+		condition += " m.menu_desc like '%" + searchLike + "%' OR"
+		condition += " m.menu_url like '%" + searchLike + "%' OR"
+		condition += " mo.app_module_name like '%" + searchLike + "%' OR"
+		condition += " t.menu_type_name like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				dat.menu_key AS menu_key, 
+				dat.parent_name AS parent_name, 
+				dat.menu_code AS menu_code, 
+				dat.menu_name AS menu_name, 
+				dat.menu_page AS menu_page, 
+				dat.menu_desc AS menu_desc, 
+				dat.menu_url AS menu_url,
+				dat.app_module_name AS app_module_name, 
+				dat.menu_type_name AS menu_type_name   
+			FROM
+				(SELECT 
+					m.menu_key,
+					(CASE
+						WHEN m.menu_parent IS NULL THEN ""
+						ELSE par.menu_name
+					END) AS parent_name,
+					m.menu_code,
+					m.menu_name,
+					m.menu_page,
+					m.menu_desc,
+					m.menu_url,
+					mo.app_module_name,
+					t.menu_type_name,
+					(CASE
+						WHEN m.menu_parent IS NULL THEN m.rec_status
+						ELSE par.rec_status
+					END) AS parent_rec_status   
+				FROM sc_menu AS m
+				LEFT JOIN sc_menu AS par ON m.menu_parent = par.menu_key
+				INNER JOIN sc_app_module AS mo ON mo.app_module_key = m.app_module_key AND mo.rec_status = 1
+				INNER JOIN sc_menu_type AS t ON t.menu_type_key = m.menu_type_key AND t.rec_status = 1
+				WHERE m.rec_status = 1 ` + condition + `
+				) AS dat
+			WHERE dat.parent_rec_status = 1`
+
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		orderCondition += " ORDER BY dat." + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			orderCondition += " " + orderType
+		}
+	}
+
+	if !nolimit {
+		limitOffset += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			limitOffset += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	query += orderCondition + limitOffset
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetListMenu(c *CountData, params map[string]string, searchLike string) (int, error) {
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (m.menu_key like '%" + searchLike + "%' OR"
+		condition += " par.menu_name like '%" + searchLike + "%' OR"
+		condition += " m.menu_code like '%" + searchLike + "%' OR"
+		condition += " m.menu_name like '%" + searchLike + "%' OR"
+		condition += " m.menu_page like '%" + searchLike + "%' OR"
+		condition += " m.menu_desc like '%" + searchLike + "%' OR"
+		condition += " m.menu_url like '%" + searchLike + "%' OR"
+		condition += " mo.app_module_name like '%" + searchLike + "%' OR"
+		condition += " t.menu_type_name like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				count(dat.menu_key) AS count_data 
+			FROM
+				(SELECT 
+					m.menu_key,
+					(CASE
+						WHEN m.menu_parent IS NULL THEN m.rec_status
+						ELSE par.rec_status
+					END) AS parent_rec_status   
+				FROM sc_menu AS m
+				LEFT JOIN sc_menu AS par ON m.menu_parent = par.menu_key
+				INNER JOIN sc_app_module AS mo ON mo.app_module_key = m.app_module_key AND mo.rec_status = 1
+				INNER JOIN sc_menu_type AS t ON t.menu_type_key = m.menu_type_key AND t.rec_status = 1
+				WHERE m.rec_status = 1 ` + condition + `
+				) AS dat
+			WHERE dat.parent_rec_status = 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
