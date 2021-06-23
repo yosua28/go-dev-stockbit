@@ -12,7 +12,7 @@ import (
 type MsCustomerBankAccount struct {
 	CustBankaccKey    uint64  `db:"cust_bankacc_key"      json:"cust_bankacc_key"`
 	CustomerKey       uint64  `db:"customer_key"          json:"customer_key"`
-	AankAccountKey    uint64  `db:"bank_account_key"      json:"bank_account_key"`
+	BankAccountKey    uint64  `db:"bank_account_key"      json:"bank_account_key"`
 	FlagPriority      uint8   `db:"flag_priority"         json:"flag_priority"`
 	BankAccountName   string  `db:"bank_account_name"     json:"bank_account_name"`
 	RecOrder          *uint64 `db:"rec_order"             json:"rec_order"`

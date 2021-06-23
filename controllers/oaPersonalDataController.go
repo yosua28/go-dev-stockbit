@@ -10,6 +10,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"time"
+	"encoding/json"
 
 	"github.com/badoux/checkmail"
 	"github.com/labstack/echo"
@@ -803,59 +804,60 @@ func CreateOaPersonalData(c echo.Context) error {
 		}
 	}
 
-	paramsBank := make(map[string]string)
-	bankKey := c.FormValue("bank_key")
-	if bankKey == "" {
-		log.Error("Missing required parameter: bank_key")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_key", "Missing required parameter: bank_key")
-	} else {
-		bank, err := strconv.ParseUint(bankKey, 10, 64)
-		if err == nil && bank > 0 {
-			paramsBank["bank_key"] = bankKey
-		} else {
-			log.Error("Wrong input for parameter: bank_key")
-			return lib.CustomError(http.StatusBadRequest)
-		}
-	}
+	// paramsBank := make(map[string]string)
+	// bankKey := c.FormValue("bank_key")
+	// if bankKey == "" {
+	// 	log.Error("Missing required parameter: bank_key")
+	// 	return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_key", "Missing required parameter: bank_key")
+	// } else {
+	// 	bank, err := strconv.ParseUint(bankKey, 10, 64)
+	// 	if err == nil && bank > 0 {
+	// 		paramsBank["bank_key"] = bankKey
+	// 	} else {
+	// 		log.Error("Wrong input for parameter: bank_key")
+	// 		return lib.CustomError(http.StatusBadRequest)
+	// 	}
+	// }
 
-	accountNo := c.FormValue("account_no")
-	if accountNo == "" {
-		log.Error("Missing required parameter: account_no")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_no", "Missing required parameter: account_no")
-	}
-	paramsBank["account_no"] = accountNo
+	// accountNo := c.FormValue("account_no")
+	// if accountNo == "" {
+	// 	log.Error("Missing required parameter: account_no")
+	// 	return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_no", "Missing required parameter: account_no")
+	// }
+	// paramsBank["account_no"] = accountNo
 
-	accountName := c.FormValue("account_name")
-	if accountName == "" {
-		log.Error("Missing required parameter: account_name")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_name", "Missing required parameter: account_name")
-	}
-	paramsBank["account_holder_name"] = accountName
+	// accountName := c.FormValue("account_name")
+	// if accountName == "" {
+	// 	log.Error("Missing required parameter: account_name")
+	// 	return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_name", "Missing required parameter: account_name")
+	// }
+	// paramsBank["account_holder_name"] = accountName
 
-	branchName := c.FormValue("branch_name")
-	if branchName == "" {
-		log.Error("Missing required parameter: branch_name")
-		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: branch_name", "Missing required parameter: branch_name")
-	}
-	paramsBank["branch_name"] = branchName
-	paramsBank["currency_key"] = "1"
-	paramsBank["bank_account_type"] = "1"
-	paramsBank["rec_domain"] = "1"
-	paramsBank["rec_status"] = "1"
+	// branchName := c.FormValue("branch_name")
+	// if branchName == "" {
+	// 	log.Error("Missing required parameter: branch_name")
+	// 	return lib.CustomError(http.StatusBadRequest, "Missing required parameter: branch_name", "Missing required parameter: branch_name")
+	// }
+	// paramsBank["branch_name"] = branchName
+	// paramsBank["currency_key"] = "1"
+	// paramsBank["bank_account_type"] = "1"
+	// paramsBank["rec_domain"] = "1"
+	// paramsBank["rec_status"] = "1"
 
-	status, err, bankAccountID := models.CreateMsBankAccount(paramsBank)
-	if err != nil {
-		log.Error("Failed create adrress data: " + err.Error())
-		return lib.CustomError(status, err.Error(), "failed input data")
-	}
-	accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
-	if accountID == 0 {
-		log.Error("Failed create adrress data")
-		return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
-	}
-	params["bank_account_key"] = bankAccountID
+	// status, err, bankAccountID := models.CreateMsBankAccount(paramsBank)
+	// if err != nil {
+	// 	log.Error("Failed create adrress data: " + err.Error())
+	// 	return lib.CustomError(status, err.Error(), "failed input data")
+	// }
+	// accountID, err := strconv.ParseUint(bankAccountID, 10, 64)
+	// if accountID == 0 {
+	// 	log.Error("Failed create adrress data")
+	// 	return lib.CustomError(http.StatusBadGateway, "failed input data", "failed input data")
+	// }
+	// params["bank_account_key"] = bankAccountID
 
 	// Create Request
+	
 	dateNow := time.Now().Format(layout)
 	paramsRequest := make(map[string]string)
 	paramsRequest["oa_status"] = "258"
@@ -918,9 +920,97 @@ func CreateOaPersonalData(c echo.Context) error {
 		bindInterface = append(bindInterface, bindVar[i])
 	}
 
-	status, err = models.CreateMultipleUdfValue(bindInterface)
+	if len(bindInterface) > 0{
+		status, err = models.CreateMultipleUdfValue(bindInterface)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+	bankAccountStr := c.FormValue("bank_account")
+	var bankAccountSlice []interface{}
+	err = json.Unmarshal([]byte(bankAccountStr), &bankAccountSlice)
 	if err != nil {
 		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Wrong input for parameter: bank_account")
+	}
+	if len(bankAccountSlice) == 0 {
+		log.Error("Missing required parameter: bank_account")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_account", "Missing required parameter: bank_account")
+	}
+	var bind []interface{}
+	
+	for _, val := range bankAccountSlice {
+
+		var row []string
+		paramsBank := make(map[string]string)
+		var bankAccountID string
+		valueMap := val.(map[string]interface{})
+		row = append(row, requestID)
+		if val, ok := valueMap["bank_account_key"]; ok {
+			bank, err := strconv.ParseUint(val.(string), 10, 64)
+			if err == nil && bank > 0 {
+				bankAccountID = val.(string)
+			}
+		} 
+		if bankAccountID == "" {
+			if val, ok := valueMap["bank_key"]; ok {
+				bank, err := strconv.ParseUint(val.(string), 10, 64)
+				if err == nil && bank > 0 {
+					paramsBank["bank_key"] = val.(string)
+				} else {
+					log.Error("Wrong input for parameter: bank_key")
+					return lib.CustomError(http.StatusBadRequest)
+				}
+			} else {
+				log.Error("Missing required parameter: bank_key")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_key", "Missing required parameter: bank_key")
+			}
+			if val, ok := valueMap["account_no"]; ok {
+				paramsBank["account_no"] = val.(string)	
+			} else {
+				log.Error("Missing required parameter: account_no")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_no", "Missing required parameter: account_no")
+			}
+			if val, ok := valueMap["account_name"]; ok {
+				paramsBank["account_holder_name"] = val.(string)
+			} else {
+				log.Error("Missing required parameter: account_name")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_name", "Missing required parameter: account_name")
+			}
+			if val, ok := valueMap["branch_name"]; ok {
+				paramsBank["branch_name"] = val.(string)
+			} else {
+				log.Error("Missing required parameter: branch_name")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: branch_name", "Missing required parameter: branch_name")
+			}		
+			paramsBank["currency_key"] = "1"
+			paramsBank["bank_account_type"] = "1"
+			paramsBank["rec_domain"] = "1"
+			paramsBank["rec_status"] = "1"
+			paramsBank["rec_created_date"] = dateNow
+			paramsBank["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+			status, err, bankAccountID = models.CreateMsBankAccount(paramsBank)
+			if err != nil {
+				log.Error("Failed create adrress data: " + err.Error())
+				return lib.CustomError(status, err.Error(), "failed input data")
+			}
+		}
+		row = append(row, bankAccountID)
+		if val, ok := valueMap["flag_priority"]; ok {
+			row = append(row, val.(string))
+		} else {
+			row = append(row, "0")
+		}
+		row = append(row, paramsBank["account_holder_name"])
+		row = append(row, "1")
+		row = append(row, dateNow)
+		row = append(row, strconv.FormatUint(lib.Profile.UserID, 10))
+		bind = append(bind, row)
+	}
+
+	status, err = models.CreateMultipleOaRequestBankAccount(bind)
+	if err != nil {
+		log.Error("Failed input data: ", err.Error())
 	}
 
 	responseData := make(map[string]string)
@@ -936,9 +1026,12 @@ func CreateOaPersonalData(c echo.Context) error {
 func GetOaPersonalData(c echo.Context) error {
 
 	var oaRequestDB []models.OaRequest
+	userLoginKey := strconv.FormatUint(lib.Profile.UserID, 10)
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params := make(map[string]string)
-	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["user_login_key"] = userLoginKey
 	params["orderBy"] = "oa_request_key"
+	params["oa_status"] = "1"
 	params["rec_status"] = "1"
 	params["orderType"] = "DESC"
 	status, err := models.GetAllOaRequest(&oaRequestDB, 0, 0, true, params)
@@ -1071,33 +1164,45 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["beneficial_full_name"] = personalDataDB.BeneficialFullName
 	responseData["beneficial_relation"] = personalDataDB.BeneficialRelation
 	responseData["sales_code"] = oaRequestDB[0].SalesCode
-	var bankAccountDB models.MsBankAccount
-	if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
-		_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
-		if err == nil {
+	var customerBankAcc []models.MsCustomerBankAccount
+	customerBankAccParams := make(map[string]string)
+	customerBankAccParams["customer_key"] = customerKey
+	customerBankAccParams["rec_status"] = "1"
+	status, err = models.GetAllMsCustomerBankAccount(&customerBankAcc, customerBankAccParams)
+	var bankAccountIDs []string
+	var priority uint64
+	if len(customerBankAcc) > 0 {
+		for _, val := range customerBankAcc {
+			bankAccountIDs = append(bankAccountIDs, strconv.FormatUint(val.BankAccountKey, 10))
+			if val.FlagPriority == 1 {
+				priority = val.BankAccountKey
+			}
+		}
+	} 
+
+	var bankAccountDB []models.MsBankAccount
+	var bankAccountDatas []interface{}
+	_, err = models.GetMsBankAccountIn(&bankAccountDB, bankAccountIDs, "bank_account_key")
+	if err == nil {
+		for _, val := range bankAccountDB {
 			bankAccount := make(map[string]interface{})
-			bankAccount["bank_key"] = bankAccountDB.BankKey
-			bankAccount["account_no"] = bankAccountDB.AccountNo
-			bankAccount["account_holder_name"] = bankAccountDB.AccountHolderName
-			bankAccount["branch_name"] = bankAccountDB.BranchName
-			responseData["bank_account"] = bankAccount
+			bankAccount["bank_account_key"] = val.BankAccountKey
+			bankAccount["bank_key"] = val.BankKey
+			bankAccount["account_no"] = val.AccountNo
+			bankAccount["account_holder_name"] = val.AccountHolderName
+			bankAccount["branch_name"] = val.BranchName
+			bankAccount["flag_priority"] = 0
+			if val.BankAccountKey == priority {
+				bankAccount["flag_priority"] = 1
+			}
+			bankAccountDatas = append(bankAccountDatas, bankAccount)
 		}
 	}
+	responseData["bank_account"] = bankAccountDatas
 
-	var requestDB []models.OaRequest
-	paramRequest := make(map[string]string)
-	paramRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
-	paramRequest["orderBy"] = "oa_request_key"
-	paramRequest["orderType"] = "DESC"
-	_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
-	request := requestDB[0]
 	var quizDB []models.OaRiskProfileQuiz
 	paramQuiz := make(map[string]string)
-	paramQuiz["oa_request_key"] = strconv.FormatUint(request.OaRequestKey, 10)
+	paramQuiz["oa_request_key"] = requestKey
 	paramQuiz["orderBy"] = "oa_request_key"
 	paramQuiz["orderType"] = "DESC"
 	_, err = models.GetAllOaRiskProfileQuiz(&quizDB, 100, 0, paramQuiz, true)
@@ -1107,7 +1212,7 @@ func GetOaPersonalData(c echo.Context) error {
 	}
 
 	var risk models.OaRiskProfile
-	_, err = models.GetOaRiskProfile(&risk, strconv.FormatUint(request.OaRequestKey, 10), "oa_request_key")
+	_, err = models.GetOaRiskProfile(&risk, requestKey, "oa_request_key")
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")

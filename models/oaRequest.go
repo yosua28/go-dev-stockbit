@@ -317,7 +317,11 @@ func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, 
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
+			if field == "oa_status" && value == "1"{
+				whereClause = append(whereClause, "oa_request.oa_status > 259")	
+			} else {
+				whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
+			}
 		}
 	}
 

@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	log "github.com/sirupsen/logrus"
+	"github.com/jmoiron/sqlx"
 )
 
 type OaRequestBankAccount struct {
@@ -143,5 +144,37 @@ func GetOaRequestBankByField(c *[]OaRequestByField, field string, value string) 
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func CreateMultipleOaRequestBankAccount(params []interface{}) (int, error) {
+
+	q := `INSERT INTO oa_request_bank_account (
+		oa_request_key, 
+		bank_account_key,
+		flag_priority,
+		bank_account_name,
+		rec_status,
+		rec_created_date,
+		rec_created_by) VALUES `
+
+	for i := 0; i < len(params); i++ {
+		q += "(?)"
+		if i < (len(params) - 1) {
+			q += ","
+		}
+	}
+	log.Info(q)
+	query, args, err := sqlx.In(q, params...)
+	if err != nil {
+		return http.StatusBadGateway, err
+	}
+
+	query = db.Db.Rebind(query)
+	_, err = db.Db.Query(query, args...)
+	if err != nil {
+		log.Error(err.Error())
+		return http.StatusBadGateway, err
+	}
 	return http.StatusOK, nil
 }

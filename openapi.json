@@ -1980,16 +1980,7 @@
                   "beneficial_relation_other": {
                     "type": "string"
                   },
-                  "bank_key": {
-                    "type": "integer"
-                  },
-                  "account_no": {
-                    "type": "string"
-                  },
-                  "account_name": {
-                    "type": "string"
-                  },
-                  "branch_name": {
+                  "bank_account": {
                     "type": "string"
                   }
                 }
