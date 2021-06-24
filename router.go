@@ -360,6 +360,13 @@ func router() *echo.Echo {
 
 	//Admin Menu
 	admin.GET("/menu-list", controllers.AdminGetListMenu).Name = "AdminGetListMenu"
+	admin.POST("/menu/delete", controllers.AdminDeleteMenu).Name = "AdminDeleteMenu"
+
+	//Admin Menu Type
+	admin.GET("/menu-type-dropdown", controllers.AdminGetListScMenuTypeDropdown).Name = "AdminGetListScMenuTypeDropdown"
+
+	//Admin App Module
+	admin.GET("/app-module-dropdown", controllers.AdminGetListScAppModuleDropdown).Name = "AdminGetListScAppModuleDropdown"
 	return e
 }
 

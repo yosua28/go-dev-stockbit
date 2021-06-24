@@ -357,3 +357,38 @@ func CountAdminGetListMenu(c *CountData, params map[string]string, searchLike st
 
 	return http.StatusOK, nil
 }
+
+func UpdateScMenu(params map[string]string) (int, error) {
+	query := "UPDATE sc_menu SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "menu_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE menu_key = " + params["menu_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}

@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -219,5 +220,37 @@ func AdminGetListMenu(c echo.Context) error {
 	response.Pagination = pagination
 	response.Data = menu
 
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminDeleteMenu(c echo.Context) error {
+	var err error
+
+	params := make(map[string]string)
+
+	keyStr := c.FormValue("menu_key")
+	key, _ := strconv.ParseUint(keyStr, 10, 64)
+	if key == 0 {
+		log.Error("Missing required parameter: menu_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: menu_key", "Missing required parameter: menu_key")
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["menu_key"] = keyStr
+	params["rec_status"] = "0"
+	params["rec_deleted_date"] = time.Now().Format(dateLayout)
+	params["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+	_, err = models.UpdateScMenu(params)
+	if err != nil {
+		log.Error("Error update tr transaction")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 }
