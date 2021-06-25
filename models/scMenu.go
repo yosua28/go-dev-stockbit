@@ -392,3 +392,68 @@ func UpdateScMenu(params map[string]string) (int, error) {
 	tx.Commit()
 	return http.StatusOK, nil
 }
+
+func CreateScMenu(params map[string]string) (int, error) {
+	query := "INSERT INTO sc_menu"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func CountScMenuValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+	query := `SELECT 
+				COUNT(menu_key) AS count_data 
+			FROM sc_menu
+			WHERE ` + field + ` = '` + value + `'`
+
+	if menuKey != "" {
+		query += " AND menu_key != '" + menuKey + "'"
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetScMenu(c *ScMenu, key string) (int, error) {
+	query := `SELECT sc_menu.* FROM sc_menu WHERE sc_menu.rec_status = 1 AND sc_menu.menu_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

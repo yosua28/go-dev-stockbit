@@ -26501,6 +26501,196 @@
         }
       }
     },
+    "/admin/menu/create": {
+      "post": {
+        "description": "Create Menu",
+        "tags": [
+          "Menu Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "menu_parent": {
+                    "type": "integer"
+                  },
+                  "app_module_key": {
+                    "type": "integer"
+                  },
+                  "menu_code": {
+                    "type": "string"
+                  },
+                  "menu_name": {
+                    "type": "string"
+                  },
+                  "menu_page": {
+                    "type": "string"
+                  },
+                  "menu_url": {
+                    "type": "string"
+                  },
+                  "menu_type_key": {
+                    "type": "integer"
+                  },
+                  "menu_desc": {
+                    "type": "string"
+                  },
+                  "rec_order": {
+                    "type": "integer"
+                  },
+                  "icon": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "app_module_key",
+                  "menu_code",
+                  "menu_name",
+                  "menu_type_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
+    "/admin/menu/update": {
+      "post": {
+        "description": "Update Menu",
+        "tags": [
+          "Menu Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "menu_key": {
+                    "type": "integer"
+                  },
+                  "menu_parent": {
+                    "type": "integer"
+                  },
+                  "app_module_key": {
+                    "type": "integer"
+                  },
+                  "menu_code": {
+                    "type": "string"
+                  },
+                  "menu_name": {
+                    "type": "string"
+                  },
+                  "menu_page": {
+                    "type": "string"
+                  },
+                  "menu_url": {
+                    "type": "string"
+                  },
+                  "menu_type_key": {
+                    "type": "integer"
+                  },
+                  "menu_desc": {
+                    "type": "string"
+                  },
+                  "rec_order": {
+                    "type": "integer"
+                  },
+                  "icon": {
+                    "type": "string"
+                  }
+                },
+                "required": [
+                  "menu_key",
+                  "app_module_key",
+                  "menu_code",
+                  "menu_name",
+                  "menu_type_key"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Success register",
+            "content": {
+              "text/plain": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": ""
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Email is not valid"
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error get email"
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/menu-type-dropdown": {
       "get": {
         "description": "Get Menu Type Dropdown",
