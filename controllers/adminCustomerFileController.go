@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/labstack/echo"
@@ -73,7 +74,6 @@ func CustomerUpdateFile(c echo.Context) error {
 				}
 			}
 		}
-
 	}
 
 	dateLayout := "2006-01-02 15:04:05"
@@ -179,6 +179,27 @@ func CustomerUpdateFile(c echo.Context) error {
 					}
 				}
 			}
+		}
+	}
+
+	file_delete_key := c.FormValue("file_delete_key")
+	if file_delete_key != "" {
+		s := strings.Split(file_delete_key, ",")
+		var fileKey []string
+		for _, value := range s {
+			is := strings.TrimSpace(value)
+			if is != "" {
+				if _, ok := lib.Find(fileKey, is); !ok {
+					fileKey = append(fileKey, is)
+				}
+			}
+		}
+		if len(fileKey) > 0 {
+			paramDelete := make(map[string]string)
+			paramDelete["rec_status"] = "0"
+			paramDelete["rec_modified_date"] = time.Now().Format(dateLayout)
+			paramDelete["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+			_, _ = models.UpdateMsFileWithIn(paramDelete, fileKey, "file_key")
 		}
 	}
 

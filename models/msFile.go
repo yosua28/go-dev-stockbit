@@ -4,6 +4,7 @@ import (
 	"api/db"
 	"net/http"
 	"strconv"
+	"strings"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -211,5 +212,38 @@ func GetALlDetailMsFile(c *[]MsFileDetail, params map[string]string) (int, error
 		return http.StatusBadGateway, err
 	}
 
+	return http.StatusOK, nil
+}
+
+func UpdateMsFileWithIn(params map[string]string, value []string, field string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query := "UPDATE ms_file SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " IN(" + inQuery + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
 	return http.StatusOK, nil
 }
