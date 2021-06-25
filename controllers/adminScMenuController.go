@@ -421,6 +421,8 @@ func AdminUpdateMenu(c echo.Context) error {
 		}
 		params["menu_parent"] = menuParent
 		params["rec_attribute_id2"] = "CSidebarNavDropdown"
+	} else {
+		params["rec_attribute_id2"] = ""
 	}
 
 	appModuleKey := c.FormValue("app_module_key")
@@ -540,7 +542,6 @@ func AdminUpdateMenu(c echo.Context) error {
 
 func AdminDetailMenu(c echo.Context) error {
 	var err error
-	// var status int
 
 	menuKey := c.Param("menu_key")
 	if menuKey == "" {
@@ -560,11 +561,48 @@ func AdminDetailMenu(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Menu not found", "Menu not found")
 	}
 
+	responseData := make(map[string]interface{})
+	responseData["menu_key"] = menu.MenuKey
+	if menu.MenuParent != nil {
+		responseData["menu_parent"] = *menu.MenuParent
+	} else {
+		responseData["menu_parent"] = ""
+	}
+	responseData["app_module_key"] = menu.AppModuleKey
+	responseData["menu_code"] = menu.MenuCode
+	responseData["menu_name"] = menu.MenuName
+	if menu.MenuPage != nil {
+		responseData["menu_page"] = *menu.MenuPage
+	} else {
+		responseData["menu_page"] = ""
+	}
+	if menu.MenuURL != nil {
+		responseData["menu_url"] = *menu.MenuURL
+	} else {
+		responseData["menu_url"] = ""
+	}
+	responseData["menu_type_key"] = menu.MenuTypeKey
+	if menu.MenuDesc != nil {
+		responseData["menu_desc"] = *menu.MenuDesc
+	} else {
+		responseData["menu_desc"] = ""
+	}
+	if menu.RecOrder != nil {
+		responseData["rec_order"] = *menu.RecOrder
+	} else {
+		responseData["rec_order"] = ""
+	}
+	if menu.RecAttributeID1 != nil {
+		responseData["icon"] = *menu.RecAttributeID1
+	} else {
+		responseData["icon"] = ""
+	}
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
-	response.Data = ""
+	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
 }

@@ -363,6 +363,7 @@ func router() *echo.Echo {
 	admin.POST("/menu/delete", controllers.AdminDeleteMenu).Name = "AdminDeleteMenu"
 	admin.POST("/menu/create", controllers.AdminCreateMenu).Name = "AdminCreateMenu"
 	admin.POST("/menu/update", controllers.AdminUpdateMenu).Name = "AdminUpdateMenu"
+	admin.GET("/menu/detail/:menu_key", controllers.AdminDetailMenu).Name = "AdminDetailMenu"
 
 	//Admin Menu Type
 	admin.GET("/menu-type-dropdown", controllers.AdminGetListScMenuTypeDropdown).Name = "AdminGetListScMenuTypeDropdown"

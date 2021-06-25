@@ -26691,6 +26691,83 @@
         }
       }
     },
+    "/admin/menu/detail/{menu_key}": {
+      "get": {
+        "description": "Update Detail",
+        "tags": [
+          "Menu Admin"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "name": "menu_key",
+            "in": "path",
+            "description": "menu key",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Success",
+            "content": {
+              "application/json": {
+                "example": {
+                  "status": {
+                    "code": 200,
+                    "message_server": "OK",
+                    "message_client": "OK"
+                  },
+                  "data": {
+                    "menu_key": 139,
+                    "menu_parent": "",
+                    "app_module_key": 5,
+                    "menu_code": "L000",
+                    "menu_name": "TRANSAKSI MANUAL",
+                    "menu_page": "TRANSAKSI MANUAL",
+                    "menu_desc": "",
+                    "menu_type_key": 2,
+                    "menu_url": "#",
+                    "rec_order": "",
+                    "icon": "cil-cash"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "text/plain": {
+                "example": "Missing required parameter"
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "text/plain": {
+                "example": ""
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Error parsing data"
+              }
+            }
+          }
+        }
+      }
+    },
     "/admin/menu-type-dropdown": {
       "get": {
         "description": "Get Menu Type Dropdown",
