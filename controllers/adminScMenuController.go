@@ -243,8 +243,8 @@ func AdminDeleteMenu(c echo.Context) error {
 
 	_, err = models.UpdateScMenu(params)
 	if err != nil {
-		log.Error("Error update tr transaction")
-		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
+		log.Error("Error delete sc_menu")
+		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed delete data")
 	}
 
 	var response lib.Response

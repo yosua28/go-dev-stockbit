@@ -370,6 +370,13 @@ func router() *echo.Echo {
 
 	//Admin App Module
 	admin.GET("/app-module-dropdown", controllers.AdminGetListScAppModuleDropdown).Name = "AdminGetListScAppModuleDropdown"
+
+	//Admin Menu
+	admin.GET("/user-dept-list", controllers.GetListScUserDeptAdmin).Name = "GetListScUserDeptAdmin"
+	admin.POST("/user-dept/delete", controllers.AdminDeleteScUserDept).Name = "AdminDeleteScUserDept"
+	admin.POST("/user-dept/create", controllers.AdminCreateUserDept).Name = "AdminCreateUserDept"
+	admin.POST("/user-dept/update", controllers.AdminUpdateUserDept).Name = "AdminUpdateUserDept"
+	admin.GET("/user-dept/detail/:user_dept_key", controllers.AdminDetailUserDept).Name = "AdminDetailUserDept"
 	return e
 }
 
