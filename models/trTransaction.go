@@ -174,6 +174,10 @@ type CountData struct {
 	CountData int `db:"count_data"             json:"count_data"`
 }
 
+type NavValue struct {
+	NavValue *decimal.Decimal `db:"nav_value"              json:"nav_value"`
+}
+
 type AdminTransactionDetail struct {
 	TransactionKey              uint64                               `json:"transaction_key"`
 	Branch                      *BranchTrans                         `json:"branch"`
@@ -1258,6 +1262,28 @@ func AdminGetAllTrTransactionPosting(c *[]TrTransaction, params map[string]strin
 	// Main query
 	log.Println(query)
 	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminLastAvgNav(c *NavValue, productKey string, customerKey string, date string) (int, error) {
+	query := `SELECT 
+				tc.avg_nav AS nav_value
+			FROM tr_transaction AS t
+			INNER JOIN tr_transaction_confirmation AS tc ON tc.transaction_key = t.transaction_key AND tc.rec_status = '1'
+			WHERE t.product_key = '` + productKey + `' 
+			AND t.customer_key = '` + customerKey + `' 
+			AND t.nav_date <= '` + date + `' 
+			AND t.trans_status_key = '9'
+			ORDER BY tc.tc_key DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err

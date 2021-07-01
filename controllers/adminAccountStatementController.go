@@ -121,13 +121,27 @@ func AdminDetailAccountStatementCustomerProduct(c echo.Context) error {
 
 					endingbalance := make(map[string]interface{})
 					if err != nil {
+						var lastavgnav models.NavValue
+						_, err = models.AdminLastAvgNav(&lastavgnav, strconv.FormatUint(productKeyLast, 10), customerKey, dateakhir)
+						if err != nil {
+							endingbalance["avg_nav"] = nol
+						} else {
+							endingbalance["avg_nav"] = lastavgnav.NavValue.Truncate(2)
+						}
+
+						var lastnav models.NavValue
+						_, err = models.AdminLastNavValue(&lastnav, strconv.FormatUint(productKeyLast, 10), dateakhir)
+						if err != nil {
+							endingbalance["nav_value"] = nol
+						} else {
+							endingbalance["nav_value"] = lastnav.NavValue.Truncate(2)
+						}
+
 						dateParem, _ = time.Parse(layout, dateakhir)
 						endingbalance["date"] = dateParem.Format(newLayout)
 						endingbalance["description"] = "ENDING BALANCE"
 						endingbalance["amount"] = nol
-						endingbalance["nav_value"] = tr.NavValue.Truncate(2)
 						endingbalance["unit"] = nol
-						endingbalance["avg_nav"] = tr.AvgNav.Truncate(2)
 						endingbalance["fee"] = nol
 						transGroupProduct = append(transGroupProduct, endingbalance)
 					} else {
@@ -159,13 +173,26 @@ func AdminDetailAccountStatementCustomerProduct(c echo.Context) error {
 
 					beginning := make(map[string]interface{})
 					if err != nil {
+						var lastavgnav models.NavValue
+						_, err = models.AdminLastAvgNav(&lastavgnav, strconv.FormatUint(tr.ProductKey, 10), customerKey, dateawal)
+						if err != nil {
+							beginning["avg_nav"] = nol
+						} else {
+							beginning["avg_nav"] = lastavgnav.NavValue.Truncate(2)
+						}
+
+						var lastnav models.NavValue
+						_, err = models.AdminLastNavValue(&lastnav, strconv.FormatUint(tr.ProductKey, 10), dateawal)
+						if err != nil {
+							beginning["nav_value"] = nol
+						} else {
+							beginning["nav_value"] = lastnav.NavValue.Truncate(2)
+						}
 						dateParem, _ = time.Parse(layout, dateawal)
 						beginning["date"] = dateParem.Format(newLayout)
 						beginning["description"] = "BEGINNING BALANCE"
 						beginning["amount"] = nol
-						beginning["nav_value"] = tr.NavValue.Truncate(2)
 						beginning["unit"] = nol
-						beginning["avg_nav"] = tr.AvgNav.Truncate(2)
 						beginning["fee"] = nol
 						transGroupProduct = append(transGroupProduct, beginning)
 					} else {
@@ -212,13 +239,27 @@ func AdminDetailAccountStatementCustomerProduct(c echo.Context) error {
 
 						endingbalancelast := make(map[string]interface{})
 						if err != nil {
+
+							var lastavgnav models.NavValue
+							_, err = models.AdminLastAvgNav(&lastavgnav, strconv.FormatUint(productKeyLast, 10), customerKey, dateakhir)
+							if err != nil {
+								endingbalancelast["avg_nav"] = nol
+							} else {
+								endingbalancelast["avg_nav"] = lastavgnav.NavValue.Truncate(2)
+							}
+
+							var lastnav models.NavValue
+							_, err = models.AdminLastNavValue(&lastnav, strconv.FormatUint(productKeyLast, 10), dateakhir)
+							if err != nil {
+								endingbalancelast["nav_value"] = nol
+							} else {
+								endingbalancelast["nav_value"] = lastnav.NavValue.Truncate(2)
+							}
 							dateParem, _ = time.Parse(layout, dateakhir)
 							endingbalancelast["date"] = dateParem.Format(newLayout)
 							endingbalancelast["description"] = "ENDING BALANCE"
 							endingbalancelast["amount"] = nol
-							endingbalancelast["nav_value"] = tr.NavValue.Truncate(2)
 							endingbalancelast["unit"] = nol
-							endingbalancelast["avg_nav"] = tr.AvgNav.Truncate(2)
 							endingbalancelast["fee"] = nol
 							transGroupProduct = append(transGroupProduct, endingbalancelast)
 						} else {
@@ -272,13 +313,26 @@ func AdminDetailAccountStatementCustomerProduct(c echo.Context) error {
 
 						endingbalancelast := make(map[string]interface{})
 						if err != nil {
+							var lastavgnav models.NavValue
+							_, err = models.AdminLastAvgNav(&lastavgnav, strconv.FormatUint(productKeyLast, 10), customerKey, dateakhir)
+							if err != nil {
+								endingbalancelast["avg_nav"] = nol
+							} else {
+								endingbalancelast["avg_nav"] = lastavgnav.NavValue.Truncate(2)
+							}
+
+							var lastnav models.NavValue
+							_, err = models.AdminLastNavValue(&lastnav, strconv.FormatUint(productKeyLast, 10), dateakhir)
+							if err != nil {
+								endingbalancelast["nav_value"] = nol
+							} else {
+								endingbalancelast["nav_value"] = lastnav.NavValue.Truncate(2)
+							}
 							dateParem, _ = time.Parse(layout, dateakhir)
 							endingbalancelast["date"] = dateParem.Format(newLayout)
 							endingbalancelast["description"] = "ENDING BALANCE"
 							endingbalancelast["amount"] = nol
-							endingbalancelast["nav_value"] = tr.NavValue.Truncate(2)
 							endingbalancelast["unit"] = nol
-							endingbalancelast["avg_nav"] = tr.AvgNav.Truncate(2)
 							endingbalancelast["fee"] = nol
 							transGroupProduct = append(transGroupProduct, endingbalancelast)
 						} else {
@@ -307,13 +361,26 @@ func AdminDetailAccountStatementCustomerProduct(c echo.Context) error {
 
 				beginning := make(map[string]interface{})
 				if err != nil {
+					var lastavgnav models.NavValue
+					_, err = models.AdminLastAvgNav(&lastavgnav, strconv.FormatUint(tr.ProductKey, 10), customerKey, dateawal)
+					if err != nil {
+						beginning["avg_nav"] = nol
+					} else {
+						beginning["avg_nav"] = lastavgnav.NavValue.Truncate(2)
+					}
+
+					var lastnav models.NavValue
+					_, err = models.AdminLastNavValue(&lastnav, strconv.FormatUint(tr.ProductKey, 10), dateawal)
+					if err != nil {
+						beginning["nav_value"] = nol
+					} else {
+						beginning["nav_value"] = lastnav.NavValue.Truncate(2)
+					}
 					dateParem, _ = time.Parse(layout, dateawal)
 					beginning["date"] = dateParem.Format(newLayout)
 					beginning["description"] = "BEGINNING BALANCE"
 					beginning["amount"] = nol
-					beginning["nav_value"] = tr.NavValue.Truncate(2)
 					beginning["unit"] = nol
-					beginning["avg_nav"] = tr.AvgNav.Truncate(2)
 					beginning["fee"] = nol
 					transGroupProduct = append(transGroupProduct, beginning)
 				} else {
@@ -360,13 +427,26 @@ func AdminDetailAccountStatementCustomerProduct(c echo.Context) error {
 
 					endingbalancelast := make(map[string]interface{})
 					if err != nil {
+						var lastavgnav models.NavValue
+						_, err = models.AdminLastAvgNav(&lastavgnav, strconv.FormatUint(tr.ProductKey, 10), customerKey, dateakhir)
+						if err != nil {
+							endingbalancelast["avg_nav"] = nol
+						} else {
+							endingbalancelast["avg_nav"] = lastavgnav.NavValue.Truncate(2)
+						}
+
+						var lastnav models.NavValue
+						_, err = models.AdminLastNavValue(&lastnav, strconv.FormatUint(tr.ProductKey, 10), dateakhir)
+						if err != nil {
+							endingbalancelast["nav_value"] = nol
+						} else {
+							endingbalancelast["nav_value"] = lastnav.NavValue.Truncate(2)
+						}
 						dateParem, _ = time.Parse(layout, dateakhir)
 						endingbalancelast["date"] = dateParem.Format(newLayout)
 						endingbalancelast["description"] = "ENDING BALANCE"
 						endingbalancelast["amount"] = nol
-						endingbalancelast["nav_value"] = tr.NavValue.Truncate(2)
 						endingbalancelast["unit"] = nol
-						endingbalancelast["avg_nav"] = tr.AvgNav.Truncate(2)
 						endingbalancelast["fee"] = nol
 						transGroupProduct = append(transGroupProduct, endingbalancelast)
 					} else {

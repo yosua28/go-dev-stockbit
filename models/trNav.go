@@ -388,3 +388,21 @@ func GetNavByProductKeyAndNavDateExcept(c *TrNav, productKey string, navDate str
 
 	return http.StatusOK, nil
 }
+
+func AdminLastNavValue(c *NavValue, productKey string, date string) (int, error) {
+	query := `SELECT 
+				nav_value 
+			FROM tr_nav
+			WHERE nav_date <= '` + date + `' AND product_key = '` + productKey + `' AND rec_status = '1' AND nav_status = '231'
+			ORDER BY nav_date DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
