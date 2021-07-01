@@ -4,6 +4,7 @@ import (
 	"api/db"
 	"database/sql"
 	"net/http"
+	"strconv"
 
 	log "github.com/sirupsen/logrus"
 )
@@ -124,6 +125,239 @@ func GetAllScAppConfig(c *[]ScAppConfig, params map[string]string) (int, error) 
 	if err != nil {
 		log.Println(err)
 		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type ListScAppConfig struct {
+	AppConfigKey      uint64  `db:"app_config_key"        json:"app_config_key"`
+	ConfigTypeCode    *string `db:"config_type_code"      json:"config_type_code"`
+	AppConfigCode     *string `db:"app_config_code"       json:"app_config_code"`
+	AppConfigName     *string `db:"app_config_name"       json:"app_config_name"`
+	AppConfigDesc     *string `db:"app_config_desc"       json:"app_config_desc"`
+	AppConfigDatatype *string `db:"app_config_datatype"   json:"app_config_datatype"`
+	AppConfigValue    *string `db:"app_config_value"      json:"app_config_value"`
+}
+
+func AdminGetListScAppConfig(c *[]ListScAppConfig, limit uint64, offset uint64, params map[string]string, searchLike string, nolimit bool) (int, error) {
+	var present bool
+	var whereClause []string
+	var condition string
+	var limitOffset string
+	var orderCondition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (ct.config_type_code like '%" + searchLike + "%' OR"
+		condition += " c.app_config_code like '%" + searchLike + "%' OR"
+		condition += " c.app_config_name like '%" + searchLike + "%' OR"
+		condition += " c.app_config_desc like '%" + searchLike + "%' OR"
+		condition += " c.app_config_datatype like '%" + searchLike + "%' OR"
+		condition += " c.app_config_value like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT
+				c.app_config_key,
+				ct.config_type_code,
+				c.app_config_code,
+				c.app_config_name,
+				c.app_config_desc,
+				c.app_config_datatype,
+				c.app_config_value
+			FROM sc_app_config AS c
+			INNER JOIN sc_app_config_type AS ct ON c.config_type_key = ct.config_type_key
+			WHERE c.rec_status = 1 ` + condition
+
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		orderCondition += " ORDER BY c." + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			orderCondition += " " + orderType
+		}
+	}
+
+	if !nolimit {
+		limitOffset += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			limitOffset += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	query += orderCondition + limitOffset
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetListScAppConfig(c *CountData, params map[string]string, searchLike string) (int, error) {
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (ct.config_type_code like '%" + searchLike + "%' OR"
+		condition += " c.app_config_code like '%" + searchLike + "%' OR"
+		condition += " c.app_config_name like '%" + searchLike + "%' OR"
+		condition += " c.app_config_desc like '%" + searchLike + "%' OR"
+		condition += " c.app_config_datatype like '%" + searchLike + "%' OR"
+		condition += " c.app_config_value like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT
+				count(c.app_config_key) AS count_data 
+			FROM sc_app_config AS c
+			INNER JOIN sc_app_config_type AS ct ON c.config_type_key = ct.config_type_key
+			WHERE c.rec_status = 1 ` + condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateScAppConfig(params map[string]string) (int, error) {
+	query := "UPDATE sc_app_config SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "app_config_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE app_config_key = " + params["app_config_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}
+
+func CreateScAppConfig(params map[string]string) (int, error) {
+	query := "INSERT INTO sc_app_config"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func CountScAppConfigValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+	query := `SELECT 
+				COUNT(app_config_key) AS count_data 
+			FROM sc_app_config
+			WHERE ` + field + ` = '` + value + `'`
+
+	if menuKey != "" {
+		query += " AND app_config_key != '" + menuKey + "'"
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetScAppConfig(c *ScAppConfig, key string) (int, error) {
+	query := `SELECT sc_app_config.* FROM sc_app_config WHERE rec_status = 1 AND app_config_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
 	}
 
 	return http.StatusOK, nil

@@ -377,6 +377,20 @@ func router() *echo.Echo {
 	admin.POST("/user-dept/create", controllers.AdminCreateUserDept).Name = "AdminCreateUserDept"
 	admin.POST("/user-dept/update", controllers.AdminUpdateUserDept).Name = "AdminUpdateUserDept"
 	admin.GET("/user-dept/detail/:user_dept_key", controllers.AdminDetailUserDept).Name = "AdminDetailUserDept"
+
+	//Admin Account Statement
+	admin.GET("/account-statement-customer-product", controllers.AdminDetailAccountStatementCustomerProduct).Name = "AdminDetailAccountStatementCustomerProduct"
+
+	//Admin Sc App Config
+	admin.GET("/app-config-list", controllers.AdminGetListScAppConfig).Name = "AdminGetListScAppConfig"
+	admin.POST("/app-config/delete", controllers.AdminDeleteScAppConfig).Name = "AdminDeleteScAppConfig"
+	admin.POST("/app-config/create", controllers.AdminCreateScAppConfig).Name = "AdminCreateScAppConfig"
+	admin.POST("/app-config/update", controllers.AdminUpdateScAppConfig).Name = "AdminUpdateScAppConfig"
+	admin.GET("/app-config/detail/:app_config_key", controllers.AdminDetailScAppConfig).Name = "AdminDetailScAppConfig"
+
+	//Admin Sc App Config Type
+	admin.GET("/app-config-type-dropdown", controllers.AdminGetListDropdownScAppConfigType).Name = "AdminGetListDropdownScAppConfigType"
+
 	return e
 }
 

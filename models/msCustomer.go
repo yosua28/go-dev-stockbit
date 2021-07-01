@@ -914,3 +914,45 @@ func GetCustomerRedemptionDropdown(c *[]CustomerDropdown, params map[string]stri
 
 	return http.StatusOK, nil
 }
+
+type HeaderCustomerDetailAccountStatement struct {
+	CustomerKey uint64 `db:"customer_key"       json:"customer_key"`
+	Cif         string `db:"cif"                json:"cif"`
+	FullName    string `db:"full_name"          json:"full_name"`
+	Sid         string `db:"sid"                json:"sid"`
+	Address     string `db:"address"            json:"address"`
+}
+
+func GetHeaderCustomerDetailAccountStatement(c *HeaderCustomerDetailAccountStatement, customerKey string) (int, error) {
+	query := `SELECT 
+				c.customer_key,
+				(CASE
+					WHEN c.unit_holder_idno IS NOT NULL THEN c.unit_holder_idno
+					ELSE ""
+				END) AS cif,
+				c.full_name,
+				(CASE
+					WHEN c.sid_no IS NOT NULL THEN c.sid_no
+					ELSE ""
+				END) AS sid,
+				(CASE
+					WHEN ad.address_line1 IS NOT NULL THEN ad.address_line1
+					ELSE ""
+				END) AS address 
+			FROM oa_request AS oa 
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = oa.oa_request_key
+			INNER JOIN ms_customer AS c ON c.customer_key = oa.customer_key
+			INNER JOIN oa_postal_address AS ad ON ad.postal_address_key = pd.idcard_address_key
+			WHERE oa.oa_status > 259 AND oa.customer_key = '` + customerKey + `'
+			ORDER BY oa.oa_request_key DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
