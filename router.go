@@ -380,6 +380,7 @@ func router() *echo.Echo {
 
 	//Admin Account Statement
 	admin.GET("/account-statement-customer-product", controllers.AdminDetailAccountStatementCustomerProduct).Name = "AdminDetailAccountStatementCustomerProduct"
+	admin.GET("/account-statement-customer-agent", controllers.AdminDetailAccountStatementCustomerAgent).Name = "AdminDetailAccountStatementCustomerAgent"
 
 	//Admin Sc App Config
 	admin.GET("/app-config-list", controllers.AdminGetListScAppConfig).Name = "AdminGetListScAppConfig"

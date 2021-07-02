@@ -277,7 +277,7 @@ type BeginningEndingBalance struct {
 	Fee         *decimal.Decimal `db:"fee"             json:"fee"`
 }
 
-func GetBeginningEndingBalance(c *BeginningEndingBalance, desc string, date string, accKey string, productKey string) (int, error) {
+func GetBeginningEndingBalanceAcc(c *BeginningEndingBalance, desc string, date string, accKey string, productKey string) (int, error) {
 	query := `SELECT
 				DATE_FORMAT('` + date + `', '%d %M %Y') AS tgl,
 				'` + desc + `' AS description,
@@ -294,6 +294,49 @@ func GetBeginningEndingBalance(c *BeginningEndingBalance, desc string, date stri
 					WHERE balance_key IN (
 					SELECT MAX(balance_key) AS id 
 						FROM tr_balance WHERE aca_key IN (SELECT aca_key FROM tr_account_agent WHERE acc_key = '` + accKey + `') 
+						AND balance_date <= '` + date + `'
+						GROUP BY tc_key
+					) ORDER BY balance_key
+				) AS t 
+			LEFT JOIN (
+					SELECT 
+						*
+					FROM tr_nav
+					WHERE nav_key = (
+					SELECT MAX(nav_key) AS id 
+						FROM tr_nav WHERE nav_date <= '` + date + `' AND product_key = '` + productKey + `'
+					) ORDER BY nav_key
+				) AS nv ON 1=1
+			GROUP BY nv.product_key`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func GetBeginningEndingBalanceAca(c *BeginningEndingBalance, desc string, date string, acaKey string, productKey string) (int, error) {
+	query := `SELECT
+				DATE_FORMAT('` + date + `', '%d %M %Y') AS tgl,
+				'` + desc + `' AS description,
+				(nv.nav_value * SUM(t.balance_unit)) AS amount,
+				nv.nav_value,
+				SUM(t.balance_unit) AS unit,
+				t.avg_nav,
+				0 AS fee
+			FROM
+				(
+					SELECT 
+						*
+					FROM tr_balance 
+					WHERE balance_key IN (
+					SELECT MAX(balance_key) AS id 
+						FROM tr_balance WHERE aca_key  = '` + acaKey + `' 
 						AND balance_date <= '` + date + `'
 						GROUP BY tc_key
 					) ORDER BY balance_key

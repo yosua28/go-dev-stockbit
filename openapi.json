@@ -26654,7 +26654,7 @@
                   ]
                 }
               }
-            },
+            }
           },
           "responses": {
             "200": {
@@ -27508,288 +27508,239 @@
                             "product_id": 3,
                             "product_name": "Dana Likuid"
                           }
-                        },
+                        }
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/account-statement-customer-agent": {
+        "get": {
+          "description": "Get List Detail Account Statement Customer Agent",
+          "tags": [
+            "Account Statement"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "customer_key",
+              "in": "query",
+              "description": "Parameter search with condition = customer_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "date_from",
+              "in": "query",
+              "description": "date_from",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "2020-03-30"
+              }
+            },
+            {
+              "name": "date_to",
+              "in": "query",
+              "description": "date_to",
+              "required": true,
+              "schema": {
+                "type": "string",
+                "example": "2021-03-30"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "header": {
+                        "address": "Jl Bambu Mas Raya I/14",
+                        "cif": "202010000001",
+                        "customer_key": 55,
+                        "date_from": "30 Mar 2020",
+                        "date_to": "30 Mar 2021",
+                        "full_name": "Annafrid MP Nikijuluw",
+                        "sid": ""
+                      },
+                      "transaction": [
                         {
-                          "count": {
-                            "redm": 34331563,
-                            "subs": 50000000
-                          },
-                          "list": [
+                          "data": [
                             {
-                              "amount": 0,
-                              "avg_nav": 0,
-                              "date": "30 Mar 2020",
-                              "description": "BEGINNING BALANCE",
-                              "fee": 0,
-                              "nav_value": 2556.24,
-                              "unit": 0
+                              "count": {
+                                "nettsubs": 1948026,
+                                "redm": 26231563,
+                                "subs": 50000000
+                              },
+                              "sales": {
+                                "sales_code": "303",
+                                "sales_name": "SALES MNC DUIT"
+                              },
+                              "transaksi": [
+                                {
+                                  "amount": 0,
+                                  "avg_nav": 0,
+                                  "date": "30 Mar 2021",
+                                  "description": "BEGINNING BALANCE",
+                                  "fee": 0,
+                                  "nav_value": 2556.24,
+                                  "unit": 0
+                                },
+                                {
+                                  "amount": 894052,
+                                  "avg_nav": 2727.56,
+                                  "date": "08 December 2020",
+                                  "description": "RED",
+                                  "fee": 447026,
+                                  "nav_value": 2696.74,
+                                  "unit": 333.85
+                                },
+                                {
+                                  "amount": 15000000,
+                                  "avg_nav": 2727.56,
+                                  "date": "04 December 2020",
+                                  "description": "RED",
+                                  "fee": 0,
+                                  "nav_value": 2650.26,
+                                  "unit": 10000
+                                },
+                                {
+                                  "amount": 50000000,
+                                  "avg_nav": 2727.56,
+                                  "date": "26 November 2020",
+                                  "description": "SUB",
+                                  "fee": 1500000,
+                                  "nav_value": 2668.75,
+                                  "unit": 18735.32
+                                },
+                                {
+                                  "amount": 5000000,
+                                  "avg_nav": 2727.56,
+                                  "date": "07 December 2020",
+                                  "description": "SWTOT",
+                                  "fee": 0,
+                                  "nav_value": 2687.26,
+                                  "unit": 3125
+                                },
+                                {
+                                  "amount": 5337511,
+                                  "avg_nav": 2727.56,
+                                  "date": "26 November 2020",
+                                  "description": "RED",
+                                  "fee": 1000,
+                                  "nav_value": 2668.75,
+                                  "unit": 2000
+                                },
+                                {
+                                  "amount": 762996,
+                                  "avg_nav": 2727.56,
+                                  "date": "30 March 2021",
+                                  "description": "ENDING BALANCE",
+                                  "fee": 0,
+                                  "nav_value": 2759.75,
+                                  "unit": 276.47
+                                }
+                              ]
                             },
                             {
-                              "amount": 5337511,
-                              "avg_nav": 2727.56,
-                              "date": "26 November 2020",
-                              "description": "RED",
-                              "fee": 1000,
-                              "nav_value": 2668.75,
-                              "unit": 2000
-                            },
-                            {
-                              "amount": 50000000,
-                              "avg_nav": 2727.56,
-                              "date": "26 November 2020",
-                              "description": "SUB",
-                              "fee": 1500000,
-                              "nav_value": 2668.75,
-                              "unit": 18735.32
-                            },
-                            {
-                              "amount": 15000000,
-                              "avg_nav": 2727.56,
-                              "date": "04 December 2020",
-                              "description": "RED",
-                              "fee": 0,
-                              "nav_value": 2650.26,
-                              "unit": 10000
-                            },
-                            {
-                              "amount": 5000000,
-                              "avg_nav": 2727.56,
-                              "date": "07 December 2020",
-                              "description": "SWTOT",
-                              "fee": 0,
-                              "nav_value": 2687.26,
-                              "unit": 3125
-                            },
-                            {
-                              "amount": 894052,
-                              "avg_nav": 2727.56,
-                              "date": "08 December 2020",
-                              "description": "RED",
-                              "fee": 447026,
-                              "nav_value": 2696.74,
-                              "unit": 333.85
-                            },
-                            {
-                              "amount": 2700000,
-                              "avg_nav": 2727.56,
-                              "date": "10 December 2020",
-                              "description": "SWTOT",
-                              "fee": 0,
-                              "nav_value": 2700,
-                              "unit": 1000
-                            },
-                            {
-                              "amount": 5400000,
-                              "avg_nav": 2727.56,
-                              "date": "10 December 2020",
-                              "description": "RED",
-                              "fee": 0,
-                              "nav_value": 2700,
-                              "unit": 2000
-                            },
-                            {
-                              "amount": 762996,
-                              "avg_nav": 2727.56,
-                              "date": "30 March 2021",
-                              "description": "ENDING BALANCE",
-                              "fee": 0,
-                              "nav_value": 2759.75,
-                              "unit": 276.47
+                              "count": {
+                                "nettsubs": 0,
+                                "redm": 8100000,
+                                "subs": 0
+                              },
+                              "sales": {
+                                "sales_code": "132",
+                                "sales_name": "SALES HO MAM-GROUP"
+                              },
+                              "transaksi": [
+                                {
+                                  "amount": 0,
+                                  "avg_nav": 0,
+                                  "date": "30 Mar 2021",
+                                  "description": "BEGINNING BALANCE",
+                                  "fee": 0,
+                                  "nav_value": 2556.24,
+                                  "unit": 0
+                                },
+                                {
+                                  "amount": 5400000,
+                                  "avg_nav": 2727.56,
+                                  "date": "10 December 2020",
+                                  "description": "RED",
+                                  "fee": 0,
+                                  "nav_value": 2700,
+                                  "unit": 2000
+                                },
+                                {
+                                  "amount": 2700000,
+                                  "avg_nav": 2727.56,
+                                  "date": "10 December 2020",
+                                  "description": "SWTOT",
+                                  "fee": 0,
+                                  "nav_value": 2700,
+                                  "unit": 1000
+                                },
+                                {
+                                  "amount": 0,
+                                  "avg_nav": 2727.56,
+                                  "date": "30 Mar 2021",
+                                  "description": "ENDING BALANCE",
+                                  "fee": 0,
+                                  "nav_value": 2746.28,
+                                  "unit": 0
+                                }
+                              ]
                             }
                           ],
                           "product": {
+                            "amount": 414708.99,
                             "currency": "IDR",
-                            "product_bank_account_name": "REKSA DANA MNC DANA EKUITAS",
-                            "product_bank_account_no": "0206.01.002705.30.1",
-                            "product_bank_name": "BRI",
-                            "product_code": "BBE",
+                            "nav_value": 1500,
                             "product_id": 5,
-                            "product_name": "Dana Ekuitas"
-                          }
-                        },
-                        {
-                          "count": {
-                            "redm": 0,
-                            "subs": 2700000
-                          },
-                          "list": [
-                            {
-                              "amount": 0,
-                              "avg_nav": 0,
-                              "date": "30 Mar 2020",
-                              "description": "BEGINNING BALANCE",
-                              "fee": 0,
-                              "nav_value": 805.4,
-                              "unit": 0
-                            },
-                            {
-                              "amount": 2700000,
-                              "avg_nav": 0,
-                              "date": "10 December 2020",
-                              "description": "SWTIN",
-                              "fee": 0,
-                              "nav_value": 999.5,
-                              "unit": 2701.35
-                            },
-                            {
-                              "amount": 2622439,
-                              "avg_nav": 0,
-                              "date": "30 March 2021",
-                              "description": "ENDING BALANCE",
-                              "fee": 0,
-                              "nav_value": 970.78,
-                              "unit": 2701.35
-                            }
-                          ],
-                          "product": {
-                            "currency": "IDR",
-                            "product_bank_account_name": "REKSA DANA MNC DANA KOMBINASI ICON",
-                            "product_bank_account_no": "0206.01.003944.30.6",
-                            "product_bank_name": "BRI",
-                            "product_code": "ICON",
-                            "product_id": 7,
-                            "product_name": "Dana Kombinasi Icon"
-                          }
-                        },
-                        {
-                          "count": {
-                            "redm": 0,
-                            "subs": 1000000
-                          },
-                          "list": [
-                            {
-                              "amount": 0,
-                              "avg_nav": 0,
-                              "date": "30 Mar 2020",
-                              "description": "BEGINNING BALANCE",
-                              "fee": 0,
-                              "nav_value": 620.14,
-                              "unit": 0
-                            },
-                            {
-                              "amount": 1000000,
-                              "avg_nav": 854.57,
-                              "date": "02 December 2020",
-                              "description": "SUB",
-                              "fee": 5000,
-                              "nav_value": 848.37,
-                              "unit": 1176.02
-                            },
-                            {
-                              "amount": 1058352,
-                              "avg_nav": 854.57,
-                              "date": "30 March 2021",
-                              "description": "ENDING BALANCE",
-                              "fee": 0,
-                              "nav_value": 899.94,
-                              "unit": 1176.02
-                            }
-                          ],
-                          "product": {
-                            "currency": "IDR",
-                            "product_bank_account_name": "REKSA DANA MNC DANA SYARIAH EKUITAS",
-                            "product_bank_account_no": "0206.01.004041.305",
-                            "product_bank_name": "BRI",
-                            "product_code": "MDSE",
-                            "product_id": 9,
-                            "product_name": "Dana Syariah Ekuitas"
-                          }
-                        },
-                        {
-                          "count": {
-                            "redm": 3192000,
-                            "subs": 10000000
-                          },
-                          "list": [
-                            {
-                              "amount": 0,
-                              "avg_nav": 0,
-                              "date": "30 Mar 2020",
-                              "description": "BEGINNING BALANCE",
-                              "fee": 0,
-                              "nav_value": 1168.12,
-                              "unit": 0
-                            },
-                            {
-                              "amount": 10000000,
-                              "avg_nav": 1344.22,
-                              "date": "04 December 2020",
-                              "description": "SUB",
-                              "fee": 0,
-                              "nav_value": 1320.83,
-                              "unit": 7439.23
-                            },
-                            {
-                              "amount": 3192000,
-                              "avg_nav": 1344.22,
-                              "date": "07 December 2020",
-                              "description": "SWTOT",
-                              "fee": 0,
-                              "nav_value": 1322.5,
-                              "unit": 2400
-                            },
-                            {
-                              "amount": 6664443,
-                              "avg_nav": 1344.22,
-                              "date": "30 March 2021",
-                              "description": "ENDING BALANCE",
-                              "fee": 0,
-                              "nav_value": 1322.5,
-                              "unit": 5039.23
-                            }
-                          ],
-                          "product": {
-                            "currency": "IDR",
-                            "product_bank_account_name": "REKSA DANA MNC DANA SBN",
-                            "product_bank_account_no": "4582897925",
-                            "product_bank_name": "BCA",
-                            "product_code": "MNCSBN",
-                            "product_id": 20,
-                            "product_name": "Dana SBN"
-                          }
-                        },
-                        {
-                          "count": {
-                            "redm": 0,
-                            "subs": 5000000
-                          },
-                          "list": [
-                            {
-                              "amount": 0,
-                              "avg_nav": 0,
-                              "date": "30 Mar 2020",
-                              "description": "BEGINNING BALANCE",
-                              "fee": 0,
-                              "nav_value": 607.51,
-                              "unit": 0
-                            },
-                            {
-                              "amount": 5000000,
-                              "avg_nav": 785,
-                              "date": "07 December 2020",
-                              "description": "SWTIN",
-                              "fee": 0,
-                              "nav_value": 792.75,
-                              "unit": 6369.42
-                            },
-                            {
-                              "amount": 6664443,
-                              "avg_nav": 1344.22,
-                              "date": "30 March 2021",
-                              "description": "ENDING BALANCE",
-                              "fee": 0,
-                              "nav_value": 1322.5,
-                              "unit": 5039.23
-                            }
-                          ],
-                          "product": {
-                            "currency": "IDR",
-                            "product_bank_account_name": "Reksa Dana MNC Smart Equity Fund",
-                            "product_bank_account_no": "418993379",
-                            "product_bank_name": "BNI",
-                            "product_code": "MNCSEF",
-                            "product_id": 22,
-                            "product_name": "Smart Equity Fund"
+                            "product_name": "Dana Ekuitas",
+                            "unit": 276.47
                           }
                         }
                       ]
