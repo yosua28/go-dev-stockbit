@@ -392,6 +392,16 @@ func router() *echo.Echo {
 	//Admin Sc App Config Type
 	admin.GET("/app-config-type-dropdown", controllers.AdminGetListDropdownScAppConfigType).Name = "AdminGetListDropdownScAppConfigType"
 
+	//Admin Gen Lookup
+	admin.GET("/lookup-list", controllers.AdminGetListLookup).Name = "AdminGetListLookup"
+	admin.POST("/lookup/delete", controllers.AdminDeleteLookup).Name = "AdminDeleteLookup"
+	admin.POST("/lookup/create", controllers.AdminCreateLookup).Name = "AdminCreateLookup"
+	admin.POST("/lookup/update", controllers.AdminUpdateLookup).Name = "AdminUpdateLookup"
+	admin.GET("/lookup/detail/:lookup_key", controllers.AdminDetailLookup).Name = "AdminDetailLookup"
+
+	//Admin Gen Lookup Group
+	admin.GET("/lookup-group-dropdown", controllers.AdminGetListDropdownLookupGroup).Name = "AdminGetListDropdownLookupGroup"
+
 	return e
 }
 

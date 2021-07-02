@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -115,6 +116,210 @@ func GetGenLookupIn(c *[]GenLookup, value []string, field string) (int, error) {
 
 func GetGenLookup(c *GenLookup, key string) (int, error) {
 	query := `SELECT gen_lookup.* FROM gen_lookup WHERE gen_lookup.lookup_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type ListLookup struct {
+	LookupKey    uint64  `db:"lookup_key"        json:"lookup_key"`
+	LkpGroupCode string  `db:"lkp_group_code"    json:"lkp_group_code"`
+	LkpCode      string  `db:"lkp_code"          json:"lkp_code"`
+	LkpName      string  `db:"lkp_name"          json:"lkp_name"`
+	LkpDesc      *string `db:"lkp_desc"          json:"lkp_desc"`
+}
+
+func AdminGetLookup(c *[]ListLookup, limit uint64, offset uint64, params map[string]string, searchLike string, nolimit bool) (int, error) {
+	var present bool
+	var whereClause []string
+	var condition string
+	var limitOffset string
+	var orderCondition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (gg.lkp_group_code like '%" + searchLike + "%' OR"
+		condition += " g.lkp_code like '%" + searchLike + "%' OR"
+		condition += " g.lkp_name like '%" + searchLike + "%' OR"
+		condition += " g.lkp_desc  like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				g.lookup_key,
+				gg.lkp_group_code,
+				g.lkp_code,
+				g.lkp_name,
+				g.lkp_desc 
+			FROM gen_lookup AS g
+			INNER JOIN gen_lookup_group AS gg ON gg.lkp_group_key = g.lkp_group_key
+			WHERE g.rec_status = 1 ` + condition
+
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		orderCondition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			orderCondition += " " + orderType
+		}
+	}
+
+	if !nolimit {
+		limitOffset += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			limitOffset += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	query += orderCondition + limitOffset
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetLookup(c *CountData, params map[string]string, searchLike string) (int, error) {
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (gg.lkp_group_code like '%" + searchLike + "%' OR"
+		condition += " g.lkp_code like '%" + searchLike + "%' OR"
+		condition += " g.lkp_name like '%" + searchLike + "%' OR"
+		condition += " g.lkp_desc  like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				count(g.lookup_key) AS count_data 
+			FROM gen_lookup AS g
+			INNER JOIN gen_lookup_group AS gg ON gg.lkp_group_key = g.lkp_group_key
+			WHERE g.rec_status = 1 ` + condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateLookup(params map[string]string) (int, error) {
+	query := "UPDATE gen_lookup SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "lookup_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE lookup_key = " + params["lookup_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}
+
+func CreateLookup(params map[string]string) (int, error) {
+	query := "INSERT INTO gen_lookup"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func GetLookup(c *GenLookup, key string) (int, error) {
+	query := `SELECT * FROM gen_lookup WHERE rec_status = 1 AND lookup_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
