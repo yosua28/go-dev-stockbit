@@ -159,8 +159,7 @@ func CountAdminGetAllCustomerStatusSuspend(c *CountData, params map[string]strin
 			LEFT JOIN ms_branch AS br ON br.branch_key = r.branch_key 
 			LEFT JOIN ms_agent AS ag ON ag.agent_key = r.agent_key 
 			WHERE c.rec_status = 1 AND r.rec_status = 1 AND pd.rec_status = 1
-			AND r.customer_key IS NOT NULL AND c.investor_type = 263` + condition + ` 
-			GROUP BY r.customer_key`
+			AND r.customer_key IS NOT NULL ` + condition
 
 	// Main query
 	log.Println(query)
