@@ -28734,7 +28734,7 @@
                       "message_client": "OK"
                     },
                     "data": {
-                       "lkp_code": "sdff",
+                      "lkp_code": "sdff",
                       "lkp_desc": "ytre",
                       "lkp_group_key": 4,
                       "lkp_name": "dsfds",
@@ -28806,6 +28806,561 @@
                         "lkp_group_name": "Record status"
                       }
                     ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/participant-dropdown": {
+        "get": {
+          "description": "Get Participant Dropdown",
+          "tags": [
+            "Admin Participant"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": [
+                      {
+                        "participant_key": 151,
+                        "participant_code": "EP002",
+                        "participant_name": "PT MNC ASSET MANAGEMENT"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/branch-list": {
+        "get": {
+          "description": "Get Branch List",
+          "tags": [
+            "Admin Branch"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "search_like",
+              "in": "query",
+              "description": "Parameter search with condition like",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "order_by",
+              "in": "query",
+              "description": "Order By",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "participant_name",
+                  "branch_code",
+                  "branch_name",
+                  "branch_category",
+                  "city_name"
+                ]
+              }
+            },
+            {
+              "name": "order_type",
+              "in": "query",
+              "description": "Order Type",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of post (max 100 or choose no limit)",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "nolimit",
+              "in": "query",
+              "description": "Ignore limit and page",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "pagination": 1,
+                    "data": [
+                      {
+                        "branch_key": 24,
+                        "participant_name": null,
+                        "branch_code": "TAKJUB",
+                        "branch_name": "APERD TAKJUB TEKNOLOGI INDONESIA",
+                        "branch_category": null,
+                        "city_name": null
+                      },
+                      {
+                        "branch_key": 23,
+                        "participant_name": null,
+                        "branch_code": "MIRAE",
+                        "branch_name": "APERD MIRAE SEKURITAS",
+                        "branch_category": null,
+                        "city_name": null
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/branch/delete": {
+        "post": {
+          "description": "Delete Branch",
+          "tags": [
+            "Admin Branch"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "branch_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "branch_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/branch/create": {
+        "post": {
+          "description": "Create Branch",
+          "tags": [
+            "Admin Branch"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "participant_key": {
+                      "type": "integer"
+                    },
+                    "branch_code": {
+                      "type": "string"
+                    },
+                    "branch_name": {
+                      "type": "string"
+                    },
+                    "branch_category": {
+                      "type": "integer"
+                    },
+                    "city_key": {
+                      "type": "integer"
+                    },
+                    "branch_address": {
+                      "type": "string"
+                    },
+                    "branch_established": {
+                      "type": "string",
+                      "example": "2021-04-23"
+                    },
+                    "branch_pic_name": {
+                      "type": "string"
+                    },
+                    "branch_pic_email": {
+                      "type": "string"
+                    },
+                    "branch_pic_phoneno": {
+                      "type": "number"
+                    },
+                    "branch_cost_center": {
+                      "type": "string"
+                    },
+                    "branch_profit_center": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "branch_code",
+                    "branch_name"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/branch/update": {
+        "post": {
+          "description": "Create Update",
+          "tags": [
+            "Admin Branch"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "branch_key": {
+                      "type": "integer"
+                    },
+                    "participant_key": {
+                      "type": "integer"
+                    },
+                    "branch_code": {
+                      "type": "string"
+                    },
+                    "branch_name": {
+                      "type": "string"
+                    },
+                    "branch_category": {
+                      "type": "integer"
+                    },
+                    "city_key": {
+                      "type": "integer"
+                    },
+                    "branch_address": {
+                      "type": "string"
+                    },
+                    "branch_established": {
+                      "type": "string",
+                      "example": "2021-04-23"
+                    },
+                    "branch_pic_name": {
+                      "type": "string"
+                    },
+                    "branch_pic_email": {
+                      "type": "string"
+                    },
+                    "branch_pic_phoneno": {
+                      "type": "number"
+                    },
+                    "branch_cost_center": {
+                      "type": "string"
+                    },
+                    "branch_profit_center": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "branch_key",
+                    "branch_code",
+                    "branch_name"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/branch/detail/{branch_key}": {
+        "get": {
+          "description": "Detail Branch",
+          "tags": [
+            "Admin Branch"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "branch_key",
+              "in": "path",
+              "description": "branch_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "branch_address": "adasdf fds",
+                      "branch_category": 211,
+                      "branch_code": "TAKJUB1",
+                      "branch_cost_center": "rrrtteffgh",
+                      "branch_established": "2021-04-23 00:00:00.000000",
+                      "branch_key": 25,
+                      "branch_name": "APERD TAKJUB TEKNOLOGI INDONESIA 1",
+                      "branch_pic_email": "sdfsdgg@gm.com",
+                      "branch_pic_name": "dsfsd fdsfds",
+                      "branch_pic_phoneno": "5943656554",
+                      "city_key": 11,
+                      "participant_key": 151,
+                      "rec_order": 56
+                    }
                   }
                 }
               }

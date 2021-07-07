@@ -2,9 +2,11 @@ package models
 
 import (
 	"api/db"
-	"log"
 	"net/http"
+	"strconv"
 	"strings"
+
+	log "github.com/sirupsen/logrus"
 )
 
 type MsBranch struct {
@@ -84,6 +86,227 @@ func GetMsBranchDropdown(c *[]MsBranchDropdown) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type ListMsBranch struct {
+	AppConfigKey      uint64  `db:"branch_key"            json:"branch_key"`
+	ConfigTypeCode    *string `db:"participant_name"      json:"participant_name"`
+	AppConfigCode     string  `db:"branch_code"           json:"branch_code"`
+	AppConfigName     string  `db:"branch_name"           json:"branch_name"`
+	AppConfigDesc     *string `db:"branch_category"       json:"branch_category"`
+	AppConfigDatatype *string `db:"city_name"             json:"city_name"`
+}
+
+func AdminGetListMsBranch(c *[]ListMsBranch, limit uint64, offset uint64, params map[string]string, searchLike string, nolimit bool) (int, error) {
+	var present bool
+	var whereClause []string
+	var condition string
+	var limitOffset string
+	var orderCondition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (p.participant_name like '%" + searchLike + "%' OR"
+		condition += " b.branch_code like '%" + searchLike + "%' OR"
+		condition += " b.branch_name like '%" + searchLike + "%' OR"
+		condition += " cat.lkp_name like '%" + searchLike + "%' OR"
+		condition += " c.city_name like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				b.branch_key,
+				p.participant_name,
+				b.branch_code,
+				b.branch_name,
+				cat.lkp_name AS branch_category,
+				c.city_name 
+			FROM ms_branch AS b
+			LEFT JOIN ms_participant AS p ON p.participant_key = b.participant_key
+			LEFT JOIN ms_city AS c ON c.city_key = b.city_key
+			LEFT JOIN gen_lookup AS cat ON cat.lookup_key = b.branch_category
+			WHERE b.rec_status = 1 ` + condition
+
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		orderCondition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			orderCondition += " " + orderType
+		}
+	}
+
+	if !nolimit {
+		limitOffset += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			limitOffset += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	query += orderCondition + limitOffset
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetListMsBranch(c *CountData, params map[string]string, searchLike string) (int, error) {
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (p.participant_name like '%" + searchLike + "%' OR"
+		condition += " b.branch_code like '%" + searchLike + "%' OR"
+		condition += " b.branch_name like '%" + searchLike + "%' OR"
+		condition += " cat.lkp_name like '%" + searchLike + "%' OR"
+		condition += " c.city_name like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				count(b.branch_key) as count_data 
+			FROM ms_branch AS b
+			LEFT JOIN ms_participant AS p ON p.participant_key = b.participant_key
+			LEFT JOIN ms_city AS c ON c.city_key = b.city_key
+			LEFT JOIN gen_lookup AS cat ON cat.lookup_key = b.branch_category
+			WHERE b.rec_status = 1 ` + condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateMsBranch(params map[string]string) (int, error) {
+	query := "UPDATE ms_branch SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "branch_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE branch_key = " + params["branch_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}
+
+func CreateMsBranch(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_branch"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func CountMsBranchValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+	query := `SELECT 
+				COUNT(branch_key) AS count_data 
+			FROM ms_branch
+			WHERE ` + field + ` = '` + value + `'`
+
+	if menuKey != "" {
+		query += " AND branch_key != '" + menuKey + "'"
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

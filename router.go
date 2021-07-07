@@ -320,6 +320,11 @@ func router() *echo.Echo {
 
 	//Admin MS BRANCH - J005
 	admin.GET("/branchlist/dropdown", controllers.GetListBranchDropdown).Name = "GetListBranchDropdown"
+	admin.GET("/branch-list", controllers.AdminGetListMsBranch).Name = "AdminGetListMsBranch"
+	admin.POST("/branch/delete", controllers.AdminDeleteMsBranch).Name = "AdminDeleteMsBranch"
+	admin.POST("/branch/create", controllers.AdminCreateMsBranch).Name = "AdminCreateMsBranch"
+	admin.POST("/branch/update", controllers.AdminUpdateMsBranch).Name = "AdminUpdateMsBranch"
+	admin.GET("/branch/detail/:branch_key", controllers.AdminDetailMsBranch).Name = "AdminDetailMsBranch"
 
 	//Admin MS AGENT - J005
 	admin.GET("/agentlist/dropdown", controllers.GetListAgentDropdown).Name = "GetListAgentDropdown"
@@ -401,6 +406,9 @@ func router() *echo.Echo {
 
 	//Admin Gen Lookup Group
 	admin.GET("/lookup-group-dropdown", controllers.AdminGetListDropdownLookupGroup).Name = "AdminGetListDropdownLookupGroup"
+
+	//Admin Ms Participant
+	admin.GET("/participant-dropdown", controllers.AdminGetListDropdownMsParticipant).Name = "AdminGetListDropdownMsParticipant"
 
 	return e
 }
