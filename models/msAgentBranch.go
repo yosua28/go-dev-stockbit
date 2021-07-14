@@ -118,3 +118,66 @@ func GetAllMsAgentBranch(c *[]MsAgentBranch, limit uint64, offset uint64, params
 
 	return http.StatusOK, nil
 }
+
+func UpdateDeleteBranchAgent(params map[string]string, field string, val string) (int, error) {
+	query := "UPDATE ms_agent_branch SET "
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " = '" + val + "' AND rec_status = '1'"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}
+
+func CreateMsAgentBranch(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_agent_branch"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
