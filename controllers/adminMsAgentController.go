@@ -251,3 +251,395 @@ func AdminDeleteMsAgent(c echo.Context) error {
 	response.Data = nil
 	return c.JSON(http.StatusOK, response)
 }
+
+func AdminCreateMsAgent(c echo.Context) error {
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	branchKey := c.FormValue("branch_key")
+	if branchKey != "" {
+		n, err := strconv.ParseUint(branchKey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	} else {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	}
+
+	agentId := c.FormValue("agent_id")
+	if agentId == "" {
+		log.Error("Missing required parameter: agent_id")
+		return lib.CustomError(http.StatusBadRequest, "agent_id can not be blank", "agent_id can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentId, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_id")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_id", "Wrong input for parameter: agent_id")
+		}
+		//validate unique agent_id
+		var countData models.CountData
+		status, err = models.CountMsAgentValidateUnique(&countData, "agent_id", agentId, "")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) > int(0) {
+			log.Error("Missing required parameter: agent_id")
+			return lib.CustomError(http.StatusBadRequest, "agent_id already used", "agent_id already used")
+		}
+		params["agent_id"] = agentId
+	}
+
+	agentCode := c.FormValue("agent_code")
+	if agentCode == "" {
+		log.Error("Missing required parameter: agent_code")
+		return lib.CustomError(http.StatusBadRequest, "agent_code can not be blank", "agent_code can not be blank")
+	} else {
+		//validate unique agent_code
+		var countData models.CountData
+		status, err = models.CountMsAgentValidateUnique(&countData, "agent_code", agentCode, "")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) > int(0) {
+			log.Error("Missing required parameter: agent_code")
+			return lib.CustomError(http.StatusBadRequest, "agent_code already used", "agent_code already used")
+		}
+		params["agent_code"] = agentCode
+	}
+
+	agentName := c.FormValue("agent_name")
+	if agentName == "" {
+		log.Error("Missing required parameter: agent_name")
+		return lib.CustomError(http.StatusBadRequest, "agent_name can not be blank", "agent_name can not be blank")
+	} else {
+		//validate unique agent_name
+		var countData models.CountData
+		status, err = models.CountMsAgentValidateUnique(&countData, "agent_name", agentName, "")
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) > int(0) {
+			log.Error("Missing required parameter: agent_name")
+			return lib.CustomError(http.StatusBadRequest, "agent_name already used", "agent_name already used")
+		}
+		params["agent_name"] = agentName
+	}
+
+	agentShortName := c.FormValue("agent_short_name")
+	if agentShortName != "" {
+		params["agent_short_name"] = agentShortName
+	}
+
+	agentCategory := c.FormValue("agent_category")
+	if agentCategory != "" {
+		n, err := strconv.ParseUint(agentCategory, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_category")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_category", "Wrong input for parameter: agent_category")
+		}
+		params["agent_category"] = agentCategory
+	}
+
+	agentChannel := c.FormValue("agent_channel")
+	if agentChannel != "" {
+		n, err := strconv.ParseUint(agentChannel, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_channel")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_channel", "Wrong input for parameter: agent_channel")
+		}
+		params["agent_channel"] = agentChannel
+	}
+
+	referenceCode := c.FormValue("reference_code")
+	if referenceCode != "" {
+		params["reference_code"] = referenceCode
+	}
+
+	remarks := c.FormValue("remarks")
+	if remarks != "" {
+		params["remarks"] = remarks
+	}
+
+	recOrder := c.FormValue("rec_order")
+	if recOrder != "" {
+		n, err := strconv.ParseUint(recOrder, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: rec_order")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: rec_order", "Wrong input for parameter: rec_order")
+		}
+		params["rec_order"] = recOrder
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_created_date"] = time.Now().Format(dateLayout)
+	params["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_status"] = "1"
+
+	status, err, lastID := models.CreateMsAgent(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	dateLayoutNow := "2006-01-02"
+	//insert ms_agent_branch
+	paramsAgentBranch := make(map[string]string)
+	paramsAgentBranch["agent_key"] = lastID
+	paramsAgentBranch["branch_key"] = branchKey
+	paramsAgentBranch["eff_date"] = time.Now().Format(dateLayoutNow) + " 00:00:00"
+	paramsAgentBranch["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsAgentBranch["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsAgentBranch["rec_status"] = "1"
+	paramsAgentBranch["remarks"] = remarks
+	status, err = models.CreateMsAgentBranch(paramsAgentBranch)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminUpdateMsAgent(c echo.Context) error {
+	var err error
+	var status int
+
+	params := make(map[string]string)
+
+	agentKey := c.FormValue("agent_key")
+	if agentKey != "" {
+		n, err := strconv.ParseUint(agentKey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+		params["agent_key"] = agentKey
+	} else {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	}
+
+	branchKey := c.FormValue("branch_key")
+	if branchKey != "" {
+		n, err := strconv.ParseUint(branchKey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: branch_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: branch_key", "Wrong input for parameter: branch_key")
+		}
+	} else {
+		log.Error("Missing required parameter: branch_key")
+		return lib.CustomError(http.StatusBadRequest, "branch_key can not be blank", "branch_key can not be blank")
+	}
+
+	agentId := c.FormValue("agent_id")
+	if agentId == "" {
+		log.Error("Missing required parameter: agent_id")
+		return lib.CustomError(http.StatusBadRequest, "agent_id can not be blank", "agent_id can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentId, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_id")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_id", "Wrong input for parameter: agent_id")
+		}
+		//validate unique agent_id
+		var countData models.CountData
+		status, err = models.CountMsAgentValidateUnique(&countData, "agent_id", agentId, agentKey)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) > int(0) {
+			log.Error("Missing required parameter: agent_id")
+			return lib.CustomError(http.StatusBadRequest, "agent_id already used", "agent_id already used")
+		}
+		params["agent_id"] = agentId
+	}
+
+	agentCode := c.FormValue("agent_code")
+	if agentCode == "" {
+		log.Error("Missing required parameter: agent_code")
+		return lib.CustomError(http.StatusBadRequest, "agent_code can not be blank", "agent_code can not be blank")
+	} else {
+		//validate unique agent_code
+		var countData models.CountData
+		status, err = models.CountMsAgentValidateUnique(&countData, "agent_code", agentCode, agentKey)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) > int(0) {
+			log.Error("Missing required parameter: agent_code")
+			return lib.CustomError(http.StatusBadRequest, "agent_code already used", "agent_code already used")
+		}
+		params["agent_code"] = agentCode
+	}
+
+	agentName := c.FormValue("agent_name")
+	if agentName == "" {
+		log.Error("Missing required parameter: agent_name")
+		return lib.CustomError(http.StatusBadRequest, "agent_name can not be blank", "agent_name can not be blank")
+	} else {
+		//validate unique agent_name
+		var countData models.CountData
+		status, err = models.CountMsAgentValidateUnique(&countData, "agent_name", agentName, agentKey)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+		if int(countData.CountData) > int(0) {
+			log.Error("Missing required parameter: agent_name")
+			return lib.CustomError(http.StatusBadRequest, "agent_name already used", "agent_name already used")
+		}
+		params["agent_name"] = agentName
+	}
+
+	agentShortName := c.FormValue("agent_short_name")
+	if agentShortName != "" {
+		params["agent_short_name"] = agentShortName
+	}
+
+	agentCategory := c.FormValue("agent_category")
+	if agentCategory != "" {
+		n, err := strconv.ParseUint(agentCategory, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_category")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_category", "Wrong input for parameter: agent_category")
+		}
+		params["agent_category"] = agentCategory
+	}
+
+	agentChannel := c.FormValue("agent_channel")
+	if agentChannel != "" {
+		n, err := strconv.ParseUint(agentChannel, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_channel")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_channel", "Wrong input for parameter: agent_channel")
+		}
+		params["agent_channel"] = agentChannel
+	}
+
+	referenceCode := c.FormValue("reference_code")
+	if referenceCode != "" {
+		params["reference_code"] = referenceCode
+	}
+
+	remarks := c.FormValue("remarks")
+	if remarks != "" {
+		params["remarks"] = remarks
+	}
+
+	recOrder := c.FormValue("rec_order")
+	if recOrder != "" {
+		n, err := strconv.ParseUint(recOrder, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: rec_order")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: rec_order", "Wrong input for parameter: rec_order")
+		}
+		params["rec_order"] = recOrder
+	}
+
+	dateLayout := "2006-01-02 15:04:05"
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_status"] = "1"
+
+	status, err = models.UpdateMsAgent(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed input data")
+	}
+
+	dateLayoutNow := "2006-01-02"
+	//insert/update ms_agent_branch
+	paramsGet := make(map[string]string)
+	paramsGet["agent_key"] = agentKey
+	paramsGet["branch_key"] = branchKey
+	paramsGet["rec_status"] = "1"
+
+	var msAgentBranch []models.MsAgentBranch
+
+	status, err = models.GetAllMsAgentBranch(&msAgentBranch, 10, 10, paramsGet, true)
+
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+	if len(msAgentBranch) < 1 {
+		//delete
+		paramsDeleteAgentBranch := make(map[string]string)
+		paramsDeleteAgentBranch["rec_status"] = "0"
+		paramsDeleteAgentBranch["rec_deleted_date"] = time.Now().Format(dateLayout)
+		paramsDeleteAgentBranch["rec_deleted_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+
+		_, err = models.UpdateDeleteBranchAgent(paramsDeleteAgentBranch, "agent_key", agentKey)
+		if err != nil {
+			log.Error("Error delete ms_agent_branch")
+		}
+
+		paramsAgentBranch := make(map[string]string)
+		paramsAgentBranch["agent_key"] = agentKey
+		paramsAgentBranch["branch_key"] = branchKey
+		paramsAgentBranch["eff_date"] = time.Now().Format(dateLayoutNow) + " 00:00:00"
+		paramsAgentBranch["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsAgentBranch["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsAgentBranch["rec_status"] = "1"
+		paramsAgentBranch["remarks"] = remarks
+		status, err = models.CreateMsAgentBranch(paramsAgentBranch)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed input data")
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminDetailMsAgent(c echo.Context) error {
+	var err error
+
+	agentKey := c.Param("agent_key")
+	if agentKey == "" {
+		log.Error("Missing required parameter: agent_key")
+		return lib.CustomError(http.StatusBadRequest, "agent_key can not be blank", "agent_key can not be blank")
+	} else {
+		n, err := strconv.ParseUint(agentKey, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: agent_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: agent_key", "Wrong input for parameter: agent_key")
+		}
+	}
+
+	var branch models.MsAgentBranchDetail
+	_, err = models.AdminGetDetailAgent(&branch, agentKey)
+	if err != nil {
+		log.Error("Agent not found")
+		return lib.CustomError(http.StatusBadRequest, "Agent not found", "Agent not found")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = branch
+
+	return c.JSON(http.StatusOK, response)
+}

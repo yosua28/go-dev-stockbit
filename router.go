@@ -331,6 +331,9 @@ func router() *echo.Echo {
 	admin.GET("/agentlist/branch/:branch_key", controllers.GetListAgentLastBranch).Name = "GetListAgentLastBranch"
 	admin.GET("/agent-list", controllers.AdminGetListMsAgent).Name = "AdminGetListMsAgent"
 	admin.POST("/agent/delete", controllers.AdminDeleteMsAgent).Name = "AdminDeleteMsAgent"
+	admin.POST("/agent/create", controllers.AdminCreateMsAgent).Name = "AdminCreateMsAgent"
+	admin.POST("/agent/update", controllers.AdminUpdateMsAgent).Name = "AdminUpdateMsAgent"
+	admin.GET("/agent/detail/:agent_key", controllers.AdminDetailMsAgent).Name = "AdminDetailMsAgent"
 
 	//Admin Subscription Batch Confirmation - J006
 	admin.GET("/report/subscription-batch-confirmation", controllers.GetSubscriptionBatchConfirmation).Name = "GetSubscriptionBatchConfirmation"

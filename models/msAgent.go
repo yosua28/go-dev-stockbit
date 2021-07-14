@@ -328,7 +328,7 @@ func UpdateMsAgent(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CreateMaAgent(params map[string]string) (int, error, string) {
+func CreateMsAgent(params map[string]string) (int, error, string) {
 	query := "INSERT INTO ms_agent"
 	// Get params
 	var fields, values string
@@ -381,7 +381,22 @@ func CountMsAgentValidateUnique(c *CountData, field string, value string, menuKe
 	return http.StatusOK, nil
 }
 
-func AdminGetDetailAgent(c *MsAgentDetail, key string) (int, error) {
+type MsAgentBranchDetail struct {
+	AgentKey       uint64  `db:"agent_key"            json:"agent_key"`
+	BranchKey      *uint64 `db:"branch_key"           json:"branch_key"`
+	BranchName     *string `db:"branch_name"          json:"branch_name"`
+	AgentId        uint64  `db:"agent_id"             json:"agent_id"`
+	AgentCode      string  `db:"agent_code"           json:"agent_code"`
+	AgentName      string  `db:"agent_name"           json:"agent_name"`
+	AgentShortName *string `db:"agent_short_name"     json:"agent_short_name"`
+	AgentCategory  *uint64 `db:"agent_category"       json:"agent_category"`
+	AgentChannel   *uint64 `db:"agent_channel"        json:"agent_channel"`
+	Remarks        *string `db:"remarks"              json:"remarks"`
+	ReferenceCode  *string `db:"reference_code"       json:"reference_code"`
+	RecOrder       *uint64 `db:"rec_order"            json:"rec_order"`
+}
+
+func AdminGetDetailAgent(c *MsAgentBranchDetail, key string) (int, error) {
 	query := `SELECT 
 				a.agent_key,
 				b.branch_key,

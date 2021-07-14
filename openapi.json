@@ -29613,6 +29613,274 @@
             }
           }
         }
+      },
+      "/admin/agent/create": {
+        "post": {
+          "description": "Create Agent",
+          "tags": [
+            "Admin Agent"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "branch_key": {
+                      "type": "integer"
+                    },
+                    "agent_id": {
+                      "type": "integer"
+                    },
+                    "agent_code": {
+                      "type": "string"
+                    },
+                    "agent_name": {
+                      "type": "string"
+                    },
+                    "agent_short_name": {
+                      "type": "string"
+                    },
+                    "agent_category": {
+                      "type": "integer"
+                    },
+                    "agent_channel": {
+                      "type": "integer"
+                    },
+                    "reference_code": {
+                      "type": "string"
+                    },
+                    "remarks": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "branch_key",
+                    "agent_id",
+                    "agent_code",
+                    "agent_name"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/agent/update": {
+        "post": {
+          "description": "Update Agent",
+          "tags": [
+            "Admin Agent"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "agent_key": {
+                      "type": "integer"
+                    },
+                    "branch_key": {
+                      "type": "integer"
+                    },
+                    "agent_id": {
+                      "type": "integer"
+                    },
+                    "agent_code": {
+                      "type": "string"
+                    },
+                    "agent_name": {
+                      "type": "string"
+                    },
+                    "agent_short_name": {
+                      "type": "string"
+                    },
+                    "agent_category": {
+                      "type": "integer"
+                    },
+                    "agent_channel": {
+                      "type": "integer"
+                    },
+                    "reference_code": {
+                      "type": "string"
+                    },
+                    "remarks": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "agent_key",
+                    "branch_key",
+                    "agent_id",
+                    "agent_code",
+                    "agent_name"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/agent/detail/{agent_key}": {
+        "get": {
+          "description": "Detail Agent",
+          "tags": [
+            "Admin Agent"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "agent_key",
+              "in": "path",
+              "description": "agent_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "agent_key": 51,
+                      "branch_key": 12,
+                      "branch_name": "SURABAYA-BIC (BRANCH)",
+                      "agent_id": 2188,
+                      "agent_code": "BNISEK1",
+                      "agent_name": "SALES APERD BNI SEKURITAS1",
+                      "agent_short_name": "dafasdsf",
+                      "agent_category": 221,
+                      "agent_channel": 225,
+                      "remarks": "zxczxc",
+                      "reference_code": "asdasd",
+                      "rec_order": 55
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
