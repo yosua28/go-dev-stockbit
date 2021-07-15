@@ -415,6 +415,12 @@ func router() *echo.Echo {
 	//Admin Ms Participant
 	admin.GET("/participant-dropdown", controllers.AdminGetListDropdownMsParticipant).Name = "AdminGetListDropdownMsParticipant"
 
+	//Admin Bank
+	admin.GET("/bank-list", controllers.AdminGetListMsBank).Name = "AdminGetListMsBank"
+	admin.POST("/bank/delete", controllers.AdminDeleteMsBank).Name = "AdminDeleteMsBank"
+	admin.POST("/bank/create", controllers.AdminCreateMsBank).Name = "AdminCreateMsBank"
+	admin.POST("/bank/update", controllers.AdminUpdateMsBank).Name = "AdminUpdateMsBank"
+	admin.GET("/bank/detail/:bank_key", controllers.AdminDetailBank).Name = "AdminDetailBank"
 	return e
 }
 

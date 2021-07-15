@@ -29881,6 +29881,535 @@
             }
           }
         }
+      },
+      "/admin/bank-list": {
+        "get": {
+          "description": "Get Bank List",
+          "tags": [
+            "Admin Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "search_like",
+              "in": "query",
+              "description": "Parameter search with condition like",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "bank_local",
+              "in": "query",
+              "description": "Parameter search with condition = bank_local",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  0,
+                  1
+                ]
+              }
+            },
+            {
+              "name": "bank_government",
+              "in": "query",
+              "description": "Parameter search with condition = bank_government",
+              "required": false,
+              "schema": {
+                "type": "integer",
+                "enum": [
+                  0,
+                  1
+                ]
+              }
+            },
+            {
+              "name": "order_by",
+              "in": "query",
+              "description": "Order By",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "bank_code",
+                  "bank_name",
+                  "bank_fullname",
+                  "bi_member_code",
+                  "swift_code",
+                  "flag_local",
+                  "flag_government"
+                ]
+              }
+            },
+            {
+              "name": "order_type",
+              "in": "query",
+              "description": "Order Type",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of post (max 100 or choose no limit)",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "nolimit",
+              "in": "query",
+              "description": "Ignore limit and page",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "pagination": 1,
+                    "data": [
+                      {
+                        "bank_key": 107,
+                        "bank_code": "BSMDIDJA",
+                        "bank_name": "MANDIRI SYARIAH",
+                        "bank_fullname": "MANDIRI SYARIAH",
+                        "bi_member_code": "",
+                        "swift_code": "BSMDIDJA",
+                        "bank_local": "Ya",
+                        "bank_government": "Ya"
+                      },
+                      {
+                        "bank_key": 72,
+                        "bank_code": "BRI",
+                        "bank_name": "BRI",
+                        "bank_fullname": "BRI",
+                        "bi_member_code": "0002",
+                        "swift_code": "BRINIDJA",
+                        "bank_local": "Ya",
+                        "bank_government": "Ya"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/bank/delete": {
+        "post": {
+          "description": "Delete Bank",
+          "tags": [
+            "Admin Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bank_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "bank_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/bank/create": {
+        "post": {
+          "description": "Create Bank",
+          "tags": [
+            "Admin Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bank_code": {
+                      "type": "string"
+                    },
+                    "bank_name": {
+                      "type": "string"
+                    },
+                    "bank_fullname": {
+                      "type": "string"
+                    },
+                    "bi_member_code": {
+                      "type": "string"
+                    },
+                    "swift_code": {
+                      "type": "string"
+                    },
+                    "bank_local": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_government": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_web_url": {
+                      "type": "string"
+                    },
+                    "bank_ibank_url": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "bank_code",
+                    "bank_name",
+                    "bank_fullname",
+                    "swift_code",
+                    "bank_local",
+                    "bank_government"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/bank/update": {
+        "post": {
+          "description": "Update Bank",
+          "tags": [
+            "Admin Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "bank_key": {
+                      "type": "integer"
+                    },
+                    "bank_code": {
+                      "type": "string"
+                    },
+                    "bank_name": {
+                      "type": "string"
+                    },
+                    "bank_fullname": {
+                      "type": "string"
+                    },
+                    "bi_member_code": {
+                      "type": "string"
+                    },
+                    "swift_code": {
+                      "type": "string"
+                    },
+                    "bank_local": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_government": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_web_url": {
+                      "type": "string"
+                    },
+                    "bank_ibank_url": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "bank_key",
+                    "bank_code",
+                    "bank_name",
+                    "bank_fullname",
+                    "swift_code",
+                    "bank_local",
+                    "bank_government"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/bank/detail/{bank_key}": {
+        "get": {
+          "description": "Detail Bank",
+          "tags": [
+            "Admin Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "bank_key",
+              "in": "path",
+              "description": "bank_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "bank_code": "MCORIDJA11",
+                      "bank_fullname": "WINDU KENCANA 11",
+                      "bank_government": 1,
+                      "bank_ibank_url": "sss",
+                      "bank_key": 145,
+                      "bank_local": 0,
+                      "bank_name": "WINDU KENCANA 11",
+                      "bank_web_url": "aaa",
+                      "bi_member_code": "22234",
+                      "rec_order": 443,
+                      "swift_code": "YOSUA123"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
