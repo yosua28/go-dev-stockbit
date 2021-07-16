@@ -1272,7 +1272,7 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 						mailer := gomail.NewMessage()
 						mailer.SetHeader("From", config.EmailFrom)
 						mailer.SetHeader("To", scLogin.UloginEmail)
-						mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Transaksi Produk")
+						mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Transaksi Produk")
 						mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
 						dialer := gomail.NewDialer(
 							config.EmailSMTPHost,
@@ -1458,12 +1458,12 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	if strTransTypeKey == "1" { // SUBS
 		if transaction.FlagNewSub != nil {
 			if *transaction.FlagNewSub == 1 {
-				subject = "[MNC Duit] Subscription Kamu Gagal"
+				subject = "[MotionFunds] Subscription Kamu Gagal"
 			} else {
-				subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+				subject = "[MotionFunds] Top Up Kamu telah Berhasil"
 			}
 		} else {
-			subject = "[MNC Duit] Top Up Kamu Gagal"
+			subject = "[MotionFunds] Top Up Kamu Gagal"
 		}
 
 		t := template.New("email-subscription-rejected.html")
@@ -1479,7 +1479,7 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	}
 
 	if strTransTypeKey == "2" { // REDM
-		subject = "[MNC Duit] Redemption Kamu Gagal"
+		subject = "[MotionFunds] Redemption Kamu Gagal"
 		t := template.New("email-redemption-rejected.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-rejected.html")
@@ -1494,7 +1494,7 @@ func SendEmailRejected(strCustomerKey string, strIDUserLogin string,
 	}
 
 	if strTransTypeKey == "4" { // SWITCH
-		subject = "[MNC Duit] Switching Kamu Gagal"
+		subject = "[MotionFunds] Switching Kamu Gagal"
 		t := template.New("email-switching-rejected.html")
 
 		t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-rejected.html")
@@ -3192,12 +3192,12 @@ func sendEmailTransactionPosted(
 		if strTransTypeKey == "1" { // SUBS
 			if transaction.FlagNewSub != nil {
 				if *transaction.FlagNewSub == 1 {
-					subject = "[MNC Duit] Subscription Kamu telah Berhasil"
+					subject = "[MotionFunds] Subscription Kamu telah Berhasil"
 				} else {
-					subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+					subject = "[MotionFunds] Top Up Kamu telah Berhasil"
 				}
 			} else {
-				subject = "[MNC Duit] Top Up Kamu telah Berhasil"
+				subject = "[MotionFunds] Top Up Kamu telah Berhasil"
 			}
 
 			t := template.New("email-subscription-posted.html")
@@ -3213,7 +3213,7 @@ func sendEmailTransactionPosted(
 		}
 
 		if strTransTypeKey == "2" { // REDM
-			subject = "[MNC Duit] Redemption Kamu teleh Berhasil"
+			subject = "[MotionFunds] Redemption Kamu teleh Berhasil"
 			t := template.New("email-redemption-posted.html")
 
 			t, err := t.ParseFiles(config.BasePath + "/mail/email-redemption-posted.html")
@@ -3228,7 +3228,7 @@ func sendEmailTransactionPosted(
 		}
 
 		if strTransTypeKey == "4" { // SWITCH
-			subject = "[MNC Duit] Switching Kamu telah Berhasil"
+			subject = "[MotionFunds] Switching Kamu telah Berhasil"
 			t := template.New("email-switching-posted.html")
 
 			t, err := t.ParseFiles(config.BasePath + "/mail/email-switching-posted.html")

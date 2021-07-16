@@ -1769,7 +1769,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 							mailer := gomail.NewMessage()
 							mailer.SetHeader("From", config.EmailFrom)
 							mailer.SetHeader("To", scLogin.UloginEmail)
-							mailer.SetHeader("Subject", "[Motion Funds] Verifikasi Opening Account")
+							mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
 							mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
 							dialer := gomail.NewDialer(
 								config.EmailSMTPHost,
@@ -2256,7 +2256,7 @@ func sendEmailApproveOa(fullName string, email string) {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu telah Disetujui")
+	mailer.SetHeader("Subject", "[MotionFunds] Pembukaan Rekening Kamu telah Disetujui")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,

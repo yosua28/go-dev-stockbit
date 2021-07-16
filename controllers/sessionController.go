@@ -168,7 +168,7 @@ func Register(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Email Kamu")
+	mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Email Kamu")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
@@ -719,7 +719,7 @@ func ResendVerification(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", email)
-		mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Email Kamu")
+		mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Email Kamu")
 		mailer.SetBody("text/html", result)
 
 		dialer := gomail.NewDialer(
@@ -755,7 +755,7 @@ func ForgotPassword(c echo.Context) error {
 	// hahatest := "a00cfd56-b91a-464f-8da9-f36b376190b4" // yosua
 	log.Println("token notif : " + hahatest)
 	// if hahatest != "" {
-	// 	lib.CreateNotificationHelper(hahatest, "Oke! Header Notif MNCDuit", "Ini Body Mnc Duit Notifikasi Testing Aplikasi hahaha oke gan jangan di hiraukan.")
+	// 	lib.CreateNotificationHelper(hahatest, "Oke! Header Notif MNCDuit", "Ini Body MotionFunds Notifikasi Testing Aplikasi hahaha oke gan jangan di hiraukan.")
 	// }
 
 	// Check parameters
@@ -836,7 +836,7 @@ func ForgotPassword(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] Lupa Kata Sandi")
+	mailer.SetHeader("Subject", "[MotionFunds] Lupa Kata Sandi")
 	mailer.SetBody("text/html", result)
 
 	dialer := gomail.NewDialer(
@@ -1159,7 +1159,7 @@ func ChangePassword(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", accountData.UloginEmail)
-	mailer.SetHeader("Subject", "[MNC Duit] Berhasil Merubah Kata Sandi")
+	mailer.SetHeader("Subject", "[MotionFunds] Berhasil Merubah Kata Sandi")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
@@ -1603,7 +1603,7 @@ func ChangeForgotPassword(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", accountData.UloginEmail)
-	mailer.SetHeader("Subject", "[MNC Duit] Berhasil Merubah Kata Sandi")
+	mailer.SetHeader("Subject", "[MotionFunds] Berhasil Merubah Kata Sandi")
 	mailer.SetBody("text/html", result)
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
@@ -1898,7 +1898,7 @@ func ForgotPin(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MNC Duit] Lupa Kata Sandi")
+	mailer.SetHeader("Subject", "[MotionFunds] Lupa Kata Sandi")
 	mailer.SetBody("text/html", result)
 
 	dialer := gomail.NewDialer(

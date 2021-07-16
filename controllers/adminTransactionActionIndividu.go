@@ -2189,7 +2189,7 @@ func mailTransactionManual(typ string, params map[string]string, customerKey str
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MNC Duit] "+subject)
+	mailer.SetHeader("Subject", "[MotionFunds] "+subject)
 	mailer.SetBody("text/html", result)
 
 	dialer := gomail.NewDialer(

@@ -890,7 +890,7 @@ func ChangePasswordUser(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", scUserLogin.UloginEmail)
-	mailer.SetHeader("Subject", "[MNC Duit] Change Password")
+	mailer.SetHeader("Subject", "[MotionFunds] Change Password")
 	mailer.SetBody("text/html", "<p>Password Baru anda : <b>"+password+"<b><p/> <br/> <p>Login dengan password diatas dan ganti password anda dengan password baru.<p/>")
 	dialer := gomail.NewDialer(
 		config.EmailSMTPHost,
@@ -1230,7 +1230,7 @@ func AdminChangePasswordUserLogin(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", scUserLogin.UloginEmail)
-		mailer.SetHeader("Subject", "[MNC Duit] Change Password")
+		mailer.SetHeader("Subject", "[MotionFunds] Change Password")
 		mailer.SetBody("text/html", "<p>Password berhasil diubah.<p/><p>Apabila kamu tidak merasa mengganti password dengan password baru, segera hubungi admin MNC DUIT.<p/>")
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
@@ -1348,7 +1348,7 @@ func AdminChangeDataUserLogin(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", email)
-		mailer.SetHeader("Subject", "[MNC Duit] Change Password")
+		mailer.SetHeader("Subject", "[MotionFunds] Change Password")
 		mailer.SetBody("text/html", "<p>Data berhasil diubah.<p/><p>Apabila kamu tidak merasa mengganti data dengan data baru, segera hubungi admin MNC DUIT.<p/>")
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
