@@ -1265,29 +1265,28 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 			if err != nil {
 				log.Error("Error get email")
 				log.Error(err)
-			}
+			} else {
+				for _, scLogin := range userLogin {
+					strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+					if (strUserCat == "2") || (strUserCat == "3") {
+						mailer := gomail.NewMessage()
+						mailer.SetHeader("From", config.EmailFrom)
+						mailer.SetHeader("To", scLogin.UloginEmail)
+						mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Transaksi Produk")
+						mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
+						dialer := gomail.NewDialer(
+							config.EmailSMTPHost,
+							int(config.EmailSMTPPort),
+							config.EmailFrom,
+							config.EmailFromPassword,
+						)
+						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-			for _, scLogin := range userLogin {
-				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-				if (strUserCat == "2") || (strUserCat == "3") {
-					mailer := gomail.NewMessage()
-					mailer.SetHeader("From", config.EmailFrom)
-					// mailer.SetHeader("To", "yosua.susanto@mncgroup.com")
-					mailer.SetHeader("To", scLogin.UloginEmail)
-					mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Transaksi Produk")
-					mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
-					dialer := gomail.NewDialer(
-						config.EmailSMTPHost,
-						int(config.EmailSMTPPort),
-						config.EmailFrom,
-						config.EmailFromPassword,
-					)
-					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-					err = dialer.DialAndSend(mailer)
-					if err != nil {
-						log.Error("Error send email")
-						log.Error(err)
+						err = dialer.DialAndSend(mailer)
+						if err != nil {
+							log.Error("Error send email")
+							log.Error(err)
+						}
 					}
 				}
 			}

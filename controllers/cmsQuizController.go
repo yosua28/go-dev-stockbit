@@ -235,7 +235,7 @@ func PostQuizAnswer(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", lib.Profile.Email)
-		mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+		mailer.SetHeader("Subject", "[MotionFunds] Pembukaan Rekening Kamu sedang Diproses")
 		mailer.SetBody("text/html", result)
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
@@ -252,6 +252,116 @@ func PostQuizAnswer(c echo.Context) error {
 		} else {
 			log.Info("Email sent")
 		}
+
+		//sent email to all CS
+		paramsScLogin := make(map[string]string)
+		paramsScLogin["role_key"] = "11"
+		paramsScLogin["rec_status"] = "1"
+		var userLogin []models.ScUserLogin
+		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		if err != nil {
+			log.Error("Error get email")
+			log.Error(err)
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
+					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+personalData.FullName)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
+				}
+			}
+		}
+		//end send email to CS
+	} else {
+		t := template.New("index-pengkinian.html")
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/index-pengkinian.html")
+		if err != nil {
+			log.Println(err)
+		}
+
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, struct {
+			Name    string
+			FileUrl string
+		}{Name: personalData.FullName, FileUrl: config.FileUrl + "/images/mail"}); err != nil {
+			log.Println(err)
+		}
+
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", lib.Profile.Email)
+		mailer.SetHeader("Subject", "[MotionFunds] Pengkinian Data Kamu sedang Diproses")
+		mailer.SetBody("text/html", result)
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Failed send email: ", err)
+			// return lib.CustomError(http.StatusInternalServerError, err.Error(), "Error send email")
+		} else {
+			log.Info("Email sent")
+		}
+
+		//sent email to all CS
+		paramsScLogin := make(map[string]string)
+		paramsScLogin["role_key"] = "11"
+		paramsScLogin["rec_status"] = "1"
+		var userLogin []models.ScUserLogin
+		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		if err != nil {
+			log.Error("Error get email")
+			log.Error(err)
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Pengkinian Data")
+					mailer.SetBody("text/html", "Segera verifikasi Pengkinian Data dengan nama : "+personalData.FullName)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
+				}
+			}
+		}
+		//end send email to CS
 	}
 
 	//send notif

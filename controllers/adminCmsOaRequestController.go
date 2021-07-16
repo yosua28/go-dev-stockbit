@@ -1314,33 +1314,33 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		if err != nil {
 			log.Error("Error get email")
 			log.Error(err)
-		}
+		} else {
+			if config.Envi == "PROD" {
+				for _, scLogin := range userLogin {
+					strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+					if (strUserCat == "2") || (strUserCat == "3") {
+						mailer := gomail.NewMessage()
+						mailer.SetHeader("From", config.EmailFrom)
+						mailer.SetHeader("To", scLogin.UloginEmail)
+						mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
+						mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+						dialer := gomail.NewDialer(
+							config.EmailSMTPHost,
+							int(config.EmailSMTPPort),
+							config.EmailFrom,
+							config.EmailFromPassword,
+						)
+						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-		if config.Envi == "PROD" {
-			for _, scLogin := range userLogin {
-				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-				if (strUserCat == "2") || (strUserCat == "3") {
-					mailer := gomail.NewMessage()
-					mailer.SetHeader("From", config.EmailFrom)
-					mailer.SetHeader("To", scLogin.UloginEmail)
-					mailer.SetHeader("Subject", "[MNC Duit] Verifikasi Opening Account")
-					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-					dialer := gomail.NewDialer(
-						config.EmailSMTPHost,
-						int(config.EmailSMTPPort),
-						config.EmailFrom,
-						config.EmailFromPassword,
-					)
-					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-					err = dialer.DialAndSend(mailer)
-					if err != nil {
-						log.Error("Error send email")
-						log.Error(err)
+						err = dialer.DialAndSend(mailer)
+						if err != nil {
+							log.Error("Error send email")
+							log.Error(err)
+						}
 					}
 				}
+				//end send email to KYC
 			}
-			//end send email to KYC
 		}
 	} else {
 		//update personal data -> delete
@@ -1761,33 +1761,33 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 			if err != nil {
 				log.Error("Error get email")
 				log.Error(err)
-			}
+			} else {
+				if config.Envi == "PROD" {
+					for _, scLogin := range userLogin {
+						strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+						if (strUserCat == "2") || (strUserCat == "3") {
+							mailer := gomail.NewMessage()
+							mailer.SetHeader("From", config.EmailFrom)
+							mailer.SetHeader("To", scLogin.UloginEmail)
+							mailer.SetHeader("Subject", "[Motion Funds] Verifikasi Opening Account")
+							mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
+							dialer := gomail.NewDialer(
+								config.EmailSMTPHost,
+								int(config.EmailSMTPPort),
+								config.EmailFrom,
+								config.EmailFromPassword,
+							)
+							dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
-			if config.Envi == "PROD" {
-				for _, scLogin := range userLogin {
-					strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-					if (strUserCat == "2") || (strUserCat == "3") {
-						mailer := gomail.NewMessage()
-						mailer.SetHeader("From", config.EmailFrom)
-						mailer.SetHeader("To", scLogin.UloginEmail)
-						mailer.SetHeader("Subject", "[Motion Funds] Verifikasi Opening Account")
-						mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-						dialer := gomail.NewDialer(
-							config.EmailSMTPHost,
-							int(config.EmailSMTPPort),
-							config.EmailFrom,
-							config.EmailFromPassword,
-						)
-						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-						err = dialer.DialAndSend(mailer)
-						if err != nil {
-							log.Error("Error send email")
-							log.Error(err)
+							err = dialer.DialAndSend(mailer)
+							if err != nil {
+								log.Error("Error send email")
+								log.Error(err)
+							}
 						}
 					}
+					// end send email to fund admin
 				}
-				// end send email to fund admin
 			}
 		} else { //create user message
 			customerKey = strconv.FormatUint(*oareq.CustomerKey, 10)

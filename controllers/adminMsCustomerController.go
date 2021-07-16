@@ -2306,6 +2306,8 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 
 	// Send email
 	if config.Envi != "DEV" {
+
+		//sent email to customer
 		t := template.New("index-registration.html")
 
 		t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
@@ -2326,7 +2328,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", email)
-		mailer.SetHeader("Subject", "[MNC Duit] Pembukaan Rekening Kamu sedang Diproses")
+		mailer.SetHeader("Subject", "[MotionFunds] Pembukaan Rekening Kamu sedang Diproses")
 		mailer.SetBody("text/html", result)
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
@@ -2343,6 +2345,42 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 			log.Error("Error send email")
 		}
 		log.Info("Email sent")
+
+		//sent email to all CS
+		paramsScLogin := make(map[string]string)
+		paramsScLogin["role_key"] = "11"
+		paramsScLogin["rec_status"] = "1"
+		var userLogin []models.ScUserLogin
+		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		if err != nil {
+			log.Error("Error get user CS email")
+			log.Error(err)
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
+					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+fullname)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
+				}
+			}
+		}
+		//end send email to CS
 	}
 
 	//insert message notif in app
@@ -3815,9 +3853,9 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	// Send email
 
 	if config.Envi != "DEV" {
-		t := template.New("index-registration.html")
+		t := template.New("index-pengkinian.html")
 
-		t, err = t.ParseFiles(config.BasePath + "/mail/index-registration.html")
+		t, err = t.ParseFiles(config.BasePath + "/mail/index-pengkinian.html")
 		if err != nil {
 			log.Println(err)
 		}
@@ -3835,7 +3873,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		mailer := gomail.NewMessage()
 		mailer.SetHeader("From", config.EmailFrom)
 		mailer.SetHeader("To", scUserLogin.UloginEmail)
-		mailer.SetHeader("Subject", "[MNC Duit] Pengkinian Data Kamu sedang Diproses")
+		mailer.SetHeader("Subject", "[MotionFunds] Pengkinian Data Kamu sedang Diproses")
 		mailer.SetBody("text/html", result)
 		dialer := gomail.NewDialer(
 			config.EmailSMTPHost,
@@ -3852,6 +3890,41 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 			log.Error("Error send email")
 		}
 		log.Info("Email sent")
+
+		//sent email to all CS
+		paramsScLogin := make(map[string]string)
+		paramsScLogin["role_key"] = "11"
+		paramsScLogin["rec_status"] = "1"
+		var userLogin []models.ScUserLogin
+		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		if err != nil {
+			log.Error("Error get user CS")
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", scLogin.UloginEmail)
+					mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Pengkinian Data")
+					mailer.SetBody("text/html", "Segera verifikasi Pengkinian Data dengan nama : "+fullname)
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Error send email")
+						log.Error(err)
+					}
+				}
+			}
+		}
+		//end send email to CS
 	}
 
 	//insert message notif in app
