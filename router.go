@@ -179,6 +179,11 @@ func router() *echo.Echo {
 
 	//Admin Custodian Bank
 	admin.GET("/custodianbanklist", controllers.GetListMsCustodianBank).Name = "GetListMsCustodianBank"
+	admin.GET("/custodian-bank-list", controllers.AdminGetListMsCustodianBank).Name = "AdminGetListMsCustodianBank"
+	admin.POST("/custodian-bank/delete", controllers.AdminDeleteMsCustodianBank).Name = "AdminDeleteMsCustodianBank"
+	admin.POST("/custodian-bank/create", controllers.AdminCreateMsCustodianBank).Name = "AdminCreateMsCustodianBank"
+	admin.POST("/custodian-bank/update", controllers.AdminUpdateMsCustodianBank).Name = "AdminUpdateMsCustodianBank"
+	admin.GET("/custodian-bank/detail/:custodian_key", controllers.AdminDetailMsCustodianBank).Name = "AdminDetailMsCustodianBank"
 
 	//Admin Fund Structure
 	admin.GET("/fundstructurelist", controllers.GetListMsFundStructure).Name = "GetListMsFundStructure"

@@ -29643,6 +29643,9 @@
                     "agent_name": {
                       "type": "string"
                     },
+                    "agent_email": {
+                      "type": "string"
+                    },
                     "agent_short_name": {
                       "type": "string"
                     },
@@ -29666,7 +29669,8 @@
                     "branch_key",
                     "agent_id",
                     "agent_code",
-                    "agent_name"
+                    "agent_name",
+                    "agent_email"
                   ]
                 }
               }
@@ -29739,6 +29743,9 @@
                     "agent_name": {
                       "type": "string"
                     },
+                    "agent_email": {
+                      "type": "string"
+                    },
                     "agent_short_name": {
                       "type": "string"
                     },
@@ -29763,7 +29770,8 @@
                     "branch_key",
                     "agent_id",
                     "agent_code",
-                    "agent_name"
+                    "agent_name",
+                    "agent_email"
                   ]
                 }
               }
@@ -29844,6 +29852,7 @@
                       "agent_id": 2188,
                       "agent_code": "BNISEK1",
                       "agent_name": "SALES APERD BNI SEKURITAS1",
+                      "agent_email": "mncasset@mncgroup.com",
                       "agent_short_name": "dafasdsf",
                       "agent_category": 221,
                       "agent_channel": 225,
@@ -30379,6 +30388,505 @@
                       "bi_member_code": "22234",
                       "rec_order": 443,
                       "swift_code": "YOSUA123"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/custodian-bank-list": {
+        "get": {
+          "description": "Admin Get Custodian Bank List",
+          "tags": [
+            "Admin Custodian Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "search_like",
+              "in": "query",
+              "description": "Parameter search with condition like",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "order_by",
+              "in": "query",
+              "description": "Order By",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "custodian_code",
+                  "custodian_short_name",
+                  "custodian_full_name",
+                  "bi_member_code",
+                  "swift_code"
+                ]
+              }
+            },
+            {
+              "name": "order_type",
+              "in": "query",
+              "description": "Order Type",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of post (max 100 or choose no limit)",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "nolimit",
+              "in": "query",
+              "description": "Ignore limit and page",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "pagination": 1,
+                    "data": [
+                      {
+                        "custodian_key": 10,
+                        "custodian_code": "107",
+                        "custodian_short_name": "Bank Mandiri",
+                        "custodian_full_name": "Bank Mandiri",
+                        "bi_member_code": null,
+                        "swift_code": null,
+                        "bank_local": "Tidak",
+                        "bank_government": "Tidak"
+                      },
+                      {
+                        "custodian_key": 9,
+                        "custodian_code": "011",
+                        "custodian_short_name": "Bank Danamon",
+                        "custodian_full_name": "Bank Danamon",
+                        "bi_member_code": null,
+                        "swift_code": null,
+                        "bank_local": "Tidak",
+                        "bank_government": "Tidak"
+                      },
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/custodian-bank/delete": {
+        "post": {
+          "description": "Delete Custodian Bank",
+          "tags": [
+            "Admin Custodian Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "custodian_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "custodian_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/custodian-bank/create": {
+        "post": {
+          "description": "Create Custodian Bank",
+          "tags": [
+            "Admin Custodian Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "custodian_code": {
+                      "type": "string"
+                    },
+                    "custodian_short_name": {
+                      "type": "string"
+                    },
+                    "custodian_full_name": {
+                      "type": "string"
+                    },
+                    "bi_member_code": {
+                      "type": "string"
+                    },
+                    "swift_code": {
+                      "type": "string"
+                    },
+                    "bank_local": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_government": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_web_url": {
+                      "type": "string"
+                    },
+                    "custodian_profile": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "custodian_code",
+                    "custodian_short_name",
+                    "custodian_full_name",
+                    "bank_local",
+                    "bank_government"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/custodian-bank/update": {
+        "post": {
+          "description": "Update Custodian Bank",
+          "tags": [
+            "Admin Custodian Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "custodian_key": {
+                      "type": "integer"
+                    },
+                    "custodian_code": {
+                      "type": "string"
+                    },
+                    "custodian_short_name": {
+                      "type": "string"
+                    },
+                    "custodian_full_name": {
+                      "type": "string"
+                    },
+                    "bi_member_code": {
+                      "type": "string"
+                    },
+                    "swift_code": {
+                      "type": "string"
+                    },
+                    "bank_local": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_government": {
+                      "type": "integer",
+                      "enum": [
+                        0,
+                        1
+                      ]
+                    },
+                    "bank_web_url": {
+                      "type": "string"
+                    },
+                    "custodian_profile": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "custodian_key",
+                    "custodian_code",
+                    "custodian_short_name",
+                    "custodian_full_name",
+                    "bank_local",
+                    "bank_government"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/custodian-bank/detail/{custodian_key}": {
+        "get": {
+          "description": "Detail Custodian Bank",
+          "tags": [
+            "Admin Custodian Bank"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "custodian_key",
+              "in": "path",
+              "description": "custodian_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "bank_government": 0,
+                      "bank_local": 0,
+                      "bank_web_url": "www.oke.com",
+                      "bi_member_code": "YONA",
+                      "custodian_code": "1071",
+                      "custodian_full_name": "Bank Mandiri Pusat",
+                      "custodian_key": 11,
+                      "custodian_profile": "bank pusat mandiri jaya jaya jaya",
+                      "custodian_short_name": "Bank Mandiri 22",
+                      "rec_order": 66,
+                      "swift_code": "NNJJAA"
                     }
                   }
                 }

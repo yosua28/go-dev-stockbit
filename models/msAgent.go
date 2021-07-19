@@ -14,6 +14,7 @@ type MsAgent struct {
 	AgentID           uint64  `db:"agent_id"             json:"agent_id"`
 	AgentCode         string  `db:"agent_code"           json:"agent_code"`
 	AgentName         string  `db:"agent_name"           json:"agent_name"`
+	AgentEmail        *string `db:"agent_email"          json:"agent_email"`
 	AgentShotName     *string `db:"agent_short_name"     json:"agent_short_name"`
 	AgentCategory     *uint64 `db:"agent_category"       json:"agent_category"`
 	AgentChannel      *uint64 `db:"agent_channel"        json:"agent_channel"`
@@ -388,6 +389,7 @@ type MsAgentBranchDetail struct {
 	AgentId        uint64  `db:"agent_id"             json:"agent_id"`
 	AgentCode      string  `db:"agent_code"           json:"agent_code"`
 	AgentName      string  `db:"agent_name"           json:"agent_name"`
+	AgentEmail     *string `db:"agent_email"          json:"agent_email"`
 	AgentShortName *string `db:"agent_short_name"     json:"agent_short_name"`
 	AgentCategory  *uint64 `db:"agent_category"       json:"agent_category"`
 	AgentChannel   *uint64 `db:"agent_channel"        json:"agent_channel"`
@@ -404,6 +406,7 @@ func AdminGetDetailAgent(c *MsAgentBranchDetail, key string) (int, error) {
 				a.agent_id,
 				a.agent_code,
 				a.agent_name,
+				a.agent_email,
 				a.agent_short_name,
 				a.agent_category,
 				a.agent_channel,

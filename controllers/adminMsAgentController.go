@@ -332,6 +332,14 @@ func AdminCreateMsAgent(c echo.Context) error {
 		params["agent_name"] = agentName
 	}
 
+	agentEmail := c.FormValue("agent_email")
+	if agentEmail == "" {
+		log.Error("Missing required parameter: agent_email")
+		return lib.CustomError(http.StatusBadRequest, "agent_email can not be blank", "agent_email can not be blank")
+	} else {
+		params["agent_email"] = agentEmail
+	}
+
 	agentShortName := c.FormValue("agent_short_name")
 	if agentShortName != "" {
 		params["agent_short_name"] = agentShortName
@@ -504,6 +512,14 @@ func AdminUpdateMsAgent(c echo.Context) error {
 			return lib.CustomError(http.StatusBadRequest, "agent_name already used", "agent_name already used")
 		}
 		params["agent_name"] = agentName
+	}
+
+	agentEmail := c.FormValue("agent_email")
+	if agentEmail == "" {
+		log.Error("Missing required parameter: agent_email")
+		return lib.CustomError(http.StatusBadRequest, "agent_email can not be blank", "agent_email can not be blank")
+	} else {
+		params["agent_email"] = agentEmail
 	}
 
 	agentShortName := c.FormValue("agent_short_name")
