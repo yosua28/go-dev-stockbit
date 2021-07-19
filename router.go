@@ -433,6 +433,13 @@ func router() *echo.Echo {
 	admin.POST("/bank-charges/create", controllers.AdminCreateMsBankCharges).Name = "AdminCreateMsBankCharges"
 	admin.POST("/bank-charges/update", controllers.AdminUpdateMsBankCharges).Name = "AdminUpdateMsBankCharges"
 	admin.GET("/bank-charges/detail/:bcharges_key", controllers.AdminDetailBankCharges).Name = "AdminDetailBankCharges"
+
+	//Admin Currency
+	admin.GET("/currency-list", controllers.AdminGetListMsCurrency).Name = "AdminGetListMsCurrency"
+	admin.POST("/currency/delete", controllers.AdminDeleteMsCurrency).Name = "AdminDeleteMsCurrency"
+	admin.POST("/currency/create", controllers.AdminCreateMsCurrency).Name = "AdminCreateMsCurrency"
+	admin.POST("/currency/update", controllers.AdminUpdateMsCurrency).Name = "AdminUpdateMsCurrency"
+	admin.GET("/currency/detail/:currency_key", controllers.AdminDetailMsCurrency).Name = "AdminDetailMsCurrency"
 	return e
 }
 
