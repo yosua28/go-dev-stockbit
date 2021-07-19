@@ -31844,6 +31844,480 @@
             }
           }
         }
+      },
+      "/admin/currency-rate-list": {
+        "get": {
+          "description": "Admin Get Currency rate List",
+          "tags": [
+            "Admin Currency Rate"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "search_like",
+              "in": "query",
+              "description": "Parameter search with condition like",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "rate_date",
+              "in": "query",
+              "description": "Parameter search with condition =",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "example": "2020-11-23"
+              }
+            },
+            {
+              "name": "rate_type",
+              "in": "query",
+              "description": "Parameter search with condition =",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "currency_key",
+              "in": "query",
+              "description": "Parameter search with condition =",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "order_by",
+              "in": "query",
+              "description": "Order By",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "curr_rate_key",
+                  "rate_date",
+                  "rate_type",
+                  "currency_code",
+                  "currency_name",
+                  "rate_value"
+                ]
+              }
+            },
+            {
+              "name": "order_type",
+              "in": "query",
+              "description": "Order Type",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of post (max 100 or choose no limit)",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "nolimit",
+              "in": "query",
+              "description": "Ignore limit and page",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "pagination": 1,
+                    "data": [
+                      {
+                        "curr_rate_key": 1506,
+                        "rate_date": "31 October 2019",
+                        "rate_type": "KURS BI",
+                        "currency_code": "USD",
+                        "currency_name": "US Dollar",
+                        "rate_value": 14008
+                      },
+                      {
+                        "curr_rate_key": 1259,
+                        "rate_date": "31 October 2018",
+                        "rate_type": "KURS BI",
+                        "currency_code": "USD",
+                        "currency_name": "US Dollar",
+                        "rate_value": 15227
+                      },
+                      {
+                        "curr_rate_key": 1018,
+                        "rate_date": "31 October 2017",
+                        "rate_type": "KURS BI",
+                        "currency_code": "USD",
+                        "currency_name": "US Dollar",
+                        "rate_value": 13572
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/currency-rate/delete": {
+        "post": {
+          "description": "Delete Currency rate",
+          "tags": [
+            "Admin Currency Rate"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "curr_rate_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "curr_rate_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/currency-rate/create": {
+        "post": {
+          "description": "Create Currency rate",
+          "tags": [
+            "Admin Currency Rate"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "rate_date": {
+                      "type": "string",
+                      "example": "2021-07-20"
+                    },
+                    "rate_type": {
+                      "type": "integer"
+                    },
+                    "rate_value": {
+                      "type": "number"
+                    },
+                    "currency_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "rate_date",
+                    "rate_type",
+                    "rate_value",
+                    "currency_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/currency-rate/update": {
+        "post": {
+          "description": "Update Currency rate",
+          "tags": [
+            "Admin Currency Rate"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "curr_rate_key": {
+                      "type": "integer"
+                    },
+                    "rate_date": {
+                      "type": "string",
+                      "example": "2021-07-20"
+                    },
+                    "rate_type": {
+                      "type": "integer"
+                    },
+                    "rate_value": {
+                      "type": "number"
+                    },
+                    "currency_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "curr_rate_key",
+                    "rate_date",
+                    "rate_type",
+                    "rate_value",
+                    "currency_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/currency-rate/detail/{curr_rate_key}": {
+        "get": {
+          "description": "Detail Currency Rate",
+          "tags": [
+            "Admin Currency Rate"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "curr_rate_key",
+              "in": "path",
+              "description": "curr_rate_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "curr_rate_key": 1773,
+                      "currency_key": 2,
+                      "rate_date": "2021-01-18 00:00:00",
+                      "rate_type": 294,
+                      "rate_value": 14334
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
