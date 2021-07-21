@@ -330,7 +330,7 @@ func CountMsBankValidateUnique(c *CountData, field string, value string, key str
 	query := `SELECT 
 				COUNT(bank_key) AS count_data 
 			FROM ms_bank
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND bank_key != '" + key + "'"

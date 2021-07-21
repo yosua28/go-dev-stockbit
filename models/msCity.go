@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strconv"
 	"strings"
 
 	log "github.com/sirupsen/logrus"
@@ -129,6 +130,230 @@ func GetMsCityByParent(c *MsCity, key string) (int, error) {
 	if err != nil {
 		log.Println(err)
 		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type ListCity struct {
+	CurrRateKey uint64  `db:"city_key"            json:"city_key"`
+	CouName     string  `db:"cou_name"            json:"cou_name"`
+	CityParent  *string `db:"city_parent"         json:"city_parent"`
+	CityName    string  `db:"city_name"           json:"city_name"`
+	CityCode    string  `db:"city_code"           json:"city_code"`
+	CityLevel   string  `db:"city_level"          json:"city_level"`
+	PostalCode  *string `db:"postal_code"         json:"postal_code"`
+}
+
+func AdminGetListCity(c *[]ListCity, limit uint64, offset uint64, params map[string]string, searchLike string, nolimit bool) (int, error) {
+	var present bool
+	var whereClause []string
+	var condition string
+	var limitOffset string
+	var orderCondition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (cou.cou_name like '%" + searchLike + "%' OR"
+		condition += " par.city_name like '%" + searchLike + "%' OR"
+		condition += " c.city_name like '%" + searchLike + "%' OR"
+		condition += " c.city_code like '%" + searchLike + "%' OR"
+		condition += " cl.lkp_name like '%" + searchLike + "%' OR"
+		condition += " c.postal_code like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT 
+				c.city_key,
+				cou.cou_name,
+				par.city_name AS city_parent,
+				c.city_name,
+				c.city_code,
+				cl.lkp_name AS city_level,
+				c.postal_code 
+			FROM ms_city AS c
+			INNER JOIN ms_country AS cou ON cou.country_key = c.country_key
+			LEFT JOIN ms_city AS par ON par.city_key = c.parent_key
+			INNER JOIN gen_lookup AS cl ON cl.lkp_code = c.city_level AND cl.lkp_group_key = 47
+			WHERE c.rec_status = 1 AND c.city_level IN (1,2,3,4)` + condition
+
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		orderCondition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			orderCondition += " " + orderType
+		}
+	}
+
+	if !nolimit {
+		limitOffset += " LIMIT " + strconv.FormatUint(limit, 10)
+		if offset > 0 {
+			limitOffset += " OFFSET " + strconv.FormatUint(offset, 10)
+		}
+	}
+
+	query += orderCondition + limitOffset
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CountAdminGetCity(c *CountData, params map[string]string, searchLike string) (int, error) {
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+
+	if searchLike != "" {
+		condition += " AND"
+		condition += " (cou.cou_name like '%" + searchLike + "%' OR"
+		condition += " par.city_name like '%" + searchLike + "%' OR"
+		condition += " c.city_name like '%" + searchLike + "%' OR"
+		condition += " c.city_code like '%" + searchLike + "%' OR"
+		condition += " cl.lkp_name like '%" + searchLike + "%' OR"
+		condition += " c.postal_code like '%" + searchLike + "%')"
+	}
+
+	query := `SELECT
+				count(c.city_key) AS count_data 
+			FROM ms_city AS c
+			INNER JOIN ms_country AS cou ON cou.country_key = c.country_key
+			LEFT JOIN ms_city AS par ON par.city_key = c.parent_key
+			INNER JOIN gen_lookup AS cl ON cl.lkp_code = c.city_level AND cl.lkp_group_key = '47'
+			WHERE c.rec_status = 1 AND c.city_level IN (1,2,3,4)` + condition
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func CreateMsCity(params map[string]string) (int, error) {
+	query := "INSERT INTO ms_city"
+	// Get params
+	var fields, values string
+	var bindvars []interface{}
+	for key, value := range params {
+		fields += key + ", "
+		values += "?, "
+		bindvars = append(bindvars, value)
+	}
+	fields = fields[:(len(fields) - 2)]
+	values = values[:(len(values) - 2)]
+
+	// Combine params to build query
+	query += "(" + fields + ") VALUES(" + values + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	_, err = tx.Exec(query, bindvars...)
+	tx.Commit()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
+}
+
+func UpdateMsCity(params map[string]string) (int, error) {
+	query := "UPDATE ms_city SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "city_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE city_key = " + params["city_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}
+
+func CountMsCityValidateUnique(c *CountData, field string, value string, key string) (int, error) {
+	query := `SELECT 
+				COUNT(city_key) AS count_data 
+			FROM ms_city
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
+
+	if key != "" {
+		query += " AND city_key != '" + key + "'"
+	}
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
 	}
 
 	return http.StatusOK, nil

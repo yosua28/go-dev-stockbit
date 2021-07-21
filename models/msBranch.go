@@ -295,7 +295,7 @@ func CountMsBranchValidateUnique(c *CountData, field string, value string, key s
 	query := `SELECT 
 				COUNT(branch_key) AS count_data 
 			FROM ms_branch
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND branch_key != '" + key + "'"

@@ -454,6 +454,13 @@ func router() *echo.Echo {
 	admin.POST("/country/create", controllers.AdminCreateMsCountry).Name = "AdminCreateMsCountry"
 	admin.POST("/country/update", controllers.AdminUpdateMsCountry).Name = "AdminUpdateMsCountry"
 	admin.GET("/country/detail/:country_key", controllers.AdminDetailMsCountry).Name = "AdminDetailMsCountry"
+
+	//Admin Holiday
+	admin.GET("/holiday-list", controllers.AdminGetListMsHoliday).Name = "AdminGetListMsHoliday"
+	admin.POST("/holiday/delete", controllers.AdminDeleteMsHoliday).Name = "AdminDeleteMsHoliday"
+	admin.POST("/holiday/create", controllers.AdminCreateMsHoliday).Name = "AdminCreateMsHoliday"
+	admin.POST("/holiday/update", controllers.AdminUpdateMsHoliday).Name = "AdminUpdateMsHoliday"
+	admin.GET("/holiday/detail/:holiday_key", controllers.AdminDetailMsHoliday).Name = "AdminDetailMsHoliday"
 	return e
 }
 

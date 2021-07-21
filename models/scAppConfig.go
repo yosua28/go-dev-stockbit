@@ -334,7 +334,7 @@ func CountScAppConfigValidateUnique(c *CountData, field string, value string, ke
 	query := `SELECT 
 				COUNT(app_config_key) AS count_data 
 			FROM sc_app_config
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND app_config_key != '" + key + "'"

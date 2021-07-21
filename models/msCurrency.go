@@ -322,7 +322,7 @@ func CountMsCurrencyValidateUnique(c *CountData, field string, value string, key
 	query := `SELECT 
 				COUNT(currency_key) AS count_data 
 			FROM ms_currency
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND currency_key != '" + key + "'"

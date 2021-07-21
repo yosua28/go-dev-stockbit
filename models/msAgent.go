@@ -365,7 +365,7 @@ func CountMsAgentValidateUnique(c *CountData, field string, value string, key st
 	query := `SELECT 
 				COUNT(agent_key) AS count_data 
 			FROM ms_agent
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND agent_key != '" + key + "'"

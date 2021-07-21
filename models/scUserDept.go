@@ -339,7 +339,7 @@ func CountScUserDeptValidateUnique(c *CountData, field string, value string, key
 	query := `SELECT 
 				COUNT(user_dept_key) AS count_data 
 			FROM sc_user_dept
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND user_dept_key != '" + key + "'"

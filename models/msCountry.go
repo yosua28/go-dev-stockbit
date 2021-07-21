@@ -122,9 +122,9 @@ func GetMsCountry(c *MsCountry, key string) (int, error) {
 }
 
 type ListCountry struct {
-	CurrRateKey    uint64  `db:"country_key"            json:"country_key"`
-	RateDate       string  `db:"cou_code"               json:"cou_code"`
-	RateType       string  `db:"cou_name"               json:"cou_name"`
+	CountryKey     uint64  `db:"country_key"            json:"country_key"`
+	CouCode        string  `db:"cou_code"               json:"cou_code"`
+	CouName        string  `db:"cou_name"               json:"cou_name"`
 	CurrencyCode   *string `db:"currency_code"          json:"currency_code"`
 	CurrencyName   *string `db:"currency_name"          json:"currency_name"`
 	CurrencySymbol *string `db:"currency_symbol"        json:"currency_symbol"`
@@ -320,7 +320,7 @@ func CountMsCountryValidateUnique(c *CountData, field string, value string, key 
 	query := `SELECT 
 				COUNT(country_key) AS count_data 
 			FROM ms_country
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND country_key != '" + key + "'"

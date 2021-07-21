@@ -429,7 +429,7 @@ func CountScMenuValidateUnique(c *CountData, field string, value string, key str
 	query := `SELECT 
 				COUNT(menu_key) AS count_data 
 			FROM sc_menu
-			WHERE ` + field + ` = '` + value + `'`
+			WHERE rec_status = '1' AND ` + field + ` = '` + value + `'`
 
 	if key != "" {
 		query += " AND menu_key != '" + key + "'"

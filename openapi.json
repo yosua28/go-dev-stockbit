@@ -32781,6 +32781,435 @@
             }
           }
         }
+      },
+      "/admin/holiday-list": {
+        "get": {
+          "description": "Admin Get Holiday",
+          "tags": [
+            "Admin Holiday"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "search_like",
+              "in": "query",
+              "description": "Parameter search with condition like",
+              "required": false,
+              "schema": {
+                "type": "string"
+              }
+            },
+            {
+              "name": "order_by",
+              "in": "query",
+              "description": "Order By",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "stock_market",
+                  "holiday_date",
+                  "holiday_name"
+                ]
+              }
+            },
+            {
+              "name": "order_type",
+              "in": "query",
+              "description": "Order Type",
+              "required": false,
+              "schema": {
+                "type": "string",
+                "enum": [
+                  "ASC",
+                  "DESC"
+                ]
+              }
+            },
+            {
+              "name": "limit",
+              "in": "query",
+              "description": "Number of post (max 100 or choose no limit)",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "page",
+              "in": "query",
+              "description": "Page",
+              "required": false,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "nolimit",
+              "in": "query",
+              "description": "Ignore limit and page",
+              "required": false,
+              "schema": {
+                "type": "boolean"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "pagination": 1,
+                    "data": [
+                      {
+                        "holiday_key": 235,
+                        "stock_market": "US_MARKET",
+                        "holiday_date": "21 July 2021",
+                        "holiday_name": "PPKM lv.3"
+                      },
+                      {
+                        "holiday_key": 234,
+                        "stock_market": "INDONESIA_MARKET",
+                        "holiday_date": "10 June 2021",
+                        "holiday_name": "LIBUR BURSA"
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/holiday/delete": {
+        "post": {
+          "description": "Delete Holiday",
+          "tags": [
+            "Admin Holiday"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "holiday_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "holiday_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/holiday/create": {
+        "post": {
+          "description": "Create Holiday",
+          "tags": [
+            "Admin Holiday"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "stock_market": {
+                      "type": "integer"
+                    },
+                    "holiday_date": {
+                      "type": "string",
+                      "example": "2021-07-30"
+                    },
+                    "holiday_name": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer",
+                    }
+                  },
+                  "required": [
+                    "stock_market",
+                    "holiday_date",
+                    "holiday_name"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/holiday/update": {
+        "post": {
+          "description": "Update Holiday",
+          "tags": [
+            "Admin Holiday"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "holiday_key": {
+                      "type": "integer"
+                    },
+                    "stock_market": {
+                      "type": "integer"
+                    },
+                    "holiday_date": {
+                      "type": "string",
+                      "example": "2021-07-30"
+                    },
+                    "holiday_name": {
+                      "type": "string"
+                    },
+                    "rec_order": {
+                      "type": "integer",
+                    }
+                  },
+                  "required": [
+                    "holiday_key",
+                    "stock_market",
+                    "holiday_date",
+                    "holiday_name"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/holiday/detail/{holiday_key}": {
+        "get": {
+          "description": "Detail Holiday",
+          "tags": [
+            "Admin Holiday"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "holiday_key",
+              "in": "path",
+              "description": "holiday_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "holiday_key": 235,
+                      "stock_market": 273,
+                      "holiday_date": "2021-07-21 00:00:00",
+                      "holiday_name": "PPKM lv.3",
+                      "rec_order": 1
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {

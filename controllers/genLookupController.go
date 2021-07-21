@@ -24,6 +24,7 @@ func GetGenLookup(c echo.Context) error {
 	}
 
 	params["lkp_group_key"] = groupKeyStr
+	params["rec_status"] = "1"
 
 	var lookupDB []models.GenLookup
 	status, err = models.GetAllGenLookup(&lookupDB, params)
