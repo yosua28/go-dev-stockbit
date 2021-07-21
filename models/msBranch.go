@@ -291,14 +291,14 @@ func CreateMsBranch(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CountMsBranchValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountMsBranchValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(branch_key) AS count_data 
 			FROM ms_branch
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND branch_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND branch_key != '" + key + "'"
 	}
 
 	// Main query

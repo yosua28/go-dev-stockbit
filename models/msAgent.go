@@ -361,14 +361,14 @@ func CreateMsAgent(params map[string]string) (int, error, string) {
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
 }
 
-func CountMsAgentValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountMsAgentValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(agent_key) AS count_data 
 			FROM ms_agent
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND agent_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND agent_key != '" + key + "'"
 	}
 
 	// Main query

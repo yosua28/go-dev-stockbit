@@ -335,14 +335,14 @@ func CreateScUserDept(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CountScUserDeptValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountScUserDeptValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(user_dept_key) AS count_data 
 			FROM sc_user_dept
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND user_dept_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND user_dept_key != '" + key + "'"
 	}
 
 	// Main query

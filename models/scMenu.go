@@ -425,14 +425,14 @@ func CreateScMenu(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CountScMenuValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountScMenuValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(menu_key) AS count_data 
 			FROM sc_menu
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND menu_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND menu_key != '" + key + "'"
 	}
 
 	// Main query

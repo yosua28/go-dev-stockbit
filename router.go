@@ -447,6 +447,13 @@ func router() *echo.Echo {
 	admin.POST("/currency-rate/create", controllers.AdminCreateTrCurrencyRate).Name = "AdminCreateTrCurrencyRate"
 	admin.POST("/currency-rate/update", controllers.AdminUpdateTrCurrencyRate).Name = "AdminUpdateTrCurrencyRate"
 	admin.GET("/currency-rate/detail/:curr_rate_key", controllers.AdminDetailTrCurrencyRate).Name = "AdminDetailTrCurrencyRate"
+
+	//Admin Currency Rate
+	admin.GET("/country-list", controllers.AdminGetListMsCountry).Name = "AdminGetListMsCountry"
+	admin.POST("/country/delete", controllers.AdminDeleteMsCountry).Name = "AdminDeleteMsCountry"
+	admin.POST("/country/create", controllers.AdminCreateMsCountry).Name = "AdminCreateMsCountry"
+	admin.POST("/country/update", controllers.AdminUpdateMsCountry).Name = "AdminUpdateMsCountry"
+	admin.GET("/country/detail/:country_key", controllers.AdminDetailMsCountry).Name = "AdminDetailMsCountry"
 	return e
 }
 

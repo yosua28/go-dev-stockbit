@@ -326,14 +326,14 @@ func CreateMsBank(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CountMsBankValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountMsBankValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(bank_key) AS count_data 
 			FROM ms_bank
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND bank_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND bank_key != '" + key + "'"
 	}
 
 	// Main query

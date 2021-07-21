@@ -344,14 +344,14 @@ func CreateMsCustodianBank(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CountMsCustodianBankValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountMsCustodianBankValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(custodian_key) AS count_data 
 			FROM ms_custodian_bank
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND custodian_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND custodian_key != '" + key + "'"
 	}
 
 	// Main query

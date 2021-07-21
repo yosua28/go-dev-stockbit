@@ -330,14 +330,14 @@ func CreateScAppConfig(params map[string]string) (int, error) {
 	return http.StatusOK, nil
 }
 
-func CountScAppConfigValidateUnique(c *CountData, field string, value string, menuKey string) (int, error) {
+func CountScAppConfigValidateUnique(c *CountData, field string, value string, key string) (int, error) {
 	query := `SELECT 
 				COUNT(app_config_key) AS count_data 
 			FROM sc_app_config
 			WHERE ` + field + ` = '` + value + `'`
 
-	if menuKey != "" {
-		query += " AND app_config_key != '" + menuKey + "'"
+	if key != "" {
+		query += " AND app_config_key != '" + key + "'"
 	}
 
 	// Main query
