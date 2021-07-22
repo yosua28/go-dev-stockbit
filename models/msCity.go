@@ -110,7 +110,7 @@ func GetMsCityIn(c *[]MsCity, value []string, field string) (int, error) {
 }
 
 func GetMsCity(c *MsCity, key string) (int, error) {
-	query := `SELECT ms_city.* FROM ms_city WHERE ms_city.city_key = ` + key
+	query := `SELECT ms_city.* FROM ms_city WHERE ms_city.rec_status = '1' AND ms_city.city_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -189,8 +189,8 @@ func AdminGetListCity(c *[]ListCity, limit uint64, offset uint64, params map[str
 				c.postal_code 
 			FROM ms_city AS c
 			INNER JOIN ms_country AS cou ON cou.country_key = c.country_key
-			LEFT JOIN ms_city AS par ON par.city_key = c.parent_key
-			INNER JOIN gen_lookup AS cl ON cl.lkp_code = c.city_level AND cl.lkp_group_key = 47
+			LEFT JOIN ms_city AS par ON par.city_key = c.parent_key AND par.rec_status = '1'
+			INNER JOIN gen_lookup AS cl ON cl.lkp_code = c.city_level AND cl.lkp_group_key = '47'
 			WHERE c.rec_status = 1 AND c.city_level IN (1,2,3,4)` + condition
 
 	var orderBy string
@@ -257,7 +257,7 @@ func CountAdminGetCity(c *CountData, params map[string]string, searchLike string
 				count(c.city_key) AS count_data 
 			FROM ms_city AS c
 			INNER JOIN ms_country AS cou ON cou.country_key = c.country_key
-			LEFT JOIN ms_city AS par ON par.city_key = c.parent_key
+			LEFT JOIN ms_city AS par ON par.city_key = c.parent_key AND par.rec_status = '1'
 			INNER JOIN gen_lookup AS cl ON cl.lkp_code = c.city_level AND cl.lkp_group_key = '47'
 			WHERE c.rec_status = 1 AND c.city_level IN (1,2,3,4)` + condition
 

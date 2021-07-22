@@ -14,6 +14,11 @@ type GenLookupInfo struct {
 	Value uint64 `json:"value"`
 }
 
+type GenLookupDataInfo struct {
+	Name  string `json:"name"`
+	Value string `json:"value"`
+}
+
 type GenLookup struct {
 	LookupKey         uint64  `db:"lookup_key"              json:"lookup_key"`
 	LkpGroupKey       uint64  `db:"lkp_group_key"           json:"lkp_group_key"`
