@@ -628,8 +628,12 @@ func GetMsProductData(c echo.Context) error {
 	data.MinRedAmount = product.MinRedAmount
 	data.MinRedUnit = product.MinRedUnit
 	data.MinUnitAfterRed = product.MinUnitAfterRed
-	if ffsDB[0].FfsLink != nil && *ffsDB[0].FfsLink != "" {
-		data.FundFactSheet = *ffsDB[0].FfsLink
+	if len(ffsDB) > 0 {
+		if ffsDB[0].FfsLink != nil && *ffsDB[0].FfsLink != "" {
+			data.FundFactSheet = *ffsDB[0].FfsLink
+		} else {
+			data.FundFactSheet = "#"
+		}
 	} else {
 		data.FundFactSheet = "#"
 	}
