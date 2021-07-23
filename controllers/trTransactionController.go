@@ -582,7 +582,7 @@ func CreateTransaction(c echo.Context) error {
 		paramsTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
 	}
 
-	if paymentChannel == "285" {
+	if paymentChannel == "299" {
 		orderID := c.FormValue("order_id")
 		if orderID == "" {
 			log.Error("Missing required parameter: order_id")
@@ -642,7 +642,7 @@ func CreateTransaction(c echo.Context) error {
 		settlementParams["settle_date"] = navDate
 		settlementParams["settle_nominal"] = totalAmountStr
 		settlementParams["client_subaccount_no"] = ""
-		if paymentChannel != "284" {
+		if paymentChannel != "323" {
 			subAcc := c.FormValue("sub_acc")
 			if subAcc == "" {
 				log.Error("Missing required parameter: sub_acc")
