@@ -680,3 +680,23 @@ func AdminDetailMsCity(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, response)
 }
+
+func GetCityParent(c echo.Context) error {
+	var err error
+	var status int
+
+	var city []models.ListParent
+	status, err = models.AdminGetListParent(&city)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = city
+
+	return c.JSON(http.StatusOK, response)
+}

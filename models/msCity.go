@@ -358,3 +358,31 @@ func CountMsCityValidateUnique(c *CountData, field string, value string, key str
 
 	return http.StatusOK, nil
 }
+
+type ListParent struct {
+	CurrRateKey uint64 `db:"parent_key"            json:"parent_key"`
+	CityName    string `db:"city_name"             json:"city_name"`
+}
+
+func AdminGetListParent(c *[]ListParent) (int, error) {
+	query := `SELECT
+				city_key AS parent_key,
+				(CASE
+					WHEN city_level = "1" THEN CONCAT("- ", city_name)
+					WHEN city_level = "2" THEN CONCAT("-- ", city_name)
+					WHEN city_level = "3" THEN CONCAT("--- ", city_name)
+				END) AS city_name 
+			FROM ms_city 
+			WHERE city_level IN (1,2,3) AND rec_status = 1
+			ORDER BY city_level ASC`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
