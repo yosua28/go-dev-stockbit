@@ -33481,7 +33481,7 @@
                       "type": "integer"
                     },
                     "city_level": {
-                      "type": "integer",
+                      "type": "integer"
                     },
                     "region_area": {
                       "type": "integer"
@@ -33496,13 +33496,13 @@
                       "type": "string"
                     },
                     "city_name": {
-                      "type": "string",
+                      "type": "string"
                     },
                     "postal_code": {
-                      "type": "string",
+                      "type": "string"
                     },
                     "rec_order": {
-                      "type": "integer",
+                      "type": "integer"
                     }
                   },
                   "required": [
@@ -33574,7 +33574,7 @@
                       "type": "integer"
                     },
                     "city_level": {
-                      "type": "integer",
+                      "type": "integer"
                     },
                     "region_area": {
                       "type": "integer"
@@ -33589,13 +33589,13 @@
                       "type": "string"
                     },
                     "city_name": {
-                      "type": "string",
+                      "type": "string"
                     },
                     "postal_code": {
-                      "type": "string",
+                      "type": "string"
                     },
                     "rec_order": {
-                      "type": "integer",
+                      "type": "integer"
                     }
                   },
                   "required": [
@@ -33678,15 +33678,17 @@
                       "message_client": "OK"
                     },
                     "data": {
-                      "city_key": 90152,
+                      "city_key": 606,
                       "country_key": 97,
+                      "city_code": "0055",
+                      "city_name": "Bakongan Timur",
+                      "postal_code": "",
                       "city_level": 4,
                       "region_area": 3,
                       "province": 4,
-                      "kab_kodya": 39,
-                      "city_code": "70975",
-                      "city_name": "Test Update Haha",
-                      "postal_code": "11223"
+                      "kab_kodya": 42,
+                      "kecamatan": 606,
+                      "rec_order": 55
                     }
                   }
                 }
