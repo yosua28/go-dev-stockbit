@@ -627,9 +627,13 @@ func AdminDetailMsCity(c echo.Context) error {
 		responseData["rec_order"] = ""
 	}
 
-	if city.CityLevel == uint64(2) { //province
+	if city.CityLevel == uint64(1) { //region_area
+		responseData["region_area"] = city.CityKey
+	} else if city.CityLevel == uint64(2) { //province
 		responseData["region_area"] = city.ParentKey
+		responseData["province"] = city.CityKey
 	} else if city.CityLevel == uint64(3) { //kab_kodya
+		responseData["kab_kodya"] = city.CityKey
 		if city.ParentKey != nil {
 			responseData["province"] = *city.ParentKey
 
@@ -645,6 +649,7 @@ func AdminDetailMsCity(c echo.Context) error {
 			}
 		}
 	} else if city.CityLevel == uint64(4) { //kecamatan
+		responseData["kecamatan"] = city.CityKey
 		if city.ParentKey != nil {
 			responseData["kab_kodya"] = *city.ParentKey
 
