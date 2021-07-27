@@ -516,13 +516,29 @@ func Login(c echo.Context) error {
 		log.Error(err.Error())
 	} else if len(request) > 0 {
 		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
-			var lookup models.GenLookup
-			status, err = models.GetGenLookup(&lookup, strconv.FormatUint(*request[0].Oastatus, 10))
-			if err != nil {
-				log.Error(err.Error())
+			if *request[0].Oastatus > 259 {
+				var lookup models.GenLookup
+				status, err = models.GetGenLookup(&lookup, strconv.FormatUint(*request[0].Oastatus, 10))
+				if err != nil {
+					log.Error(err.Error())
+				} else {
+					if lookup.LkpName != nil && *lookup.LkpName != "" {
+						atClaims["oa_status"] = *lookup.LkpName
+					}
+				}
 			} else {
-				if lookup.LkpName != nil && *lookup.LkpName != "" {
-					atClaims["oa_status"] = *lookup.LkpName
+				if request[0].OaRequestType != nil && *request[0].OaRequestType != 127 {
+					atClaims["oa_status"] = "PENGKINIAN"
+				} else {
+					var lookup models.GenLookup
+					status, err = models.GetGenLookup(&lookup, strconv.FormatUint(*request[0].Oastatus, 10))
+					if err != nil {
+						log.Error(err.Error())
+					} else {
+						if lookup.LkpName != nil && *lookup.LkpName != "" {
+							atClaims["oa_status"] = *lookup.LkpName
+						}
+					}
 				}
 			}
 		}
@@ -876,8 +892,19 @@ func GetUserLogin(c echo.Context) error {
 		log.Error(err.Error())
 	}
 	var requestKey string
+	log.Println(len(oaRequestDB))
+	log.Println(len(oaRequestDB))
+	log.Println(len(oaRequestDB))
 	if len(oaRequestDB) > 0 {
 		requestKey = strconv.FormatUint(oaRequestDB[0].OaRequestKey, 10)
+		if len(oaRequestDB) > 1 {
+			for _, oareq := range oaRequestDB {
+				if *oareq.Oastatus > 259 {
+					requestKey = strconv.FormatUint(oareq.OaRequestKey, 10)
+					break
+				}
+			}
+		}
 	}
 
 	var personalDataDB models.OaPersonalData
