@@ -470,6 +470,10 @@ func router() *echo.Echo {
 	admin.POST("/city/update", controllers.AdminUpdateMsCity).Name = "AdminUpdateMsCity"
 	admin.GET("/city/detail/:city_key", controllers.AdminDetailMsCity).Name = "AdminDetailMsCity"
 	admin.GET("/city-parent", controllers.GetCityParent).Name = "GetCityParent"
+
+	//Admin City
+	admin.GET("/mail-list", controllers.AdminGetListMmMailMaster).Name = "AdminGetListMmMailMaster"
+	admin.POST("/mail/delete", controllers.AdminDeleteMmMailMaster).Name = "AdminDeleteMmMailMaster"
 	return e
 }
 
