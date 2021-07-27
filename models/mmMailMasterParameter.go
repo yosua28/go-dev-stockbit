@@ -3,6 +3,7 @@ package models
 import (
 	"api/db"
 	"net/http"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	log "github.com/sirupsen/logrus"
@@ -111,5 +112,84 @@ func CreateMultipleMmMailMasterParamenter(params []interface{}) (int, error) {
 		log.Println(err.Error())
 		return http.StatusBadGateway, err
 	}
+	return http.StatusOK, nil
+}
+
+func GetAllMmMailParametergent(c *[]MmMailMasterParameter, params map[string]string) (int, error) {
+	query := `SELECT
+			mm_mail_master_parameter.* FROM 
+			mm_mail_master_parameter`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "mm_mail_master_parameter."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func UpdateDeleteAllParameter(field string, params map[string]string, mailParameterKeyValues []string) (int, error) {
+	inQuery := strings.Join(mailParameterKeyValues, ",")
+	query := "UPDATE mm_mail_master_parameter SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		query += key + " = '" + value + "'"
+
+		if (len(params) - 1) > i {
+			query += ", "
+		}
+		i++
+	}
+	query += " WHERE " + field + " IN(" + inQuery + ")"
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	// var ret sql.Result
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
 	return http.StatusOK, nil
 }

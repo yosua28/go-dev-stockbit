@@ -34144,6 +34144,277 @@
             }
           }
         }
+      },
+      "/admin/mail/create": {
+        "post": {
+          "description": "Create Email",
+          "tags": [
+            "Admin Email"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mail_master_type": {
+                      "type": "integer"
+                    },
+                    "mail_master_category": {
+                      "type": "integer"
+                    },
+                    "mail_template_name": {
+                      "type": "string"
+                    },
+                    "mail_template_desc": {
+                      "type": "string"
+                    },
+                    "mail_subject": {
+                      "type": "string"
+                    },
+                    "mail_to": {
+                      "type": "string"
+                    },
+                    "mail_cc": {
+                      "type": "string"
+                    },
+                    "mail_body": {
+                      "type": "string"
+                    },
+                    "mail_parameter": {
+                      "type": "string",
+                      "example" : "{SalesName}, {JumlahTransaksi}, {EmailSales}"
+                    }
+                  },
+                  "required": [
+                    "mail_master_type",
+                    "mail_template_name",
+                    "mail_template_desc",
+                    "mail_subject",
+                    "mail_to",
+                    "mail_body"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/mail/update": {
+        "post": {
+          "description": "Update Email",
+          "tags": [
+            "Admin Email"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "mail_master_key": {
+                      "type": "integer"
+                    },
+                    "mail_master_type": {
+                      "type": "integer"
+                    },
+                    "mail_master_category": {
+                      "type": "integer"
+                    },
+                    "mail_template_name": {
+                      "type": "string"
+                    },
+                    "mail_template_desc": {
+                      "type": "string"
+                    },
+                    "mail_subject": {
+                      "type": "string"
+                    },
+                    "mail_to": {
+                      "type": "string"
+                    },
+                    "mail_cc": {
+                      "type": "string"
+                    },
+                    "mail_body": {
+                      "type": "string"
+                    },
+                    "mail_parameter": {
+                      "type": "string",
+                      "example" : "{SalesName}, {JumlahTransaksi}, {EmailSales}"
+                    }
+                  },
+                  "required": [
+                    "mail_master_key",
+                    "mail_master_type",
+                    "mail_template_name",
+                    "mail_template_desc",
+                    "mail_subject",
+                    "mail_to",
+                    "mail_body"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success register",
+              "content": {
+                "text/plain": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Email is not valid"
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error get email"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/mail/detail/{mail_master_key}": {
+        "get": {
+          "description": "Detail Email",
+          "tags": [
+            "Admin Email"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "mail_master_key",
+              "in": "path",
+              "description": "mail_master_key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "mail_master_key": 2,
+                      "mail_master_type": 335,
+                      "mail_master_category": 340,
+                      "mail_template_name": "SUBS-SALES",
+                      "mail_template_desc": "asdasd asdasd",
+                      "mail_subject": "ini haha oke",
+                      "mail_to": "{Makan}",
+                      "mail_cc": "sss@gmail.com",
+                      "mail_body": "ini haha oke",
+                      "mail_parameter": [
+                        "{SalesName}",
+                        "{JumlahTransaksi}",
+                        "{MakanApa}",
+                        "{Jakarta}"
+                      ]
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {
