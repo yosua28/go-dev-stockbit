@@ -478,6 +478,8 @@ func router() *echo.Echo {
 	admin.POST("/mail/create", controllers.AdminCreateMmMailMaster).Name = "AdminCreateMmMailMaster"
 	admin.POST("/mail/update", controllers.AdminUpdateMmMailMaster).Name = "AdminUpdateMmMailMaster"
 	admin.GET("/mail/detail/:mail_master_key", controllers.AdminDetailMmMailMaster).Name = "AdminDetailMmMailMaster"
+	//Admin City
+	admin.POST("/tes-sent-email", controllers.TestSentEmail).Name = "TestSentEmail"
 	return e
 }
 

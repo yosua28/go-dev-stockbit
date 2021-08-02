@@ -34415,6 +34415,81 @@
             }
           }
         }
+      },
+      "/admin/tes-sent-email": {
+        "post": {
+          "description": "Tes Sent email trans ke BO & Sales",
+          "tags": [
+            "TESTING"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "tr_key": {
+                      "type": "integer"
+                    },
+                    "role": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "tr_key",
+                    "role"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "components": {

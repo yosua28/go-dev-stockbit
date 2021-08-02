@@ -2342,45 +2342,23 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		if err != nil {
 			log.Error("Error send email")
 			log.Error(err)
-			log.Error("Error send email")
 		}
-		log.Info("Email sent")
 
-		//sent email to all CS
-		paramsScLogin := make(map[string]string)
-		paramsScLogin["role_key"] = "11"
-		paramsScLogin["rec_status"] = "1"
-		var userLogin []models.ScUserLogin
-		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		//sent email to all CS & Agent
+		var oaRequest models.OaRequest
+		status, err = models.GetOaRequest(&oaRequest, requestID)
 		if err != nil {
-			log.Error("Error get user CS email")
-			log.Error(err)
+			log.Error(err.Error())
 		} else {
-			for _, scLogin := range userLogin {
-				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-				if (strUserCat == "2") || (strUserCat == "3") {
-					mailer := gomail.NewMessage()
-					mailer.SetHeader("From", config.EmailFrom)
-					mailer.SetHeader("To", scLogin.UloginEmail)
-					mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
-					mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+fullname)
-					dialer := gomail.NewDialer(
-						config.EmailSMTPHost,
-						int(config.EmailSMTPPort),
-						config.EmailFrom,
-						config.EmailFromPassword,
-					)
-					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-					err = dialer.DialAndSend(mailer)
-					if err != nil {
-						log.Error("Error send email")
-						log.Error(err)
-					}
-				}
+			var personalData models.OaPersonalData
+			status, err = models.GetOaPersonalData(&personalData, requestID, "oa_request_key")
+			if err != nil {
+				log.Error(err.Error())
+			} else {
+				SentEmailOaPengkinianToBackOffice(oaRequest, personalData, "11")
+				SentEmailOaPengkinianToSales(oaRequest, personalData)
 			}
 		}
-		//end send email to CS
 	}
 
 	//insert message notif in app
@@ -3891,40 +3869,21 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 		}
 		log.Info("Email sent")
 
-		//sent email to all CS
-		paramsScLogin := make(map[string]string)
-		paramsScLogin["role_key"] = "11"
-		paramsScLogin["rec_status"] = "1"
-		var userLogin []models.ScUserLogin
-		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+		//sent email to all CS & Agent
+		var oaRequest models.OaRequest
+		status, err = models.GetOaRequest(&oaRequest, requestID)
 		if err != nil {
-			log.Error("Error get user CS")
+			log.Error(err.Error())
 		} else {
-			for _, scLogin := range userLogin {
-				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-				if (strUserCat == "2") || (strUserCat == "3") {
-					mailer := gomail.NewMessage()
-					mailer.SetHeader("From", config.EmailFrom)
-					mailer.SetHeader("To", scLogin.UloginEmail)
-					mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Pengkinian Data")
-					mailer.SetBody("text/html", "Segera verifikasi Pengkinian Data dengan nama : "+fullname)
-					dialer := gomail.NewDialer(
-						config.EmailSMTPHost,
-						int(config.EmailSMTPPort),
-						config.EmailFrom,
-						config.EmailFromPassword,
-					)
-					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-					err = dialer.DialAndSend(mailer)
-					if err != nil {
-						log.Error("Error send email")
-						log.Error(err)
-					}
-				}
+			var personalData models.OaPersonalData
+			status, err = models.GetOaPersonalData(&personalData, requestID, "oa_request_key")
+			if err != nil {
+				log.Error(err.Error())
+			} else {
+				SentEmailOaPengkinianToBackOffice(oaRequest, personalData, "11")
+				SentEmailOaPengkinianToSales(oaRequest, personalData)
 			}
 		}
-		//end send email to CS
 	}
 
 	//insert message notif in app
