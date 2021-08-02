@@ -4683,8 +4683,8 @@ func SentEmailTransactionToBackOffice(transactionKey string, roleKey string) {
 		mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
 		mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
 		if *transaction.PaymentMethod == uint64(284) { //manual
-			linkBuktiTransfer := config.BasePath + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
-			mailParam["BuktiTransfer"] = `<img src="` + linkBuktiTransfer + `" width="200px" height="300px">`
+			linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
+			mailParam["BuktiTransfer"] = "<img src=\"" + linkBuktiTransfer + "\" width=\"200px\" height=\"300px\">"
 		} else {
 			mailParam["BuktiTransfer"] = "-"
 		}
@@ -4798,8 +4798,8 @@ func SentEmailTransactionToSales(transactionKey string) {
 			mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
 			mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
 			if *transaction.PaymentMethod == uint64(284) { //manual
-				linkBuktiTransfer := config.BasePath + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
-				mailParam["BuktiTransfer"] = `<img src="` + linkBuktiTransfer + `" width="200px" height="300px">`
+				linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
+				mailParam["BuktiTransfer"] = "<img src=\"" + linkBuktiTransfer + "\" width=\"200px\" height=\"300px\">"
 			} else {
 				mailParam["BuktiTransfer"] = "-"
 			}
