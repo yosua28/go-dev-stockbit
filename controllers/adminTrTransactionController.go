@@ -4676,16 +4676,19 @@ func SentEmailTransactionToBackOffice(transactionKey string, roleKey string) {
 
 	if transaction.TransTypeKey == uint64(1) { // subs
 		subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
-		mailTemp = "email-new-subs-to-cs-kyc-fundadmin.html"
 
 		mailParam["TipeTransaksi"] = "Subscription"
 		mailParam["NamaProduk"] = transaction.ProductName
 		mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
 		mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
 		if *transaction.PaymentMethod == uint64(284) { //manual
+			log.Println("MANUAL TRANSFER")
+			mailTemp = "email-new-subs-to-cs-kyc-fundadmin.html"
 			linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
-			mailParam["BuktiTransfer"] = "<img src=\"" + linkBuktiTransfer + "\" width=\"200px\" height=\"300px\">"
+			mailParam["BuktiTransfer"] = linkBuktiTransfer
 		} else {
+			log.Println("NON MANUAL TRANSFER")
+			mailTemp = "email-new-subs-to-cs-kyc-fundadmin-non-manual-transfer.html"
 			mailParam["BuktiTransfer"] = "-"
 		}
 	} else if transaction.TransTypeKey == uint64(2) { // redm
@@ -4791,16 +4794,19 @@ func SentEmailTransactionToSales(transactionKey string) {
 
 		if transaction.TransTypeKey == uint64(1) { // subs
 			subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
-			mailTemp = "email-new-subs-to-sales.html"
 
 			mailParam["TipeTransaksi"] = "Subscription"
 			mailParam["NamaProduk"] = transaction.ProductName
 			mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
 			mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
 			if *transaction.PaymentMethod == uint64(284) { //manual
+				log.Println("MANUAL TRANSFER")
+				mailTemp = "email-new-subs-to-sales.html"
 				linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
-				mailParam["BuktiTransfer"] = "<img src=\"" + linkBuktiTransfer + "\" width=\"200px\" height=\"300px\">"
+				mailParam["BuktiTransfer"] = linkBuktiTransfer
 			} else {
+				log.Println("NON MANUAL TRANSFER")
+				mailTemp = "email-new-subs-to-sales-non-manual-transfer.html"
 				mailParam["BuktiTransfer"] = "-"
 			}
 		} else if transaction.TransTypeKey == uint64(2) { // redm
