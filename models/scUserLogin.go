@@ -764,3 +764,23 @@ func CheckCreatePin(c *CountData, userLoginKey string) (int, error) {
 
 	return http.StatusOK, nil
 }
+
+func SetNullTokenNotif(tokenNotif string) (int, error) {
+	query := `UPDATE sc_user_login SET token_notif = NULL WHERE token_notif = "` + tokenNotif + `"`
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+
+	_, err = tx.Exec(query)
+
+	if err != nil {
+		tx.Rollback()
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	tx.Commit()
+	return http.StatusOK, nil
+}

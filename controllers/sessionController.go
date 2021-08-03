@@ -609,6 +609,9 @@ func Login(c echo.Context) error {
 	if tokenNotif != "" {
 		paramsUpdate["token_notif"] = tokenNotif
 		paramsUpdate["last_update_token_notif"] = time.Now().Format(dateLayout)
+
+		//update null token_notif
+		_, err = models.SetNullTokenNotif(tokenNotif)
 	}
 
 	_, err = models.UpdateScUserLogin(paramsUpdate)
