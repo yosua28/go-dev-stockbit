@@ -4,11 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
-	"bytes"
-	"crypto/tls"
 	"database/sql"
-	"fmt"
-	"html/template"
 	"math"
 	"mime/multipart"
 	"net/http"
@@ -18,10 +14,8 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"github.com/leekchan/accounting"
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
-	"gopkg.in/gomail.v2"
 )
 
 func GetTransactionSubscription(c echo.Context) error {
@@ -864,13 +858,10 @@ func CreateTransactionSubscription(c echo.Context) error {
 	paramsUserMessage["flag_sent"] = "1"
 	var subject string
 	var body string
-	var typ string
 	if params["flag_newsub"] == "1" {
-		typ = "subscription"
 		subject = "Subscription sedang Diproses"
 		body = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
 	} else {
-		typ = "topup"
 		subject = "Top Up sedang Diproses"
 		body = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
 	}
@@ -894,10 +885,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body, "TRANSACTION")
 
 	//send email
-	params["product_name"] = product.ProductNameAlt
-	params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
-	params["parrent"] = transactionID
-	err = mailTransactionManual(typ, params, customerKeyStr, userData.UloginEmail)
+	SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -1548,28 +1536,8 @@ func CreateTransactionRedemption(c echo.Context) error {
 	//create push notif
 	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body, "TRANSACTION")
 
-	//send email
-	var customerBankAccountInfo models.MsCustomerBankAccountInfo
-	status, err = models.GetMsCustomerBankAccountTransactionByCustBankaccKey(&customerBankAccountInfo, bankStr)
-	if err != nil {
-		if err != sql.ErrNoRows {
-			log.Error(err.Error())
-			return lib.CustomError(status, err.Error(), "Failed get data")
-		}
-	}
-
-	params["product_name"] = product.ProductNameAlt
-	params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
-	params["parrent"] = transactionID
-	params["BankName"] = customerBankAccountInfo.BankName
-	params["AccountNo"] = customerBankAccountInfo.AccountNo
-	params["AccountHolderName"] = customerBankAccountInfo.AccountName
-	if customerBankAccountInfo.BranchName != nil {
-		params["BranchName"] = *customerBankAccountInfo.BranchName
-	} else {
-		params["BranchName"] = "-"
-	}
-	err = mailTransactionManual("redemption", params, customerKeyStr, userData.UloginEmail)
+	//send email to BO role 11 & Sales
+	SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -2086,12 +2054,8 @@ func CreateTransactionSwitching(c echo.Context) error {
 	//create push notif
 	lib.CreateNotifCustomerFromAdminByCustomerId(customerKeyStr, subject, body, "TRANSACTION")
 
-	//send email
-	params["product_name"] = product.ProductNameAlt
-	params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
-	params["parrent"] = transactionID
-	params["ProductOutNameAlt"] = productTo.ProductNameAlt
-	err = mailTransactionManual("switching", params, customerKeyStr, userData.UloginEmail)
+	//send email to role 11 & sales
+	SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -2099,112 +2063,4 @@ func CreateTransactionSwitching(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = ""
 	return c.JSON(http.StatusOK, response)
-}
-
-func mailTransactionManual(typ string, params map[string]string, customerKey string, email string) error {
-	var err error
-	var mailTemp, subject string
-	decimal.MarshalJSONWithoutQuotes = true
-	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
-	mailParam := make(map[string]string)
-	if params["currency"] == "1" {
-		mailParam["Symbol"] = "Rp. "
-	} else if params["currency"] == "2" {
-		mailParam["Symbol"] = "$"
-	} else if params["currency"] == "3" {
-		mailParam["Symbol"] = "E"
-	}
-	val, _ := decimal.NewFromString(params["trans_fee_amount"])
-	mailParam["Fee"] = ac0.FormatMoneyDecimal(val.Truncate(0))
-	if typ == "subscription" || typ == "topup" {
-		mailTemp = "index-" + typ + "-complete.html"
-		s := "Subscription"
-		if typ == "topup" {
-			s = "Top Up"
-		}
-		subject = s + " Kamu sedang Diproses"
-	} else if typ == "redemption" {
-		mailTemp = "index-" + typ + ".html"
-		subject = "Redemption Kamu sedang Diproses"
-
-		mailParam["BankName"] = params["BankName"]
-		mailParam["BankAccNo"] = params["AccountNo"]
-		mailParam["AccHolderName"] = params["AccountHolderName"]
-		mailParam["Branch"] = params["BranchName"]
-
-	} else if typ == "switching" {
-		mailTemp = "index-" + typ + ".html"
-		subject = "Switching Kamu sedang Diproses"
-		mailParam["ProductOut"] = params["ProductOutNameAlt"]
-	} else {
-		log.Error("Failed send mail: type not valid")
-		return err
-	}
-
-	value, _ := strconv.ParseFloat(params["trans_unit"], 64)
-	if value > 0 {
-		mailParam["Symbol"] = ""
-		mailParam["Amount"] = fmt.Sprintf("%.2f", value)
-		mailParam["Str"] = " Unit"
-	} else {
-		val, _ := decimal.NewFromString(params["trans_amount"])
-		mailParam["Amount"] = ac0.FormatMoneyDecimal(val)
-	}
-	var customer models.MsCustomer
-	_, err = models.GetMsCustomer(&customer, customerKey)
-	if err != nil {
-		log.Error("Failed send mail: " + err.Error())
-		return err
-	}
-	mailParam["Name"] = customer.FullName
-	mailParam["Cif"] = customer.UnitHolderIDno
-	layout := "2006-01-02 15:04:05"
-	dateLayout := "02 Jan 2006"
-	date, _ := time.Parse(layout, params["trans_date"])
-	mailParam["Date"] = date.Format(dateLayout)
-	hr, min, _ := date.Clock()
-	mailParam["Time"] = strconv.Itoa(hr) + "." + strconv.Itoa(min) + " WIB"
-
-	mailParam["ProductName"] = params["product_name"]
-	mailParam["ProductIn"] = params["product_name"]
-
-	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
-
-	t := template.New(mailTemp)
-
-	t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
-	if err != nil {
-		log.Error("Failed send mail: " + err.Error())
-		return err
-	}
-
-	var tpl bytes.Buffer
-	if err := t.Execute(&tpl, mailParam); err != nil {
-		log.Error("Failed send mail: " + err.Error())
-		return err
-	}
-
-	result := tpl.String()
-
-	mailer := gomail.NewMessage()
-	mailer.SetHeader("From", config.EmailFrom)
-	mailer.SetHeader("To", email)
-	mailer.SetHeader("Subject", "[MotionFunds] "+subject)
-	mailer.SetBody("text/html", result)
-
-	dialer := gomail.NewDialer(
-		config.EmailSMTPHost,
-		int(config.EmailSMTPPort),
-		config.EmailFrom,
-		config.EmailFromPassword,
-	)
-	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-	err = dialer.DialAndSend(mailer)
-	if err != nil {
-		log.Error("Failed send mail: " + err.Error())
-		return err
-	}
-	log.Info("Email sent")
-	return nil
 }

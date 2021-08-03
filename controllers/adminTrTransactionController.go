@@ -1252,43 +1252,11 @@ func ProsesApproval(transStatusKeyDefault string, transStatusIds []string, c ech
 				}
 			}
 
-			paramsScLogin := make(map[string]string)
 			if lib.Profile.RoleKey == roleKeyCs {
-				paramsScLogin["role_key"] = "12"
+				SentEmailTransactionToBackOffice(strconv.FormatUint(transaction.TransactionKey, 10), "12")
 			}
 			if lib.Profile.RoleKey == roleKeyKyc {
-				paramsScLogin["role_key"] = "13"
-			}
-			paramsScLogin["rec_status"] = "1"
-			var userLogin []models.ScUserLogin
-			_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
-			if err != nil {
-				log.Error("Error get email")
-				log.Error(err)
-			} else {
-				for _, scLogin := range userLogin {
-					strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-					if (strUserCat == "2") || (strUserCat == "3") {
-						mailer := gomail.NewMessage()
-						mailer.SetHeader("From", config.EmailFrom)
-						mailer.SetHeader("To", scLogin.UloginEmail)
-						mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Transaksi Produk")
-						mailer.SetBody("text/html", "Segera verifikasi transaksi baru dengan nama customer : "+customer.FullName+" dan nama produk "+product.ProductNameAlt)
-						dialer := gomail.NewDialer(
-							config.EmailSMTPHost,
-							int(config.EmailSMTPPort),
-							config.EmailFrom,
-							config.EmailFromPassword,
-						)
-						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-						err = dialer.DialAndSend(mailer)
-						if err != nil {
-							log.Error("Error send email")
-							log.Error(err)
-						}
-					}
-				}
+				SentEmailTransactionToBackOffice(strconv.FormatUint(transaction.TransactionKey, 10), "12")
 			}
 		}
 
@@ -4630,8 +4598,8 @@ func TestSentEmail(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: role", "Missing required parameter: role")
 	}
 
-	SentEmailTransactionToBackOffice(trKey, role)
-	SentEmailTransactionToSales(trKey)
+	// SentEmailTransactionToBackOffice(trKey, role)
+	SentEmailTransactionToBackOfficeAndSales(trKey, role)
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -4765,7 +4733,7 @@ func SentEmailTransactionToBackOffice(transactionKey string, roleKey string) {
 	}
 }
 
-func SentEmailTransactionToSales(transactionKey string) {
+func SentEmailTransactionToBackOfficeAndSales(transactionKey string, roleKey string) {
 	var err error
 	var transaction models.DetailTransactionDataSentEmail
 	_, err = models.AdminDetailTransactionDataSentEmail(&transaction, transactionKey)
@@ -4773,64 +4741,144 @@ func SentEmailTransactionToSales(transactionKey string) {
 		log.Error("Failed get transaction: " + err.Error())
 		return
 	}
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+	if roleKey == "11" {
+		mailParam["BackOfficeGroup"] = "Customer Service"
+	} else if roleKey == "12" {
+		mailParam["BackOfficeGroup"] = "Compliance"
+	} else if roleKey == "13" {
+		mailParam["BackOfficeGroup"] = "FundAdmin"
+	}
 
-	if transaction.SalesEmail != nil {
-		var mailTemp, subject string
-		mailParam := make(map[string]string)
-		mailParam["FileUrl"] = config.FileUrl + "/images/mail"
-		mailParam["NamaLengkap"] = transaction.FullName
-		mailParam["CIF"] = *transaction.Cif
-		mailParam["TanggalTransaksi"] = transaction.TransDate
-		mailParam["WaktuTransaksi"] = transaction.TransTime
-		mailParam["Sales"] = *transaction.Sales
-		ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
-		if *transaction.EntryMode == uint64(140) { //Amount
-			mailParam["JumlahTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
-		} else { //Unit
-			mailParam["JumlahTransaksi"] = ac0.FormatMoneyDecimal(transaction.TransUnit.Truncate(2)) + " Unit"
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+	mailParam["NamaLengkap"] = transaction.FullName
+	mailParam["CIF"] = *transaction.Cif
+	mailParam["TanggalTransaksi"] = transaction.TransDate
+	mailParam["WaktuTransaksi"] = transaction.TransTime
+	mailParam["Sales"] = *transaction.Sales
+	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
+	if *transaction.EntryMode == uint64(140) { //Amount
+		mailParam["JumlahTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+	} else { //Unit
+		mailParam["JumlahTransaksi"] = ac0.FormatMoneyDecimal(transaction.TransUnit.Truncate(2)) + " Unit"
+	}
+
+	mailParam["BiayaTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+
+	if transaction.TransTypeKey == uint64(1) { // subs
+		subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
+
+		mailParam["TipeTransaksi"] = "Subscription"
+		mailParam["NamaProduk"] = transaction.ProductName
+		mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
+		mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
+		if *transaction.PaymentMethod == uint64(284) { //manual
+			log.Println("MANUAL TRANSFER")
+			mailTemp = "email-new-subs-to-cs-kyc-fundadmin.html"
+			linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
+			mailParam["BuktiTransfer"] = linkBuktiTransfer
+		} else {
+			log.Println("NON MANUAL TRANSFER")
+			mailTemp = "email-new-subs-to-cs-kyc-fundadmin-non-manual-transfer.html"
+			mailParam["BuktiTransfer"] = "-"
 		}
+	} else if transaction.TransTypeKey == uint64(2) { // redm
+		subject = "[MotionFunds] Mohon Verifikasi Transaksi Redemption"
+		mailTemp = "email-new-redm-to-cs-kyc-fundadmin.html"
 
-		mailParam["BiayaTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+		mailParam["TipeTransaksi"] = "Redemption"
+		mailParam["NamaProduk"] = transaction.ProductName
+		mailParam["NamaBank"] = *transaction.BankRekBankCustomer
+		mailParam["NoRekeningBank"] = *transaction.NoRekBankCustomer
+		mailParam["NamaPadaRekeningBank"] = *transaction.NameRekBankCustomer
+		mailParam["Cabang"] = *transaction.CabangRekBankCustomer
+	} else { //switching
+		subject = "[MotionFunds] Mohon Verifikasi Transaksi Switching"
+		mailTemp = "email-new-switching-to-cs-kyc-fundadmin.html"
 
-		if transaction.TransTypeKey == uint64(1) { // subs
-			subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
+		mailParam["TipeTransaksi"] = "Switching"
+		mailParam["ProdukAsal"] = transaction.ProductName
+		mailParam["ProdukTujuan"] = *transaction.ProductTujuan
+	}
 
-			mailParam["TipeTransaksi"] = "Subscription"
-			mailParam["NamaProduk"] = transaction.ProductName
-			mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
-			mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
-			if *transaction.PaymentMethod == uint64(284) { //manual
-				log.Println("MANUAL TRANSFER")
-				mailTemp = "email-new-subs-to-sales.html"
-				linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
-				mailParam["BuktiTransfer"] = linkBuktiTransfer
-			} else {
-				log.Println("NON MANUAL TRANSFER")
-				mailTemp = "email-new-subs-to-sales-non-manual-transfer.html"
-				mailParam["BuktiTransfer"] = "-"
-			}
-		} else if transaction.TransTypeKey == uint64(2) { // redm
-			subject = "[MotionFunds] Mohon Verifikasi Transaksi Redemption"
-			mailTemp = "email-new-redm-to-sales.html"
-
-			mailParam["TipeTransaksi"] = "Redemption"
-			mailParam["NamaProduk"] = transaction.ProductName
-			mailParam["NamaBank"] = *transaction.BankRekBankCustomer
-			mailParam["NoRekeningBank"] = *transaction.NoRekBankCustomer
-			mailParam["NamaPadaRekeningBank"] = *transaction.NameRekBankCustomer
-			mailParam["Cabang"] = *transaction.CabangRekBankCustomer
-		} else { //switching
-			subject = "[MotionFunds] Mohon Verifikasi Transaksi Switching"
-			mailTemp = "email-new-switching-to-sales.html"
-
-			mailParam["TipeTransaksi"] = "Switching"
-			mailParam["ProdukAsal"] = transaction.ProductName
-			mailParam["ProdukTujuan"] = *transaction.ProductTujuan
-		}
-
+	paramsScLogin := make(map[string]string)
+	paramsScLogin["role_key"] = roleKey
+	paramsScLogin["rec_status"] = "1"
+	var userLogin []models.ScUserLogin
+	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+	if err != nil {
+		log.Println("Email BO kosong")
+		log.Error("User BO tidak ditemukan")
+		log.Error(err)
+	} else {
+		log.Println("Data User BO tersedia")
+		log.Println(len(userLogin))
 		t := template.New(mailTemp)
 
 		t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+		if err != nil {
+			log.Error("Failed send mail: " + err.Error())
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					var tpl bytes.Buffer
+					if err := t.Execute(&tpl, mailParam); err != nil {
+						log.Error("Failed send mail: " + err.Error())
+					} else {
+						result := tpl.String()
+
+						mailer := gomail.NewMessage()
+						mailer.SetHeader("From", config.EmailFrom)
+						mailer.SetHeader("To", scLogin.UloginEmail)
+						mailer.SetHeader("Subject", subject)
+						mailer.SetBody("text/html", result)
+
+						dialer := gomail.NewDialer(
+							config.EmailSMTPHost,
+							int(config.EmailSMTPPort),
+							config.EmailFrom,
+							config.EmailFromPassword,
+						)
+						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+						err = dialer.DialAndSend(mailer)
+						if err != nil {
+							log.Error("Failed send mail to: " + scLogin.UloginEmail)
+							log.Error("Failed send mail: " + err.Error())
+						} else {
+							log.Println("Sukses email BO : " + scLogin.UloginEmail)
+						}
+					}
+				}
+			}
+		}
+	}
+
+	// to sales
+	if transaction.SalesEmail != nil {
+		var mailTempSales, subject string
+		if transaction.TransTypeKey == uint64(1) { // subs
+			subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
+			if *transaction.PaymentMethod == uint64(284) { //manual
+				log.Println("MANUAL TRANSFER")
+				mailTempSales = "email-new-subs-to-sales.html"
+			} else {
+				log.Println("NON MANUAL TRANSFER")
+				mailTempSales = "email-new-subs-to-sales-non-manual-transfer.html"
+			}
+		} else if transaction.TransTypeKey == uint64(2) { // redm
+			subject = "[MotionFunds] Mohon Verifikasi Transaksi Redemption"
+			mailTempSales = "email-new-redm-to-sales.html"
+		} else { //switching
+			subject = "[MotionFunds] Mohon Verifikasi Transaksi Switching"
+			mailTempSales = "email-new-switching-to-sales.html"
+		}
+
+		t := template.New(mailTempSales)
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTempSales)
 		if err != nil {
 			log.Error("Failed send mail: " + err.Error())
 			return
@@ -4858,10 +4906,12 @@ func SentEmailTransactionToSales(transactionKey string) {
 
 		err = dialer.DialAndSend(mailer)
 		if err != nil {
-			log.Error("Failed send mail to: " + *transaction.SalesEmail)
-			log.Error("Failed send mail: " + err.Error())
+			log.Error("Failed send mail to sales: " + *transaction.SalesEmail)
+			log.Error("Failed send mail to sales: " + err.Error())
 		} else {
 			log.Println("Sukses email Sales : " + *transaction.SalesEmail)
 		}
+	} else {
+		log.Println("Data Sales tidak ada email")
 	}
 }
