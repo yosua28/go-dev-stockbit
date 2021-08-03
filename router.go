@@ -62,6 +62,7 @@ func router() *echo.Echo {
 	// Bank
 	auth.GET("/bank", controllers.GetMsBankList).Name = "GetMsBankList"
 	auth.GET("/customerbankaccount", controllers.GetAllCustomerBankAccount).Name = "GetAllCustomerBankAccount"
+	auth.PATCH("/customerbankaccountpriority", controllers.CustomerBankAccountPriority).Name = "CustomerBankAccountPriority"
 
 	// Country
 	auth.GET("/country", controllers.GetMsCountryList).Name = "GetMsCountryList"

@@ -568,18 +568,33 @@ func CreateTransaction(c echo.Context) error {
 	}
 
 	paramsTransaction["transaction_key"] = transactionID
-
-	var customerBankDB []models.MsCustomerBankAccount
-	paramCustomerBank := make(map[string]string)
-	paramCustomerBank["customer_key"] = customerKey
-	paramCustomerBank["orderBy"] = "cust_bankacc_key"
-	paramCustomerBank["orderType"] = "DESC"
-	status, err = models.GetAllMsCustomerBankAccount(&customerBankDB, paramCustomerBank)
-	if err != nil {
-		log.Error(err.Error())
-		paramsTransaction["cust_bankacc_key"] = "1"
+	customerBankAccountKey := c.FormValue("customer_bankacc_key")
+	if typeKeyStr == "2" {
+		if customerBankAccountKey != "" {
+			productBankAccount, _ := strconv.ParseUint(customerBankAccountKey, 10, 64)
+			if productBankAccount > 0 {
+				paramsTransaction["cust_bankacc_key"] = customerBankAccountKey
+			} else {
+				log.Error("Wrong input for parameter: customer_bankacc_key")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: customer_bankacc_key", "Wrong input for parameter: customer_bankacc_key")
+			}
+		} else {
+			log.Error("Missing required parameter: customer_bankacc_key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: customer_bankacc_key", "Missing required parameter: customer_bankacc_key")
+		}
 	} else {
-		paramsTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
+		var customerBankDB []models.MsCustomerBankAccount
+		paramCustomerBank := make(map[string]string)
+		paramCustomerBank["customer_key"] = customerKey
+		paramCustomerBank["orderBy"] = "cust_bankacc_key"
+		paramCustomerBank["orderType"] = "DESC"
+		status, err = models.GetAllMsCustomerBankAccount(&customerBankDB, paramCustomerBank)
+		if err != nil {
+			log.Error(err.Error())
+			paramsTransaction["cust_bankacc_key"] = "1"
+		} else {
+			paramsTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
+		}
 	}
 
 	if paymentChannel == "299" {
@@ -1765,83 +1780,4 @@ func mailTransaction(typ string, params map[string]string) error {
 	}
 	log.Info("Email sent")
 	return nil
-}
-
-func GetAllCustomerBankAccount(c echo.Context) error {
-
-	var err error
-	var status int
-
-	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
-		log.Error("No customer found")
-		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
-	}
-
-	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
-
-	var customerBankAcc []models.MsCustomerBankAccount
-	customerBankAccParams := make(map[string]string)
-	customerBankAccParams["customer_key"] = customerKey
-	customerBankAccParams["rec_status"] = "1"
-	status, err = models.GetAllMsCustomerBankAccount(&customerBankAcc, customerBankAccParams)
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
-	var bankAccountIDs []string
-	var priority uint64
-	if len(customerBankAcc) > 0 {
-		for _, val := range customerBankAcc {
-			bankAccountIDs = append(bankAccountIDs, strconv.FormatUint(val.BankAccountKey, 10))
-			if val.FlagPriority == 1 {
-				priority = val.BankAccountKey
-			}
-		}
-	} 
-
-	var bankAccountDB []models.MsBankAccount
-	var bankAccountDatas []interface{}
-	_, err = models.GetMsBankAccountIn(&bankAccountDB, bankAccountIDs, "bank_account_key")
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
-	var bankIDs []string
-	for _, val := range bankAccountDB {
-		bankIDs = append(bankIDs, strconv.FormatUint(val.BankKey, 10))
-	}
-	var bankDB []models.MsBank
-	_, err = models.GetMsBankIn(&bankDB, bankIDs, "bank_key")
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
-
-	bankDatas := make(map[uint64]string)
-	for _, val := range bankDB {
-		bankDatas[val.BankKey] = val.BankName
-	}
-
-	for _, val := range bankAccountDB {
-		bankAccount := make(map[string]interface{})
-		bankAccount["bank_account_key"] = val.BankAccountKey
-		bankAccount["bank_key"] = bankDatas[val.BankKey]
-		bankAccount["account_no"] = val.AccountNo
-		bankAccount["account_holder_name"] = val.AccountHolderName
-		bankAccount["branch_name"] = val.BranchName
-		bankAccount["flag_priority"] = 0
-		if val.BankAccountKey == priority {
-			bankAccount["flag_priority"] = 1
-		}
-		bankAccountDatas = append(bankAccountDatas, bankAccount)
-	}
-	
-
-	var response lib.Response
-	response.Status.Code = http.StatusOK
-	response.Status.MessageServer = "OK"
-	response.Status.MessageClient = "OK"
-	response.Data = bankAccountDatas
-
-	return c.JSON(http.StatusOK, response)
 }
