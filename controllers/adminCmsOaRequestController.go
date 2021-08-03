@@ -1304,44 +1304,8 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 	}
 
 	if oastatus == "259" { //jika approve
-		//send email to KYC
-
-		paramsScLogin := make(map[string]string)
-		paramsScLogin["role_key"] = "12"
-		paramsScLogin["rec_status"] = "1"
-		var userLogin []models.ScUserLogin
-		_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
-		if err != nil {
-			log.Error("Error get email")
-			log.Error(err)
-		} else {
-			if config.Envi == "PROD" {
-				for _, scLogin := range userLogin {
-					strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-					if (strUserCat == "2") || (strUserCat == "3") {
-						mailer := gomail.NewMessage()
-						mailer.SetHeader("From", config.EmailFrom)
-						mailer.SetHeader("To", scLogin.UloginEmail)
-						mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
-						mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-						dialer := gomail.NewDialer(
-							config.EmailSMTPHost,
-							int(config.EmailSMTPPort),
-							config.EmailFrom,
-							config.EmailFromPassword,
-						)
-						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-						err = dialer.DialAndSend(mailer)
-						if err != nil {
-							log.Error("Error send email")
-							log.Error(err)
-						}
-					}
-				}
-				//end send email to KYC
-			}
-		}
+		//sent email to all KYC
+		SentEmailOaPengkinianToBackOffice(oareq, oapersonal, "12")
 	} else {
 		//update personal data -> delete
 		paramsPersonalDataDelete := make(map[string]string)
@@ -1386,8 +1350,19 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		paramsUserMessage["umessage_sender_key"] = strKey
 		paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
 		paramsUserMessage["flag_sent"] = "1"
-		subject := "Pembukaan Rekening kamu ditolak"
-		body := check1notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+		var subject, body string
+		if *oareq.OaRequestType == uint64(127) {
+			subject = "Pembukaan Rekening kamu ditolak"
+			body = check1notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+		} else {
+			if *oareq.OaRequestType == uint64(128) {
+				subject = "Pengkinian Profile Risiko kamu ditolak"
+				body = check1notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+			} else {
+				subject = "Pengkinian Data kamu ditolak"
+				body = check1notes + " Silakan menghubungi Customer Service untuk informasi lebih lanjut."
+			}
+		}
 		paramsUserMessage["umessage_body"] = body
 		paramsUserMessage["umessage_subject"] = subject
 		paramsUserMessage["umessage_category"] = "248"
@@ -1752,43 +1727,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				sendEmailApproveOa(oapersonal.FullName, userData.UloginEmail)
 			}
 
-			// send email to fund admin
-			paramsScLogin := make(map[string]string)
-			paramsScLogin["role_key"] = "13"
-			paramsScLogin["rec_status"] = "1"
-			var userLogin []models.ScUserLogin
-			_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
-			if err != nil {
-				log.Error("Error get email")
-				log.Error(err)
-			} else {
-				if config.Envi == "PROD" {
-					for _, scLogin := range userLogin {
-						strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
-						if (strUserCat == "2") || (strUserCat == "3") {
-							mailer := gomail.NewMessage()
-							mailer.SetHeader("From", config.EmailFrom)
-							mailer.SetHeader("To", scLogin.UloginEmail)
-							mailer.SetHeader("Subject", "[MotionFunds] Verifikasi Opening Account")
-							mailer.SetBody("text/html", "Segera verifikasi opening account baru dengan nama : "+oapersonal.FullName)
-							dialer := gomail.NewDialer(
-								config.EmailSMTPHost,
-								int(config.EmailSMTPPort),
-								config.EmailFrom,
-								config.EmailFromPassword,
-							)
-							dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
-
-							err = dialer.DialAndSend(mailer)
-							if err != nil {
-								log.Error("Error send email")
-								log.Error(err)
-							}
-						}
-					}
-					// end send email to fund admin
-				}
-			}
+			//sent email to all fund admin
+			SentEmailOaPengkinianToBackOffice(oareq, oapersonal, "13")
 		} else { //create user message
 			customerKey = strconv.FormatUint(*oareq.CustomerKey, 10)
 			paramsUserMessage := make(map[string]string)
@@ -3415,4 +3355,181 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 	response.Data = responseData
 
 	return c.JSON(http.StatusOK, response)
+}
+
+func SentEmailOaPengkinianToBackOffice(
+	oaRequest models.OaRequest,
+	oaPersonalData models.OaPersonalData,
+	roleKey string) {
+
+	var err error
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+	if roleKey == "11" {
+		mailParam["BackOfficeGroup"] = "Customer Service"
+	} else if roleKey == "12" {
+		mailParam["BackOfficeGroup"] = "Compliance"
+	} else if roleKey == "13" {
+		mailParam["BackOfficeGroup"] = "FundAdmin"
+	}
+
+	layout := "2006-01-02 15:04:05"
+	dateLayout := "02 Jan 2006"
+	date, _ := time.Parse(layout, oaPersonalData.DateBirth)
+	mailParam["Name"] = oaPersonalData.FullName
+	mailParam["Identitas"] = oaPersonalData.IDcardNo
+	mailParam["Npwp"] = "-"
+	mailParam["TanggalLahir"] = date.Format(dateLayout)
+	mailParam["Email"] = oaPersonalData.EmailAddress
+	mailParam["NoHp"] = oaPersonalData.PhoneMobile
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+
+	if *oaRequest.OaRequestType == uint64(127) { // oa new
+		subject = "[MotionFunds] Mohon Verifikasi Pembukaan Rekening Reksa Dana"
+		mailTemp = "email-oa-to-cs-kyc-fundadmin.html"
+	} else { // pengkinian
+		if *oaRequest.OaRequestType == uint64(128) {
+			mailParam["JenisPengkinian"] = "Pengkinian Profile Risiko"
+			subject = "[MotionFunds] Mohon Verifikasi Pengkinian Profile Risiko"
+		} else {
+			mailParam["JenisPengkinian"] = "Pengkinian Personal Data"
+			subject = "[MotionFunds] Mohon Verifikasi Pengkinian Personal Data"
+		}
+		mailTemp = "email-pengkinian-to-cs-kyc-fundadmin.html"
+	}
+
+	paramsScLogin := make(map[string]string)
+	paramsScLogin["role_key"] = roleKey
+	paramsScLogin["rec_status"] = "1"
+	var userLogin []models.ScUserLogin
+	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+	if err != nil {
+		log.Error("User BO tidak ditemukan")
+		log.Error(err)
+	} else {
+		t := template.New(mailTemp)
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+		if err != nil {
+			log.Error("Failed send mail: " + err.Error())
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					var tpl bytes.Buffer
+					if err := t.Execute(&tpl, mailParam); err != nil {
+						log.Error("Failed send mail: " + err.Error())
+					} else {
+						result := tpl.String()
+
+						mailer := gomail.NewMessage()
+						mailer.SetHeader("From", config.EmailFrom)
+						mailer.SetHeader("To", scLogin.UloginEmail)
+						mailer.SetHeader("Subject", subject)
+						mailer.SetBody("text/html", result)
+
+						dialer := gomail.NewDialer(
+							config.EmailSMTPHost,
+							int(config.EmailSMTPPort),
+							config.EmailFrom,
+							config.EmailFromPassword,
+						)
+						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+						err = dialer.DialAndSend(mailer)
+						if err != nil {
+							log.Error("Failed send mail to: " + scLogin.UloginEmail)
+							log.Error("Failed send mail: " + err.Error())
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func SentEmailOaPengkinianToSales(
+	oaRequest models.OaRequest,
+	oaPersonalData models.OaPersonalData) {
+
+	var err error
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+
+	layout := "2006-01-02 15:04:05"
+	dateLayout := "02 Jan 2006"
+	date, _ := time.Parse(layout, oaPersonalData.DateBirth)
+	mailParam["Name"] = oaPersonalData.FullName
+	mailParam["Identitas"] = oaPersonalData.IDcardNo
+	mailParam["Npwp"] = "-"
+	mailParam["TanggalLahir"] = date.Format(dateLayout)
+	mailParam["Email"] = oaPersonalData.EmailAddress
+	mailParam["NoHp"] = oaPersonalData.PhoneMobile
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+
+	if *oaRequest.OaRequestType == uint64(127) { // oa new
+		subject = "[MotionFunds] Mohon Verifikasi Pembukaan Rekening Reksa Dana"
+		mailTemp = "email-oa-to-sales.html"
+	} else { // pengkinian
+		if *oaRequest.OaRequestType == uint64(128) {
+			mailParam["JenisPengkinian"] = "Pengkinian Profile Risiko"
+			subject = "[MotionFunds] Mohon Verifikasi Pengkinian Profile Risiko"
+		} else {
+			mailParam["JenisPengkinian"] = "Pengkinian Personal Data"
+			subject = "[MotionFunds] Mohon Verifikasi Pengkinian Personal Data"
+		}
+		mailTemp = "email-pengkinian-to-sales.html"
+	}
+
+	var agentKey string
+	if oaRequest.AgentKey == nil {
+		agentKey = "1"
+	} else {
+		agentKey = strconv.FormatUint(*oaRequest.AgentKey, 10)
+	}
+
+	var agent models.MsAgent
+	_, err = models.GetMsAgent(&agent, agentKey)
+	if err != nil {
+		log.Error("Agent not found")
+	} else {
+		if agent.AgentEmail != nil {
+			t := template.New(mailTemp)
+
+			t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+			if err != nil {
+				log.Error("Failed send mail to sales: " + err.Error())
+			} else {
+				var tpl bytes.Buffer
+				if err := t.Execute(&tpl, mailParam); err != nil {
+					log.Error("Failed send mail to sales: " + err.Error())
+				} else {
+					result := tpl.String()
+
+					mailer := gomail.NewMessage()
+					mailer.SetHeader("From", config.EmailFrom)
+					mailer.SetHeader("To", *agent.AgentEmail)
+					mailer.SetHeader("Subject", subject)
+					mailer.SetBody("text/html", result)
+
+					dialer := gomail.NewDialer(
+						config.EmailSMTPHost,
+						int(config.EmailSMTPPort),
+						config.EmailFrom,
+						config.EmailFromPassword,
+					)
+					dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+					err = dialer.DialAndSend(mailer)
+					if err != nil {
+						log.Error("Failed send mail to sales : " + *agent.AgentEmail)
+						log.Error("Failed send mail: " + err.Error())
+					}
+				}
+			}
+
+		} else {
+			log.Error("Agent tidak punya email")
+		}
+	}
 }

@@ -1291,3 +1291,101 @@ func AdminLastAvgNav(c *NavValue, productKey string, customerKey string, date st
 
 	return http.StatusOK, nil
 }
+
+type DetailTransactionDataSentEmail struct {
+	TransactionKey        uint64          `db:"transaction_key"           json:"transaction_key"`
+	TransTypeKey          uint64          `db:"trans_type_key"            json:"trans_type_key"`
+	FullName              string          `db:"full_name"                 json:"full_name"`
+	Cif                   *string         `db:"cif"                       json:"cif"`
+	TransDate             string          `db:"trans_date"                json:"trans_date"`
+	TransTime             string          `db:"trans_time"                json:"trans_time"`
+	ProductName           string          `db:"product_name"              json:"product_name"`
+	CurrencySymbol        string          `db:"currency_symbol"           json:"currency_symbol"`
+	EntryMode             *uint64         `db:"entry_mode"                json:"entry_mode"`
+	TransAmount           decimal.Decimal `db:"trans_amount"              json:"trans_amount"`
+	TransUnit             decimal.Decimal `db:"trans_unit"                json:"trans_unit"`
+	Fee                   decimal.Decimal `db:"fee"                       json:"fee"`
+	PaymentMethod         *uint64         `db:"payment_method"            json:"payment_method"`
+	PaymentMethodName     *string         `db:"payment_method_name"       json:"payment_method_name"`
+	RekBankCustodian      *string         `db:"rek_bank_custodian"        json:"rek_bank_custodian"`
+	NoRekBankCustomer     *string         `db:"no_rek_bank_customer"      json:"no_rek_bank_customer"`
+	NameRekBankCustomer   *string         `db:"name_rek_bank_customer"    json:"name_rek_bank_customer"`
+	CabangRekBankCustomer *string         `db:"cabang_rek_bank_customer"  json:"cabang_rek_bank_customer"`
+	BankRekBankCustomer   *string         `db:"bank_rek_bank_customer"    json:"bank_rek_bank_customer"`
+	Sales                 *string         `db:"sales"                     json:"sales"`
+	SalesEmail            *string         `db:"sales_email"               json:"sales_email"`
+	BuktiTransafer        *string         `db:"bukti_transafer"           json:"bukti_transafer"`
+	ProductTujuan         *string         `db:"product_tujuan"            json:"product_tujuan"`
+	UserLoginKey          string          `db:"user_login_key"            json:"user_login_key"`
+}
+
+func AdminDetailTransactionDataSentEmail(c *DetailTransactionDataSentEmail, tansactionKey string) (int, error) {
+	query := `SELECT 
+				t.transaction_key,
+				t.trans_type_key, 
+				c.full_name AS full_name,
+				c.unit_holder_idno AS cif,
+				DATE_FORMAT(t.trans_date, '%d %M %Y') AS trans_date,
+				CONCAT(DATE_FORMAT(t.trans_date, '%H:%i'), " WIB") AS trans_time,
+				p.product_name_alt AS product_name,
+				cu.symbol as currency_symbol,
+				t.entry_mode,
+				t.trans_amount,
+				t.trans_unit,
+				(t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) AS fee,
+				t.payment_method,
+				mp.lkp_name AS payment_method_name,
+				(CASE 
+					WHEN tbank.trans_bankacc_key IS NULL THEN '-' 
+					ELSE CONCAT(ba.account_no, " - ", ba.account_holder_name)
+				END) AS rek_bank_custodian,
+				t.rec_image1 AS bukti_transafer,
+				(CASE 
+					WHEN tbank.trans_bankacc_key IS NULL THEN '-' 
+					ELSE ba_c.account_no
+				END) AS no_rek_bank_customer,
+				(CASE 
+					WHEN tbank.trans_bankacc_key IS NULL THEN '-' 
+					ELSE ba_c.account_holder_name
+				END) AS name_rek_bank_customer,
+				(CASE 
+					WHEN tbank.trans_bankacc_key IS NULL THEN '-' 
+					ELSE ba_c.branch_name
+				END) AS cabang_rek_bank_customer,
+				(CASE 
+					WHEN tbank.trans_bankacc_key IS NULL THEN '-' 
+					ELSE b.bank_name
+				END) AS bank_rek_bank_customer,
+				CONCAT(a.agent_code, " - ", a.agent_name) AS sales,
+				a.agent_email AS sales_email,
+				t.rec_image1 AS bukti_transafer,
+				p_t.product_name_alt AS product_tujuan,
+				ul.user_login_key  
+			FROM tr_transaction AS t
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key
+			LEFT JOIN ms_agent AS a ON a.agent_key = c.openacc_agent_key
+			INNER JOIN ms_product AS p ON p.product_key = t.product_key
+			LEFT join ms_currency as cu on cu.currency_key = p.currency_key 
+			LEFT JOIN ms_currency AS cur ON cur.currency_key = p.currency_key
+			LEFT JOIN gen_lookup AS mp ON mp.lookup_key = t.payment_method 
+			LEFT JOIN tr_transaction_bank_account AS tbank ON tbank.transaction_key = t.transaction_key
+			LEFT JOIN ms_product_bank_account AS pbank ON pbank.prod_bankacc_key = tbank.prod_bankacc_key
+			LEFT JOIN ms_customer_bank_account AS cbank ON cbank.cust_bankacc_key = tbank.cust_bankacc_key
+			LEFT JOIN ms_bank_account AS ba ON ba.bank_account_key = pbank.bank_account_key 
+			LEFT JOIN ms_bank_account AS ba_c ON ba_c.bank_account_key = cbank.bank_account_key 
+			LEFT JOIN ms_bank AS b ON b.bank_key = ba_c.bank_key 
+			LEFT JOIN tr_transaction AS t_ch ON t_ch.parent_key = t.transaction_key
+			LEFT JOIN ms_product AS p_t ON p_t.product_key = t_ch.product_key 
+			INNER JOIN sc_user_login as ul on ul.customer_key = t.customer_key 
+			WHERE t.rec_status = 1 AND t.transaction_key = '` + tansactionKey + `'`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

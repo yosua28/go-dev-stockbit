@@ -19,6 +19,7 @@ type MmMailMaster struct {
 	MailToGroupKey     *uint64 `db:"mail_to_group_key"             json:"mail_to_group_key"`
 	MailToEmailParam   *string `db:"mail_to_email_param"           json:"mail_to_email_param"`
 	MailCcGroupKey     *uint64 `db:"mail_cc_group_key"             json:"mail_cc_group_key"`
+	MailToMailKey      *uint64 `db:"mail_to_mail_key"              json:"mail_to_mail_key"`
 	MailCcMailKey      *uint64 `db:"mail_cc_mail_key"              json:"mail_cc_mail_key"`
 	MailCcEmailParam   *string `db:"mail_cc_email_param"           json:"mail_cc_email_param"`
 	MailBccGroupKey    *uint64 `db:"mail_bcc_group_key"            json:"mail_bcc_group_key"`

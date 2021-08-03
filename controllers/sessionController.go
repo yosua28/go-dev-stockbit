@@ -892,9 +892,6 @@ func GetUserLogin(c echo.Context) error {
 		log.Error(err.Error())
 	}
 	var requestKey string
-	log.Println(len(oaRequestDB))
-	log.Println(len(oaRequestDB))
-	log.Println(len(oaRequestDB))
 	if len(oaRequestDB) > 0 {
 		requestKey = strconv.FormatUint(oaRequestDB[0].OaRequestKey, 10)
 		if len(oaRequestDB) > 1 {

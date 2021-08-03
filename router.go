@@ -476,6 +476,11 @@ func router() *echo.Echo {
 	//Admin City
 	admin.GET("/mail-list", controllers.AdminGetListMmMailMaster).Name = "AdminGetListMmMailMaster"
 	admin.POST("/mail/delete", controllers.AdminDeleteMmMailMaster).Name = "AdminDeleteMmMailMaster"
+	admin.POST("/mail/create", controllers.AdminCreateMmMailMaster).Name = "AdminCreateMmMailMaster"
+	admin.POST("/mail/update", controllers.AdminUpdateMmMailMaster).Name = "AdminUpdateMmMailMaster"
+	admin.GET("/mail/detail/:mail_master_key", controllers.AdminDetailMmMailMaster).Name = "AdminDetailMmMailMaster"
+	//Admin City
+	admin.POST("/tes-sent-email", controllers.TestSentEmail).Name = "TestSentEmail"
 	return e
 }
 

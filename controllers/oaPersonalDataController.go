@@ -4,13 +4,13 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"encoding/json"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"path/filepath"
 	"strconv"
 	"time"
-	"encoding/json"
 
 	"github.com/badoux/checkmail"
 	"github.com/labstack/echo"
@@ -858,7 +858,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	// params["bank_account_key"] = bankAccountID
 
 	// Create Request
-	
+
 	dateNow := time.Now().Format(layout)
 	paramsRequest["oa_status"] = "258"
 	paramsRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
@@ -920,7 +920,7 @@ func CreateOaPersonalData(c echo.Context) error {
 		bindInterface = append(bindInterface, bindVar[i])
 	}
 
-	if len(bindInterface) > 0{
+	if len(bindInterface) > 0 {
 		status, err = models.CreateMultipleUdfValue(bindInterface)
 		if err != nil {
 			log.Error(err.Error())
@@ -938,7 +938,7 @@ func CreateOaPersonalData(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_account", "Missing required parameter: bank_account")
 	}
 	var bind []interface{}
-	
+
 	for _, val := range bankAccountSlice {
 
 		var row []string
@@ -951,7 +951,7 @@ func CreateOaPersonalData(c echo.Context) error {
 			if err == nil && bank > 0 {
 				bankAccountID = val.(string)
 			}
-		} 
+		}
 		if bankAccountID == "" {
 			if val, ok := valueMap["bank_key"]; ok {
 				bank, err := strconv.ParseUint(val.(string), 10, 64)
@@ -966,7 +966,7 @@ func CreateOaPersonalData(c echo.Context) error {
 				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_key", "Missing required parameter: bank_key")
 			}
 			if val, ok := valueMap["account_no"]; ok {
-				paramsBank["account_no"] = val.(string)	
+				paramsBank["account_no"] = val.(string)
 			} else {
 				log.Error("Missing required parameter: account_no")
 				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: account_no", "Missing required parameter: account_no")
@@ -982,7 +982,7 @@ func CreateOaPersonalData(c echo.Context) error {
 			} else {
 				log.Error("Missing required parameter: branch_name")
 				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: branch_name", "Missing required parameter: branch_name")
-			}		
+			}
 			paramsBank["currency_key"] = "1"
 			paramsBank["bank_account_type"] = "1"
 			paramsBank["rec_domain"] = "1"
@@ -1042,6 +1042,14 @@ func GetOaPersonalData(c echo.Context) error {
 	var requestKey string
 	if len(oaRequestDB) > 0 {
 		requestKey = strconv.FormatUint(oaRequestDB[0].OaRequestKey, 10)
+		if len(oaRequestDB) > 1 {
+			for _, oareq := range oaRequestDB {
+				if *oareq.Oastatus > 259 {
+					requestKey = strconv.FormatUint(oareq.OaRequestKey, 10)
+					break
+				}
+			}
+		}
 	} else {
 		log.Error("oa not found")
 		return lib.CustomError(http.StatusNotFound, "Oa Request not found", "Oa Request not found")
@@ -1178,7 +1186,7 @@ func GetOaPersonalData(c echo.Context) error {
 				priority = val.BankAccountKey
 			}
 		}
-	} 
+	}
 
 	var bankAccountDB []models.MsBankAccount
 	var bankAccountDatas []interface{}
