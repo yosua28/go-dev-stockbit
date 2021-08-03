@@ -735,6 +735,19 @@ func CreateTransaction(c echo.Context) error {
 		lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
 	}
 
+	//sent email to BO role 11 & Sales
+	if typeKeyStr != "3" {
+		if typeKeyStr == "1" { //subs
+			if _, ok := params["rec_image1"]; ok { //jika upload image
+				SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
+			}
+		} else if typeKeyStr == "2" { //redm
+			SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
+		} else if typeKeyStr == "4" { //switching
+			SentEmailTransactionToBackOfficeAndSales(parentKeyStr, "11")
+		}
+	}
+
 	responseData := make(map[string]string)
 	responseData["transaction_key"] = transactionID
 	var response lib.Response
@@ -821,6 +834,9 @@ func UploadTransferPic(c echo.Context) error {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed update data")
 	}
+
+	//sent email to BO role 11 & Sales
+	SentEmailTransactionToBackOfficeAndSales(transactionKeyStr, "11")
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
