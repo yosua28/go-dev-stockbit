@@ -836,7 +836,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 	settlementParams["settled_status"] = "244"
 	settlementParams["target_bank_account_key"] = bankStr
 	settlementParams["settle_channel"] = "323"
-	settlementParams["settle_payment_method"] = "304"
+	settlementParams["settle_payment_method"] = paymentStr
 	settlementParams["rec_status"] = "1"
 	settlementParams["rec_created_date"] = time.Now().Format(dateLayout)
 	settlementParams["rec_created_by"] = strIDUserLogin
@@ -1128,9 +1128,11 @@ func GetCustomerBankAccountRedemption(c echo.Context) error {
 	var customerBankAccountInfo []models.MsCustomerBankAccountInfo
 	status, err = models.GetAllMsCustomerBankAccountTransaction(&customerBankAccountInfo, keyStr)
 	if err != nil {
+		log.Error(err.Error())
 		if err != sql.ErrNoRows {
-			log.Error(err.Error())
 			return lib.CustomError(status, err.Error(), "Failed get data")
+		} else {
+			return lib.CustomError(status, "Customer tidak memiliki produk.", "Customer tidak memiliki produk.")
 		}
 	}
 
@@ -1269,7 +1271,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 	nominalTersedia := balance.Unit.Mul(navDB[0].NavValue).Truncate(0)
 
 	metodePerhitungan := c.FormValue("metode_perhitungan")
-	if productKeyStr != "" {
+	if metodePerhitungan != "" {
 		if metodePerhitungan == "1" { //all unit
 			params["flag_redempt_all"] = "1"
 			params["trans_amount"] = "0"
@@ -1284,7 +1286,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 			}
 			if value.Cmp(product.MinRedUnit) == -1 {
 				log.Error("red unit < minimum red unit ")
-				return lib.CustomError(http.StatusBadRequest, "red unit < minum red unit", "Minumum redemption unit untuk product ini adalah: "+product.MinRedUnit.String())
+				return lib.CustomError(http.StatusBadRequest, "red unit < minimum red unit", "Minumum redemption unit untuk product ini adalah: "+product.MinRedUnit.String())
 			}
 
 			if value.Cmp(unitTersedia) == 1 {
@@ -1318,7 +1320,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 			sisaUnitAfterRed := unitTersedia.Sub(value).Truncate(2)
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
-			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
+			if sisaUnitAfterRed != zero && sisaUnitAfterRed.Cmp(minSisa) == -1 {
 				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
 				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
 			}
@@ -1349,7 +1351,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 			sisaUnitAfterRed := unitTersedia.Sub(unitTerpakai).Truncate(2)
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
-			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
+			if sisaUnitAfterRed != zero && sisaUnitAfterRed.Cmp(minSisa) == -1 {
 				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
 				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
 			}

@@ -2306,22 +2306,17 @@ func AdminGetProductRedemption(c echo.Context) error {
 			if n.Unit.Cmp(zero) == 1 {
 				var prod models.ProductRedemption
 				prod.ProductKey = pr.ProductKey
+				prod.RiskProfileKey = pr.RiskProfileKey
+				prod.FlagRedemption = pr.FlagRedemption
+				prod.FlagSwitchOut = pr.FlagSwitchOut
 				prod.FundTypeName = pr.FundTypeName
 				prod.ProductName = pr.ProductName
 				prod.NavDate = pr.NavDate
 				prod.NavValue = pr.NavValue.Truncate(2)
-				prod.PerformD1 = pr.PerformD1.Truncate(2)
-				prod.PerformM1 = pr.PerformM1.Truncate(2)
-				prod.PerformY1 = pr.PerformY1.Truncate(2)
-				prod.ProductImage = pr.ProductImage
-				prod.MinSubAmount = pr.MinSubAmount.Truncate(2)
 				prod.MinRedAmount = pr.MinRedAmount.Truncate(2)
 				prod.MinRedUnit = pr.MinRedUnit.Truncate(2)
-				prod.ProspectusLink = pr.ProspectusLink
-				prod.FfsLink = pr.FfsLink
+				prod.MinUnitAfterRed = pr.MinUnitAfterRed.Truncate(2)
 				prod.RiskName = pr.RiskName
-				prod.FeeService = pr.FeeService.Truncate(0)
-				prod.FeeTransfer = pr.FeeTransfer.Truncate(0)
 				prod.AcaKey = pr.AcaKey
 				prod.Unit = n.Unit.Truncate(2)
 				prod.NilaiInvestasi = n.Unit.Mul(prod.NavValue).Truncate(0)
@@ -2385,5 +2380,138 @@ func GetProductDetailTransactionSubscription(c echo.Context) error {
 	response.Status.MessageServer = "OK"
 	response.Status.MessageClient = "OK"
 	response.Data = productResponse
+	return c.JSON(http.StatusOK, response)
+}
+
+func AdminGetProductSwitchIn(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	customerKeyStr := c.Param("customer_key")
+	var cus models.MsCustomer
+	if customerKeyStr != "" {
+		customerKey, err := strconv.ParseUint(customerKeyStr, 10, 64)
+		if err == nil && customerKey > 0 {
+			status, err = models.GetMsCustomer(&cus, customerKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Customer tidak ditemukan")
+			}
+			if cus.CifSuspendFlag == uint8(1) {
+				log.Error("Customer Suspended")
+				return lib.CustomError(http.StatusBadRequest, "Customer Suspended", "Customer Suspended")
+			}
+		} else {
+			log.Error("Wrong input for parameter: customer_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: customer_key", "Wrong input for parameter: customer_key")
+		}
+	} else {
+		log.Error("Missing required parameter: customer_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: customer_key", "Missing required parameter: customer_key")
+	}
+
+	productSwOutKey := c.Param("product_switch_out_key")
+	if productSwOutKey == "" {
+		log.Error("Missing required parameter: product_switch_out_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_switch_out_key", "Missing required parameter: product_switch_out_key")
+	} else {
+		prodKey, err := strconv.ParseUint(productSwOutKey, 10, 64)
+		if err != nil || prodKey == 0 {
+			log.Error("Wrong input for parameter: product_switch_out_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_switch_out_key", "Wrong input for parameter: product_switch_out_key")
+		}
+	}
+
+	var products []models.ProductHaveBalanceSwitchIn
+	status, err = models.AdminGetProductHaveBalanceSwitchIn(&products, customerKeyStr, productSwOutKey)
+
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+
+	var acaIds []string
+	if len(products) > 0 {
+		for _, pr := range products {
+			if pr.AcaKey != nil {
+				if _, ok := lib.Find(acaIds, strconv.FormatUint(*pr.AcaKey, 10)); !ok {
+					acaIds = append(acaIds, strconv.FormatUint(*pr.AcaKey, 10))
+				}
+			}
+		}
+	}
+
+	//mapping Balance Unit
+	var balances []models.SumBalanceUnit
+	if len(acaIds) > 0 {
+		status, err = models.GetSumBalanceUnit(&balances, acaIds)
+		if err != nil {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	balanceData := make(map[uint64]models.SumBalanceUnit)
+	if len(balances) > 0 {
+		for _, b := range balances {
+			balanceData[b.AcaKey] = b
+		}
+	}
+
+	var productKeyExis []string
+	productKeyExis = append(productKeyExis, productSwOutKey)
+
+	var productList []models.ProductHaveBalanceSwitchIn
+	zero := decimal.NewFromInt(0)
+	if len(products) > 0 {
+		for _, pr := range products {
+			if pr.AcaKey != nil {
+				if n, ok := balanceData[*pr.AcaKey]; ok {
+					if n.Unit.Cmp(zero) == 1 {
+						if _, ok := lib.Find(productKeyExis, strconv.FormatUint(pr.ProductKey, 10)); !ok {
+							productKeyExis = append(productKeyExis, strconv.FormatUint(pr.ProductKey, 10))
+						}
+						var prod models.ProductHaveBalanceSwitchIn
+						prod.ProductKey = pr.ProductKey
+						prod.RiskProfileKey = pr.RiskProfileKey
+						prod.FlagSwitchIn = pr.FlagSwitchIn
+						prod.FundTypeName = pr.FundTypeName
+						prod.ProductName = pr.ProductName
+						prod.NavDate = pr.NavDate
+						prod.NavValue = pr.NavValue.Truncate(2)
+						prod.MinSubAmount = pr.MinSubAmount.Truncate(2)
+						prod.RiskName = pr.RiskName
+						prod.AcaKey = pr.AcaKey
+						prod.Unit = n.Unit.Truncate(2)
+						prod.NilaiInvestasi = n.Unit.Mul(prod.NavValue).Truncate(0)
+						productList = append(productList, prod)
+					}
+				}
+			}
+		}
+	}
+
+	var productsElse []models.ProductHaveBalanceSwitchIn
+	status, err = models.AdminGetProductNotInBalanceSwitchIn(&productsElse, productKeyExis)
+	if err != nil {
+		if err != sql.ErrNoRows {
+			log.Error(err.Error())
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	}
+	if len(productsElse) > 0 {
+		for _, prd := range productsElse {
+			productList = append(productList, prd)
+		}
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = productList
+
 	return c.JSON(http.StatusOK, response)
 }

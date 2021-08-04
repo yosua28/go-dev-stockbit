@@ -630,54 +630,40 @@ func AdminGetProductSubscriptionByProductKey(c *ProductSubscription, productKey 
 }
 
 type ProductRedemption struct {
-	ProductKey     uint64          `db:"product_key"             json:"product_key"`
-	FundTypeName   string          `db:"fund_type_name"          json:"fund_type_name"`
-	ProductName    string          `db:"product_name"            json:"product_name"`
-	NavDate        string          `db:"nav_date"                json:"nav_date"`
-	NavValue       decimal.Decimal `db:"nav_value"               json:"nav_value"`
-	PerformD1      decimal.Decimal `db:"perform_d1"              json:"perform_d1"`
-	PerformM1      decimal.Decimal `db:"perform_m1"              json:"perform_m1"`
-	PerformY1      decimal.Decimal `db:"perform_y1"              json:"perform_y1"`
-	ProductImage   *string         `db:"product_image"           json:"product_image"`
-	MinSubAmount   decimal.Decimal `db:"min_sub_amount"          json:"min_sub_amount"`
-	MinRedAmount   decimal.Decimal `db:"min_red_amount"          json:"min_red_amount"`
-	MinRedUnit     decimal.Decimal `db:"min_red_unit"            json:"min_red_unit"`
-	ProspectusLink string          `db:"prospectus_link"         json:"prospectus_link"`
-	FfsLink        *string         `db:"ffs_link"                json:"ffs_link"`
-	RiskName       string          `db:"risk_name"               json:"risk_name"`
-	FeeService     decimal.Decimal `db:"fee_service"             json:"fee_service"`
-	FeeTransfer    decimal.Decimal `db:"fee_transfer"            json:"fee_transfer"`
-	AcaKey         uint64          `db:"aca_key"                 json:"aca_key"`
-	Unit           decimal.Decimal `db:"unit"                    json:"unit,omitempty"`
-	NilaiInvestasi decimal.Decimal `db:"nilai_investasi"         json:"nilai_investasi,omitempty"`
+	ProductKey      uint64          `db:"product_key"             json:"product_key"`
+	RiskProfileKey  uint64          `db:"risk_profile_key"        json:"risk_profile_key"`
+	FundTypeName    string          `db:"fund_type_name"          json:"fund_type_name"`
+	ProductName     string          `db:"product_name"            json:"product_name"`
+	NavDate         string          `db:"nav_date"                json:"nav_date"`
+	FlagRedemption  string          `db:"flag_redemption"         json:"flag_redemption"`
+	FlagSwitchOut   string          `db:"flag_switch_out"         json:"flag_switch_out"`
+	NavValue        decimal.Decimal `db:"nav_value"               json:"nav_value"`
+	MinRedAmount    decimal.Decimal `db:"min_red_amount"          json:"min_red_amount"`
+	MinRedUnit      decimal.Decimal `db:"min_red_unit"            json:"min_red_unit"`
+	MinUnitAfterRed decimal.Decimal `db:"min_unit_after_red"      json:"min_unit_after_red"`
+	RiskName        string          `db:"risk_name"               json:"risk_name"`
+	AcaKey          uint64          `db:"aca_key"                 json:"aca_key"`
+	Unit            decimal.Decimal `db:"unit"                    json:"unit,omitempty"`
+	NilaiInvestasi  decimal.Decimal `db:"nilai_investasi"         json:"nilai_investasi,omitempty"`
 }
 
 func AdminGetProductRedemption(c *[]ProductRedemption, customerKey string) (int, error) {
 	query := `SELECT 
 				p.product_key AS product_key,
+				p.risk_profile_key AS risk_profile_key,
 				f.fund_type_name AS fund_type_name,
 				p.product_name_alt AS product_name,
 				DATE_FORMAT(nav.nav_date, '%d %M %Y') AS nav_date, 
+				p.flag_redemption,
+				p.flag_switch_out,
 				nav.nav_value AS nav_value,
-				ffs.perform_d1 AS perform_d1,
-				ffs.perform_m1 AS perform_m1,
-				ffs.perform_y1 AS perform_y1,
-				(CASE
-					WHEN p.rec_image1 IS NULL THEN CONCAT('` + config.BaseUrl + `', '/images/product/default.png')
-					ELSE CONCAT('` + config.BaseUrl + `', '/images/product/', p.rec_image1)
-				END) AS product_image,
 				p.min_red_amount AS min_red_amount,
 				p.min_red_unit AS min_red_unit,
-				p.prospectus_link AS prospectus_link,
-				pub.ffs_link AS ffs_link,
+				p.min_unit_after_red AS min_unit_after_red,
 				pr.risk_name AS risk_name,
-				ft.app_config_value AS fee_transfer,
-				fc.app_config_value AS fee_service,
-				t.aca_key AS aca_key
+				t.aca_key AS aca_key 
 			FROM tr_transaction AS t 
 			INNER JOIN ms_product AS p ON t.product_key = p.product_key 
-			LEFT JOIN sc_app_config AS ft ON ft.app_config_code = 'BANK_CHARGES' 
-			LEFT JOIN sc_app_config AS fc ON fc.app_config_code = 'SERVICE_CHARGES' 
 			INNER JOIN ms_fund_type AS f ON p.fund_type_key = f.fund_type_key 
 			INNER JOIN (
 				SELECT MAX(nav_date) AS nav_date, product_key 
@@ -687,19 +673,106 @@ func AdminGetProductRedemption(c *[]ProductRedemption, customerKey string) (int,
 				GROUP BY product_key
 			) b ON (b.product_key = p.product_key)
 			INNER JOIN tr_nav AS nav ON nav.product_key = p.product_key AND nav.nav_date = b.nav_date
-			INNER JOIN (
-				SELECT product_key, MAX(nav_date) AS nav_date
-				FROM ffs_nav_performance
-				WHERE rec_status = 1
-				GROUP BY product_key
-			) c ON (c.product_key = p.product_key)
-			INNER JOIN ffs_nav_performance AS ffs ON ffs.product_key = p.product_key AND ffs.nav_date = c.nav_date
 			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key
-			LEFT JOIN ffs_publish AS pub ON pub.product_key = p.product_key 
-			WHERE p.rec_status = 1 AND p.flag_enabled = 1 AND f.show_home = 1 AND
-			t.rec_status = 1 AND t.customer_key = '` + customerKey + `' AND trans_status_key = 9
-			AND t.trans_type_key IN (1,4) AND p.flag_redemption = 1
-			ORDER BY f.rec_order ASC`
+			WHERE p.rec_status = 1 AND f.show_home = 1 AND
+			t.rec_status = 1 AND t.customer_key = "` + customerKey + `" AND trans_status_key = 9
+			AND t.trans_type_key IN (1,4) 
+			GROUP BY p.product_key ORDER BY f.rec_order ASC`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+type ProductHaveBalanceSwitchIn struct {
+	ProductKey     uint64          `db:"product_key"             json:"product_key"`
+	RiskProfileKey uint64          `db:"risk_profile_key"        json:"risk_profile_key"`
+	FundTypeName   string          `db:"fund_type_name"          json:"fund_type_name"`
+	ProductName    string          `db:"product_name"            json:"product_name"`
+	NavDate        string          `db:"nav_date"                json:"nav_date"`
+	FlagSwitchIn   string          `db:"flag_switch_in"          json:"flag_switch_in"`
+	NavValue       decimal.Decimal `db:"nav_value"               json:"nav_value"`
+	MinSubAmount   decimal.Decimal `db:"min_sub_amount"          json:"min_sub_amount"`
+	RiskName       string          `db:"risk_name"               json:"risk_name"`
+	AcaKey         *uint64         `db:"aca_key"                 json:"aca_key"`
+	Unit           decimal.Decimal `db:"unit"                    json:"unit,omitempty"`
+	NilaiInvestasi decimal.Decimal `db:"nilai_investasi"         json:"nilai_investasi,omitempty"`
+}
+
+func AdminGetProductHaveBalanceSwitchIn(c *[]ProductHaveBalanceSwitchIn, customerKey string, productSwOutKey string) (int, error) {
+	query := `SELECT 
+				p.product_key AS product_key,
+				p.risk_profile_key AS risk_profile_key,
+				f.fund_type_name AS fund_type_name,
+				p.product_name_alt AS product_name,
+				DATE_FORMAT(nav.nav_date, '%d %M %Y') AS nav_date, 
+				p.flag_switch_in,
+				nav.nav_value AS nav_value,
+				p.min_sub_amount AS min_sub_amount,
+				pr.risk_name AS risk_name,
+				t.aca_key AS aca_key 
+			FROM tr_transaction AS t 
+			INNER JOIN ms_product AS p ON t.product_key = p.product_key 
+			INNER JOIN ms_fund_type AS f ON p.fund_type_key = f.fund_type_key 
+			INNER JOIN (
+				SELECT MAX(nav_date) AS nav_date, product_key 
+				FROM tr_nav
+				WHERE rec_status = 1
+				AND publish_mode = 236
+				GROUP BY product_key
+			) b ON (b.product_key = p.product_key)
+			INNER JOIN tr_nav AS nav ON nav.product_key = p.product_key AND nav.nav_date = b.nav_date
+			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key
+			WHERE p.rec_status = 1 AND f.show_home = 1 AND
+			t.rec_status = 1 AND t.customer_key = "` + customerKey + `" AND trans_status_key = 9
+			AND t.trans_type_key IN (1,4) AND p.product_key != "` + productSwOutKey + `"
+			GROUP BY p.product_key ORDER BY f.rec_order ASC`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
+func AdminGetProductNotInBalanceSwitchIn(c *[]ProductHaveBalanceSwitchIn, value []string) (int, error) {
+	inQuery := strings.Join(value, ",")
+	query := `SELECT 
+				p.product_key AS product_key,
+				p.risk_profile_key AS risk_profile_key,
+				f.fund_type_name AS fund_type_name,
+				p.product_name_alt AS product_name,
+				DATE_FORMAT(nav.nav_date, '%d %M %Y') AS nav_date, 
+				p.flag_switch_in,
+				nav.nav_value AS nav_value,
+				p.min_sub_amount AS min_sub_amount,
+				pr.risk_name AS risk_name,
+				NULL AS aca_key,
+				0 AS unit,
+				0 AS nilai_investasi 
+			FROM ms_product AS p
+			INNER JOIN ms_fund_type AS f ON p.fund_type_key = f.fund_type_key 
+			INNER JOIN (
+				SELECT MAX(nav_date) AS nav_date, product_key 
+				FROM tr_nav
+				WHERE rec_status = 1
+				AND publish_mode = 236
+				GROUP BY product_key
+			) b ON (b.product_key = p.product_key)
+			INNER JOIN tr_nav AS nav ON nav.product_key = p.product_key AND nav.nav_date = b.nav_date
+			INNER JOIN ms_risk_profile AS pr ON p.risk_profile_key = pr.risk_profile_key
+			WHERE p.rec_status = 1 AND f.show_home = 1 AND p.product_key NOT IN (` + inQuery + `)
+			GROUP BY p.product_key ORDER BY p.product_key ASC`
 
 	// Main query
 	log.Println(query)

@@ -20362,48 +20362,36 @@
                     },
                     "data": [
                       {
-                        "product_key": 5,
-                        "fund_type_name": "Saham",
-                        "product_name": "Dana Ekuitas",
-                        "nav_date": "18 January 2021",
-                        "nav_value": 2746.28,
-                        "perform_d1": -0.36,
-                        "perform_m1": 2.21,
-                        "perform_y1": -23.46,
-                        "product_image": "https://devapi.mncasset.com/images/product/bbe.jpg",
-                        "min_sub_amount": 0,
-                        "min_red_amount": 100000,
-                        "min_red_unit": 0,
-                        "prospectus_link": "https://www.mncasset.com/downloads/232-Prospektus-MNC-Dana-Ekuitas.pdf",
-                        "ffs_link": "https://www.mncasset.com/downloads/588-FFS_BBE_300720.pdf",
-                        "risk_name": "Agresif",
-                        "fee_service": 0,
-                        "fee_transfer": 0,
-                        "aca_key": 7,
-                        "unit": 5895.38,
-                        "nilai_investasi": 16190386
-                      },
-                      {
                         "product_key": 9,
                         "fund_type_name": "Saham",
                         "product_name": "Dana Syariah Ekuitas",
                         "nav_date": "18 January 2021",
+                        "flag_redemption": "1",
+                        "flag_switch_out": "1",
                         "nav_value": 903.33,
-                        "perform_d1": -1.37,
-                        "perform_m1": 2.32,
-                        "perform_y1": -11.72,
-                        "product_image": "https://devapi.mncasset.com/images/product/mdse.jpg",
-                        "min_sub_amount": 0,
                         "min_red_amount": 100000,
                         "min_red_unit": 0,
-                        "prospectus_link": "https://www.mncasset.com/downloads/271-Prospektus-MNC-Dana-Syariah-Ekuitas.pdf",
-                        "ffs_link": "https://www.mncasset.com/downloads/699-FFS_MDSE_300720.pdf",
+                        "min_unit_after_red": 100,
                         "risk_name": "Agresif",
-                        "fee_service": 0,
-                        "fee_transfer": 0,
-                        "aca_key": 8,
-                        "unit": 8.94,
-                        "nilai_investasi": 8075
+                        "aca_key": 24,
+                        "unit": 1176.02,
+                        "nilai_investasi": 1062335
+                      },
+                      {
+                        "product_key": 22,
+                        "fund_type_name": "Saham",
+                        "product_name": "Smart Equity Fund",
+                        "nav_date": "18 January 2021",
+                        "flag_redemption": "1",
+                        "flag_switch_out": "1",
+                        "nav_value": 807.07,
+                        "min_red_amount": 100000,
+                        "min_red_unit": 0,
+                        "min_unit_after_red": 100,
+                        "risk_name": "Agresif",
+                        "aca_key": 33,
+                        "unit": 6369.42,
+                        "nilai_investasi": 5140573
                       }
                     ]
                   }
@@ -20805,6 +20793,131 @@
               "content": {
                 "text/plain": {
                   "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/admin/product/switchin/{customer_key}/{product_switch_out_key}": {
+        "get": {
+          "description": "Get All Product Switch In",
+          "tags": [
+            "Transaction Action Admin Switching"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "parameters": [
+            {
+              "name": "customer_key",
+              "in": "path",
+              "description": "customer key",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            },
+            {
+              "name": "product_switch_out_key",
+              "in": "path",
+              "description": "product key switch out",
+              "required": true,
+              "schema": {
+                "type": "integer"
+              }
+            }
+          ],
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": [
+                      {
+                        "product_key": 7,
+                        "risk_profile_key": 3,
+                        "fund_type_name": "Campuran",
+                        "product_name": "Dana Kombinasi Icon",
+                        "nav_date": "18 January 2021",
+                        "flag_switch_in": "1",
+                        "nav_value": 969.26,
+                        "min_sub_amount": 100000,
+                        "risk_name": "Moderat Agresif",
+                        "aca_key": 35,
+                        "unit": 2701.35,
+                        "nilai_investasi": 2618311
+                      },
+                      {
+                        "product_key": 1,
+                        "risk_profile_key": 1,
+                        "fund_type_name": "Pasar Uang",
+                        "product_name": "Dana Lancar",
+                        "nav_date": "09 June 2021",
+                        "flag_switch_in": "0",
+                        "nav_value": 2535,
+                        "min_sub_amount": 100000,
+                        "risk_name": "Konservatif",
+                        "aca_key": null,
+                        "unit": 0,
+                        "nilai_investasi": 0
+                      },
+                      {
+                        "product_key": 2,
+                        "risk_profile_key": 2,
+                        "fund_type_name": "Pendapatan Tetap",
+                        "product_name": "Dana Syariah",
+                        "nav_date": "18 January 2021",
+                        "flag_switch_in": "1",
+                        "nav_value": 2768.7745,
+                        "min_sub_amount": 120000,
+                        "risk_name": "Moderat",
+                        "aca_key": null,
+                        "unit": 0,
+                        "nilai_investasi": 0
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "404": {
+              "description": "Not found",
+              "content": {
+                "text/plain": {
+                  "example": "Token not found"
                 }
               }
             },
