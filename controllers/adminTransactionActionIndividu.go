@@ -1659,11 +1659,6 @@ func CreateTransactionSwitching(c echo.Context) error {
 		productToKey, err := strconv.ParseUint(productToKeyStr, 10, 64)
 		if err == nil && productToKey > 0 {
 			paramsSwIn["product_key"] = productToKeyStr
-			status, err = models.GetMsProduct(&productTo, productToKeyStr)
-			if err != nil {
-				log.Error(err.Error())
-				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product Tujuan tidak ditemukan")
-			}
 		} else {
 			log.Error("Wrong input for parameter: product_to")
 			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_to", "Wrong input for parameter: product_to")
@@ -1671,6 +1666,12 @@ func CreateTransactionSwitching(c echo.Context) error {
 	} else {
 		log.Error("Missing required parameter: product_to")
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_to", "Missing required parameter: product_to")
+	}
+
+	status, err = models.GetMsProduct(&productTo, productToKeyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Product Tujuan tidak ditemukan")
 	}
 
 	zero := decimal.NewFromInt(0)
@@ -1698,7 +1699,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 
 	//validasi product from
 	metodePerhitungan := c.FormValue("metode_perhitungan")
-	if productKeyStr != "" {
+	if metodePerhitungan != "" {
 		if metodePerhitungan == "1" { //all unit
 			params["flag_redempt_all"] = "1"
 			params["trans_amount"] = "0"
@@ -1719,6 +1720,12 @@ func CreateTransactionSwitching(c echo.Context) error {
 			if value.Cmp(unitTersedia) == 1 {
 				log.Error("switching unit > unit tersedia")
 				return lib.CustomError(http.StatusBadRequest, "switching unit > unit tersedia", "Switching unit tidak boleh lebih besar dari unit tersedia. Unit tersedia saat ini adalah: "+balance.Unit.String())
+			}
+
+			valueSwitchToAmount := value.Mul(navDB[0].NavValue).Truncate(0)
+			if valueSwitchToAmount.Cmp(productTo.MinSubAmount) == -1 {
+				log.Error("Min. Product Switch In Amount < Switching unit * Last NAB")
+				return lib.CustomError(http.StatusBadRequest, "Min. Product Switch In Amount < Switching unit * Last NAB", "Min. Product Switch In Amount < Switching unit * Last NAB. Min SProduct Switch In Amount : "+productTo.MinSubAmount.String())
 			}
 
 			params["trans_unit"] = transUnitStr
@@ -1747,9 +1754,15 @@ func CreateTransactionSwitching(c echo.Context) error {
 			sisaUnitAfterRed := unitTersedia.Sub(value).Truncate(2)
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
-			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
+			if sisaUnitAfterRed != zero && sisaUnitAfterRed.Cmp(minSisa) == -1 {
 				log.Error("Sisa unit setelah switching kurang dari minimal unit, Silakan switch All")
 				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah switching kurang dari minimal unit, Silakan switching All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah switching kurang dari minimal unit, Silakan switching All. Sisa unit harus minimal : "+minSisa.String())
+			}
+
+			valueSwitchToAmount := value.Mul(navDB[0].NavValue).Truncate(0)
+			if valueSwitchToAmount.Cmp(productTo.MinSubAmount) == -1 {
+				log.Error("Min. Product Switch In Amount < Switching unit * Last NAB")
+				return lib.CustomError(http.StatusBadRequest, "Min. Product Switch In Amount < Switching unit * Last NAB", "Min. Product Switch In Amount < Switching unit * Last NAB. Min SProduct Switch In Amount : "+productTo.MinSubAmount.String())
 			}
 
 			params["trans_unit"] = transUnitStr
@@ -1778,10 +1791,17 @@ func CreateTransactionSwitching(c echo.Context) error {
 			sisaUnitAfterRed := unitTersedia.Sub(unitTerpakai).Truncate(2)
 			minSisa := product.MinUnitAfterRed.Truncate(2)
 
-			if sisaUnitAfterRed.Cmp(minSisa) == -1 {
+			if sisaUnitAfterRed != zero && sisaUnitAfterRed.Cmp(minSisa) == -1 {
 				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
 				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
 			}
+
+			valueSwitchToAmount := value.Truncate(0)
+			if valueSwitchToAmount.Cmp(productTo.MinSubAmount) == -1 {
+				log.Error("Min. Product Switch In Amount < Switching unit * Last NAB")
+				return lib.CustomError(http.StatusBadRequest, "Min. Product Switch In Amount < Switching unit * Last NAB", "Min. Product Switch In Amount < Switching unit * Last NAB. Min SProduct Switch In Amount : "+productTo.MinSubAmount.String())
+			}
+
 			params["trans_amount"] = transAmountStr
 			params["total_amount"] = transAmountStr
 		} else {
