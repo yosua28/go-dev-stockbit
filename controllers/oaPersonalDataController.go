@@ -387,12 +387,17 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 			params["pic_ktp"] = filename + extension
 		} else {
-			picKtp := c.FormValue("pic_ktp_str")
-			if picKtp == "" {
-				log.Error("Missing required parameter: pic_ktp/pic_ktp_str")
-				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp/pic_ktp_str", "Missing required parameter: pic_ktp_str")
+			if requestTypeStr == "127" {
+				log.Error("Missing required parameter: pic_ktp")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp", "Missing required parameter: pic_ktp")
 			} else {
-				params["pic_ktp"] = picKtp
+				picKtp := c.FormValue("pic_ktp_str")
+				if picKtp == "" {
+					log.Error("Missing required parameter: pic_ktp/pic_ktp_str")
+					return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_ktp/pic_ktp_str", "Missing required parameter: pic_ktp/pic_ktp_str")
+				} else {
+					params["pic_ktp"] = picKtp
+				}
 			}
 		}
 
@@ -424,12 +429,17 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 			params["pic_selfie_ktp"] = filename + extension
 		} else {
-			picSelfie := c.FormValue("pic_selfie_ktp_str")
-			if picSelfie == "" {
-				log.Error("Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str")
-				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str")
+			if requestTypeStr == "127" {
+				log.Error("Missing required parameter: pic_selfie_ktp")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp", "Missing required parameter: pic_selfie_ktp")
 			} else {
-				params["pic_selfie_ktp"] = picSelfie
+				picSelfie := c.FormValue("pic_selfie_ktp_str")
+				if picSelfie == "" {
+					log.Error("Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str")
+					return lib.CustomError(http.StatusBadRequest, "Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str", "Missing required parameter: pic_selfie_ktp/pic_selfie_ktp_str")
+				} else {
+					params["pic_selfie_ktp"] = picSelfie
+				}
 			}
 		}
 
@@ -466,12 +476,17 @@ func CreateOaPersonalData(c echo.Context) error {
 			}
 			params["rec_image1"] = filename + extension
 		} else {
-			signature := c.FormValue("signature_str")
-			if signature == "" {
-				log.Error("Missing required parameter: signature/signature_str")
-				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature/signature_str", "Missing required parameter: signature/signature_str")
+			if requestTypeStr == "127" {
+				log.Error("Missing required parameter: signature")
+				return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature", "Missing required parameter: signature")
 			} else {
-				params["rec_image1"] = signature
+				signature := c.FormValue("signature_str")
+				if signature == "" {
+					log.Error("Missing required parameter: signature/signature_str")
+					return lib.CustomError(http.StatusBadRequest, "Missing required parameter: signature/signature_str", "Missing required parameter: signature/signature_str")
+				} else {
+					params["rec_image1"] = signature
+				}
 			}
 		}
 
