@@ -1042,7 +1042,6 @@ func GetOaPersonalData(c echo.Context) error {
 
 	var oaRequestDB []models.OaRequest
 	userLoginKey := strconv.FormatUint(lib.Profile.UserID, 10)
-	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 	params := make(map[string]string)
 	params["user_login_key"] = userLoginKey
 	params["orderBy"] = "oa_request_key"
@@ -1187,38 +1186,41 @@ func GetOaPersonalData(c echo.Context) error {
 	responseData["beneficial_full_name"] = personalDataDB.BeneficialFullName
 	responseData["beneficial_relation"] = personalDataDB.BeneficialRelation
 	responseData["sales_code"] = oaRequestDB[0].SalesCode
-	var customerBankAcc []models.MsCustomerBankAccount
-	customerBankAccParams := make(map[string]string)
-	customerBankAccParams["customer_key"] = customerKey
-	customerBankAccParams["rec_status"] = "1"
-	status, err = models.GetAllMsCustomerBankAccount(&customerBankAcc, customerBankAccParams)
-	var bankAccountIDs []string
-	var priority uint64
-	if len(customerBankAcc) > 0 {
-		for _, val := range customerBankAcc {
-			bankAccountIDs = append(bankAccountIDs, strconv.FormatUint(val.BankAccountKey, 10))
-			if val.FlagPriority == 1 {
-				priority = val.BankAccountKey
+	var bankAccountDatas []interface{}
+	if lib.Profile.CustomerKey != nil {
+		var customerBankAcc []models.MsCustomerBankAccount
+		customerBankAccParams := make(map[string]string)
+		customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+		customerBankAccParams["customer_key"] = customerKey
+		customerBankAccParams["rec_status"] = "1"
+		status, err = models.GetAllMsCustomerBankAccount(&customerBankAcc, customerBankAccParams)
+		var bankAccountIDs []string
+		var priority uint64
+		if len(customerBankAcc) > 0 {
+			for _, val := range customerBankAcc {
+				bankAccountIDs = append(bankAccountIDs, strconv.FormatUint(val.BankAccountKey, 10))
+				if val.FlagPriority == 1 {
+					priority = val.BankAccountKey
+				}
 			}
 		}
-	}
 
-	var bankAccountDB []models.MsBankAccount
-	var bankAccountDatas []interface{}
-	_, err = models.GetMsBankAccountIn(&bankAccountDB, bankAccountIDs, "bank_account_key")
-	if err == nil {
-		for _, val := range bankAccountDB {
-			bankAccount := make(map[string]interface{})
-			bankAccount["bank_account_key"] = val.BankAccountKey
-			bankAccount["bank_key"] = val.BankKey
-			bankAccount["account_no"] = val.AccountNo
-			bankAccount["account_holder_name"] = val.AccountHolderName
-			bankAccount["branch_name"] = val.BranchName
-			bankAccount["flag_priority"] = 0
-			if val.BankAccountKey == priority {
-				bankAccount["flag_priority"] = 1
+		var bankAccountDB []models.MsBankAccount
+		_, err = models.GetMsBankAccountIn(&bankAccountDB, bankAccountIDs, "bank_account_key")
+		if err == nil {
+			for _, val := range bankAccountDB {
+				bankAccount := make(map[string]interface{})
+				bankAccount["bank_account_key"] = val.BankAccountKey
+				bankAccount["bank_key"] = val.BankKey
+				bankAccount["account_no"] = val.AccountNo
+				bankAccount["account_holder_name"] = val.AccountHolderName
+				bankAccount["branch_name"] = val.BranchName
+				bankAccount["flag_priority"] = 0
+				if val.BankAccountKey == priority {
+					bankAccount["flag_priority"] = 1
+				}
+				bankAccountDatas = append(bankAccountDatas, bankAccount)
 			}
-			bankAccountDatas = append(bankAccountDatas, bankAccount)
 		}
 	}
 	responseData["bank_account"] = bankAccountDatas
