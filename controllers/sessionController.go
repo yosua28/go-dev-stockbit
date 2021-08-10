@@ -1773,7 +1773,8 @@ func ChangePin(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_email"] = lib.Profile.Email
+	params["ulogin_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_status"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
@@ -1977,7 +1978,8 @@ func ChangeForgotPin(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_email"] = lib.Profile.Email
+	params["ulogin_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_status"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
