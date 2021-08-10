@@ -1376,6 +1376,8 @@ func UpdateStatusApprovalCS(c echo.Context) error {
 		if err != nil {
 			log.Error("Error create user message")
 		}
+		//Sent Email Reject ke customer
+		SentEmailRejectOaPengkinianToCustomer(oareq, oapersonal, check1notes)
 		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 	}
 
@@ -1894,6 +1896,8 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 				return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 			}
 		}
+		//Sent Email Reject ke customer
+		SentEmailRejectOaPengkinianToCustomer(oareq, oapersonal, check2notes)
 
 		tx.Commit()
 	}
@@ -3530,6 +3534,82 @@ func SentEmailOaPengkinianToSales(
 
 		} else {
 			log.Error("Agent tidak punya email")
+		}
+	}
+}
+
+func SentEmailRejectOaPengkinianToCustomer(
+	oaRequest models.OaRequest,
+	oaPersonalData models.OaPersonalData,
+	status string) {
+
+	var err error
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+
+	layout := "2006-01-02 15:04:05"
+	dateLayout := "02 Jan 2006"
+	date, _ := time.Parse(layout, oaRequest.OaEntryStart)
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+	mailParam["Nama"] = oaPersonalData.FullName
+	mailParam["KTP"] = oaPersonalData.IDcardNo
+	mailParam["Tanggal"] = date.Format(dateLayout)
+	mailParam["Status"] = status
+
+	mailTemp = "email-oa-pengkinian-rejected.html"
+	if *oaRequest.OaRequestType == uint64(127) { // oa new
+		subject = "[MotionFunds] Pembukaan Rekening Kamu Belum Dapat Disetujui"
+		mailParam["Judul"] = "Pendaftaran Rekening Belum Dapat Disetujui"
+		mailParam["Keterangan"] = "pendaftaran rekening yang kamu ajukan belum dapat dapat disetujui:"
+	} else { // pengkinian
+		subject = "[MotionFunds] Mohon Verifikasi Pembukaan Rekening Reksa Dana"
+		mailParam["Judul"] = "Pengkinian Data Kamu Tidak Dapat Diproses"
+		mailParam["Keterangan"] = "pengkinian dara yan kamu ajukan belum dapat kami proses lebih lanjut:"
+	}
+
+	var userLogin models.ScUserLogin
+	_, err = models.GetScUserKey(&userLogin, strconv.FormatUint(*oaRequest.UserLoginKey, 10))
+	if err != nil {
+		log.Error("User tidak ditemukan")
+		log.Error(err)
+		return
+	} else {
+		log.Println("User Ada")
+		t := template.New(mailTemp)
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+		if err != nil {
+			log.Error("Failed send mail: " + err.Error())
+		} else {
+			log.Println("File Template Ada")
+			var tpl bytes.Buffer
+			if err := t.Execute(&tpl, mailParam); err != nil {
+				log.Error("Failed send mail: " + err.Error())
+			} else {
+				result := tpl.String()
+
+				mailer := gomail.NewMessage()
+				mailer.SetHeader("From", config.EmailFrom)
+				mailer.SetHeader("To", userLogin.UloginEmail)
+				mailer.SetHeader("Subject", subject)
+				mailer.SetBody("text/html", result)
+
+				dialer := gomail.NewDialer(
+					config.EmailSMTPHost,
+					int(config.EmailSMTPPort),
+					config.EmailFrom,
+					config.EmailFromPassword,
+				)
+				dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+				err = dialer.DialAndSend(mailer)
+				if err != nil {
+					log.Error("Failed send mail to: " + userLogin.UloginEmail)
+					log.Error("Failed send mail: " + err.Error())
+				} else {
+					log.Println("Sukses kirim email: " + userLogin.UloginEmail)
+				}
+			}
 		}
 	}
 }

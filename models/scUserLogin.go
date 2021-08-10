@@ -784,3 +784,15 @@ func SetNullTokenNotif(tokenNotif string) (int, error) {
 	tx.Commit()
 	return http.StatusOK, nil
 }
+
+func GetScUserKey(c *ScUserLogin, key string) (int, error) {
+	query := `SELECT sc_user_login.* FROM sc_user_login WHERE sc_user_login.user_login_key = ` + key
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}

@@ -52,7 +52,7 @@ type MmMailMaster struct {
 func GetMmMailMaster(c *MmMailMaster, field string, key string) (int, error) {
 	query := `SELECT mm_mail_master.* FROM mm_mail_master 
 	WHERE mm_mail_master.rec_status = '1' 
-	AND mm_mail_master.` + field + ` = ` + key
+	AND mm_mail_master.` + field + ` = "` + key + `"`
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {

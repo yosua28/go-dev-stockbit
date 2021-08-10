@@ -35,7 +35,7 @@ func CreateNotifCustomerFromAdminByCustomerId(customerId string, heading string,
 
 func CreateNotifCustomerFromAdminByUserLoginKey(userLoginKey string, heading string, content string, category string) {
 	var userData models.ScUserLogin
-	_, err := models.GetScUserLoginByKey(&userData, userLoginKey)
+	_, err := models.GetScUserKey(&userData, userLoginKey)
 	if err == nil {
 		if userData.TokenNotif == nil {
 			log.Println("token kosong")
