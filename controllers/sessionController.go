@@ -513,6 +513,7 @@ func Login(c echo.Context) error {
 	var request []models.OaRequest
 	status, err = models.GetAllOaRequest(&request, config.LimitQuery, 0, true, paramsRequest)
 	if err != nil {
+		atClaims["oa_status"] = ""
 		log.Error(err.Error())
 	} else if len(request) > 0 {
 		if request[0].Oastatus != nil && *request[0].Oastatus > 0 {
@@ -542,6 +543,8 @@ func Login(c echo.Context) error {
 				}
 			}
 		}
+	} else {
+		atClaims["oa_status"] = ""
 	}
 	if accountData.RoleKey != nil && *accountData.RoleKey > 0 {
 		atClaims["role_key"] = *accountData.RoleKey
