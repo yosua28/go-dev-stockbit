@@ -1661,7 +1661,7 @@ func ChangeForgotPassword(c echo.Context) error {
 func CreatePin(c echo.Context) error {
 
 	var err error
-	var status int
+	// var status int
 	// Check parameters
 	pin1 := c.FormValue("pin1")
 	if pin1 == "" {
@@ -1676,20 +1676,20 @@ func CreatePin(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_email"] = lib.Profile.Email
-	var userLogin []models.ScUserLogin
-	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
-	if err != nil {
-		log.Error("Error get email")
-		return lib.CustomError(status, "Error get email", "Error get email")
-	}
-	if len(userLogin) < 1 {
-		log.Error("Email not registered")
-		return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
-	}
+	// params["ulogin_key"] = lib.Profile.UserID
+	// var userLogin []models.ScUserLogin
+	// status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
+	// if err != nil {
+	// 	log.Error("Error get email")
+	// 	return lib.CustomError(status, "Error get email", "Error get email")
+	// }
+	// if len(userLogin) < 1 {
+	// 	log.Error("Email not registered")
+	// 	return lib.CustomError(http.StatusUnauthorized, "Email not registered", "Email not registered")
+	// }
 
-	accountData := userLogin[0]
-	log.Info(accountData)
+	// accountData := userLogin[0]
+	// log.Info(accountData)
 
 	if pin1 != pin2 {
 		log.Error("Pin doesnt match")
@@ -1701,7 +1701,7 @@ func CreatePin(c echo.Context) error {
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 
 	dateLayout := "2006-01-02 15:04:05"
-	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["ulogin_pin"] = encryptedPassword
 	params["last_changed_pin"] = time.Now().Format(dateLayout)
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
@@ -1717,7 +1717,7 @@ func CreatePin(c echo.Context) error {
 	strKey := strconv.FormatUint(lib.Profile.UserID, 10)
 	paramsUserMessage := make(map[string]string)
 	paramsUserMessage["umessage_type"] = "245"
-	strUserLoginKey := strconv.FormatUint(accountData.UserLoginKey, 10)
+	strUserLoginKey := strconv.FormatUint(lib.Profile.UserID, 10)
 	paramsUserMessage["umessage_recipient_key"] = strUserLoginKey
 	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["flag_read"] = "0"
@@ -1735,7 +1735,7 @@ func CreatePin(c echo.Context) error {
 	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
 	paramsUserMessage["rec_created_by"] = strKey
 
-	status, err = models.CreateScUserMessage(paramsUserMessage)
+	_, err = models.CreateScUserMessage(paramsUserMessage)
 	if err != nil {
 		log.Error(err.Error())
 		log.Error("Error create user message")
