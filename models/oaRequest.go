@@ -107,6 +107,7 @@ type OaRequestDetailResponse struct {
 	MotherMaidenName    string               `json:"mother_maiden_name"`
 	BeneficialRelation  *string              `json:"beneficial_relation"`
 	BeneficialFullName  *string              `json:"beneficial_full_name"`
+	RelationFullName    *string              `json:"relation_full_name"`
 	OccupBusinessFields *string              `json:"occup_business_fields"`
 	IDcardAddress       Address              `json:"idcard_address"`
 	DomicileAddress     Address              `json:"domicile_address"`
@@ -317,8 +318,8 @@ func GetAllOaRequest(c *[]OaRequest, limit uint64, offset uint64, nolimit bool, 
 
 	for field, value := range params {
 		if !(field == "orderBy" || field == "orderType") {
-			if field == "oa_status" && value == "1"{
-				whereClause = append(whereClause, "oa_request.oa_status > 259")	
+			if field == "oa_status" && value == "1" {
+				whereClause = append(whereClause, "oa_request.oa_status > 259")
 			} else {
 				whereClause = append(whereClause, "oa_request."+field+" = '"+value+"'")
 			}

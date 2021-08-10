@@ -592,6 +592,7 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 		responseData.OccupWebURL = oapersonal.OccupWebUrl
 		responseData.MotherMaidenName = oapersonal.MotherMaidenName
 		responseData.BeneficialFullName = oapersonal.BeneficialFullName
+		responseData.RelationFullName = oapersonal.RelationFullName
 
 		//mapping gen lookup
 		var personalDataLookupIds []string
@@ -1898,6 +1899,7 @@ func UpdateStatusApprovalCompliance(c echo.Context) error {
 		}
 		//Sent Email Reject ke customer
 		SentEmailRejectOaPengkinianToCustomer(oareq, oapersonal, check2notes)
+		lib.CreateNotifCustomerFromAdminByUserLoginKey(strUserLoginKey, subject, body, "TRANSACTION")
 
 		tx.Commit()
 	}
@@ -2842,6 +2844,7 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 		responseData.OccupWebURL = oapersonal.OccupWebUrl
 		responseData.MotherMaidenName = oapersonal.MotherMaidenName
 		responseData.BeneficialFullName = oapersonal.BeneficialFullName
+		responseData.RelationFullName = oapersonal.RelationFullName
 
 		//mapping gen lookup
 		var personalDataLookupIds []string
