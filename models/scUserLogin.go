@@ -751,7 +751,7 @@ func CheckCreatePin(c *CountData, userLoginKey string) (int, error) {
 			INNER JOIN oa_request AS o ON o.user_login_key = u.user_login_key
 			INNER JOIN ms_customer AS c ON c.customer_key = o.customer_key
 			WHERE u.rec_status = 1 AND o.rec_status = 1 AND c.rec_status = 1 
-			AND u.ulogin_pin IS NULL AND c.customer_key IS NOT NULL 
+			AND (u.ulogin_pin IS NULL OR u.ulogin_pin = "") AND c.customer_key IS NOT NULL 
 			AND u.user_login_key = '` + userLoginKey + `' GROUP BY u.user_login_key`
 
 	// Main query

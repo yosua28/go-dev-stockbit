@@ -763,6 +763,140 @@
                         "risk_name": "Moderat Agresif",
                         "score_result": 60
                       },
+                      "risk_profile_customer": [
+                        {
+                          "options": [
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 6,
+                              "quiz_option_title": "Pendapatan Berkala"
+                            },
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 7,
+                              "quiz_option_title": "Pendapatan dan Pertumbuhan Nilai"
+                            },
+                            {
+                              "is_check": true,
+                              "quiz_option_key": 8,
+                              "quiz_option_title": "Investasi Jangka Panjang"
+                            }
+                          ],
+                          "quiz_question_key": 3,
+                          "quiz_title": "Apa Tujuan Investasi Kamu?",
+                          "user_answer": "8"
+                        },
+                        {
+                          "options": [
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 9,
+                              "quiz_option_title": "< 2 Tahun"
+                            },
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 10,
+                              "quiz_option_title": "2 - 5 Tahun"
+                            },
+                            {
+                              "is_check": true,
+                              "quiz_option_key": 11,
+                              "quiz_option_title": "> 5 Tahun"
+                            }
+                          ],
+                          "quiz_question_key": 4,
+                          "quiz_title": "Berapa Lama Jangka Waktu Kamu untuk Investasi?",
+                          "user_answer": "11"
+                        },
+                        {
+                          "options": [
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 12,
+                              "quiz_option_title": "< 35%"
+                            },
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 13,
+                              "quiz_option_title": "35% - 70%"
+                            },
+                            {
+                              "is_check": true,
+                              "quiz_option_key": 14,
+                              "quiz_option_title": "> 70%"
+                            }
+                          ],
+                          "quiz_question_key": 5,
+                          "quiz_title": "Persentase Dana yang Kamu Investasikan",
+                          "user_answer": "14"
+                        },
+                        {
+                          "options": [
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 15,
+                              "quiz_option_title": "Kurang Memahami"
+                            },
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 16,
+                              "quiz_option_title": "Cukup Memahami"
+                            },
+                            {
+                              "is_check": true,
+                              "quiz_option_key": 17,
+                              "quiz_option_title": "Sangat Memahami"
+                            }
+                          ],
+                          "quiz_question_key": 6,
+                          "quiz_title": "Pemahaman Kamu terhadap Produk Investasi dan Produk Reksa Dana di MNC Asset Management",
+                          "user_answer": "17"
+                        },
+                        {
+                          "options": [
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 18,
+                              "quiz_option_title": "Rendah, Mengutamakan Kestabilan"
+                            },
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 19,
+                              "quiz_option_title": "Sedang, Bisa Menerima Sedikit Risiko"
+                            },
+                            {
+                              "is_check": true,
+                              "quiz_option_key": 20,
+                              "quiz_option_title": "Tinggi, Berani Menghadapi Risiko"
+                            }
+                          ],
+                          "quiz_question_key": 7,
+                          "quiz_title": "Toleransi Risiko Kamu",
+                          "user_answer": "20"
+                        },
+                        {
+                          "options": [
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 21,
+                              "quiz_option_title": "Tidak Dapat Menerima Kerugian Apapun"
+                            },
+                            {
+                              "is_check": false,
+                              "quiz_option_key": 22,
+                              "quiz_option_title": "Dapat Menerima Kerugian dalam Jumlah Relatif Kecil"
+                            },
+                            {
+                              "is_check": true,
+                              "quiz_option_key": 23,
+                              "quiz_option_title": "Dapat Menerima Kerugian Apapun"
+                            }
+                          ],
+                          "quiz_question_key": 8,
+                          "quiz_title": "Kepentingan Atas Pokok Investasi",
+                          "user_answer": "23"
+                        }
+                      ],
                       "sales_code": null,
                       "signature": {},
                       "sourceof_fund": 67

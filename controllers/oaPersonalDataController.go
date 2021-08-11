@@ -4,6 +4,7 @@ import (
 	"api/config"
 	"api/lib"
 	"api/models"
+	"database/sql"
 	"encoding/json"
 	"mime/multipart"
 	"net/http"
@@ -1225,6 +1226,8 @@ func GetOaPersonalData(c echo.Context) error {
 	}
 	responseData["bank_account"] = bankAccountDatas
 
+	riskProfileData := make(map[string]interface{})
+
 	var quizDB []models.OaRiskProfileQuiz
 	paramQuiz := make(map[string]string)
 	paramQuiz["oa_request_key"] = requestKey
@@ -1233,39 +1236,128 @@ func GetOaPersonalData(c echo.Context) error {
 	_, err = models.GetAllOaRiskProfileQuiz(&quizDB, 100, 0, paramQuiz, true)
 	if err != nil {
 		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	} else {
+		var quizData []interface{}
+		for _, q := range quizDB {
+			quiz := make(map[string]interface{})
+			quiz["question_key"] = strconv.FormatUint(*q.QuizQuestionKey, 10)
+			quiz["option_key"] = strconv.FormatUint(*q.QuizOptionKey, 10)
+			quiz["score"] = strconv.FormatUint(*q.QuizOptionScore, 10)
+			quizData = append(quizData, quiz)
+		}
+		riskProfileData["quiz"] = quizData
 	}
 
 	var risk models.OaRiskProfile
 	_, err = models.GetOaRiskProfile(&risk, requestKey, "oa_request_key")
 	if err != nil {
 		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
-	}
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	} else {
+		riskProfileData["score_result"] = risk.ScoreResult
 
-	var riskProfile models.MsRiskProfile
-	_, err = models.GetMsRiskProfile(&riskProfile, strconv.FormatUint(risk.RiskProfileKey, 10))
-	if err != nil {
-		log.Error(err.Error())
-		return lib.CustomError(status, err.Error(), "Failed get data")
+		var riskProfile models.MsRiskProfile
+		_, err = models.GetMsRiskProfile(&riskProfile, strconv.FormatUint(risk.RiskProfileKey, 10))
+		if err != nil {
+			log.Error(err.Error())
+			if err != sql.ErrNoRows {
+				return lib.CustomError(status, err.Error(), "Failed get data")
+			}
+		} else {
+			riskProfileData["risk_code"] = riskProfile.RiskCode
+			riskProfileData["risk_name"] = riskProfile.RiskName
+			riskProfileData["risk_desc"] = riskProfile.RiskDesc
+		}
 	}
-
-	riskProfileData := make(map[string]interface{})
-	riskProfileData["score_result"] = risk.ScoreResult
-	riskProfileData["risk_code"] = riskProfile.RiskCode
-	riskProfileData["risk_name"] = riskProfile.RiskName
-	riskProfileData["risk_desc"] = riskProfile.RiskDesc
-	var quizData []interface{}
-	for _, q := range quizDB {
-		quiz := make(map[string]interface{})
-		quiz["question_key"] = strconv.FormatUint(*q.QuizQuestionKey, 10)
-		quiz["option_key"] = strconv.FormatUint(*q.QuizOptionKey, 10)
-		quiz["score"] = strconv.FormatUint(*q.QuizOptionScore, 10)
-		quizData = append(quizData, quiz)
-	}
-	riskProfileData["quiz"] = quizData
 
 	responseData["risk_profile"] = riskProfileData
+
+	// question, option, user answer
+	var questionOptionUser []interface{}
+	var quesOptUsa []models.QuestionOptionCustomer
+	_, err = models.GetListQuestionOptionCustomer(&quesOptUsa, requestKey)
+	if err != nil {
+		log.Error(err.Error())
+		if err != sql.ErrNoRows {
+			return lib.CustomError(status, err.Error(), "Failed get data")
+		}
+	} else {
+		lastQuizKey := ""
+		var optList []interface{}
+		riskProfileUserCus := make(map[string]interface{})
+		for ky, q := range quesOptUsa {
+			if ky == 0 {
+				log.Println("aaa")
+				riskProfileUserCus["quiz_question_key"] = q.QuizQuestionKey
+				riskProfileUserCus["quiz_title"] = q.QuizTitle
+				riskProfileUserCus["user_answer"] = q.UserAnswer
+				opt := make(map[string]interface{})
+				opt["quiz_option_key"] = q.QuizOptionKey
+				opt["quiz_option_title"] = q.QuizOptionTitle
+				if q.IsCheck == "1" {
+					opt["is_check"] = true
+				} else {
+					opt["is_check"] = false
+				}
+				optList = append(optList, opt)
+
+				if ky == (len(quesOptUsa) - 1) {
+					riskProfileUserCus["options"] = optList
+					questionOptionUser = append(questionOptionUser, riskProfileUserCus)
+				}
+			} else {
+				if lastQuizKey == strconv.FormatUint(q.QuizQuestionKey, 10) {
+					log.Println("bbb")
+					opt := make(map[string]interface{})
+					opt["quiz_option_key"] = q.QuizOptionKey
+					opt["quiz_option_title"] = q.QuizOptionTitle
+					if q.IsCheck == "1" {
+						opt["is_check"] = true
+					} else {
+						opt["is_check"] = false
+					}
+					optList = append(optList, opt)
+					if ky == (len(quesOptUsa) - 1) {
+						riskProfileUserCus["options"] = optList
+						questionOptionUser = append(questionOptionUser, riskProfileUserCus)
+					}
+				} else {
+					riskProfileUserCus["options"] = optList
+					questionOptionUser = append(questionOptionUser, riskProfileUserCus)
+					log.Println("ccc")
+					riskProfileUserCus = make(map[string]interface{})
+					riskProfileUserCus["quiz_question_key"] = q.QuizQuestionKey
+					riskProfileUserCus["quiz_title"] = q.QuizTitle
+					riskProfileUserCus["user_answer"] = q.UserAnswer
+					optList = nil
+					opt := make(map[string]interface{})
+					opt["quiz_option_key"] = q.QuizOptionKey
+					opt["quiz_option_title"] = q.QuizOptionTitle
+					if q.IsCheck == "1" {
+						opt["is_check"] = true
+					} else {
+						opt["is_check"] = false
+					}
+					optList = append(optList, opt)
+
+					if ky == (len(quesOptUsa) - 1) {
+						riskProfileUserCus["options"] = optList
+						questionOptionUser = append(questionOptionUser, riskProfileUserCus)
+					}
+				}
+
+			}
+
+			lastQuizKey = strconv.FormatUint(q.QuizQuestionKey, 10)
+		}
+	}
+	responseData["risk_profile_customer"] = questionOptionUser
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"

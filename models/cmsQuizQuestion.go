@@ -118,3 +118,40 @@ func AdminGetQuestionOptionQuiz(c *[]QuestionOptionQuiz, optionKey []string) (in
 
 	return http.StatusOK, nil
 }
+
+type QuestionOptionCustomer struct {
+	QuizQuestionKey uint64  `db:"quiz_question_key"     json:"quiz_question_key"`
+	QuizTitle       string  `db:"quiz_title"            json:"quiz_title"`
+	QuizOptionKey   uint64  `db:"quiz_option_key"       json:"quiz_option_key"`
+	QuizOptionTitle string  `db:"quiz_option_title"     json:"quiz_option_title"`
+	UserAnswer      *string `db:"user_answer"           json:"user_answer"`
+	IsCheck         string  `db:"is_check"              json:"is_check"`
+}
+
+func GetListQuestionOptionCustomer(c *[]QuestionOptionCustomer, oaReqKey string) (int, error) {
+	query := `SELECT
+				q.quiz_question_key,
+				q.quiz_title,
+				o.quiz_option_key,
+				o.quiz_option_title,
+				rp.quiz_option_key AS user_answer, 
+				(CASE 
+				WHEN o.quiz_option_key = rp.quiz_option_key THEN "1"
+				ELSE "0"
+				END) AS is_check 
+			FROM cms_quiz_question AS q
+			INNER JOIN cms_quiz_options AS o ON q.quiz_question_key = o.quiz_question_key
+			LEFT JOIN oa_risk_profile_quiz AS rp ON rp.quiz_question_key = o.quiz_question_key AND rp.oa_request_key = "` + oaReqKey + `"
+			WHERE q.quiz_header_key = 2 AND q.rec_status = 1 AND o.rec_status = 1
+			ORDER BY q.quiz_question_key, o.quiz_option_key ASC`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
