@@ -1,0 +1,265 @@
+<!DOCTYPE html
+    PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+    <title>MotionFunds</title>
+    <style type="text/css">
+        body {
+            margin: 0 auto;
+            padding: 0;
+            min-width: 100%;
+            font-family: sans-serif;
+        }
+
+        table {
+            margin: 0 0 50px 0;
+        }
+
+        .header {
+            text-align: left;
+        }
+
+        .content {
+            font-size: 15px;
+            line-height: 25px;
+        }
+
+        .subscribe {
+            height: 70px;
+            text-align: center;
+        }
+
+        .button {
+            text-align: center;
+            font-size: 18px;
+            font-family: sans-serif;
+            font-weight: bold;
+            padding: 0 30px 0 30px;
+        }
+
+        .button a {
+            color: #FFFFFF;
+            text-decoration: none;
+        }
+
+        .buttonwrapper {
+            margin: 0 auto;
+        }
+
+        .footer {
+            text-align: center;
+            height: 40px;
+            font-size: 13px;
+            font-style: italic;
+        }
+
+        .footer a {
+            color: #000000;
+            text-decoration: none;
+            font-style: normal;
+        }
+
+        a {
+            text-decoration: none;
+            color: #000000;
+        }
+    </style>
+</head>
+
+<body bgcolor="#009587">
+    <table bgcolor="#FFFFFF" width="100%" border="0" cellspacing="0" cellpadding="0">
+        <tr class="header">
+            <td style="padding:10px;">
+                <img src="{{.FileUrl}}/logo.PNG" alt="MNC Asset Management" width="150" />
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    Dear Tim Sales
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    Data nasabah berikut ini melakukan transaksi melalui MotionFunds :
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <table style="margin:0;">
+                    <tr>
+                        <td>
+                            Tipe Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.TipeTransaksi}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nama Lengkap
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NamaLengkap}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            No. CIF
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.CIF}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Tanggal Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.TanggalTransaksi}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Waktu Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.WaktuTransaksi}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Nama Produk
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NamaProduk}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Jumlah Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.JumlahTransaksi}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Biaya Transaksi
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.BiayaTransaksi}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Metode Pembayaran
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.MetodePembayaran}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Rekening Bank Kustodian
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.RekeningBankKustodian}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="top">
+                            Bukti Transfer
+                        </td>
+                        <td valign="top">
+                            :
+                        </td>
+                        <td valign="top">
+                            {{.BuktiTransfer}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Sales
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.Sales}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Status
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            <b>{{.Status}}</b>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td valign="top">
+                            Alasan
+                        </td>
+                        <td valign="top">
+                            :
+                        </td>
+                        <td valign="top">
+                            {{.Alasan}}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify;">
+                    Demikian disampaikan. Terima kasih. <br/>
+                    <img class="mx-auto my-3 d-block" src="{{.FileUrl}}/mncduit_600x282.png" alt="MotionFunds"
+                                width="200" />
+                </p>
+            </td>
+        </tr>
+    </table>
+</body>
+
+</html>

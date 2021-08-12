@@ -34777,7 +34777,7 @@
                       "type": "integer"
                     },
                     "role": {
-                      "type": "integer"
+                      "type": "string"
                     }
                   },
                   "required": [
