@@ -909,6 +909,7 @@ func CreateOaPersonalData(c echo.Context) error {
 	paramsRequest["rec_status"] = "1"
 	paramsRequest["rec_created_date"] = dateNow
 	paramsRequest["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsRequest["rec_attribute_id3"] = c.Request().UserAgent()
 	status, err, requestID := models.CreateOaRequest(paramsRequest)
 	if err != nil {
 		log.Error("Failed create request data: " + err.Error())
@@ -1292,7 +1293,6 @@ func GetOaPersonalData(c echo.Context) error {
 		riskProfileUserCus := make(map[string]interface{})
 		for ky, q := range quesOptUsa {
 			if ky == 0 {
-				log.Println("aaa")
 				riskProfileUserCus["quiz_question_key"] = q.QuizQuestionKey
 				riskProfileUserCus["quiz_title"] = q.QuizTitle
 				riskProfileUserCus["user_answer"] = q.UserAnswer
@@ -1312,7 +1312,6 @@ func GetOaPersonalData(c echo.Context) error {
 				}
 			} else {
 				if lastQuizKey == strconv.FormatUint(q.QuizQuestionKey, 10) {
-					log.Println("bbb")
 					opt := make(map[string]interface{})
 					opt["quiz_option_key"] = q.QuizOptionKey
 					opt["quiz_option_title"] = q.QuizOptionTitle
@@ -1329,7 +1328,6 @@ func GetOaPersonalData(c echo.Context) error {
 				} else {
 					riskProfileUserCus["options"] = optList
 					questionOptionUser = append(questionOptionUser, riskProfileUserCus)
-					log.Println("ccc")
 					riskProfileUserCus = make(map[string]interface{})
 					riskProfileUserCus["quiz_question_key"] = q.QuizQuestionKey
 					riskProfileUserCus["quiz_title"] = q.QuizTitle

@@ -140,6 +140,7 @@ func Register(c echo.Context) error {
 	params["string_token"] = verifyKey
 	params["token_expired"] = expired
 	params["rec_status"] = "1"
+	params["rec_attribute_id3"] = c.Request().UserAgent()
 
 	status, err = models.CreateScUserLogin(params)
 	if err != nil {
@@ -582,6 +583,7 @@ func Login(c echo.Context) error {
 	paramsSession["session_id"] = uuidString
 	paramsSession["login_date"] = time.Now().Format(dateLayout)
 	paramsSession["rec_status"] = "1"
+	paramsSession["rec_attribute_id3"] = c.Request().UserAgent()
 	if err == nil && len(loginSession) > 0 {
 		log.Info("Active session for previous login, overwrite with new session")
 		if len(loginSession) > 1 {
@@ -1455,6 +1457,7 @@ func LoginBo(c echo.Context) error {
 	paramsSession["session_id"] = uuidString
 	paramsSession["login_date"] = time.Now().Format(dateLayout)
 	paramsSession["rec_status"] = "1"
+	paramsSession["rec_attribute_id3"] = c.Request().UserAgent()
 	if err == nil && len(loginSession) > 0 {
 		log.Info("Active session for previous login, overwrite with new session")
 		if len(loginSession) > 1 {

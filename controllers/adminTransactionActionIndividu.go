@@ -778,6 +778,7 @@ func CreateTransactionSubscription(c echo.Context) error {
 	if promoKey != nil {
 		params["promo_code"] = promoCode
 	}
+	params["rec_attribute_id3"] = c.Request().UserAgent()
 
 	status, err, transactionID := models.CreateTrTransaction(params)
 
@@ -1477,6 +1478,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 	if err != nil {
 		return lib.CustomError(status)
 	}
+	params["rec_attribute_id3"] = c.Request().UserAgent()
 
 	status, err, transactionID := models.CreateTrTransaction(params)
 
@@ -1960,6 +1962,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	if err != nil {
 		return lib.CustomError(status)
 	}
+	params["rec_attribute_id3"] = c.Request().UserAgent()
 
 	status, err, transactionID := models.CreateTrTransaction(params)
 
@@ -2040,6 +2043,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	paramsSwIn["trans_unit"] = "0"
 	paramsSwIn["total_amount"] = "0"
 	paramsSwIn["flag_newsub"] = "0"
+	paramsSwIn["rec_attribute_id3"] = c.Request().UserAgent()
 
 	status, err, _ = models.CreateTrTransaction(paramsSwIn)
 

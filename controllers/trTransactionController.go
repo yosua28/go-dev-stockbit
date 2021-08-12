@@ -543,6 +543,7 @@ func CreateTransaction(c echo.Context) error {
 	if promoKey != nil {
 		params["promo_code"] = promoCode
 	}
+	params["rec_attribute_id3"] = c.Request().UserAgent()
 	status, err, transactionID := models.CreateTrTransaction(params)
 	if err != nil {
 		log.Error(err.Error())

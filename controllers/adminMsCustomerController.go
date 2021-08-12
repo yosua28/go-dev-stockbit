@@ -2013,6 +2013,7 @@ func AdminCreateCustomerIndividu(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed create data")
 	}
 	paramsOaRequest["user_login_key"] = idUserLogin
+	paramsOaRequest["rec_attribute_id3"] = c.Request().UserAgent()
 
 	//SAVE AO_PORTAL_ADDRESS IDCARD
 	status, err, addressidID := models.CreateOaPostalAddress(addressIDParams)
@@ -3440,6 +3441,7 @@ func AdminSavePengkinianCustomerIndividu(c echo.Context) error {
 	paramsOaRequest["user_login_key"] = idUserLogin
 	paramsOaRequest["rec_created_date"] = time.Now().Format(dateLayout)
 	paramsOaRequest["rec_created_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsOaRequest["rec_attribute_id3"] = c.Request().UserAgent()
 
 	//SAVE AO_PORTAL_ADDRESS IDCARD
 	status, err, addressidID := models.CreateOaPostalAddress(addressIDParams)
