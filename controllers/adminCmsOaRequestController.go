@@ -1157,10 +1157,14 @@ func ResultOaRequestData(keyStr string, c echo.Context, isHistory bool) error {
 			if len(sliceName) > 0 {
 				responseData.FirstName = &sliceName[0]
 				if len(sliceName) > 1 {
-					responseData.MiddleName = &sliceName[1]
-					if len(sliceName) > 2 {
-						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
-						responseData.LastName = &lastName
+					if len(sliceName) == 2 {
+						responseData.LastName = &sliceName[1]
+					} else {
+						responseData.MiddleName = &sliceName[1]
+						if len(sliceName) > 2 {
+							lastName := strings.Join(sliceName[2:len(sliceName)], " ")
+							responseData.LastName = &lastName
+						}
 					}
 				}
 			}
@@ -3313,9 +3317,16 @@ func ResultOaPersonalData(keyStr string, c echo.Context, isHistory bool) error {
 				responseData.FirstName = &sliceName[0]
 				if len(sliceName) > 1 {
 					responseData.MiddleName = &sliceName[1]
-					if len(sliceName) > 2 {
-						lastName := strings.Join(sliceName[2:len(sliceName)], " ")
-						responseData.LastName = &lastName
+					if len(sliceName) > 1 {
+						if len(sliceName) == 2 {
+							responseData.LastName = &sliceName[1]
+						} else {
+							responseData.MiddleName = &sliceName[1]
+							if len(sliceName) > 2 {
+								lastName := strings.Join(sliceName[2:len(sliceName)], " ")
+								responseData.LastName = &lastName
+							}
+						}
 					}
 				}
 			}
