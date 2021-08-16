@@ -32,6 +32,7 @@ type ScUserLogin struct {
 	TokenExpired         *string `db:"token_expired"             json:"token_expired"`
 	UloginPin            *string `db:"ulogin_pin"                json:"ulogin_pin"`
 	LastChangedPin       *string `db:"last_changed_pin"          json:"last_changed_pin"`
+	MustChangePin        *uint8  `db:"must_change_pin"           json:"must_change_pin"`
 	UloginMobileno       *string `db:"ulogin_mobileno"           json:"ulogin_mobileno"`
 	LastVerifiedMobileno *string `db:"last_verified_mobileno"    json:"last_verified_mobileno"`
 	VerifiedMobileno     uint8   `db:"verified_mobileno"         json:"verified_mobileno"`
