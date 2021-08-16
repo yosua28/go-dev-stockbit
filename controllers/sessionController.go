@@ -7,6 +7,7 @@ import (
 	"bytes"
 	"crypto/sha256"
 	"crypto/tls"
+	"encoding/base64"
 	_ "encoding/base64"
 	"encoding/hex"
 	"encoding/json"
@@ -1700,8 +1701,9 @@ func CreatePin(c echo.Context) error {
 	}
 
 	// Encrypt pin
-	encryptedPasswordByte := sha256.Sum256([]byte(pin1))
-	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	// encryptedPasswordByte := sha256.Sum256([]byte(pin1))
+	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(pin1))
 
 	dateLayout := "2006-01-02 15:04:05"
 	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
@@ -1776,7 +1778,7 @@ func ChangePin(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["rec_status"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
@@ -1793,8 +1795,9 @@ func ChangePin(c echo.Context) error {
 	log.Info(accountData)
 
 	// Check valid password
-	encryptedPasswordByte := sha256.Sum256([]byte(recentPin))
-	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	// encryptedPasswordByte := sha256.Sum256([]byte(recentPin))
+	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(recentPin))
 	if accountData.UloginPin != nil && encryptedPassword != *accountData.UloginPin {
 		log.Error("Wrong password")
 		return lib.CustomError(http.StatusUnauthorized, "Wrong pin", "Wrong pin")
@@ -1806,8 +1809,9 @@ func ChangePin(c echo.Context) error {
 	}
 
 	// Encrypt password
-	encryptedPasswordByte = sha256.Sum256([]byte(newPin1))
-	encryptedPassword = hex.EncodeToString(encryptedPasswordByte[:])
+	// encryptedPasswordByte = sha256.Sum256([]byte(newPin1))
+	// encryptedPassword = hex.EncodeToString(encryptedPasswordByte[:])
+	encryptedPassword = base64.StdEncoding.EncodeToString([]byte(newPin1))
 
 	dateLayout := "2006-01-02 15:04:05"
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
@@ -1865,12 +1869,13 @@ func ForgotPin(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_email"] = lib.Profile.Email
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["rec_status"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
-		log.Error("Error get email")
-		return lib.CustomError(status, "Error get email", "Error get email")
+		log.Error("Error get user")
+		return lib.CustomError(status, "Error get user", "Error get user")
 	}
 	if len(userLogin) < 1 {
 		log.Error("Email not registered")
@@ -1897,8 +1902,10 @@ func ForgotPin(c echo.Context) error {
 		buf[i], buf[j] = buf[j], buf[i]
 	})
 	str := string(buf)
-	encryptedPasswordByte := sha256.Sum256([]byte(str))
-	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	// encryptedPasswordByte := sha256.Sum256([]byte(str))
+	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+
+	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(str))
 
 	params = make(map[string]string)
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
@@ -1981,7 +1988,7 @@ func ChangeForgotPin(c echo.Context) error {
 
 	// Check valid email
 	params := make(map[string]string)
-	params["ulogin_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["rec_status"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
@@ -2003,8 +2010,9 @@ func ChangeForgotPin(c echo.Context) error {
 	}
 
 	// Encrypt password
-	encryptedPasswordByte := sha256.Sum256([]byte(newPin1))
-	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	// encryptedPasswordByte := sha256.Sum256([]byte(newPin1))
+	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
+	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(newPin1))
 
 	dateLayout := "2006-01-02 15:04:05"
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
