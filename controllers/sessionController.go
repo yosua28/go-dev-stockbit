@@ -1708,6 +1708,7 @@ func CreatePin(c echo.Context) error {
 	dateLayout := "2006-01-02 15:04:05"
 	params["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
 	params["ulogin_pin"] = encryptedPassword
+	params["must_change_pin"] = "0"
 	params["last_changed_pin"] = time.Now().Format(dateLayout)
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
@@ -1819,6 +1820,7 @@ func ChangePin(c echo.Context) error {
 	params["last_changed_pin"] = time.Now().Format(dateLayout)
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	params["must_change_pin"] = "0"
 
 	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
@@ -1885,31 +1887,22 @@ func ForgotPin(c echo.Context) error {
 	accountData := userLogin[0]
 	log.Info("Found account with email " + accountData.UloginEmail)
 
-	rand.Seed(time.Now().UnixNano())
-	digits := "0123456789"
-	specials := "~=+%^*/()[]{}/!@#$?|"
-	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
-		"abcdefghijklmnopqrstuvwxyz" +
-		digits + specials
-	length := 8
-	buf := make([]byte, length)
-	buf[0] = digits[rand.Intn(len(digits))]
-	buf[1] = specials[rand.Intn(len(specials))]
-	for i := 2; i < length; i++ {
-		buf[i] = all[rand.Intn(len(all))]
+	pin := ""
+	length := 6
+	for i := 0; i < length; i++ {
+		pin += strconv.FormatUint(uint64(rand.Intn(9)), 10)
 	}
-	rand.Shuffle(len(buf), func(i, j int) {
-		buf[i], buf[j] = buf[j], buf[i]
-	})
-	str := string(buf)
-	// encryptedPasswordByte := sha256.Sum256([]byte(str))
-	// encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
 
-	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(str))
+	encryptedPassword := base64.StdEncoding.EncodeToString([]byte(pin))
 
 	params = make(map[string]string)
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
-	params["string_token"] = encryptedPassword
+	params["ulogin_pin"] = encryptedPassword
+	params["must_change_pin"] = "1"
+	dateLayout := "2006-01-02 15:04:05"
+	params["last_changed_pin"] = time.Now().Format(dateLayout)
+	params["rec_modified_date"] = time.Now().Format(dateLayout)
+	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)
 
 	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
@@ -1917,20 +1910,32 @@ func ForgotPin(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
 
-	// Send email
-	t := template.New("index-forgot-password.html")
+	// log.Println(rand.Intn(9))
 
-	t, err = t.ParseFiles(config.BasePath + "/mail/index-forgot-password.html")
+	// Send email
+	t := template.New("index-forget-pin.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-forget-pin.html")
 	if err != nil {
 		log.Println(err)
 	}
 
+	name := ""
+
+	var fullName models.FullNameData
+	_, err = models.GetFullName(&fullName, strconv.FormatUint(lib.Profile.UserID, 10))
+	if err != nil {
+		name = accountData.UloginFullName
+	} else {
+		name = fullName.FullName
+	}
+
 	var tpl bytes.Buffer
 	if err := t.Execute(&tpl, struct {
-		Password string
-		FileUrl  string
-		Name     string
-	}{Password: encryptedPassword, FileUrl: config.FileUrl + "/images/mail", Name: accountData.UloginFullName}); err != nil {
+		PIN     string
+		FileUrl string
+		Name    string
+	}{PIN: pin, FileUrl: config.FileUrl + "/images/mail", Name: name}); err != nil {
 		log.Println(err)
 	}
 
@@ -1939,7 +1944,7 @@ func ForgotPin(c echo.Context) error {
 	mailer := gomail.NewMessage()
 	mailer.SetHeader("From", config.EmailFrom)
 	mailer.SetHeader("To", lib.Profile.Email)
-	mailer.SetHeader("Subject", "[MotionFunds] Lupa Kata Sandi")
+	mailer.SetHeader("Subject", "[MotionFunds] Lupa PIN")
 	mailer.SetBody("text/html", result)
 
 	dialer := gomail.NewDialer(
@@ -2005,8 +2010,8 @@ func ChangeForgotPin(c echo.Context) error {
 	log.Info(accountData)
 
 	if newPin1 != newPin2 {
-		log.Error("Password doesnt match")
-		return lib.CustomError(http.StatusBadRequest, "Pin doesnt match", "Pin doesnt match")
+		log.Error("PIN doesnt match")
+		return lib.CustomError(http.StatusBadRequest, "PIN doesnt match", "PIN doesnt match")
 	}
 
 	// Encrypt password
@@ -2017,6 +2022,7 @@ func ChangeForgotPin(c echo.Context) error {
 	dateLayout := "2006-01-02 15:04:05"
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	params["ulogin_pin"] = encryptedPassword
+	params["must_change_pin"] = "0"
 	params["last_changed_pin"] = time.Now().Format(dateLayout)
 	params["rec_modified_date"] = time.Now().Format(dateLayout)
 	params["rec_modified_by"] = strconv.FormatUint(lib.Profile.UserID, 10)

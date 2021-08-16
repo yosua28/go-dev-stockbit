@@ -278,3 +278,23 @@ func UpdateOaPersonalData(params map[string]string) (int, error) {
 	tx.Commit()
 	return http.StatusOK, nil
 }
+
+type FullNameData struct {
+	FullName string `db:"full_name"          json:"full_name"`
+}
+
+func GetFullName(c *FullNameData, userLoginKey string) (int, error) {
+	query := `SELECT op.full_name as full_name  
+	FROM oa_personal_data AS op
+	INNER JOIN oa_request AS o ON op.oa_request_key = o.oa_request_key
+	INNER JOIN sc_user_login AS u ON u.user_login_key = o.user_login_key 
+	WHERE u.user_login_key = "` + userLoginKey + `" ORDER BY o.oa_request_key DESC LIMIT 1`
+	log.Info(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Error(err)
+		return http.StatusNotFound, err
+	}
+
+	return http.StatusOK, nil
+}
