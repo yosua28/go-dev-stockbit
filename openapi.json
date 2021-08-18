@@ -2335,6 +2335,140 @@
           }
         }
       },
+      "/auth/subscription": {
+        "post": {
+          "description": "Create Transaction Subscription",
+          "tags": [
+            "Transaction"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "product_key": {
+                      "type": "integer"
+                    },
+                    "trans_amount": {
+                      "type": "number"
+                    },
+                    "trans_fee_percent": {
+                      "type": "number"
+                    },
+                    "trans_fee_amount": {
+                      "type": "number"
+                    },
+                    "charges_fee_amount": {
+                      "type": "number"
+                    },
+                    "services_fee_amount": {
+                      "type": "number"
+                    },
+                    "total_amount": {
+                      "type": "number"
+                    },
+                    "product_bankacc_key": {
+                      "type": "number"
+                    },
+                    "payment_channel": {
+                      "type": "integer"
+                    },
+                    "payment_method": {
+                      "type": "integer"
+                    },
+                    "sub_acc": {
+                      "type": "string"
+                    },
+                    "trans_source": {
+                      "type": "integer"
+                    },
+                    "trans_calc_method": {
+                      "type": "integer"
+                    },
+                    "risk_waiver": {
+                      "type": "integer",
+                      "enum": [
+                        "0",
+                        "1"
+                      ]
+                    },
+                    "trans_remarks": {
+                      "type": "string"
+                    },
+                    "promo_code": {
+                      "type": "string"
+                    },
+                    "transfer_pic": {
+                      "type": "file"
+                    }
+                  },
+                  "required": [
+                    "product_key",
+                    "trans_amount",
+                    "trans_fee_percent",
+                    "trans_fee_amount",
+                    "charges_fee_amount",
+                    "services_fee_amount",
+                    "total_amount",
+                    "trans_source",
+                    "risk_waiver",
+                    "type_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "request_key": "1"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
       "/auth/validatepromo": {
         "get": {
           "description": "Validate Promo Transaction",

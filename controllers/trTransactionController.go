@@ -762,6 +762,482 @@ func CreateTransaction(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func Subscription(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+	params := make(map[string]string)
+
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	}
+
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+
+	productKeyStr := c.FormValue("product_key")
+	var product models.MsProduct
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err == nil && productKey > 0 {
+			params["product_key"] = productKeyStr
+			status, err = models.GetMsProduct(&product, productKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+			}
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	transAmountStr := c.FormValue("trans_amount")
+	if transAmountStr != "" {
+		value, err := decimal.NewFromString(transAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: trans_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_amount", "Wrong input for parameter: trans_amount")
+		}
+		if value.Cmp(product.MinSubAmount) == -1 {
+			log.Error("sub amount < minimum sub")
+			return lib.CustomError(http.StatusBadRequest, "sub amount < minum sub", "Minumum subscription untuk product ini adalah: "+product.MinSubAmount.String())
+		}
+		if transAmountStr == "0" {
+			log.Error("Wrong input for parameter: trans_amount")
+			return lib.CustomError(http.StatusBadRequest, "trans_amount harus lebih dari 0", "trans_amount harus lebih dari 0")
+		}
+		params["trans_amount"] = transAmountStr
+	} else {
+		log.Error("Missing required parameter: trans_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_amount", "Missing required parameter: trans_amount")
+	}
+
+	transCalcMethod := c.FormValue("trans_calc_method")
+	if transCalcMethod != "" {
+		transCalcMethodKey, err := strconv.ParseUint(transCalcMethod, 10, 64)
+		if err == nil && transCalcMethodKey > 0 {
+			params["trans_calc_method"] = transCalcMethod
+		} else {
+			log.Error("Missing required parameter: trans_calc_method")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_calc_method", "Missing required parameter: trans_calc_method")
+		}
+	} else {
+		log.Error("Missing required parameter: trans_calc_method")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_calc_method", "Missing required parameter: trans_calc_method")
+	}
+
+	transFeePercentStr := c.FormValue("trans_fee_percent")
+	if transFeePercentStr != "" {
+		_, err := decimal.NewFromString(transFeePercentStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: trans_fee_percent")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_fee_percent", "Wrong input for parameter: trans_fee_percent")
+		}
+		params["trans_fee_percent"] = transFeePercentStr
+	} else {
+		log.Error("Missing required parameter: trans_fee_percent")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_percent", "Missing required parameter: trans_fee_percent")
+	}
+
+	transFeeAmountStr := c.FormValue("trans_fee_amount")
+	if transFeeAmountStr != "" {
+		_, err := decimal.NewFromString(transFeeAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: trans_fee_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_fee_amount", "Wrong input for parameter: trans_fee_amount")
+		}
+		params["trans_fee_amount"] = transFeeAmountStr
+	} else {
+		log.Error("Missing required parameter: trans_fee_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_fee_amount", "Missing required parameter: trans_fee_amount")
+	}
+
+	chargesFeeAmountStr := c.FormValue("charges_fee_amount")
+	if chargesFeeAmountStr != "" {
+		_, err := decimal.NewFromString(chargesFeeAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: charges_fee_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: charges_fee_amount", "Wrong input for parameter: charges_fee_amount")
+		}
+		params["charges_fee_amount"] = chargesFeeAmountStr
+	} else {
+		log.Error("Missing required parameter: charges_fee_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: charges_fee_amount", "Missing required parameter: charges_fee_amount")
+	}
+
+	servicesFeeAmountStr := c.FormValue("services_fee_amount")
+	if servicesFeeAmountStr != "" {
+		_, err := decimal.NewFromString(servicesFeeAmountStr)
+		if err != nil {
+			log.Error("Wrong input for parameter: services_fee_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: services_fee_amount", "Wrong input for parameter: services_fee_amount")
+		}
+		params["services_fee_amount"] = servicesFeeAmountStr
+	} else {
+		log.Error("Missing required parameter: services_fee_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: services_fee_amount", "Missing required parameter: services_fee_amount")
+	}
+
+	totalAmountStr := c.FormValue("total_amount")
+	if totalAmountStr != "" {
+		_, err := strconv.ParseFloat(totalAmountStr, 64)
+		if err != nil {
+			log.Error("Wrong input for parameter: total_amount")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: total_amount", "Wrong input for parameter: total_amount")
+		}
+		params["total_amount"] = totalAmountStr
+	} else {
+		log.Error("Missing required parameter: total_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: total_amount", "Missing required parameter: total_amount")
+	}
+
+	var promoKey *string
+	promoCode := c.FormValue("promo_code")
+	if promoCode != "" {
+		err, enable, text, promoKeyRes := validatePromo(promoCode, customerKey, productKeyStr)
+		if err != nil {
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data")
+		} else {
+			if enable == false {
+				return lib.CustomError(http.StatusBadRequest, text, text)
+			} else {
+				promoKey = promoKeyRes
+			}
+		}
+	}
+
+	paymentChannel := c.FormValue("payment_channel")
+	if paymentChannel != "" {
+		_, err := strconv.ParseUint(paymentChannel, 10, 64)
+		if err != nil {
+			log.Error("Wrong input for parameter: payment_channel")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: payment_channel", "Wrong input for parameter: payment_channel")
+		}
+	} else {
+		log.Error("Missing required parameter: payment_channel")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_channel", "Missing required parameter: payment_channel")
+	}
+
+	var subAcc string
+	if paymentChannel != "323" {
+		subAcc = c.FormValue("sub_acc")
+		if subAcc == "" {
+			log.Error("Missing required parameter: sub_acc")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: sub_acc", "Missing required parameter: sub_acc")
+		} 
+	}
+
+	paymentMethod := c.FormValue("payment_method")
+	if paymentMethod != "" {
+		paymentKey, err := strconv.ParseUint(paymentMethod, 10, 64)
+		if err == nil && paymentKey > 0 {
+			params["payment_method"] = paymentMethod
+		} else {
+			log.Error("Missing required parameter: payment_method")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_method", "Missing required parameter: payment_method")
+		}
+	} else {
+		log.Error("Missing required parameter: payment_method")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_method", "Missing required parameter: payment_method")
+	}
+
+	bankStr := c.FormValue("product_bankacc_key")
+	if bankStr != "" {
+		bankKey, err := strconv.ParseUint(bankStr, 10, 64)
+		if err != nil || bankKey == 0 {
+			log.Error("Missing required parameter: product_bankacc_key")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_bankacc_key", "Missing required parameter: product_bankacc_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_bankacc_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_bankacc_key", "Missing required parameter: product_bankacc_key")
+	}
+
+	transRemark := c.FormValue("trans_remarks")
+	params["trans_remarks"] = transRemark
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	//cek tr_account / save
+	var accKey string
+	paramsAcc := make(map[string]string)
+	paramsAcc["customer_key"] = customerKey
+	paramsAcc["product_key"] = productKeyStr
+	paramsAcc["rec_status"] = "1"
+	var trAccountDB []models.TrAccount
+	status, err = models.GetAllTrAccount(&trAccountDB, paramsAcc)
+	if len(trAccountDB) > 0 {
+		params["flag_newsub"] = "0"
+		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
+		if trAccountDB[0].SubSuspendFlag != nil && *trAccountDB[0].SubSuspendFlag == 1 {
+			log.Error("Account suspended")
+			return lib.CustomError(status, "Account suspended", "Account suspended")
+		}
+	} else {
+		params["flag_newsub"] = "1"
+		paramsAcc["acc_status"] = "204"
+		paramsAcc["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsAcc["rec_created_by"] = strIDUserLogin
+		status, err, accKey = models.CreateTrAccount(paramsAcc)
+		if err != nil {
+			log.Error("Failed create account product data: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+	}
+	
+	var agentCustomerDB models.MsAgentCustomer
+	status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKey)
+	if err != nil {
+		log.Error("Failed get data agent: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	agentkey := strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+
+	//cek tr_account_agent / save
+	paramsAccAgent := make(map[string]string)
+	paramsAccAgent["acc_key"] = accKey
+	paramsAccAgent["agent_key"] = agentkey
+	paramsAccAgent["rec_status"] = "1"
+
+	var acaKey string
+	var accountAgentDB []models.TrAccountAgent
+	status, err = models.GetAllTrAccountAgent(&accountAgentDB, paramsAccAgent)
+	if len(accountAgentDB) > 0 {
+		acaKey = strconv.FormatUint(accountAgentDB[0].AcaKey, 10)
+	} else {
+		paramsCreateAccAgent := make(map[string]string)
+		paramsCreateAccAgent["acc_key"] = accKey
+		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
+		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
+		paramsCreateAccAgent["agent_key"] = agentkey
+		paramsCreateAccAgent["branch_key"] = "1"
+		paramsCreateAccAgent["rec_status"] = "1"
+		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
+		if err != nil {
+			log.Error("Failed create account agent data: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+	}
+	//save tr_transaction
+
+	params["branch_key"] = "1"
+	params["customer_key"] = customerKey
+	params["agent_key"] = agentkey
+	params["trans_status_key"] = "2"
+	params["trans_date"] = time.Now().Format(dateLayout)
+	params["trans_type_key"] = "1"
+	params["trx_code"] = "137"
+	layout := "2006-01-02"
+	now := time.Now()
+	nowString := now.Format(layout)
+	t, _ := time.Parse(layout, now.AddDate(0, 0, -1).Format(layout))
+	dateBursa := SettDate(t, int(1))
+	if nowString == dateBursa && (now.Hour() == 12 && now.Minute() > 0) || now.Hour() > 12 {
+		t, _ := time.Parse(layout, dateBursa)
+		params["nav_date"] = SettDate(t, int(1)) + " 00:00:00"
+	} else {
+		params["nav_date"] = dateBursa + " 00:00:00"
+	}
+	params["entry_mode"] = "140"
+	params["trans_unit"] = "0"
+	params["aca_key"] = acaKey
+	params["trans_source"] = "141"
+	params["rec_status"] = "1"
+	params["rec_created_date"] = time.Now().Format(dateLayout)
+	params["rec_created_by"] = strIDUserLogin
+	params["risk_waiver"] = "0"
+
+	var riskProfil models.RiskProfilCustomer
+	status, err = models.GetRiskProfilCustomer(&riskProfil, customerKey)
+	if err != nil {
+		if product.RiskProfileKey != nil {
+			if riskProfil.RiskProfileKey < *product.RiskProfileKey {
+				params["risk_waiver"] = "1"
+			}
+		}
+	}
+
+	var userData models.ScUserLogin
+	status, err = models.GetScUserLoginByCustomerKey(&userData, customerKey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+
+	settlementParams := make(map[string]string)
+	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(userData.UserLoginKey, 10)+"/transfer", 0755)
+	if err != nil {
+		log.Error(err.Error())
+	} else {
+		var file *multipart.FileHeader
+		file, err = c.FormFile("transfer_pic")
+		if file != nil {
+			if err == nil {
+				// Get file extension
+				extension := filepath.Ext(file.Filename)
+				// Generate filename
+				var filename string
+				for {
+					filename = lib.RandStringBytesMaskImprSrc(20)
+					log.Println("Generate filename:", filename)
+					var trans []models.TrTransaction
+					getParams := make(map[string]string)
+					getParams["rec_image1"] = filename + extension
+					_, err := models.GetAllTrTransaction(&trans, getParams)
+					if (err == nil && len(trans) < 1) || err != nil {
+						break
+					}
+				}
+				// Upload image and move to proper directory
+				err = lib.UploadImage(file, config.BasePath+"/images/user/"+strconv.FormatUint(userData.UserLoginKey, 10)+"/transfer/"+filename+extension)
+				if err != nil {
+					log.Println(err)
+					return lib.CustomError(http.StatusInternalServerError)
+				}
+				params["rec_image1"] = filename + extension
+				settlementParams["rec_image1"] = filename + extension
+				dateLayout := "2006-01-02 15:04:05"
+				params["file_upload_date"] = time.Now().Format(dateLayout)
+				settlementParams["settle_realized_date"] = time.Now().Format(dateLayout)
+			}
+		}
+	}
+
+	if promoKey != nil {
+		params["promo_code"] = promoCode
+	}
+
+	status, err, transactionID := models.CreateTrTransaction(params)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+
+	//save to promo used
+	if promoKey != nil {
+		paramsPromoUsed := make(map[string]string)
+		paramsPromoUsed["used_date"] = time.Now().Format(dateLayout)
+		paramsPromoUsed["promo_key"] = *promoKey
+		paramsPromoUsed["user_login_key"] = strIDUserLogin
+		paramsPromoUsed["customer_key"] = customerKey
+		paramsPromoUsed["transaction_key"] = transactionID
+		paramsPromoUsed["used_status"] = "317"
+		paramsPromoUsed["rec_status"] = "1"
+		paramsPromoUsed["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsPromoUsed["rec_created_by"] = strIDUserLogin
+		_, err := models.CreateTrPromoUsed(paramsPromoUsed)
+		if err != nil {
+			log.Error(err.Error())
+		}
+	}
+
+	//save tr_transaction_bank_account
+	paramsBankTransaction := make(map[string]string)
+	paramsBankTransaction["transaction_key"] = transactionID
+	paramsBankTransaction["prod_bankacc_key"] = bankStr
+	paramsBankTransaction["rec_status"] = "1"
+
+	var customerBankDB []models.MsCustomerBankAccount
+	paramCustomerBank := make(map[string]string)
+	paramCustomerBank["customer_key"] = customerKey
+	paramCustomerBank["flag_priority"] = "1"
+	paramCustomerBank["orderBy"] = "cust_bankacc_key"
+	paramCustomerBank["orderType"] = "DESC"
+	status, err = models.GetAllMsCustomerBankAccount(&customerBankDB, paramCustomerBank)
+	if err != nil {
+		log.Error(err.Error())
+		paramsBankTransaction["cust_bankacc_key"] = "1"
+	} else {
+		paramsBankTransaction["cust_bankacc_key"] = strconv.FormatUint(customerBankDB[0].CustBankaccKey, 10)
+	}
+	paramsBankTransaction["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsBankTransaction["rec_created_by"] = strIDUserLogin
+	status, err = models.CreateTrTransactionBankAccount(paramsBankTransaction)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	//create to tr_transaction_settlement
+	
+	settlementParams["transaction_key"] = transactionID
+	settlementParams["settle_purposed"] = "297"
+	settlementParams["settle_date"] = dateBursa + " 00:00:00"
+	settlementParams["settle_nominal"] = totalAmountStr
+	settlementParams["client_subaccount_no"] = subAcc
+	settlementParams["settled_status"] = "243"
+	settlementParams["target_bank_account_key"] = bankStr
+	settlementParams["settle_channel"] = paymentChannel
+	settlementParams["settle_payment_method"] = paymentMethod
+	settlementParams["rec_status"] = "1"
+	settlementParams["rec_created_date"] = time.Now().Format(dateLayout)
+	settlementParams["rec_created_by"] = strIDUserLogin
+
+	_, err, _ = models.CreateTrTransactionSettlement(settlementParams)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	//create message
+	//create push notif
+	customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = customerUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	var subject string
+	var body string
+	var typ string
+	if params["flag_newsub"] == "1" {
+		typ = "subscription"
+		subject = "Subscription sedang Diproses"
+		body = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
+	} else {
+		typ = "topup"
+		subject = "Top Up sedang Diproses"
+		body = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
+	}
+
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+	lib.CreateNotifCustomerFromAdminByCustomerId(customerKey, subject, body, "TRANSACTION")
+
+	//send email
+	params["product_name"] = product.ProductNameAlt
+	params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
+	params["parrent"] = transactionID
+	err = mailSubscription(typ, params)
+	responseData := make(map[string]string)
+	responseData["transaction_key"] = transactionID
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = responseData
+	return c.JSON(http.StatusOK, response)
+}
+
 func UploadTransferPic(c echo.Context) error {
 	var err error
 	var status int
@@ -1749,6 +2225,90 @@ func mailTransaction(typ string, params map[string]string) error {
 		val, _ := decimal.NewFromString(params["trans_amount"])
 		mailParam["Amount"] = ac0.FormatMoneyDecimal(val)
 	}
+	var customer models.MsCustomer
+	_, err = models.GetMsCustomer(&customer, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
+	if err != nil {
+		log.Error("Failed send mail: " + err.Error())
+		return err
+	}
+	mailParam["Name"] = customer.FullName
+	mailParam["Cif"] = customer.UnitHolderIDno
+	layout := "2006-01-02 15:04:05"
+	dateLayout := "02 Jan 2006"
+	date, _ := time.Parse(layout, params["trans_date"])
+	mailParam["Date"] = date.Format(dateLayout)
+	hr, min, _ := date.Clock()
+	mailParam["Time"] = strconv.Itoa(hr) + "." + strconv.Itoa(min) + " WIB"
+
+	mailParam["ProductName"] = params["product_name"]
+	mailParam["ProductIn"] = params["product_name"]
+
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+
+	t := template.New(mailTemp)
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+	if err != nil {
+		log.Error("Failed send mail: " + err.Error())
+		return err
+	}
+
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, mailParam); err != nil {
+		log.Error("Failed send mail: " + err.Error())
+		return err
+	}
+
+	result := tpl.String()
+
+	mailer := gomail.NewMessage()
+	mailer.SetHeader("From", config.EmailFrom)
+	mailer.SetHeader("To", lib.Profile.Email)
+	mailer.SetHeader("Subject", "[MotionFunds] "+subject)
+	mailer.SetBody("text/html", result)
+
+	dialer := gomail.NewDialer(
+		config.EmailSMTPHost,
+		int(config.EmailSMTPPort),
+		config.EmailFrom,
+		config.EmailFromPassword,
+	)
+	dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+	err = dialer.DialAndSend(mailer)
+	if err != nil {
+		log.Error("Failed send mail: " + err.Error())
+		return err
+	}
+	log.Info("Email sent")
+	return nil
+}
+func mailSubscription(typ string, params map[string]string) error {
+	var err error
+	var mailTemp, subject string
+	decimal.MarshalJSONWithoutQuotes = true
+	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
+	mailParam := make(map[string]string)
+	if params["currency"] == "1" {
+		mailParam["Symbol"] = "Rp. "
+	} else if params["currency"] == "2" {
+		mailParam["Symbol"] = "$"
+	}
+	val, _ := decimal.NewFromString(params["trans_fee_amount"])
+	mailParam["Fee"] = ac0.FormatMoneyDecimal(val.Truncate(0))
+	if _, ok := params["rec_image1"]; ok {
+		mailTemp = "index-" + typ + "-complete.html"
+		s := "Subscription"
+		if typ == "topup" {
+			s = "Top Up"
+		}
+		subject = s + " Kamu sedang Diproses"
+	} else {
+		mailTemp = "index-" + typ + "-uncomplete.html"
+		subject = "Ayo Upload Bukti Transfer Kamu"
+	}
+	val, _ = decimal.NewFromString(params["trans_amount"])
+	mailParam["Amount"] = ac0.FormatMoneyDecimal(val)
 	var customer models.MsCustomer
 	_, err = models.GetMsCustomer(&customer, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
 	if err != nil {
