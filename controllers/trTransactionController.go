@@ -1226,7 +1226,7 @@ func ValidatePromoTransaction(c echo.Context) error {
 
 	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
 
-	productKeyStr := c.QueryParam("product_key")
+	productKeyStr := c.FormValue("product_key")
 	if productKeyStr != "" {
 		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
 		if err == nil && productKey > 0 {
@@ -1244,7 +1244,7 @@ func ValidatePromoTransaction(c echo.Context) error {
 	}
 
 	responseData := make(map[string]string)
-	promoCode := c.QueryParam("promo_code")
+	promoCode := c.FormValue("promo_code")
 	if promoCode != "" {
 		err, enable, text, _ := validatePromo(promoCode, customerKey, productKeyStr)
 		if err != nil {

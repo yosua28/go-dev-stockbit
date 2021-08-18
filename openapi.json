@@ -2336,7 +2336,7 @@
         }
       },
       "/auth/validatepromo": {
-        "get": {
+        "post": {
           "description": "Validate Promo Transaction",
           "tags": [
             "Transaction"
@@ -2346,26 +2346,27 @@
               "bearerAuth": []
             }
           ],
-          "parameters": [
-            {
-              "name": "product_key",
-              "in": "query",
-              "description": "product_key",
-              "required": true,
-              "schema": {
-                "type": "integer"
-              }
-            },
-            {
-              "name": "promo_code",
-              "in": "query",
-              "description": "promo code",
-              "required": true,
-              "schema": {
-                "type": "string"
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "product_key": {
+                      "type": "integer"
+                    },
+                    "promo_code": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "product_key",
+                    "promo_code"
+                  ]
+                }
               }
             }
-          ],
+          },
           "responses": {
             "200": {
               "description": "Success",

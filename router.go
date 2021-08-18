@@ -89,7 +89,7 @@ func router() *echo.Echo {
 	auth.GET("/portofolio", controllers.Portofolio).Name = "Portofolio"
 	auth.GET("/mailportofolio", controllers.SendEmailPortofolio).Name = "SendEmailPortofolio"
 	auth.GET("/mailtransaction", controllers.SendEmailTransaction).Name = "SendEmailTransaction"
-	auth.GET("/validatepromo", controllers.ValidatePromoTransaction).Name = "ValidatePromoTransaction"
+	auth.POST("/validatepromo", controllers.ValidatePromoTransaction).Name = "ValidatePromoTransaction"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"
