@@ -684,6 +684,7 @@ func CreateTransaction(c echo.Context) error {
 		params["product_name"] = product.ProductNameAlt
 		params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
 		params["parrent"] = parentKeyStr
+		params["customer_bank_account_key"] = customerBankAccountKey
 		err = mailTransaction(typeStr, params)
 	}
 
@@ -1668,29 +1669,35 @@ func mailTransaction(typ string, params map[string]string) error {
 	} else if typ == "redemption" {
 		mailTemp = "index-" + typ + ".html"
 		subject = "Redemption Kamu sedang Diproses"
-		var requestDB []models.OaRequest
-		paramRequest := make(map[string]string)
-		paramRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
-		paramRequest["orderBy"] = "oa_request_key"
-		paramRequest["orderType"] = "DESC"
-		_, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
-		if err != nil {
-			log.Error("Failed send mail: " + err.Error())
-			return err
-		}
-		if len(requestDB) < 1 {
-			log.Error("Failed send mail: no bank data")
-			return nil
-		}
-		var personalData models.OaPersonalData
-		requestKey := strconv.FormatUint(requestDB[0].OaRequestKey, 10)
-		_, err = models.GetOaPersonalData(&personalData, requestKey, "oa_request_key")
+		// var requestDB []models.OaRequest
+		// paramRequest := make(map[string]string)
+		// paramRequest["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		// paramRequest["orderBy"] = "oa_request_key"
+		// paramRequest["orderType"] = "DESC"
+		// _, err = models.GetAllOaRequest(&requestDB, 1, 0, false, paramRequest)
+		// if err != nil {
+		// 	log.Error("Failed send mail: " + err.Error())
+		// 	return err
+		// }
+		// if len(requestDB) < 1 {
+		// 	log.Error("Failed send mail: no bank data")
+		// 	return nil
+		// }
+		// var personalData models.OaPersonalData
+		// requestKey := strconv.FormatUint(requestDB[0].OaRequestKey, 10)
+		// _, err = models.GetOaPersonalData(&personalData, requestKey, "oa_request_key")
+		// if err != nil {
+		// 	log.Error("Failed send mail: " + err.Error())
+		// 	return err
+		// }
+		var cusBankAcc models.MsCustomerBankAccount
+		_, err = models.GetMsCustomerBankAccount(&cusBankAcc, params["customer_bank_account_key"])
 		if err != nil {
 			log.Error("Failed send mail: " + err.Error())
 			return err
 		}
 		var bankAccount models.MsBankAccount
-		bankAccountKey := strconv.FormatUint(*personalData.BankAccountKey, 10)
+		bankAccountKey := strconv.FormatUint(cusBankAcc.BankAccountKey, 10)
 		_, err = models.GetBankAccount(&bankAccount, bankAccountKey)
 		if err != nil {
 			log.Error("Failed send mail: " + err.Error())
