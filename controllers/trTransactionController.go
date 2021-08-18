@@ -184,9 +184,11 @@ func CreateTransaction(c echo.Context) error {
 				log.Error("red unit < minimum red")
 				return lib.CustomError(http.StatusBadRequest, "red unit < minum red", "Minimum redemption untuk product ini adalah: "+product.MinRedUnit.Truncate(2).String()+"unit")
 			}
-			if balanceUnit.Sub(unitValue).Cmp(product.MinUnitAfterRed) == -1 {
-				log.Error("unit after redemption < minimum unit after red")
-				return lib.CustomError(http.StatusBadRequest, "unit after redemption < minimum unit after red", "Minumum unit setelah redemption untuk product ini adalah: "+product.MinUnitAfterRed.Truncate(2).String()+"unit")
+			if flagRedemAll == false {
+				if balanceUnit.Sub(unitValue).Cmp(product.MinUnitAfterRed) == -1 {
+					log.Error("unit after redemption < minimum unit after red")
+					return lib.CustomError(http.StatusBadRequest, "unit after redemption < minimum unit after red", "Minumum unit setelah redemption untuk product ini adalah: "+product.MinUnitAfterRed.Truncate(2).String()+"unit")
+				}
 			}
 		}
 	} else {
