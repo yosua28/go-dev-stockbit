@@ -774,15 +774,6 @@ func ForgotPassword(c echo.Context) error {
 	var err error
 	var status int
 
-	// cek token notif
-	hahatest := c.FormValue("token")
-	// hahatest := "d93442ad-95e9-4964-8508-4b6c2718e642" // aldi
-	// hahatest := "a00cfd56-b91a-464f-8da9-f36b376190b4" // yosua
-	log.Println("token notif : " + hahatest)
-	// if hahatest != "" {
-	// 	lib.CreateNotificationHelper(hahatest, "Oke! Header Notif MNCDuit", "Ini Body MotionFunds Notifikasi Testing Aplikasi hahaha oke gan jangan di hiraukan.")
-	// }
-
 	// Check parameters
 	email := c.FormValue("email")
 	if email == "" {
@@ -791,6 +782,7 @@ func ForgotPassword(c echo.Context) error {
 	}
 	params := make(map[string]string)
 	params["ulogin_email"] = email
+	params["rec_status"] = "1"
 	var userLogin []models.ScUserLogin
 	status, err = models.GetAllScUserLogin(&userLogin, 0, 0, params, true)
 	if err != nil {
@@ -807,7 +799,7 @@ func ForgotPassword(c echo.Context) error {
 
 	rand.Seed(time.Now().UnixNano())
 	digits := "0123456789"
-	specials := "~=+%^*/()[]{}/!@#$?|"
+	specials := "=+%*/!@#$?"
 	all := "ABCDEFGHIJKLMNOPQRSTUVWXYZ" +
 		"abcdefghijklmnopqrstuvwxyz" +
 		digits + specials
@@ -824,14 +816,15 @@ func ForgotPassword(c echo.Context) error {
 	str := string(buf)
 	encryptedPasswordByte := sha256.Sum256([]byte(str))
 	encryptedPassword := hex.EncodeToString(encryptedPasswordByte[:])
-	// dateLayout := "2006-01-02 15:04:05"
+	dateLayout := "2006-01-02 15:04:05"
 	params = make(map[string]string)
 	params["user_login_key"] = strconv.FormatUint(accountData.UserLoginKey, 10)
 	params["string_token"] = encryptedPassword
-	// params["last_password_changed"] = time.Now().Format(dateLayout)
-	// params["ulogin_password"] = encryptedPassword
-	// params["ulogin_locked"] = "0"
-	// params["ulogin_failed_count"] = "0"
+	params["last_password_changed"] = time.Now().Format(dateLayout)
+	params["ulogin_password"] = encryptedPassword
+	params["ulogin_locked"] = "0"
+	params["ulogin_failed_count"] = "0"
+	params["ulogin_must_changepwd"] = "1"
 
 	_, err = models.UpdateScUserLogin(params)
 	if err != nil {
@@ -839,10 +832,20 @@ func ForgotPassword(c echo.Context) error {
 		return lib.CustomError(http.StatusInternalServerError, err.Error(), "Failed update data")
 	}
 
-	// Send email
-	t := template.New("index-forgot-password.html")
+	name := ""
 
-	t, err = t.ParseFiles(config.BasePath + "/mail/index-forgot-password.html")
+	var fullName models.FullNameData
+	_, err = models.GetFullName(&fullName, strconv.FormatUint(accountData.UserLoginKey, 10))
+	if err != nil {
+		name = accountData.UloginFullName
+	} else {
+		name = fullName.FullName
+	}
+
+	// Send email
+	t := template.New("index-forget-password.html")
+
+	t, err = t.ParseFiles(config.BasePath + "/mail/index-forget-password.html")
 	if err != nil {
 		log.Println(err)
 	}
@@ -852,7 +855,7 @@ func ForgotPassword(c echo.Context) error {
 		Password string
 		FileUrl  string
 		Name     string
-	}{Password: encryptedPassword, FileUrl: config.FileUrl + "/images/mail", Name: accountData.UloginFullName}); err != nil {
+	}{Password: str, FileUrl: config.FileUrl + "/images/mail", Name: name}); err != nil {
 		log.Println(err)
 	}
 
