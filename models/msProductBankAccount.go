@@ -391,3 +391,52 @@ func GetMsProductBankAccountTransactionByKey(c *MsProductBankAccountTransactionI
 
 	return http.StatusOK, nil
 }
+
+func GetAllMsProductBankAccountOrderByBank(c *[]MsProductBankAccount, params map[string]string) (int, error) {
+	query := `SELECT
+              mp.* FROM 
+			  ms_product_bank_account as mp 
+			  left join ms_bank_account as mb on mb.bank_account_key = mp.bank_account_key
+			  left join ms_bank as b on b.bank_key = mb.bank_key 
+			  WHERE mp.rec_status = 1`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " AND "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+	query += condition
+
+	// Main query
+	log.Info(query)
+	err := db.Db.Select(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

@@ -411,7 +411,7 @@ func GetMsProductData(c echo.Context) error {
 	}
 
 	var ffsDB []models.FfsPublish
-	status, err = models.GetLastFfsIn(&ffsDB, productIDs)
+	status, err = models.GetLastFfsByPeriodeIn(&ffsDB, productIDs)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
@@ -523,9 +523,11 @@ func GetMsProductData(c echo.Context) error {
 
 	var productBankDB []models.MsProductBankAccount
 	params = make(map[string]string)
-	params["product_key"] = strconv.FormatUint(product.ProductKey, 10)
-	params["bank_account_purpose"] = "269"
-	status, err = models.GetAllMsProductBankAccount(&productBankDB, params)
+	params["mp.product_key"] = strconv.FormatUint(product.ProductKey, 10)
+	params["mp.bank_account_purpose"] = "269"
+	params["orderBy"] = "b.rec_order"
+	params["orderType"] = "ASC"
+	status, err = models.GetAllMsProductBankAccountOrderByBank(&productBankDB, params)
 	if err != nil {
 		log.Error(err.Error())
 		return lib.CustomError(status, err.Error(), "Failed get data")
