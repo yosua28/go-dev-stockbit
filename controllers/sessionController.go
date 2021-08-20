@@ -637,6 +637,9 @@ func Login(c echo.Context) error {
 	}
 	log.Info(data)
 
+	//LOG LOGIN
+	saveLogLogin(c, paramsSession)
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -1545,6 +1548,9 @@ func LoginBo(c echo.Context) error {
 	}
 	log.Info(data)
 
+	//LOG LOGIN
+	saveLogLogin(c, paramsSession)
+
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -2112,4 +2118,19 @@ func ChangeForgotPin(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = nil
 	return c.JSON(http.StatusOK, response)
+}
+
+func saveLogLogin(c echo.Context, session map[string]string) {
+	var err error
+	params := make(map[string]string)
+	params["session_id"] = session["session_id"]
+	params["login_date"] = session["login_date"]
+	params["user_login_key"] = session["user_login_key"]
+	params["workstation_ipaddress"] = c.RealIP()
+	params["client_agent"] = session["rec_attribute_id3"]
+	params["rec_status"] = "1"
+	_, err = models.CreateScLoginLog(params)
+	if err != nil {
+		log.Error("Error create log loginsession")
+	}
 }
