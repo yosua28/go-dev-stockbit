@@ -925,6 +925,7 @@ func GetUserLogin(c echo.Context) error {
 
 	var personalDataDB models.OaPersonalData
 	var riskProfileDB models.OaRiskProfile
+	var responseData models.UserProfile
 	if requestKey != "" {
 		_, err = models.GetOaPersonalData(&personalDataDB, requestKey, "oa_request_key")
 		if err != nil {
@@ -934,101 +935,118 @@ func GetUserLogin(c echo.Context) error {
 		if err != nil {
 			log.Error(err.Error())
 		}
-	}
 
-	var riskDB models.MsRiskProfile
-	if riskProfileDB.RiskProfileKey > 0 {
-		_, err = models.GetMsRiskProfile(&riskDB, strconv.FormatUint(riskProfileDB.RiskProfileKey, 10))
-		if err != nil {
-			log.Error(err.Error())
+		var riskDB models.MsRiskProfile
+		if riskProfileDB.RiskProfileKey > 0 {
+			_, err = models.GetMsRiskProfile(&riskDB, strconv.FormatUint(riskProfileDB.RiskProfileKey, 10))
+			if err != nil {
+				log.Error(err.Error())
+			}
 		}
-	}
 
-	var customerDB models.MsCustomer
-	if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
-		_, err = models.GetMsCustomer(&customerDB, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
-		if err != nil {
-			log.Error(err.Error())
+		var customerDB models.MsCustomer
+		if lib.Profile.CustomerKey != nil && *lib.Profile.CustomerKey > 0 {
+			_, err = models.GetMsCustomer(&customerDB, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
+			if err != nil {
+				log.Error(err.Error())
+			}
 		}
-	}
 
-	var responseData models.UserProfile
-	responseData.FullName = personalDataDB.FullName
-	responseData.CIF = customerDB.UnitHolderIDno
-	if customerDB.SidNo != nil {
-		responseData.SID = *customerDB.SidNo
-	}
-	if customerDB.CifSuspendFlag == 0 {
+		responseData.FullName = personalDataDB.FullName
+		responseData.CIF = customerDB.UnitHolderIDno
+		if customerDB.SidNo != nil {
+			responseData.SID = *customerDB.SidNo
+		}
+		if customerDB.CifSuspendFlag == 0 {
+			responseData.CifSuspendFlag = false
+		} else {
+			responseData.CifSuspendFlag = true
+		}
+		responseData.Email = lib.Profile.Email
+		responseData.PhoneNumber = lib.Profile.PhoneNumber
+		responseData.RiskProfile.RiskProfileKey = riskDB.RiskProfileKey
+		responseData.RiskProfile.RiskCode = riskDB.RiskCode
+		responseData.RiskProfile.RiskName = riskDB.RiskName
+		responseData.RiskProfile.RiskDesc = riskDB.RiskDesc
+		if riskProfileDB.ScoreResult != nil {
+			responseData.RiskProfile.Score = *riskProfileDB.ScoreResult
+		}
+		responseData.RecImage1 = lib.Profile.RecImage1
+
+		bankAccountKey := ""
+		if oaRequestActive.CustomerKey != nil {
+			var cusBank []models.MsCustomerBankAccount
+			paramsCusBank := make(map[string]string)
+			paramsCusBank["customer_key"] = strconv.FormatUint(*oaRequestActive.CustomerKey, 10)
+			paramsCusBank["rec_status"] = "1"
+			paramsCusBank["flag_priority"] = "1"
+			_, err = models.GetAllMsCustomerBankAccount(&cusBank, paramsCusBank)
+			if err == nil {
+				bankAccountKey = strconv.FormatUint(cusBank[0].BankAccountKey, 10)
+				if len(cusBank) > 1 {
+					for _, bk := range cusBank {
+						if bk.FlagPriority == uint8(1) {
+							bankAccountKey = strconv.FormatUint(bk.BankAccountKey, 10)
+							break
+						}
+					}
+				}
+			}
+		} else {
+			var cusBank []models.OaRequestByField
+			_, err = models.GetOaRequestBankByField(&cusBank, "oa_request_key", requestKey)
+			if err == nil {
+				bankAccountKey = strconv.FormatUint(cusBank[0].BankAccountKey, 10)
+				if len(cusBank) > 1 {
+					for _, bk := range cusBank {
+						if bk.FlagPriority == uint64(1) {
+							bankAccountKey = strconv.FormatUint(bk.BankAccountKey, 10)
+							break
+						}
+					}
+				}
+			}
+		}
+
+		if bankAccountKey != "" {
+			var bankAccountDB models.MsBankAccount
+			if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
+				_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
+				if err != nil {
+					log.Error(err.Error())
+				}
+			}
+
+			var bankDB models.MsBank
+			if bankAccountDB.BankKey > 0 {
+				_, err = models.GetMsBank(&bankDB, strconv.FormatUint(bankAccountDB.BankKey, 10))
+				if err != nil {
+					log.Error(err.Error())
+				}
+			}
+			responseData.BankAcc.BankName = bankDB.BankName
+			responseData.BankAcc.AccountNo = bankAccountDB.AccountNo
+			responseData.BankAcc.AccountHolderName = bankAccountDB.AccountHolderName
+			responseData.BankAcc.BranchName = bankAccountDB.BranchName
+		}
+	} else {
+		responseData.FullName = lib.Profile.Email
+		// responseData.CIF = customerDB.UnitHolderIDno
+		// responseData.SID = *customerDB.SidNo
 		responseData.CifSuspendFlag = false
-	} else {
-		responseData.CifSuspendFlag = true
-	}
-	responseData.Email = lib.Profile.Email
-	responseData.PhoneNumber = lib.Profile.PhoneNumber
-	responseData.RiskProfile.RiskProfileKey = riskDB.RiskProfileKey
-	responseData.RiskProfile.RiskCode = riskDB.RiskCode
-	responseData.RiskProfile.RiskName = riskDB.RiskName
-	responseData.RiskProfile.RiskDesc = riskDB.RiskDesc
-	if riskProfileDB.ScoreResult != nil {
-		responseData.RiskProfile.Score = *riskProfileDB.ScoreResult
-	}
-	responseData.RecImage1 = lib.Profile.RecImage1
+		responseData.Email = lib.Profile.Email
+		responseData.PhoneNumber = lib.Profile.PhoneNumber
+		// responseData.RiskProfile.RiskProfileKey = riskDB.RiskProfileKey
+		// responseData.RiskProfile.RiskCode = riskDB.RiskCode
+		// responseData.RiskProfile.RiskName = riskDB.RiskName
+		// responseData.RiskProfile.RiskDesc = riskDB.RiskDesc
+		// responseData.RiskProfile.Score = *riskProfileDB.ScoreResult
+		responseData.RecImage1 = lib.Profile.RecImage1
+		// responseData.BankAcc.BankName = bankDB.BankName
+		// responseData.BankAcc.AccountNo = bankAccountDB.AccountNo
+		// responseData.BankAcc.AccountHolderName = bankAccountDB.AccountHolderName
+		// responseData.BankAcc.BranchName = bankAccountDB.BranchName
 
-	bankAccountKey := ""
-	if oaRequestActive.CustomerKey != nil {
-		var cusBank []models.MsCustomerBankAccount
-		paramsCusBank := make(map[string]string)
-		paramsCusBank["customer_key"] = strconv.FormatUint(*oaRequestActive.CustomerKey, 10)
-		paramsCusBank["rec_status"] = "1"
-		paramsCusBank["flag_priority"] = "1"
-		_, err = models.GetAllMsCustomerBankAccount(&cusBank, paramsCusBank)
-		if err == nil {
-			bankAccountKey = strconv.FormatUint(cusBank[0].BankAccountKey, 10)
-			if len(cusBank) > 1 {
-				for _, bk := range cusBank {
-					if bk.FlagPriority == uint8(1) {
-						bankAccountKey = strconv.FormatUint(bk.BankAccountKey, 10)
-						break
-					}
-				}
-			}
-		}
-	} else {
-		var cusBank []models.OaRequestByField
-		_, err = models.GetOaRequestBankByField(&cusBank, "oa_request_key", requestKey)
-		if err == nil {
-			bankAccountKey = strconv.FormatUint(cusBank[0].BankAccountKey, 10)
-			if len(cusBank) > 1 {
-				for _, bk := range cusBank {
-					if bk.FlagPriority == uint64(1) {
-						bankAccountKey = strconv.FormatUint(bk.BankAccountKey, 10)
-						break
-					}
-				}
-			}
-		}
-	}
-
-	if bankAccountKey != "" {
-		var bankAccountDB models.MsBankAccount
-		if personalDataDB.BankAccountKey != nil && *personalDataDB.BankAccountKey > 0 {
-			_, err = models.GetBankAccount(&bankAccountDB, strconv.FormatUint(*personalDataDB.BankAccountKey, 10))
-			if err != nil {
-				log.Error(err.Error())
-			}
-		}
-
-		var bankDB models.MsBank
-		if bankAccountDB.BankKey > 0 {
-			_, err = models.GetMsBank(&bankDB, strconv.FormatUint(bankAccountDB.BankKey, 10))
-			if err != nil {
-				log.Error(err.Error())
-			}
-		}
-		responseData.BankAcc.BankName = bankDB.BankName
-		responseData.BankAcc.AccountNo = bankAccountDB.AccountNo
-		responseData.BankAcc.AccountHolderName = bankAccountDB.AccountHolderName
-		responseData.BankAcc.BranchName = bankAccountDB.BranchName
 	}
 
 	var response lib.Response
