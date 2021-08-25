@@ -57,11 +57,12 @@ func CreateNotificationHelper(playerID string, heading string, content string, c
 	DataNotif := make(map[string]interface{})
 	DataNotif["category"] = category
 	notificationReq := &onesignal.NotificationRequest{
-		AppID:            config.OneSignalAppID,
-		Headings:         map[string]string{"en": heading},
-		Contents:         map[string]string{"en": content},
-		Data:             DataNotif,
-		SmallIcon:        "https://devapi.mncasset.com/images/mail/icon_md.png",
+		AppID:    config.OneSignalAppID,
+		Headings: map[string]string{"en": heading},
+		Contents: map[string]string{"en": content},
+		Data:     DataNotif,
+		// SmallIcon:        "https://devapi.mncasset.com/images/mail/icon_md.png",
+		SmallIcon:        "ic_stat_onesignal_default",
 		LargeIcon:        "https://devapi.mncasset.com/images/mail/icon_mncduit.jpg",
 		IncludePlayerIDs: []string{playerID},
 	}
