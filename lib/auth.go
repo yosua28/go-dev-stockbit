@@ -9,8 +9,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/denisbrodbeck/machineid"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	ua "github.com/mileusna/useragent"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -151,6 +153,39 @@ func AuthenticationMiddleware(next echo.HandlerFunc) echo.HandlerFunc {
 			paramLog["user_login_key"] = strconv.FormatUint(Profile.UserID, 10)
 			paramLog["created_date"] = time.Now().Format(dateLayout)
 			paramLog["created_by"] = strconv.FormatUint(Profile.UserID, 10)
+			id, err := machineid.ID()
+			if err == nil {
+				paramLog["device_id"] = id
+			}
+			ua := ua.Parse(c.Request().UserAgent())
+			paramLog["device_ip"] = c.RealIP()
+			paramLog["device_os"] = ua.OS
+			paramLog["device_name"] = ua.Name
+			paramLog["notes"] = c.Request().UserAgent()
+
+			// log.Println("-----------------------")
+			// json_map := make(map[string]interface{})
+			// log.Println(c.Request())
+			// log.Println(json.NewDecoder(c.Request().Body))
+			// err = json.NewDecoder(c.Request().Body).Decode(&json_map)
+			// if err != nil {
+			// 	log.Println("HAHAHAHAHAHAHA")
+			// 	log.Println(err)
+			// 	return err
+			// } else {
+			// 	log.Println(json_map)
+			// 	//json_map has the JSON Payload decoded into a map
+			// 	// cb_type := json_map["type"]
+			// 	// challenge := json_map["challenge"]
+			// }
+
+			// log.Println(request)
+			// log.Println(request.PostForm.Encode())
+			// log.Println(c.Echo().Binder)
+			// log.Println("-----------------------")
+			// paramLog["data"] = c.Request().Body.Close().Error()
+
+			// log.Println("BODY: " + c.Request().Header)
 			_, err = models.CreateEndpointAuditTrail(paramLog)
 			if err != nil {
 				log.Error("Failed Log Audit Trail: " + err.Error())

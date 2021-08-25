@@ -24,8 +24,10 @@ import (
 	"unicode"
 
 	"github.com/badoux/checkmail"
+	"github.com/denisbrodbeck/machineid"
 	jwt "github.com/dgrijalva/jwt-go"
 	"github.com/labstack/echo"
+	ua "github.com/mileusna/useragent"
 	uuid "github.com/satori/go.uuid"
 	"github.com/shopspring/decimal"
 	log "github.com/sirupsen/logrus"
@@ -33,6 +35,9 @@ import (
 )
 
 func Register(c echo.Context) error {
+
+	log.Println(c.Request().Form)
+	log.Println(c.Request().Form.Encode())
 	var err error
 	var status int
 	// Check parameters
@@ -2147,6 +2152,13 @@ func saveLogLogin(c echo.Context, session map[string]string) {
 	params["workstation_ipaddress"] = c.RealIP()
 	params["client_agent"] = session["rec_attribute_id3"]
 	params["rec_status"] = "1"
+	id, err := machineid.ID()
+	if err == nil {
+		params["terminal_name"] = id
+	}
+	ua := ua.Parse(c.Request().UserAgent())
+	params["workstation_name"] = ua.OS
+	params["device_model"] = ua.Name
 	_, err = models.CreateScLoginLog(params)
 	if err != nil {
 		log.Error("Error create log loginsession")
