@@ -573,8 +573,8 @@ func AdminDetailMmMailMaster(c echo.Context) error {
 	} else {
 		responseData["mail_cc"] = ""
 	}
-	if mail.MailSubject != nil {
-		responseData["mail_body"] = *mail.MailSubject
+	if mail.MailBody != nil {
+		responseData["mail_body"] = *mail.MailBody
 	} else {
 		responseData["mail_body"] = ""
 	}
