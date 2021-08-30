@@ -2469,6 +2469,102 @@
           }
         }
       },
+      "/auth/redemption": {
+        "post": {
+          "description": "Create Transaksi Manual Redemption",
+          "tags": [
+            "Transaction Action Admin Redemption"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "product_key": {
+                      "type": "integer"
+                    },
+                    "calc_method": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "unit",
+                        "amount"
+                      ]
+                    },
+                    "trans_amount": {
+                      "type": "number"
+                    },
+                    "trans_unit": {
+                      "type": "string"
+                    },
+                    "bank_redemption": {
+                      "type": "integer"
+                    },
+                    "trans_remarks": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "customer_key",
+                    "product_key",
+                    "trans_amount",
+                    "trans_unit",
+                    "calc_method",
+                    "bank_redemption"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
       "/auth/validatepromo": {
         "post": {
           "description": "Validate Promo Transaction",

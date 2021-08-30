@@ -1238,6 +1238,377 @@ func Subscription(c echo.Context) error {
 	return c.JSON(http.StatusOK, response)
 }
 
+func Redemption(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+	params := make(map[string]string)
+
+	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
+		log.Error("No customer found")
+		return lib.CustomError(http.StatusBadRequest, "No customer found", "No customer found, please open account first")
+	}
+
+	customerKey := strconv.FormatUint(*lib.Profile.CustomerKey, 10)
+
+	productKeyStr := c.FormValue("product_key")
+	var product models.MsProduct
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err == nil && productKey > 0 {
+			params["product_key"] = productKeyStr
+			status, err = models.GetMsProduct(&product, productKeyStr)
+			if err != nil {
+				log.Error(err.Error())
+				return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+			}
+		} else {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	transAmountStr := c.FormValue("trans_amount")
+	if transAmountStr == "" {
+		log.Error("Missing required parameter: trans_amount")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_amount", "Missing required parameter: trans_amount")
+	}
+
+	transUnitStr := c.FormValue("trans_unit")
+	if transUnitStr == "" {
+		log.Error("Missing required parameter: trans_unit")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: trans_unit", "Missing required parameter: trans_unit")
+	}
+
+	var productIds []string
+	productIds = append(productIds, productKeyStr)
+	var productNotAllow []models.ProductCheckAllowRedmSwtching
+	status, err = models.CheckProductAllowRedmOrSwitching(&productNotAllow, customerKey, productIds)
+	if err != nil {
+		if err.Error() != sql.ErrNoRows.Error() {
+			log.Error(err.Error())
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Failed get data.")
+		}
+	}
+
+	if len(productNotAllow) > 0 {
+		log.Error("Tidak dapat melakukan redemption. Sedang ada proses untuk produk ini.")
+		return lib.CustomError(http.StatusBadRequest, "Tidak dapat melakukan redemption. Sedang ada proses untuk produk ini.", "Tidak dapat melakukan redemption. Sedang ada proses untuk produk ini.")
+	}
+
+	zero := decimal.NewFromInt(0)
+	var balance models.SumBalanceUnit
+	status, err = models.GetBalanceUnitByCustomerAndProduct(&balance, customerKey, productKeyStr)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+	} else {
+		if balance.Unit.Cmp(zero) == -1 {
+			log.Error("Balance Unit 0")
+			return lib.CustomError(http.StatusBadRequest, err.Error(), "Product tidak ditemukan")
+		}
+	}
+	unitTersedia := balance.Unit.Truncate(2)
+
+	var navDB []models.TrNav
+	status, err = models.GetLastNavIn(&navDB, productIds)
+	if err != nil {
+		log.Error(err.Error())
+		return lib.CustomError(status, err.Error(), "Failed get data")
+	}
+
+	nominalTersedia := balance.Unit.Mul(navDB[0].NavValue).Truncate(0)
+
+	metodePerhitungan := c.FormValue("calc_method")
+	if metodePerhitungan != "" {
+		if metodePerhitungan == "all" { //all unit
+			params["flag_redempt_all"] = "1"
+			params["trans_amount"] = "0"
+			value, err := decimal.NewFromString(transUnitStr)
+			if err != nil {
+				log.Error("Wrong input for parameter: trans_unit")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_unit", "Wrong input for parameter: trans_unit")
+			}
+			if value.Cmp(zero) == 0 {
+				log.Error("trans_unit harus lebih besar dari 0")
+				return lib.CustomError(http.StatusBadRequest, "trans_unit harus lebih besar dari 0", "trans_unit harus lebih besar dari 0")
+			}
+			if value.Cmp(product.MinRedUnit) == -1 {
+				log.Error("red unit < minimum red unit ")
+				return lib.CustomError(http.StatusBadRequest, "red unit < minimum red unit", "Minumum redemption unit untuk product ini adalah: "+product.MinRedUnit.String())
+			}
+
+			if value.Cmp(unitTersedia) == 1 {
+				log.Error("red unit > unit tersedia")
+				return lib.CustomError(http.StatusBadRequest, "red unit > unit tersedia", "Redemption unit tidak boleh lebih besar dari unit tersedia. Unit tersedia saat ini adalah: "+balance.Unit.String())
+			}
+
+			params["trans_unit"] = transUnitStr
+			params["total_amount"] = "0"
+		} else if metodePerhitungan == "unit" { //unit penyertaan
+			params["trans_amount"] = "0"
+			value, err := decimal.NewFromString(transUnitStr)
+			if err != nil {
+				log.Error("Wrong input for parameter: trans_unit")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_unit", "Wrong input for parameter: trans_unit")
+			}
+			if value.Cmp(zero) == 0 {
+				log.Error("trans_unit harus lebih besar dari 0")
+				return lib.CustomError(http.StatusBadRequest, "trans_unit harus lebih besar dari 0", "trans_unit harus lebih besar dari 0")
+			}
+			if value.Cmp(product.MinRedUnit) == -1 {
+				log.Error("red unit < minimum red unit ")
+				return lib.CustomError(http.StatusBadRequest, "red unit < minum red unit", "Minumum redemption unit untuk product ini adalah: "+product.MinRedUnit.String())
+			}
+
+			if value.Cmp(unitTersedia) == 1 {
+				log.Error("red unit > unit tersedia")
+				return lib.CustomError(http.StatusBadRequest, "red unit > unit tersedia", "Redemption unit tidak boleh lebih besar dari unit tersedia. Unit tersedia saat ini adalah: "+balance.Unit.String())
+			}
+
+			sisaUnitAfterRed := unitTersedia.Sub(value).Truncate(2)
+			minSisa := product.MinUnitAfterRed.Truncate(2)
+
+			if sisaUnitAfterRed != zero && sisaUnitAfterRed.Cmp(minSisa) == -1 {
+				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
+				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
+			}
+
+			params["trans_unit"] = transUnitStr
+			params["total_amount"] = "0"
+		} else if metodePerhitungan == "amount" { //Nominal
+			params["trans_unit"] = "0"
+			value, err := decimal.NewFromString(transAmountStr)
+			if err != nil {
+				log.Error("Wrong input for parameter: trans_amount")
+				return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: trans_amount", "Wrong input for parameter: trans_amount")
+			}
+			if value.Cmp(zero) == 0 {
+				log.Error("trans_amount harus lebih besar dari 0")
+				return lib.CustomError(http.StatusBadRequest, "trans_amount harus lebih besar dari 0", "trans_amount harus lebih besar dari 0")
+			}
+			if value.Cmp(product.MinRedAmount) == -1 {
+				log.Error("red amount < minimum red amount ")
+				return lib.CustomError(http.StatusBadRequest, "red amount < minum red amount", "Minumum redemption amount untuk product ini adalah: "+product.MinRedAmount.String())
+			}
+			if value.Cmp(nominalTersedia) == 1 {
+				log.Error("red nominal > nominal tersedia")
+				return lib.CustomError(http.StatusBadRequest, "red amount > nominal amount tersedia", "Redemption amount tidak boleh lebih besar dari amount tersedia. Amount tersedia saat ini adalah: "+nominalTersedia.String())
+			}
+
+			unitTerpakai := value.Div(navDB[0].NavValue).Truncate(2)
+			sisaUnitAfterRed := unitTersedia.Sub(unitTerpakai).Truncate(2)
+			minSisa := product.MinUnitAfterRed.Truncate(2)
+
+			if sisaUnitAfterRed != zero && sisaUnitAfterRed.Cmp(minSisa) == -1 {
+				log.Error("Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All")
+				return lib.CustomError(http.StatusBadRequest, "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String(), "Sisa unit setelah redemption kurang dari minimal unit, Silakan redemption All. Sisa unit harus minimal : "+minSisa.String())
+			}
+
+			params["trans_amount"] = transAmountStr
+			params["total_amount"] = transAmountStr
+		} else {
+			log.Error("Missing required parameter: metode_perhitungan")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: metode_perhitungan", "Missing required parameter: metode_perhitungan")
+		}
+	} else {
+		log.Error("Missing required parameter: metode_perhitungan")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: metode_perhitungan", "Missing required parameter: metode_perhitungan")
+	}
+
+	bankStr := c.FormValue("bank_redemption")
+	if bankStr != "" {
+		bankKey, err := strconv.ParseUint(bankStr, 10, 64)
+		if err != nil || bankKey == 0 {
+			log.Error("Missing required parameter: bank_redemption")
+			return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_redemption", "Missing required parameter: bank_redemption")
+		}
+	} else {
+		log.Error("Missing required parameter: bank_redemption")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: bank_redemption", "Missing required parameter: bank_redemption")
+	}
+
+	transRemark := c.FormValue("trans_remarks")
+	params["trans_remarks"] = transRemark
+
+	dateLayout := "2006-01-02 15:04:05"
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+
+	//cek tr_account / save
+	var accKey string
+	paramsAcc := make(map[string]string)
+	paramsAcc["customer_key"] = customerKey
+	paramsAcc["product_key"] = productKeyStr
+	paramsAcc["rec_status"] = "1"
+	var trAccountDB []models.TrAccount
+	status, err = models.GetAllTrAccount(&trAccountDB, paramsAcc)
+	if len(trAccountDB) > 0 {
+		accKey = strconv.FormatUint(trAccountDB[0].AccKey, 10)
+		if trAccountDB[0].RedSuspendFlag != nil && *trAccountDB[0].RedSuspendFlag == 1 {
+			log.Error("Account suspended")
+			return lib.CustomError(status, "Account suspended", "Account suspended")
+		}
+	} else {
+		paramsAcc["acc_status"] = "204"
+		paramsAcc["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsAcc["rec_created_by"] = strIDUserLogin
+		status, err, accKey = models.CreateTrAccount(paramsAcc)
+		if err != nil {
+			log.Error("Failed create account product data: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+	}
+	var agentCustomerDB models.MsAgentCustomer
+	status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKey)
+	if err != nil {
+		log.Error("Failed get data agent: " + err.Error())
+		return lib.CustomError(status, err.Error(), "failed input data")
+	}
+	agentkey := strconv.FormatUint(agentCustomerDB.AgentKey, 10)
+	//cek tr_account_agent / save
+	paramsAccAgent := make(map[string]string)
+	paramsAccAgent["acc_key"] = accKey
+	paramsAccAgent["agent_key"] = agentkey
+	paramsAccAgent["rec_status"] = "1"
+
+	var acaKey string
+	var accountAgentDB []models.TrAccountAgent
+	status, err = models.GetAllTrAccountAgent(&accountAgentDB, paramsAccAgent)
+	if len(accountAgentDB) > 0 {
+		acaKey = strconv.FormatUint(accountAgentDB[0].AcaKey, 10)
+	} else {
+		paramsCreateAccAgent := make(map[string]string)
+		paramsCreateAccAgent["acc_key"] = accKey
+		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
+		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
+		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
+		paramsCreateAccAgent["agent_key"] = agentkey
+		paramsCreateAccAgent["branch_key"] = "1"
+		paramsCreateAccAgent["rec_status"] = "1"
+		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
+		if err != nil {
+			log.Error("Failed create account agent data: " + err.Error())
+			return lib.CustomError(status, err.Error(), "failed input data")
+		}
+	}
+	//save tr_transaction
+	params["branch_key"] = "1"
+
+	params["agent_key"] = agentkey
+	params["trans_status_key"] = "2"
+	params["trans_date"] = time.Now().Format(dateLayout)
+	params["trans_type_key"] = "2"
+	params["trx_code"] = "138"
+	params["payment_method"] = "284"
+	params["trans_calc_method"] = "288"
+	layout := "2006-01-02"
+	now := time.Now()
+	nowString := now.Format(layout)
+	t, _ := time.Parse(layout, now.AddDate(0, 0, -1).Format(layout))
+	dateBursa := SettDate(t, int(1))
+	if nowString == dateBursa && (now.Hour() == 12 && now.Minute() > 0) || now.Hour() > 12 {
+		t, _ := time.Parse(layout, dateBursa)
+		params["nav_date"] = SettDate(t, int(1)) + " 00:00:00"
+	} else {
+		params["nav_date"] = dateBursa + " 00:00:00"
+	}
+	if metodePerhitungan == "3" { //amount
+		params["entry_mode"] = "139"
+	} else {
+		params["entry_mode"] = "140"
+	}
+	params["trans_fee_percent"] = "0"
+	params["trans_fee_amount"] = "0"
+	params["charges_fee_amount"] = "0"
+	params["services_fee_amount"] = "0"
+	params["aca_key"] = acaKey
+	params["trans_source"] = "141"
+	params["rec_status"] = "1"
+	params["rec_created_date"] = time.Now().Format(dateLayout)
+	params["rec_created_by"] = strIDUserLogin
+	params["risk_waiver"] = "0"
+
+	var userData models.ScUserLogin
+	status, err = models.GetScUserLoginByCustomerKey(&userData, customerKey)
+	if err != nil {
+		return lib.CustomError(status)
+	}
+	params["rec_attribute_id3"] = c.Request().UserAgent()
+
+	status, err, transactionID := models.CreateTrTransaction(params)
+
+	//save tr_transaction_bank_account
+	paramsBankTransaction := make(map[string]string)
+	paramsBankTransaction["transaction_key"] = transactionID
+	paramsBankTransaction["cust_bankacc_key"] = bankStr
+	paramsBankTransaction["rec_status"] = "1"
+
+	purpose := "270"
+	paramsProBankAcc := make(map[string]string)
+	paramsProBankAcc["bank_account_purpose"] = purpose
+	paramsProBankAcc["product_key"] = productKeyStr
+	var productBankDB []models.MsProductBankAccount
+	status, err = models.GetAllMsProductBankAccount(&productBankDB, paramsProBankAcc)
+	if err != nil {
+		log.Error(err.Error())
+		paramsBankTransaction["prod_bankacc_key"] = "1"
+	} else {
+		paramsBankTransaction["prod_bankacc_key"] = strconv.FormatUint(productBankDB[0].ProdBankaccKey, 10)
+	}
+	paramsBankTransaction["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsBankTransaction["rec_created_by"] = strIDUserLogin
+	status, err = models.CreateTrTransactionBankAccount(paramsBankTransaction)
+	if err != nil {
+		log.Error(err.Error())
+	}
+
+	//create message
+	customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = customerUserLoginKey
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+
+	subject := "Redemption sedang Diproses"
+	body := "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
+
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+
+	status, err = models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+
+	//create push notif
+	lib.CreateNotifCustomerFromAdminByCustomerId(customerKey, subject, body, "TRANSACTION")
+
+	//send email to BO role 11 & Sales
+	SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
+
 func UploadTransferPic(c echo.Context) error {
 	var err error
 	var status int

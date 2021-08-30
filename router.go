@@ -85,6 +85,7 @@ func router() *echo.Echo {
 	// Transaction
 	auth.POST("/createtransaction", controllers.CreateTransaction).Name = "CreateTransaction"
 	auth.POST("/subscription", controllers.Subscription).Name = "Subscription"
+	auth.POST("/redemption", controllers.Redemption).Name = "Redemption"
 	auth.POST("/uploadtransferpic", controllers.UploadTransferPic).Name = "UploadTransferPic"
 	auth.GET("/transaction", controllers.GetTransactionList).Name = "GetTransactionList"
 	auth.GET("/portofolio", controllers.Portofolio).Name = "Portofolio"
