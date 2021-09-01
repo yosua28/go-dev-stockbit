@@ -645,6 +645,7 @@ type ProductRedemption struct {
 	AcaKey          uint64          `db:"aca_key"                 json:"aca_key"`
 	Unit            decimal.Decimal `db:"unit"                    json:"unit,omitempty"`
 	NilaiInvestasi  decimal.Decimal `db:"nilai_investasi"         json:"nilai_investasi,omitempty"`
+	SalesName       *string         `db:"sales_name"              json:"sales_name,omitempty"`
 }
 
 func AdminGetProductRedemption(c *[]ProductRedemption, customerKey string) (int, error) {

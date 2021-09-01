@@ -20740,7 +20740,8 @@
                         "risk_name": "Agresif",
                         "aca_key": 24,
                         "unit": 1176.02,
-                        "nilai_investasi": 1062335
+                        "nilai_investasi": 1062335,
+                        "sales_name": "303 - SALES MotionFunds"
                       },
                       {
                         "product_key": 22,
@@ -20756,7 +20757,8 @@
                         "risk_name": "Agresif",
                         "aca_key": 33,
                         "unit": 6369.42,
-                        "nilai_investasi": 5140573
+                        "nilai_investasi": 5140573,
+                        "sales_name": "303 - SALES MotionFunds"
                       }
                     ]
                   }

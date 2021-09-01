@@ -77,3 +77,36 @@ func CreateMsAgentCustomer(params map[string]string) (int, error) {
 	}
 	return http.StatusOK, nil
 }
+
+type CustomerAgent struct {
+	AgentCustomerKey uint64  `db:"agent_customer_key"   json:"agent_customer_key"`
+	AgentKey         uint64  `db:"agent_key"            json:"agent_key"`
+	CustomerKey      uint64  `db:"customer_key"         json:"customer_key"`
+	EffDate          *string `db:"eff_date"             json:"eff_date"`
+	AgentCode        *string `db:"agent_code"           json:"agent_code"`
+	AgentName        *string `db:"agent_name"           json:"agent_name"`
+}
+
+func GetCustomerLastAgent(c *CustomerAgent, customerKey string) (int, error) {
+	query2 := `SELECT 
+				t1.agent_customer_key, 
+				t1.agent_key, 
+				t1.customer_key, 
+				t1.eff_date, 
+				a.agent_code,
+				a.agent_name 
+			FROM ms_agent_customer t1 
+			JOIN (SELECT MAX(agent_customer_key) agent_customer_key FROM ms_agent_customer GROUP BY customer_key) t2
+			   ON t1.agent_customer_key = t2.agent_customer_key
+			inner join ms_agent as a on a.agent_key = t1.agent_key`
+	query := query2 + " WHERE t1.customer_key =" + customerKey
+
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

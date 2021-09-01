@@ -2299,6 +2299,16 @@ func AdminGetProductRedemption(c echo.Context) error {
 		balanceData[b.AcaKey] = b
 	}
 
+	agentName := ""
+
+	var agent models.CustomerAgent
+	status, err = models.GetCustomerLastAgent(&agent, customerKeyStr)
+	if err == nil {
+		if agent.AgentName != nil {
+			agentName = *agent.AgentCode + " - " + *agent.AgentName
+		}
+	}
+
 	var productList []models.ProductRedemption
 	zero := decimal.NewFromInt(0)
 	for _, pr := range products {
@@ -2320,6 +2330,7 @@ func AdminGetProductRedemption(c echo.Context) error {
 				prod.AcaKey = pr.AcaKey
 				prod.Unit = n.Unit.Truncate(2)
 				prod.NilaiInvestasi = n.Unit.Mul(prod.NavValue).Truncate(0)
+				prod.SalesName = &agentName
 				productList = append(productList, prod)
 			}
 		}
