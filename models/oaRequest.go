@@ -851,3 +851,84 @@ func AdminGetLastHistoryOaRequest(c *OaRequestKeyLastHistory, customerKey string
 
 	return http.StatusOK, nil
 }
+
+type RegisPremiumMotionPay struct {
+	OaRequestKey    uint64  `db:"oa_request_key"             json:"oa_request_key"`
+	Fullname        string  `db:"fullname"                   json:"fullname"`
+	Phone           string  `db:"phone"                      json:"phone"`
+	Email           *string `db:"email"                      json:"email"`
+	MotherMaidName  string  `db:"mother_maid_name"           json:"mother_maid_name"`
+	IdType          string  `db:"id_type"                    json:"id_type"`
+	IdNumber        string  `db:"id_number"                  json:"id_number"`
+	BirthCity       string  `db:"birth_city"                 json:"birth_city"`
+	BirthDate       string  `db:"birth_date"                 json:"birth_date"`
+	Gender          string  `db:"gender"                     json:"gender"`
+	ProvinceCode    *string `db:"province_code"              json:"province_code"`
+	DistrictCode    *string `db:"district_code"              json:"district_code"`
+	SubDistrictCode *string `db:"sub_district_code"          json:"sub_district_code"`
+	Address         string  `db:"address"                    json:"address"`
+	Nationality     *string `db:"nationality"                json:"nationality"`
+	Occupation      *string `db:"occupation"                 json:"occupation"`
+	Remark          *string `db:"remark"                     json:"remark"`
+}
+
+func GetDataRegisPremiumMotionPay(c *RegisPremiumMotionPay, userLoginKey string) (int, error) {
+	query := `SELECT 
+				r.oa_request_key AS oa_request_key,
+				c.full_name AS fullname,
+				u.ulogin_mobileno AS phone,
+				u.ulogin_email AS email,
+				op.mother_maiden_name AS mother_maid_name,
+				( CASE 
+					WHEN op.idcard_type = '12' THEN "EKTP"
+					ELSE "PASPOR"
+				END ) AS id_type,
+				op.idcard_no AS id_number,
+				op.place_birth AS birth_city,
+				DATE_FORMAT(op.date_birth, '%Y-%m-%d') AS birth_date,
+				(CASE 
+					WHEN op.gender = '10' THEN 'MALE'
+					ELSE 'FEMALE'
+				END) AS gender,
+				(CASE 
+					WHEN (kot.rec_attribute_id2 IS NULL OR kot.rec_attribute_id2 = '') THEN '11'
+					ELSE RIGHT(kot.rec_attribute_id2, 2)
+				END) AS province_code,
+				(CASE 
+					WHEN (kab.rec_attribute_id2 IS NULL OR kab.rec_attribute_id2) = '' THEN '01'
+					ELSE RIGHT(kab.rec_attribute_id2, 2)
+				END) AS district_code,
+				(CASE 
+					WHEN (kec.rec_attribute_id2 IS NULL OR kec.rec_attribute_id2 = '') THEN '01'
+					ELSE RIGHT(kec.rec_attribute_id2, 2)
+				END) AS sub_district_code,
+				addr.address_line1 AS address,
+				"ID" AS nationality,
+				occ.lkp_desc AS occupation,
+				"MAM User" AS remark 
+			FROM oa_request AS r
+			INNER JOIN (SELECT MAX(oa_request_key) AS oa_request_key, customer_key FROM oa_request 
+			WHERE rec_status = 1 GROUP BY customer_key) AS t2 ON r.oa_request_key = t2.oa_request_key 
+			INNER JOIN oa_personal_data AS pd ON pd.oa_request_key = r.oa_request_key 
+			INNER JOIN ms_customer AS c ON c.customer_key = r.customer_key 
+			INNER JOIN sc_user_login AS u ON u.user_login_key = r.user_login_key
+			INNER JOIN oa_personal_data AS op ON op.oa_request_key = r.oa_request_key
+			INNER JOIN oa_postal_address AS addr ON addr.postal_address_key = op.idcard_address_key 
+			INNER JOIN oa_postal_address AS dom ON dom.postal_address_key = op.domicile_address_key 
+			INNER JOIN ms_city AS kab ON kab.city_key = dom.kabupaten_key
+			INNER JOIN ms_city AS kec ON kec.city_key = dom.kecamatan_key
+			INNER JOIN ms_city AS kot ON kot.city_key = kab.parent_key 
+			INNER JOIN gen_lookup AS occ ON occ.lookup_key = op.occup_job
+			WHERE r.rec_status = 1 AND r.customer_key IS NOT NULL AND r.oa_status > 259 
+			AND u.rec_status = 1 AND c.rec_status = 1 AND r.user_login_key = "` + userLoginKey + `"`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

@@ -484,6 +484,11 @@ func router() *echo.Echo {
 	admin.GET("/mail/detail/:mail_master_key", controllers.AdminDetailMmMailMaster).Name = "AdminDetailMmMailMaster"
 	//Admin City
 	admin.POST("/tes-sent-email", controllers.TestSentEmail).Name = "TestSentEmail"
+
+	//Motion Pay
+	auth.GET("/motionpay-status", controllers.MotionPayStatus).Name = "MotionPayStatus"
+	auth.POST("/motionpay-linking", controllers.LinkingMotionPay).Name = "LinkingMotionPay"
+	auth.POST("/motionpay-unlinking", controllers.UnlinkingMotionPay).Name = "UnlinkingMotionPay"
 	return e
 }
 

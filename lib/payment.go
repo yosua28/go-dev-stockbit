@@ -1,25 +1,25 @@
 package lib
 
-import(
+import (
 	"api/config"
 	"crypto/sha256"
 	"encoding/hex"
 	"encoding/json"
-	"strings"
-	"net/http"
-	"io/ioutil"
-	"strconv"
-	"time"
 	"fmt"
+	"io/ioutil"
+	"net/http"
+	"strconv"
+	"strings"
+	"time"
 
 	log "github.com/sirupsen/logrus"
 )
 
 func SpinGenerateSignature(trNumber, name string) string {
-	str := config.MerchantID +`||`+
-	config.Partner + `||` + 
-	`474e50c41d661e651cf0c094d0551b886e3503d25a78a847854f5dc8e7d034a9` + `||` + 
-	trNumber + `||` + name
+	str := config.MerchantID + `||` +
+		config.Partner + `||` +
+		`474e50c41d661e651cf0c094d0551b886e3503d25a78a847854f5dc8e7d034a9` + `||` +
+		trNumber + `||` + name
 	encryptedByte := sha256.Sum256([]byte(str))
 	signature := hex.EncodeToString(encryptedByte[:])
 	log.Info("signature :", signature)
@@ -54,7 +54,7 @@ func Spin(trNumber string, name string, params map[string]string) (int, string, 
 	req.Header.Add("auth-partner", config.Partner)
 	req.Header.Add("auth-signature", signature)
 
-	log.Info(formatRequest(req))
+	log.Info(FormatRequest(req))
 
 	res, err := http.DefaultClient.Do(req)
 	log.Info(res.StatusCode)
@@ -82,16 +82,16 @@ func Spin(trNumber string, name string, params map[string]string) (int, string, 
 	return http.StatusOK, string(body), nil
 }
 
-func GenerateReference(prefix string, id string) (string){
+func GenerateReference(prefix string, id string) string {
 	x := 6
 	y := len(id)
-	z := x-y
+	z := x - y
 	r := prefix + strings.Repeat("0", z) + id + strconv.FormatInt(time.Now().Unix(), 10)
 	return r
 }
 
 // formatRequest generates ascii representation of a request
-func formatRequest(r *http.Request) string {
+func FormatRequest(r *http.Request) string {
 	// Create return string
 	var request []string
 	// Add the request string
@@ -101,18 +101,18 @@ func formatRequest(r *http.Request) string {
 	request = append(request, fmt.Sprintf("Host: %v", r.Host))
 	// Loop through headers
 	for name, headers := range r.Header {
-	  name = strings.ToLower(name)
-	  for _, h := range headers {
-		request = append(request, fmt.Sprintf("%v: %v", name, h))
-	  }
+		name = strings.ToLower(name)
+		for _, h := range headers {
+			request = append(request, fmt.Sprintf("%v: %v", name, h))
+		}
 	}
-	
+
 	// If this is a POST, add post data
 	if r.Method == "POST" {
-	   r.ParseForm()
-	   request = append(request, "\n")
-	   request = append(request, r.Form.Encode())
-	} 
-	 // Return the request as a string
-	 return strings.Join(request, "\n")
+		r.ParseForm()
+		request = append(request, "\n")
+		request = append(request, r.Form.Encode())
+	}
+	// Return the request as a string
+	return strings.Join(request, "\n")
 }

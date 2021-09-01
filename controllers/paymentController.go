@@ -1,17 +1,17 @@
 package controllers
 
-import(
+import (
 	"api/lib"
 	"encoding/json"
 	"net/http"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
 	"github.com/labstack/echo"
+	log "github.com/sirupsen/logrus"
 )
 
 func SpinCreateOrder(c echo.Context) error {
-	
+
 	responseData := make(map[string]interface{})
 
 	if lib.Profile.CustomerKey == nil || *lib.Profile.CustomerKey == 0 {
@@ -46,7 +46,7 @@ func SpinCreateOrder(c echo.Context) error {
 		params := make(map[string]string)
 		params["order_id"] = orderID
 		params["phone"] = lib.Profile.PhoneNumber
-	
+
 		status, _, err := lib.Spin(orderID, "CREATE_OTP", params)
 		if err != nil {
 			log.Error(status, err.Error())
