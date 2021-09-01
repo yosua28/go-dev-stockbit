@@ -1416,26 +1416,26 @@ func CreateTransactionRedemption(c echo.Context) error {
 	paramsAccAgent["agent_key"] = agentkey
 	paramsAccAgent["rec_status"] = "1"
 
-	var acaKey string
-	var accountAgentDB []models.TrAccountAgent
-	status, err = models.GetAllTrAccountAgent(&accountAgentDB, paramsAccAgent)
-	if len(accountAgentDB) > 0 {
-		acaKey = strconv.FormatUint(accountAgentDB[0].AcaKey, 10)
-	} else {
-		paramsCreateAccAgent := make(map[string]string)
-		paramsCreateAccAgent["acc_key"] = accKey
-		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
-		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = agentkey
-		paramsCreateAccAgent["branch_key"] = branchkey
-		paramsCreateAccAgent["rec_status"] = "1"
-		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
-		if err != nil {
-			log.Error("Failed create account agent data: " + err.Error())
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
-	}
+	// var acaKey string
+	// var accountAgentDB []models.TrAccountAgent
+	// status, err = models.GetAllTrAccountAgent(&accountAgentDB, paramsAccAgent)
+	// if len(accountAgentDB) > 0 {
+	// 	acaKey = strconv.FormatUint(accountAgentDB[0].AcaKey, 10)
+	// } else {
+	// 	paramsCreateAccAgent := make(map[string]string)
+	// 	paramsCreateAccAgent["acc_key"] = accKey
+	// 	paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
+	// 	paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
+	// 	paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
+	// 	paramsCreateAccAgent["agent_key"] = agentkey
+	// 	paramsCreateAccAgent["branch_key"] = branchkey
+	// 	paramsCreateAccAgent["rec_status"] = "1"
+	// 	status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
+	// 	if err != nil {
+	// 		log.Error("Failed create account agent data: " + err.Error())
+	// 		return lib.CustomError(status, err.Error(), "failed input data")
+	// 	}
+	// }
 	//save tr_transaction
 	params["branch_key"] = branchkey
 
@@ -1466,7 +1466,7 @@ func CreateTransactionRedemption(c echo.Context) error {
 	params["trans_fee_amount"] = "0"
 	params["charges_fee_amount"] = "0"
 	params["services_fee_amount"] = "0"
-	params["aca_key"] = acaKey
+	// params["aca_key"] = acaKey
 	params["trans_source"] = "141"
 	params["rec_status"] = "1"
 	params["rec_created_date"] = time.Now().Format(dateLayout)
@@ -1894,26 +1894,26 @@ func CreateTransactionSwitching(c echo.Context) error {
 	paramsAccAgent["agent_key"] = agentkey
 	paramsAccAgent["rec_status"] = "1"
 
-	var acaKey string
-	var accountAgentDB []models.TrAccountAgent
-	status, err = models.GetAllTrAccountAgent(&accountAgentDB, paramsAccAgent)
-	if len(accountAgentDB) > 0 {
-		acaKey = strconv.FormatUint(accountAgentDB[0].AcaKey, 10)
-	} else {
-		paramsCreateAccAgent := make(map[string]string)
-		paramsCreateAccAgent["acc_key"] = accKey
-		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
-		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = agentkey
-		paramsCreateAccAgent["branch_key"] = branchkey
-		paramsCreateAccAgent["rec_status"] = "1"
-		status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
-		if err != nil {
-			log.Error("Failed create account agent data: " + err.Error())
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
-	}
+	// var acaKey string
+	// var accountAgentDB []models.TrAccountAgent
+	// status, err = models.GetAllTrAccountAgent(&accountAgentDB, paramsAccAgent)
+	// if len(accountAgentDB) > 0 {
+	// 	acaKey = strconv.FormatUint(accountAgentDB[0].AcaKey, 10)
+	// } else {
+	// 	paramsCreateAccAgent := make(map[string]string)
+	// 	paramsCreateAccAgent["acc_key"] = accKey
+	// 	paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
+	// 	paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
+	// 	paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
+	// 	paramsCreateAccAgent["agent_key"] = agentkey
+	// 	paramsCreateAccAgent["branch_key"] = branchkey
+	// 	paramsCreateAccAgent["rec_status"] = "1"
+	// 	status, err, acaKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
+	// 	if err != nil {
+	// 		log.Error("Failed create account agent data: " + err.Error())
+	// 		return lib.CustomError(status, err.Error(), "failed input data")
+	// 	}
+	// }
 
 	params["branch_key"] = branchkey
 	paramsSwIn["branch_key"] = branchkey
@@ -1949,7 +1949,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	params["charges_fee_amount"] = "0"
 	params["services_fee_amount"] = "0"
 
-	params["aca_key"] = acaKey
+	// params["aca_key"] = acaKey
 	params["trans_source"] = "141"
 	params["rec_status"] = "1"
 	params["rec_created_date"] = time.Now().Format(dateLayout)
@@ -1997,26 +1997,26 @@ func CreateTransactionSwitching(c echo.Context) error {
 	paramsNewProdAccAgent["agent_key"] = agentkey
 	paramsNewProdAccAgent["rec_status"] = "1"
 
-	var acaNewProdKey string
-	var accountNewProdAgentDB []models.TrAccountAgent
-	status, err = models.GetAllTrAccountAgent(&accountNewProdAgentDB, paramsNewProdAccAgent)
-	if len(accountNewProdAgentDB) > 0 {
-		acaNewProdKey = strconv.FormatUint(accountNewProdAgentDB[0].AcaKey, 10)
-	} else {
-		paramsCreateAccAgent := make(map[string]string)
-		paramsCreateAccAgent["acc_key"] = accKey
-		paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
-		paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
-		paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
-		paramsCreateAccAgent["agent_key"] = agentkey
-		paramsCreateAccAgent["branch_key"] = branchkey
-		paramsCreateAccAgent["rec_status"] = "1"
-		status, err, acaNewProdKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
-		if err != nil {
-			log.Error("Failed create account agent data: " + err.Error())
-			return lib.CustomError(status, err.Error(), "failed input data")
-		}
-	}
+	// var acaNewProdKey string
+	// var accountNewProdAgentDB []models.TrAccountAgent
+	// status, err = models.GetAllTrAccountAgent(&accountNewProdAgentDB, paramsNewProdAccAgent)
+	// if len(accountNewProdAgentDB) > 0 {
+	// 	acaNewProdKey = strconv.FormatUint(accountNewProdAgentDB[0].AcaKey, 10)
+	// } else {
+	// 	paramsCreateAccAgent := make(map[string]string)
+	// 	paramsCreateAccAgent["acc_key"] = accKey
+	// 	paramsCreateAccAgent["eff_date"] = time.Now().Format(dateLayout)
+	// 	paramsCreateAccAgent["rec_created_date"] = time.Now().Format(dateLayout)
+	// 	paramsCreateAccAgent["rec_created_by"] = strIDUserLogin
+	// 	paramsCreateAccAgent["agent_key"] = agentkey
+	// 	paramsCreateAccAgent["branch_key"] = branchkey
+	// 	paramsCreateAccAgent["rec_status"] = "1"
+	// 	status, err, acaNewProdKey = models.CreateTrAccountAgent(paramsCreateAccAgent)
+	// 	if err != nil {
+	// 		log.Error("Failed create account agent data: " + err.Error())
+	// 		return lib.CustomError(status, err.Error(), "failed input data")
+	// 	}
+	// }
 
 	paramsSwIn["agent_key"] = agentkey
 	paramsSwIn["trans_status_key"] = "2"
@@ -2032,7 +2032,7 @@ func CreateTransactionSwitching(c echo.Context) error {
 	paramsSwIn["charges_fee_amount"] = "0"
 	paramsSwIn["services_fee_amount"] = "0"
 
-	paramsSwIn["aca_key"] = acaNewProdKey
+	// paramsSwIn["aca_key"] = acaNewProdKey
 	paramsSwIn["trans_source"] = "141"
 	paramsSwIn["rec_status"] = "1"
 	paramsSwIn["rec_created_date"] = time.Now().Format(dateLayout)
