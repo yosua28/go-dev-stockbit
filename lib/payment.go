@@ -3,6 +3,8 @@ package lib
 import (
 	"api/config"
 	"crypto/sha256"
+	"crypto/sha1"
+	"crypto/md5"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -115,4 +117,69 @@ func FormatRequest(r *http.Request) string {
 	}
 	// Return the request as a string
 	return strings.Join(request, "\n")
+}
+
+func FMPostPaymentData(params map[string]string) (int, interface{}, error) {
+
+	paramLog := make(map[string]string)
+	dateLayout := "2006-01-02 15:04:05"
+	paramLog["merchant"] = "MOTION PAY"
+	paramLog["endpoint_name"] = "POST Payment Data"
+	paramLog["request_method"] = "POST"
+	paramLog["url"] = config.FMUrl
+	paramLog["created_date"] = time.Now().Format(dateLayout)
+	paramLog["created_by"] = strconv.FormatUint(Profile.UserID, 10)
+	paramLog["note"] = "POST Payment Data to Flash Mobile"
+
+	paramsJoin := params["merchant_code"]+params["first_name"]+params["last_name"]+params["email"]+
+	params["phone"]+params["order_id"]+params["no_reference"]+params["amount"]+params["currency"]+
+	params["item_details"]+params["datetime_request"]+params["payment_method"]+params["time_limit"]+
+	params["notif_url"]+params["thanks_url"]+config.SecretKey
+	log.Info(paramsJoin)
+	paramsJoinByte := []byte(paramsJoin)
+	signatureMD5 := md5.Sum(paramsJoinByte)
+	signatureSHA1 := sha1.Sum([]byte(fmt.Sprintf("%x", signatureMD5)))
+	params["signature"] = fmt.Sprintf("%x", signatureSHA1)
+	log.Info(params["signature"])
+	jsonString, err := json.Marshal(params)
+	payload := strings.NewReader(string(jsonString))
+	req, err := http.NewRequest("POST", config.FMUrl, payload)
+	if err != nil {
+		log.Error("Error1", err.Error())
+		return http.StatusBadGateway, nil, err
+	}
+	req.Header.Add("Content-Type", "application/json")
+	paramLog["header"] = FormatRequest(req)
+	paramLog["body"] = string(jsonString)
+
+	res, err := http.DefaultClient.Do(req)
+	paramLog["status"] = strconv.FormatUint(uint64(res.StatusCode), 10)
+	// if res.StatusCode != 200 {
+	// 	log.Error("Error : ", res.StatusCode)
+	// 	return res.StatusCode, "", err
+	// }
+	if err != nil {
+		log.Error("Error2", err.Error())
+		return http.StatusBadGateway, nil, err
+	}
+	defer res.Body.Close()
+	body, err := ioutil.ReadAll(res.Body)
+	if err != nil {
+		log.Error("Error3", err.Error())
+		return http.StatusBadGateway, nil, err
+	}
+	log.Info(string(body))
+	var sec map[string]interface{}
+	if err = json.Unmarshal(body, &sec); err != nil {
+		log.Error("Error4", err.Error())
+		return http.StatusBadGateway, nil, err
+	}
+
+	response := make(map[string]string)
+	response["trans_id"] = sec["trans_id"].(string)
+	response["order_id"] = sec["order_id"].(string)
+	response["merchant_code"] = sec["merchant_code"].(string)
+	response["signature"] = fmt.Sprintf("%x",sha1.Sum([]byte(fmt.Sprintf("%x", md5.Sum([]byte(sec["trans_id"].(string)+sec["order_id"].(string)+sec["merchant_code"].(string)+config.SecretKey))))))
+
+	return http.StatusOK, response, nil
 }

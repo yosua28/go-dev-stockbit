@@ -2563,9 +2563,6 @@
                     "payment_method": {
                       "type": "integer"
                     },
-                    "sub_acc": {
-                      "type": "string"
-                    },
                     "trans_source": {
                       "type": "integer"
                     },
@@ -2654,7 +2651,7 @@
         "post": {
           "description": "Create Transaksi Manual Redemption",
           "tags": [
-            "Transaction Action Admin Redemption"
+            "Transaction"
           ],
           "security": [
             {
@@ -2698,6 +2695,104 @@
                     "trans_unit",
                     "calc_method",
                     "bank_redemption"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/auth/switching": {
+        "post": {
+          "description": "Create Transaction Switching",
+          "tags": [
+            "Transaction"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "product_from": {
+                      "type": "integer"
+                    },
+                    "calc_method": {
+                      "type": "string",
+                      "enum": [
+                        "all",
+                        "unit",
+                        "amount"
+                      ]
+                    },
+                    "trans_amount": {
+                      "type": "number"
+                    },
+                    "trans_unit": {
+                      "type": "string"
+                    },
+                    "product_to": {
+                      "type": "integer"
+                    },
+                    "trans_remarks": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "branch_key",
+                    "agent_key",
+                    "customer_key",
+                    "product_from",
+                    "metode_perhitungan",
+                    "trans_amount",
+                    "trans_unit",
+                    "product_to"
                   ]
                 }
               }

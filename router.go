@@ -114,6 +114,10 @@ func router() *echo.Echo {
 
 	// SPIN
 	auth.POST("/spincreateorder", controllers.SpinCreateOrder).Name = "SpinCreateOrder"
+	
+	//FM
+	e.POST("/fmnotif", controllers.FMNotif).Name = "FMNotif"
+	e.POST("/fmthankyou", controllers.FMThankYou).Name = "FMThankYou"
 
 	// Promo
 	auth.GET("/promo", controllers.GetPromoList).Name = "GetPromoList"

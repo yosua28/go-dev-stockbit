@@ -64,3 +64,11 @@ func SpinCreateOrder(c echo.Context) error {
 	response.Data = responseData
 	return c.JSON(http.StatusOK, response)
 }
+
+func FMNotif(c echo.Context) error {
+	return c.JSON(http.StatusOK, "transaksi_valid")
+}
+
+func FMThankYou(c echo.Context) error {
+	return c.JSON(http.StatusOK, "success payment, thank you")
+}
