@@ -17,6 +17,23 @@ import (
 	log "github.com/sirupsen/logrus"
 )
 
+type FMNotif struct {
+	TransID            string `json:"trans_id" form:"trans_id" query:"trans_id"`
+	MerchantCode       string `json:"merchant_code" form:"merchant_code" query:"merchant_code"`
+	OrderID            string `json:"order_id" form:"order_id" query:"order_id"`
+	Amount             string `json:"amount" form:"amount" query:"amount"`
+	PaymentMethod      string `json:"payment_method" form:"payment_method" query:"payment_method"`
+	MaskCard           string `json:"mask_card" form:"mask_card" query:"mask_card"`
+	VaNumber           string `json:"va_number" form:"va_number" query:"va_number"`
+	TimeLimit          string `json:"time_limit" form:"time_limit" query:"time_limit"`
+	StatusCode         string `json:"status_code" form:"status_code" query:"status_code"`
+	StatusDesc         string `json:"status_desc" form:"status_desc" query:"status_desc"`
+	FMRefnum           string `json:"fm_refnum" form:"fm_refnum" query:"fm_refnum"`
+	DatetimePayment    string `json:"datetime_payment" form:"datetime_payment" query:"datetime_payment"`
+	ApprovalCode       string `json:"approval_code" form:"approval_code" query:"approval_code"`
+	Signature          string `json:"signature" form:"signature" query:"signature"`
+}
+
 func SpinGenerateSignature(trNumber, name string) string {
 	str := config.MerchantID + `||` +
 		config.Partner + `||` +

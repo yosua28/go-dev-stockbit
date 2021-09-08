@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"fmt"
 
 	"github.com/labstack/echo"
 	log "github.com/sirupsen/logrus"
@@ -66,6 +67,11 @@ func SpinCreateOrder(c echo.Context) error {
 }
 
 func FMNotif(c echo.Context) error {
+	var u lib.FMNotif
+	if err := c.Bind(u); err != nil {
+		return lib.CustomError(http.StatusBadRequest, "No data", "No data")
+	}
+	fmt.Println(u)
 	return c.JSON(http.StatusOK, "transaksi_valid")
 }
 
