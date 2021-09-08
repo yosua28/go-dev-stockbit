@@ -67,7 +67,7 @@ func SpinCreateOrder(c echo.Context) error {
 }
 
 func FMNotif(c echo.Context) error {
-	u := new(lib.FMNotif)
+	var u map[string]interface{}
 	if err := c.Bind(&u); err != nil {
 		return lib.CustomError(http.StatusBadRequest, err.Error(), "No data")
 	}
