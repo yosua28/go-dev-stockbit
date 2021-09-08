@@ -69,7 +69,7 @@ func SpinCreateOrder(c echo.Context) error {
 func FMNotif(c echo.Context) error {
 	var u lib.FMNotif
 	if err := c.Bind(u); err != nil {
-		return lib.CustomError(http.StatusBadRequest, "No data", "No data")
+		return lib.CustomError(http.StatusBadRequest, err.Error(), "No data")
 	}
 	fmt.Println(u)
 	return c.JSON(http.StatusOK, "transaksi_valid")

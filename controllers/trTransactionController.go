@@ -1199,8 +1199,8 @@ func Subscription(c echo.Context) error {
 		fmParams["datetime_request"] = time.Now().Format(dateLayout) 
 		fmParams["payment_method"] = "va_mandiri" 
 		fmParams["time_limit"] = "1440" 
-		fmParams["notif_url"] = config.BaseUrl + "/fmnotif" 
-		fmParams["thanks_url"] = config.BaseUrl + "/fmthankyou" 
+		fmParams["notif_url"] = config.BaseUrl + "/api/fmnotif" 
+		fmParams["thanks_url"] = config.BaseUrl + "/api/fmthankyou" 
 		_, responseFM, err = lib.FMPostPaymentData(fmParams)
 		if err != nil {
 			log.Error("Error POST payment data to FM: ",err.Error())
