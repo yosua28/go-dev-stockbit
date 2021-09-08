@@ -25,6 +25,7 @@ func MotionPayStatus(c echo.Context) error {
 
 	responseData := make(map[string]interface{})
 	responseData["status"] = lib.STATUS_NON_LINKED
+	responseData["max_amount"] = decimal.NewFromInt(lib.MAX_AMOUNT_MOTION_PAY)
 
 	var linkage models.ScLinkage
 	_, err := models.GetLinkageByField(&linkage, strconv.FormatUint(lib.Profile.UserID, 10), "user_login_key")
