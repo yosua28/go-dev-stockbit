@@ -1301,7 +1301,10 @@
                       "message_client": "OK"
                     },
                     "data": {
-                      "status": 2
+                      "cash_balance": 1435000,
+                      "max_amount": 2000000,
+                      "point_balance": 0,
+                      "status": "LINKED"
                     }
                   }
                 }
