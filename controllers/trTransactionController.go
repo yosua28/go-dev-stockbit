@@ -3880,3 +3880,40 @@ func SentEmailSuccessTransactionToCustomer(transaction models.DetailTransactionD
 		}
 	}
 }
+
+func CheckTransactionCustomerProductVA(c echo.Context) error {
+	var err error
+
+	productKeyStr := c.FormValue("product_key")
+	if productKeyStr != "" {
+		productKey, err := strconv.ParseUint(productKeyStr, 10, 64)
+		if err != nil || productKey == 0 {
+			log.Error("Wrong input for parameter: product_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: product_key", "Wrong input for parameter: product_key")
+		}
+	} else {
+		log.Error("Missing required parameter: product_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: product_key", "Missing required parameter: product_key")
+	}
+
+	if lib.Profile.CustomerKey == nil {
+		return lib.CustomError(http.StatusBadRequest, "Failed get data", "Failed get data")
+	}
+
+	var trans models.TrTransaction
+	_, err = models.TransactionProductCustomerVA(&trans, productKeyStr, strconv.FormatUint(*lib.Profile.CustomerKey, 10))
+
+	res := make(map[string]string)
+	if err != nil {
+		res["transaction_key"] = ""
+	} else {
+		res["transaction_key"] = strconv.FormatUint(trans.TransactionKey, 10)
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = res
+	return c.JSON(http.StatusOK, response)
+}

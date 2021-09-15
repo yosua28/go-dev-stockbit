@@ -94,6 +94,7 @@ func router() *echo.Echo {
 	auth.POST("/validatepromo", controllers.ValidatePromoTransaction).Name = "ValidatePromoTransaction"
 	auth.POST("/resend-order-motion-pay", controllers.ResendOrderOtpMotionPay).Name = "ResendOrderOtpMotionPay"
 	auth.POST("/pay-order-motion-pay", controllers.PayTransactionOrderMotionPay).Name = "PayTransactionOrderMotionPay"
+	auth.POST("/transaction-va-unsettled", controllers.CheckTransactionCustomerProductVA).Name = "CheckTransactionCustomerProductVA"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"

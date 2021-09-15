@@ -1393,3 +1393,25 @@ func AdminDetailTransactionDataSentEmail(c *DetailTransactionDataSentEmail, tans
 
 	return http.StatusOK, nil
 }
+
+func TransactionProductCustomerVA(c *TrTransaction, productKey string, customerKey string) (int, error) {
+	query := `SELECT
+				t.*
+			FROM tr_transaction AS t
+			INNER JOIN tr_transaction_settlement AS ts ON ts.transaction_key = t.transaction_key
+			WHERE t.rec_status = "1" AND ts.rec_status = "1" 
+			AND t.payment_method = "287" 
+			AND ts.settled_status = "243" 
+			AND t.product_key = "` + productKey + `" 
+			AND t.customer_key = "` + customerKey + `" order by t.transaction_key DESC LIMIT 1`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}

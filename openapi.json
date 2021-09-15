@@ -3072,6 +3072,79 @@
           }
         }
       },
+      "/auth/transaction-va-unsettled": {
+        "post": {
+          "description": "Check Transaction pembayaran dengan VA status unsettled",
+          "tags": [
+            "Transaction"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "product_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "product_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "transaction_key": "555"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
       "/auth/idcardvalidation": {
         "get": {
           "description": "ID card validation",
