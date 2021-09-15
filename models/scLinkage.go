@@ -98,6 +98,54 @@ func GetLinkageByField(c *ScLinkage, value string, field string) (int, error) {
 	return http.StatusOK, nil
 }
 
+func GetLinkageByParams(c *ScLinkage, params map[string]string) (int, error) {
+	query := `SELECT
+			  sc_linkage.* FROM 
+			  sc_linkage`
+	var present bool
+	var whereClause []string
+	var condition string
+
+	for field, value := range params {
+		if !(field == "orderBy" || field == "orderType") {
+			whereClause = append(whereClause, "sc_linkage."+field+" = '"+value+"'")
+		}
+	}
+
+	// Combile where clause
+	if len(whereClause) > 0 {
+		condition += " WHERE "
+		for index, where := range whereClause {
+			condition += where
+			if (len(whereClause) - 1) > index {
+				condition += " AND "
+			}
+		}
+	}
+	// Check order by
+	var orderBy string
+	var orderType string
+	if orderBy, present = params["orderBy"]; present == true {
+		condition += " ORDER BY " + orderBy
+		if orderType, present = params["orderType"]; present == true {
+			condition += " " + orderType
+		}
+	}
+
+	query += condition
+
+	condition += " LIMIT 1"
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
+
 func UpdateScLinkage(params map[string]string) (int, error) {
 	query := "UPDATE sc_linkage SET "
 	// Get params

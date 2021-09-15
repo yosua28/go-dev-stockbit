@@ -4,6 +4,7 @@ package lib
 var EMAIL_ACTIVATION string = "EMAIL-ACTIVATION"
 
 //MOTION-PAY LINKING API NAME
+var MAX_AMOUNT_MOTION_PAY int64 = 2000000
 var REGISTRATION_PREMIUM_NO_OTP string = "REGISTRATION_PREMIUM_NO_OTP"
 var PATH_REGISTRATION_PREMIUM_NO_OTP string = "v1/merchants/users/registration/noauth/premium"
 
@@ -20,8 +21,6 @@ var STATUS_UNLINKED string = "UNLINKED"
 var PREMIUM string = "PREMIUM"
 
 //MOTION PAY - PAYMENT
-var MAX_AMOUNT_MOTION_PAY int64 = 2000000
-
 var CREATE_ORDER string = "CREATE_ORDER"
 var PATH_CREATE_ORDER string = "v1/merchants/orders"
 
@@ -33,3 +32,13 @@ var PATH_PAY_ORDER string = "v1/merchants/pay"
 
 var ORDER_DETAIL string = "ORDER_DETAIL"
 var PATH_ORDER_DETAIL string = "v1/merchants/orders"
+
+//ROLE GROUP
+var ROLE_CS = "11"
+var ROLE_KYC = "12"
+var ROLE_FUND_ADMIN = "13"
+
+//PAYMENT METHOD LOOKUP
+var PAYMENT_MOTION_PAY = "285"
+var PAYMENT_VIRTUAL_ACCOUNT = "287"
+var PAYMENT_TRANSFER_MANUAL = "284"

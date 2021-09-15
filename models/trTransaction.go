@@ -612,7 +612,7 @@ func CreateTrTransaction(params map[string]string) (int, error, string) {
 }
 
 func GetTrTransaction(c *TrTransaction, key string) (int, error) {
-	query := `SELECT tr_transaction.* FROM tr_transaction WHERE tr_transaction.transaction_key = ` + key
+	query := `SELECT tr_transaction.* FROM tr_transaction WHERE tr_transaction.rec_status = "1" AND tr_transaction.transaction_key = ` + key
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -1317,11 +1317,14 @@ type DetailTransactionDataSentEmail struct {
 	BuktiTransafer        *string         `db:"bukti_transafer"           json:"bukti_transafer"`
 	ProductTujuan         *string         `db:"product_tujuan"            json:"product_tujuan"`
 	UserLoginKey          string          `db:"user_login_key"            json:"user_login_key"`
+	UloginEmail           string          `db:"ulogin_email"              json:"ulogin_email"`
+	FlagNewSub            *uint8          `db:"flag_newsub"               json:"flag_newsub"`
 }
 
 func AdminDetailTransactionDataSentEmail(c *DetailTransactionDataSentEmail, tansactionKey string) (int, error) {
 	query := `SELECT 
 				t.transaction_key,
+				t.flag_newsub,
 				t.trans_type_key, 
 				c.full_name AS full_name,
 				c.unit_holder_idno AS cif,
@@ -1360,7 +1363,8 @@ func AdminDetailTransactionDataSentEmail(c *DetailTransactionDataSentEmail, tans
 				a.agent_email AS sales_email,
 				t.rec_image1 AS bukti_transafer,
 				p_t.product_name_alt AS product_tujuan,
-				ul.user_login_key  
+				ul.user_login_key,  
+				ul.ulogin_email 
 			FROM tr_transaction AS t
 			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key
 			LEFT JOIN ms_agent AS a ON a.agent_key = c.openacc_agent_key

@@ -2617,7 +2617,9 @@
                       "message_client": "OK"
                     },
                     "data": {
-                      "request_key": "1"
+                      "payment_method": "284",
+                      "transaction_key": "978",
+                      "phone": "08138726345"
                     }
                   }
                 }
@@ -2890,6 +2892,155 @@
                     "data": {
                       "message": "Promo berlaku sampai tanggal yang sudah disepakati sebelumnya"
                     }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/auth/resend-order-motion-pay": {
+        "post": {
+          "description": "Resend Order Transaction & OTP Motion Pay",
+          "tags": [
+            "Transaction"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transaction_key": {
+                      "type": "integer"
+                    }
+                  },
+                  "required": [
+                    "transaction_key"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": {
+                      "transaction_key": "555",
+                      "phone": "081904532534534"
+                    }
+                  }
+                }
+              }
+            },
+            "400": {
+              "description": "Bad request",
+              "content": {
+                "text/plain": {
+                  "example": "Missing required parameter"
+                }
+              }
+            },
+            "401": {
+              "description": "Unauthorized",
+              "content": {
+                "text/plain": {
+                  "example": ""
+                }
+              }
+            },
+            "500": {
+              "description": "Internal server error",
+              "content": {
+                "text/plain": {
+                  "example": "Error parsing data"
+                }
+              }
+            }
+          }
+        }
+      },
+      "/auth/pay-order-motion-pay": {
+        "post": {
+          "description": "Pay Order Transaction with Motion Pay",
+          "tags": [
+            "Transaction"
+          ],
+          "security": [
+            {
+              "bearerAuth": []
+            }
+          ],
+          "requestBody": {
+            "content": {
+              "multipart/form-data": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "transaction_key": {
+                      "type": "integer"
+                    },
+                    "auth_code": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "transaction_key",
+                    "auth_code"
+                  ]
+                }
+              }
+            }
+          },
+          "responses": {
+            "200": {
+              "description": "Success",
+              "content": {
+                "application/json": {
+                  "example": {
+                    "status": {
+                      "code": 200,
+                      "message_server": "OK",
+                      "message_client": "OK"
+                    },
+                    "data": ""
                   }
                 }
               }

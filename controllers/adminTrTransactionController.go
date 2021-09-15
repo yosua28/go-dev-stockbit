@@ -706,8 +706,12 @@ func GetTransactionDetail(c echo.Context) error {
 			date, _ := time.Parse(layout, settlement.SettleDate)
 			data.SettleDate = date.Format(newLayout)
 			data.SettleNominal = settlement.SettleNominal
-			date, _ = time.Parse(layout, settlement.SettleRealizedDate)
-			data.SettleRealizedDate = date.Format(newLayout)
+			if settlement.SettleRealizedDate != nil {
+				date, _ = time.Parse(layout, *settlement.SettleRealizedDate)
+				data.SettleRealizedDate = date.Format(newLayout)
+			} else {
+				data.SettleRealizedDate = ""
+			}
 			data.SettleRemarks = settlement.SettleRemarks
 			data.SettleReference = settlement.SettleReference
 			if n, ok := gData[settlement.SettlePurposed]; ok {
@@ -3918,7 +3922,12 @@ func DetailTransaksiInquiry(c echo.Context) error {
 			date, _ := time.Parse(layout, settlement.SettleDate)
 			data.SettleDate = date.Format(newLayout)
 			data.SettleNominal = settlement.SettleNominal
-			date, _ = time.Parse(layout, settlement.SettleRealizedDate)
+			if settlement.SettleRealizedDate != nil {
+				date, _ = time.Parse(layout, *settlement.SettleRealizedDate)
+				data.SettleRealizedDate = date.Format(newLayout)
+			} else {
+				data.SettleRealizedDate = ""
+			}
 			data.SettleRealizedDate = date.Format(newLayout)
 			data.SettleRemarks = settlement.SettleRemarks
 			data.SettleReference = settlement.SettleReference

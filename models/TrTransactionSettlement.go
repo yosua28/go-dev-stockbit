@@ -19,7 +19,7 @@ type TrTransactionSettlement struct {
 	SettleNominal        decimal.Decimal `db:"settle_nominal"            json:"settle_nominal"`
 	ClientSubaccountNo   string          `db:"client_subaccount_no"      json:"client_subaccount_no"`
 	SettleStatus         uint64          `db:"settled_status"            json:"settled_status"`
-	SettleRealizedDate   string          `db:"settle_realized_date"      json:"settle_realized_date"`
+	SettleRealizedDate   *string         `db:"settle_realized_date"      json:"settle_realized_date"`
 	SettleRemarks        *string         `db:"settle_remarks"            json:"settle_remarks"`
 	SettleReference      *string         `db:"settle_references"         json:"settle_references"`
 	SourceBankAccountKey *uint64         `db:"source_bank_account_key"   json:"source_bank_account_key"`
@@ -125,7 +125,8 @@ func GetTrTransactionSettlementIn(c *[]TrTransactionSettlement, value []string, 
 }
 
 func GetTrTransactionSettlement(c *TrTransactionSettlement, field string, key string) (int, error) {
-	query := `SELECT tr_transaction_settlement.* FROM tr_transaction_settlement WHERE tr_transaction_settlement.` + field + ` = "` + key + `"`
+	query := `SELECT tr_transaction_settlement.* FROM tr_transaction_settlement WHERE 
+	tr_transaction_settlement.rec_status = "1" AND tr_transaction_settlement.` + field + ` = "` + key + `"`
 	log.Println(query)
 	err := db.Db.Get(c, query)
 	if err != nil {
@@ -173,4 +174,42 @@ func CreateTrTransactionSettlement(params map[string]string) (int, error, string
 	}
 	lastID, _ := ret.LastInsertId()
 	return http.StatusOK, nil, strconv.FormatInt(lastID, 10)
+}
+
+func UpdateTrTransactionSettlement(params map[string]string) (int, error) {
+	query := "UPDATE tr_transaction_settlement SET "
+	// Get params
+	i := 0
+	for key, value := range params {
+		if key != "settlement_key" {
+
+			query += key + " = '" + value + "'"
+
+			if (len(params) - 2) > i {
+				query += ", "
+			}
+			i++
+		}
+	}
+	query += " WHERE settlement_key = " + params["settlement_key"]
+	log.Info(query)
+
+	tx, err := db.Db.Begin()
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadGateway, err
+	}
+	var ret sql.Result
+	ret, err = tx.Exec(query)
+	row, _ := ret.RowsAffected()
+	if row > 0 {
+		tx.Commit()
+	} else {
+		return http.StatusNotFound, err
+	}
+	if err != nil {
+		log.Error(err)
+		return http.StatusBadRequest, err
+	}
+	return http.StatusOK, nil
 }

@@ -942,6 +942,20 @@ func Subscription(c echo.Context) error {
 		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: payment_method", "Missing required parameter: payment_method")
 	}
 
+	var scLinkage models.ScLinkage
+	if paymentMethod == lib.PAYMENT_MOTION_PAY {
+		paramsLinked := make(map[string]string)
+		paramsLinked["rec_status"] = "1"
+		paramsLinked["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+		paramsLinked["linked_status"] = lib.STATUS_LINKED
+		status, err = models.GetLinkageByParams(&scLinkage, paramsLinked)
+
+		if err != nil {
+			log.Error("User not LINKED. " + err.Error())
+			return lib.CustomError(http.StatusBadRequest, "Silakan melakukan linked dengan Motion Pay terlebuh dahulu.", "Silakan melakukan linked dengan Motion Pay terlebuh dahulu.")
+		}
+	}
+
 	bankStr := c.FormValue("product_bankacc_key")
 	if bankStr != "" {
 		bankKey, err := strconv.ParseUint(bankStr, 10, 64)
@@ -986,7 +1000,7 @@ func Subscription(c echo.Context) error {
 			return lib.CustomError(status, err.Error(), "failed input data")
 		}
 	}
-	
+
 	var agentCustomerDB models.MsAgentCustomer
 	status, err = models.GetLastAgenCunstomer(&agentCustomerDB, customerKey)
 	if err != nil {
@@ -1066,12 +1080,12 @@ func Subscription(c echo.Context) error {
 		return lib.CustomError(status)
 	}
 
+	var file *multipart.FileHeader
 	settlementParams := make(map[string]string)
 	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(userData.UserLoginKey, 10)+"/transfer", 0755)
 	if err != nil {
 		log.Error(err.Error())
 	} else {
-		var file *multipart.FileHeader
 		file, err = c.FormFile("transfer_pic")
 		if file != nil {
 			if err == nil {
@@ -1159,24 +1173,19 @@ func Subscription(c echo.Context) error {
 		log.Error(err.Error())
 	}
 
-	var subject string
-	var body string
 	var typ string
 	if params["flag_newsub"] == "1" {
 		typ = "subscription"
-		subject = "Subscription sedang Diproses"
-		body = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
 	} else {
 		typ = "topup"
-		subject = "Top Up sedang Diproses"
-		body = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
 	}
 
-	//create to tr_transaction_settlement
+	settledStatus := "243"
 	var subAcc string
 	var responseFM interface{}
-	if paymentMethod == "287" {
+	if paymentMethod == lib.PAYMENT_VIRTUAL_ACCOUNT {
 		subAcc = "7029123" + lib.Profile.PhoneNumber
+		settlementParams["client_subaccount_no"] = subAcc
 		fmParams := make(map[string]string)
 		fmParams["merchant_code"] = config.MerchantCode
 		if customer.FirstName != nil && *customer.FirstName != "" {
@@ -1195,23 +1204,47 @@ func Subscription(c echo.Context) error {
 		fmParams["no_reference"] = lib.Profile.PhoneNumber
 		fmParams["amount"] = totalAmountStr
 		fmParams["currency"] = "IDR"
-		fmParams["item_details"] = typ + " product " + productKeyStr 
-		fmParams["datetime_request"] = time.Now().Format(dateLayout) 
-		fmParams["payment_method"] = "va_mandiri" 
-		fmParams["time_limit"] = "1440" 
-		fmParams["notif_url"] = config.BaseUrl + "/api/fmnotif" 
-		fmParams["thanks_url"] = config.BaseUrl + "/api/fmthankyou" 
+		fmParams["item_details"] = typ + " product " + productKeyStr
+		fmParams["datetime_request"] = time.Now().Format(dateLayout)
+		fmParams["payment_method"] = "va_mandiri"
+		fmParams["time_limit"] = "1440"
+		fmParams["notif_url"] = config.BaseUrl + "/api/fmnotif"
+		fmParams["thanks_url"] = config.BaseUrl + "/api/fmthankyou"
 		_, responseFM, err = lib.FMPostPaymentData(fmParams)
 		if err != nil {
-			log.Error("Error POST payment data to FM: ",err.Error())
+			log.Error("Error POST payment data to FM: ", err.Error())
 		}
 	}
+
+	phone := ""
+	if paymentMethod == lib.PAYMENT_MOTION_PAY {
+		orderId := ""
+		amountPayment, _ := decimal.NewFromString(totalAmountStr)
+		status, data, err := lib.CreateOrder(transactionID, *scLinkage.LinkedMobileno, amountPayment)
+		if status != http.StatusOK {
+			log.Error("Error POST create order Motion Pay: ", err.Error())
+		} else {
+			phone = data["phone"]
+			orderId = data["order_id"]
+		}
+
+		settlementParams["client_subaccount_no"] = orderId
+		settlementParams["settle_references"] = orderId
+	}
+
+	if paymentMethod == lib.PAYMENT_TRANSFER_MANUAL {
+		settlementParams["client_subaccount_no"] = transactionID
+		if file != nil { //Sudah upload bukti transfer
+			settledStatus = "244"
+		}
+	}
+
+	//create to tr_transaction_settlement
 	settlementParams["transaction_key"] = transactionID
 	settlementParams["settle_purposed"] = "297"
 	settlementParams["settle_date"] = dateBursa + " 00:00:00"
 	settlementParams["settle_nominal"] = totalAmountStr
-	settlementParams["client_subaccount_no"] = subAcc
-	settlementParams["settled_status"] = "243"
+	settlementParams["settled_status"] = settledStatus
 	settlementParams["target_bank_account_key"] = bankStr
 	settlementParams["settle_channel"] = paymentChannel
 	settlementParams["settle_payment_method"] = paymentMethod
@@ -1224,44 +1257,62 @@ func Subscription(c echo.Context) error {
 		log.Error(err.Error())
 	}
 
-	//create message
-	//create push notif
-	customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)
-	paramsUserMessage := make(map[string]string)
-	paramsUserMessage["umessage_type"] = "245"
-	paramsUserMessage["umessage_recipient_key"] = customerUserLoginKey
-	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_read"] = "0"
-	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_sent"] = "1"
-	
+	if paymentMethod == lib.PAYMENT_TRANSFER_MANUAL {
+		if file != nil { //Sudah upload bukti transfer
+			//notif sukses
+			NotifTransactionSuccess(transactionID, lib.ROLE_CS)
+		} else { // belum upload
+			var body string
+			subject := "Segera Upload Bukti Transfer Kamu"
+			if params["flag_newsub"] == "1" {
+				body = "Segera Upload Bukti Transfer Kamu agar Subscribe kamu dapat segera kami proses."
+			} else {
+				body = "Segera Upload Bukti Transfer Kamu agar Top Up kamu dapat segera kami proses."
+			}
+			customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)
+			paramsUserMessage := make(map[string]string)
+			paramsUserMessage["umessage_type"] = "245"
+			paramsUserMessage["umessage_recipient_key"] = customerUserLoginKey
+			paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_read"] = "0"
+			paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["flag_sent"] = "1"
 
-	paramsUserMessage["umessage_subject"] = subject
-	paramsUserMessage["umessage_body"] = body
+			paramsUserMessage["umessage_subject"] = subject
+			paramsUserMessage["umessage_body"] = body
 
-	paramsUserMessage["umessage_category"] = "248"
-	paramsUserMessage["flag_archieved"] = "0"
-	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_status"] = "1"
-	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_created_by"] = strIDUserLogin
+			paramsUserMessage["umessage_category"] = "248"
+			paramsUserMessage["flag_archieved"] = "0"
+			paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_status"] = "1"
+			paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+			paramsUserMessage["rec_created_by"] = strIDUserLogin
 
-	status, err = models.CreateScUserMessage(paramsUserMessage)
-	if err != nil {
-		log.Error("Error create user message")
-	} else {
-		log.Error("Sukses insert user message")
+			status, err = models.CreateScUserMessage(paramsUserMessage)
+			if err != nil {
+				log.Error("Error create user message")
+			} else {
+				log.Error("Sukses insert user message")
+			}
+			lib.CreateNotifCustomerFromAdminByCustomerId(customerKey, subject, body, "TRANSACTION")
+
+			//send email
+			params["product_name"] = product.ProductNameAlt
+			params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
+			params["parrent"] = transactionID
+			err = mailSubscription(typ, params)
+		}
 	}
-	lib.CreateNotifCustomerFromAdminByCustomerId(customerKey, subject, body, "TRANSACTION")
 
-	//send email
-	params["product_name"] = product.ProductNameAlt
-	params["currency"] = strconv.FormatUint(*product.CurrencyKey, 10)
-	params["parrent"] = transactionID
-	err = mailSubscription(typ, params)
 	responseData := make(map[string]interface{})
 	responseData["transaction_key"] = transactionID
-	responseData["response_fm"] = responseFM
+	responseData["payment_method"] = paymentMethod
+	if paymentMethod == lib.PAYMENT_MOTION_PAY {
+		responseData["phone"] = phone
+	}
+	if paymentMethod == lib.PAYMENT_VIRTUAL_ACCOUNT {
+		responseData["response_fm"] = responseFM
+	}
 	var response lib.Response
 	response.Status.Code = http.StatusOK
 	response.Status.MessageServer = "OK"
@@ -1597,41 +1648,7 @@ func Redemption(c echo.Context) error {
 		log.Error(err.Error())
 	}
 
-	//create message
-	customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)
-	paramsUserMessage := make(map[string]string)
-	paramsUserMessage["umessage_type"] = "245"
-	paramsUserMessage["umessage_recipient_key"] = customerUserLoginKey
-	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_read"] = "0"
-	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_sent"] = "1"
-
-	subject := "Redemption sedang Diproses"
-	body := "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
-
-	paramsUserMessage["umessage_subject"] = subject
-	paramsUserMessage["umessage_body"] = body
-
-	paramsUserMessage["umessage_category"] = "248"
-	paramsUserMessage["flag_archieved"] = "0"
-	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_status"] = "1"
-	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_created_by"] = strIDUserLogin
-
-	status, err = models.CreateScUserMessage(paramsUserMessage)
-	if err != nil {
-		log.Error("Error create user message")
-	} else {
-		log.Error("Sukses insert user message")
-	}
-
-	//create push notif
-	lib.CreateNotifCustomerFromAdminByCustomerId(customerKey, subject, body, "TRANSACTION")
-
-	//send email to BO role 11 & Sales
-	SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
+	NotifTransactionSuccess(transactionID, lib.ROLE_CS)
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -2102,41 +2119,7 @@ func Switching(c echo.Context) error {
 
 	status, err, _ = models.CreateTrTransaction(paramsSwIn)
 
-	//create message
-	customerUserLoginKey := strconv.FormatUint(userData.UserLoginKey, 10)
-	paramsUserMessage := make(map[string]string)
-	paramsUserMessage["umessage_type"] = "245"
-	paramsUserMessage["umessage_recipient_key"] = customerUserLoginKey
-	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_read"] = "0"
-	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["flag_sent"] = "1"
-
-	subject := "Switching sedang Diproses"
-	body := "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
-
-	paramsUserMessage["umessage_subject"] = subject
-	paramsUserMessage["umessage_body"] = body
-
-	paramsUserMessage["umessage_category"] = "248"
-	paramsUserMessage["flag_archieved"] = "0"
-	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_status"] = "1"
-	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
-	paramsUserMessage["rec_created_by"] = strIDUserLogin
-
-	status, err = models.CreateScUserMessage(paramsUserMessage)
-	if err != nil {
-		log.Error("Error create user message")
-	} else {
-		log.Error("Sukses insert user message")
-	}
-
-	//create push notif
-	lib.CreateNotifCustomerFromAdminByCustomerId(customerKey, subject, body, "TRANSACTION")
-
-	//send email to role 11 & sales
-	SentEmailTransactionToBackOfficeAndSales(transactionID, "11")
+	NotifTransactionSuccess(transactionID, lib.ROLE_CS)
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -2173,6 +2156,22 @@ func UploadTransferPic(c echo.Context) error {
 	if len(transactionDB) == 0 {
 		log.Error("Transaction not found")
 		return lib.CustomError(http.StatusNotFound, "Transaction not found", "Transaction not found")
+	}
+
+	var trSettle models.TrTransactionSettlement
+	_, err = models.GetTrTransactionSettlement(&trSettle, "transaction_key", transactionKeyStr)
+	if err != nil {
+		log.Error("Transaction settlement not found")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	if trSettle.SettleStatus != uint64(243) { //cek sudah settled / belum
+		log.Error(trSettle.SettleStatus)
+		log.Error("Transaction not found, status pembayaran bukan UNSETTLED")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	} else if trSettle.SettlePaymentMethod != uint64(284) { //cek apakah pembayaran dengan manual
+		log.Error("Transaction not found, pembayaran bukan dengan Transfer Manual.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
 	}
 
 	err = os.MkdirAll(config.BasePath+"/images/user/"+strconv.FormatUint(lib.Profile.UserID, 10)+"/transfer", 0755)
@@ -2223,8 +2222,23 @@ func UploadTransferPic(c echo.Context) error {
 		return lib.CustomError(status, err.Error(), "Failed update data")
 	}
 
-	//sent email to BO role 11 & Sales
-	SentEmailTransactionToBackOfficeAndSales(transactionKeyStr, "11")
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	dateLayout := "2006-01-02 15:04:05"
+	paramsSettle := make(map[string]string)
+	paramsSettle["settlement_key"] = strconv.FormatUint(trSettle.SettlementKey, 10)
+	paramsSettle["settled_status"] = "244"
+	paramsSettle["settle_date"] = time.Now().Format(dateLayout)
+	paramsSettle["rec_modified_date"] = time.Now().Format(dateLayout)
+	paramsSettle["rec_modified_by"] = strIDUserLogin
+	paramsSettle["settle_realized_date"] = time.Now().Format(dateLayout)
+	status, err = models.UpdateTrTransactionSettlement(paramsSettle)
+	if err != nil {
+		log.Error("Error update transaction settlement")
+		return lib.CustomError(status, err.Error(), "failed update data")
+	}
+
+	//notif sukses transaksi
+	NotifTransactionSuccess(transactionKeyStr, lib.ROLE_CS)
 
 	var response lib.Response
 	response.Status.Code = http.StatusOK
@@ -3274,4 +3288,595 @@ func mailSubscription(typ string, params map[string]string) error {
 	}
 	log.Info("Email sent")
 	return nil
+}
+
+func ResendOrderOtpMotionPay(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	transactionKeyStr := c.FormValue("transaction_key")
+	if transactionKeyStr != "" {
+		transactionKey, err := strconv.ParseUint(transactionKeyStr, 10, 64)
+		if err != nil || transactionKey == 0 {
+			log.Error("Wrong input for parameter: transaction_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+		}
+	} else {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: transaction_key", "Missing required parameter: transaction_key")
+	}
+
+	paramsLinked := make(map[string]string)
+	paramsLinked["rec_status"] = "1"
+	paramsLinked["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsLinked["linked_status"] = lib.STATUS_LINKED
+	var scLinkage models.ScLinkage
+	status, err = models.GetLinkageByParams(&scLinkage, paramsLinked)
+
+	if err != nil {
+		log.Error("User not LINKED. " + err.Error())
+		return lib.CustomError(http.StatusNotFound, "User Belum terlinked", "User Belum terlinked")
+	}
+
+	//get transaction belum di bayar
+	var transaction models.TrTransaction
+	_, err = models.GetTrTransaction(&transaction, transactionKeyStr)
+	if err != nil {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	if transaction.CustomerKey != *lib.Profile.CustomerKey {
+		log.Error("Transaction not found, customer transaksi beda dengan customer login.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	var trSettle models.TrTransactionSettlement
+	_, err = models.GetTrTransactionSettlement(&trSettle, "transaction_key", transactionKeyStr)
+	if err != nil {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	if trSettle.SettleStatus != uint64(243) { //cek sudah settled / belum
+		log.Error(trSettle.SettleStatus)
+		log.Error("Transaction not found, status pembayaran bukan UNSETTLED")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	} else if trSettle.SettlePaymentMethod != uint64(285) { //cek apakah pembayaran dengan SPIN
+		log.Error("Transaction not found, pembayaran bukan dengan SPIN.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	status, res, err := lib.CreateOrder(transactionKeyStr, *scLinkage.LinkedMobileno, transaction.TotalAmount)
+
+	if status == http.StatusOK && err == nil {
+		//update tr settlement
+		strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+		dateLayout := "2006-01-02 15:04:05"
+		paramsSettle := make(map[string]string)
+		paramsSettle["settlement_key"] = strconv.FormatUint(trSettle.SettlementKey, 10)
+		paramsSettle["client_subaccount_no"] = res["order_id"]
+		paramsSettle["settle_references"] = res["order_id"]
+		paramsSettle["settle_date"] = time.Now().Format(dateLayout)
+		paramsSettle["rec_modified_date"] = time.Now().Format(dateLayout)
+		paramsSettle["rec_modified_by"] = strIDUserLogin
+		status, err = models.UpdateTrTransactionSettlement(paramsSettle)
+		if err != nil {
+			log.Error("Error update transaction settlement")
+			return lib.CustomError(status, err.Error(), "failed update data")
+		}
+	} else {
+		log.Error("Error create order & sent otp")
+		return lib.CustomError(status, "Telah terjadi kesalahan. Silakan menghubungi Customer Service untuk informasi lebih lanjut.", "Telah terjadi kesalahan. Silakan menghubungi Customer Service untuk informasi lebih lanjut.")
+	}
+
+	rrr := make(map[string]string)
+	rrr["transaction_key"] = transactionKeyStr
+	rrr["phone"] = res["phone"]
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = rrr
+	return c.JSON(http.StatusOK, response)
+}
+
+func PayTransactionOrderMotionPay(c echo.Context) error {
+	var err error
+	var status int
+	decimal.MarshalJSONWithoutQuotes = true
+
+	transactionKeyStr := c.FormValue("transaction_key")
+	if transactionKeyStr != "" {
+		transactionKey, err := strconv.ParseUint(transactionKeyStr, 10, 64)
+		if err != nil || transactionKey == 0 {
+			log.Error("Wrong input for parameter: transaction_key")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: transaction_key", "Wrong input for parameter: transaction_key")
+		}
+	} else {
+		log.Error("Missing required parameter: transaction_key")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: transaction_key", "Missing required parameter: transaction_key")
+	}
+
+	authCode := c.FormValue("auth_code")
+	if authCode == "" {
+		log.Error("Missing required parameter: auth_code")
+		return lib.CustomError(http.StatusBadRequest, "Missing required parameter: auth_code", "Missing required parameter: auth_code")
+	}
+
+	paramsLinked := make(map[string]string)
+	paramsLinked["rec_status"] = "1"
+	paramsLinked["user_login_key"] = strconv.FormatUint(lib.Profile.UserID, 10)
+	paramsLinked["linked_status"] = lib.STATUS_LINKED
+	var scLinkage models.ScLinkage
+	status, err = models.GetLinkageByParams(&scLinkage, paramsLinked)
+
+	if err != nil {
+		log.Error("User not LINKED. " + err.Error())
+		return lib.CustomError(http.StatusNotFound, "User Belum terlinked", "User Belum terlinked")
+	}
+
+	//get transaction belum di bayar
+	var transaction models.TrTransaction
+	_, err = models.GetTrTransaction(&transaction, transactionKeyStr)
+	if err != nil {
+		log.Error("Transaction not found")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	if transaction.CustomerKey != *lib.Profile.CustomerKey {
+		log.Error("Transaction not found, customer transaksi beda dengan customer login.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	var trSettle models.TrTransactionSettlement
+	_, err = models.GetTrTransactionSettlement(&trSettle, "transaction_key", transactionKeyStr)
+	if err != nil {
+		log.Error("Transaction settlement not found")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	if trSettle.SettleStatus != uint64(243) { //cek sudah settled / belum
+		log.Error(trSettle.SettleStatus)
+		log.Error("Transaction not found, status pembayaran bukan UNSETTLED")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	} else if trSettle.SettlePaymentMethod != uint64(285) { //cek apakah pembayaran dengan SPIN
+		log.Error("Transaction not found, pembayaran bukan dengan SPIN.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	} else if trSettle.SettleReference == nil { //cek apakah pembayaran dengan SPIN
+		log.Error("Transaction not found, order id kosong.")
+		return lib.CustomError(http.StatusBadRequest, "Transaction not found", "Transaction not found")
+	}
+
+	status, body, err := lib.PayOrderMotionPay(*trSettle.SettleReference, *scLinkage.LinkedMobileno, authCode)
+
+	var dataBody map[string]interface{}
+	err = json.Unmarshal([]byte(body), &dataBody)
+
+	if status == http.StatusOK && err == nil {
+		//update tr settlement
+		strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+		dateLayout := "2006-01-02 15:04:05"
+		paramsSettle := make(map[string]string)
+		paramsSettle["settlement_key"] = strconv.FormatUint(trSettle.SettlementKey, 10)
+		paramsSettle["settled_status"] = "244"
+		paramsSettle["settle_date"] = time.Now().Format(dateLayout)
+		paramsSettle["rec_modified_date"] = time.Now().Format(dateLayout)
+		paramsSettle["rec_modified_by"] = strIDUserLogin
+		paramsSettle["settle_realized_date"] = time.Now().Format(dateLayout)
+		status, err = models.UpdateTrTransactionSettlement(paramsSettle)
+		if err != nil {
+			log.Error("Error update transaction settlement")
+			return lib.CustomError(status, err.Error(), "failed update data")
+		}
+
+		//notif sukses transaksi
+		NotifTransactionSuccess(transactionKeyStr, lib.ROLE_CS)
+	} else {
+		log.Error("Error payment motion pay")
+		log.Error(dataBody["message_action"].(string))
+		return lib.CustomError(status, dataBody["message_action"].(string), dataBody["message_action"].(string))
+	}
+
+	var response lib.Response
+	response.Status.Code = http.StatusOK
+	response.Status.MessageServer = "OK"
+	response.Status.MessageClient = "OK"
+	response.Data = ""
+	return c.JSON(http.StatusOK, response)
+}
+
+func NotifTransactionSuccess(transactionKey string, roleKey string) {
+	var err error
+	var transaction models.DetailTransactionDataSentEmail
+	_, err = models.AdminDetailTransactionDataSentEmail(&transaction, transactionKey)
+	if err != nil {
+		log.Error("Failed get transaction: " + err.Error())
+		return
+	}
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	//save user_message
+	subject, body := SaveNotifApp(transaction)
+	//send email ke sales
+	SentEmailSuccessTransactionToSales(transaction)
+	//send email ke cs
+	SentEmailSuccessTransactionToBackOffice(transaction, roleKey)
+	//send email ke customer
+	SentEmailSuccessTransactionToCustomer(transaction)
+	//push notif ke customer
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
+}
+
+func SaveNotifApp(transaction models.DetailTransactionDataSentEmail) (string, string) {
+	var subject string
+	var body string
+	if transaction.TransTypeKey == uint64(1) { // Subs
+		if *transaction.FlagNewSub == uint8(1) {
+			subject = "Subscription sedang Diproses"
+			body = "Terima kasih telah melakukan subscription. Kami sedang memproses transaksi kamu."
+		} else {
+			subject = "Top Up sedang Diproses"
+			body = "Terima kasih telah melakukan transaksi top up. Kami sedang memproses transaksi kamu."
+		}
+	} else if transaction.TransTypeKey == uint64(2) { //redm
+		subject = "Switching sedang Diproses"
+		body = "Switching kamu telah kami terima. Kami sedang memproses transaksi kamu."
+	} else if transaction.TransTypeKey == uint64(4) || transaction.TransTypeKey == uint64(3) { // SWITCH
+		subject = "Redemption sedang Diproses"
+		body = "Redemption kamu telah kami terima. Kami akan memproses transaksi kamu."
+	}
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	dateLayout := "2006-01-02 15:04:05"
+
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+	_, err := models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+
+	return subject, body
+}
+
+func SentEmailSuccessTransactionToSales(transaction models.DetailTransactionDataSentEmail) {
+	// to sales
+	var err error
+	if transaction.SalesEmail != nil {
+		var mailTempSales, subject string
+		mailParam := make(map[string]string)
+
+		mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+		mailParam["NamaLengkap"] = transaction.FullName
+		mailParam["CIF"] = *transaction.Cif
+		mailParam["TanggalTransaksi"] = transaction.TransDate
+		mailParam["WaktuTransaksi"] = transaction.TransTime
+		mailParam["Sales"] = *transaction.Sales
+		ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
+		if *transaction.EntryMode == uint64(140) { //Amount
+			mailParam["JumlahTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+		} else { //Unit
+			mailParam["JumlahTransaksi"] = ac0.FormatMoneyDecimal(transaction.TransUnit.Truncate(2)) + " Unit"
+		}
+
+		mailParam["BiayaTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+
+		if transaction.TransTypeKey == uint64(1) { // subs
+			subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
+
+			mailParam["TipeTransaksi"] = "Subscription"
+			mailParam["NamaProduk"] = transaction.ProductName
+			mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
+			mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
+			if *transaction.PaymentMethod == uint64(284) { //manual
+				log.Println("MANUAL TRANSFER")
+				mailTempSales = "email-new-subs-to-sales.html"
+				linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
+				mailParam["BuktiTransfer"] = linkBuktiTransfer
+			} else {
+				log.Println("NON MANUAL TRANSFER")
+				mailTempSales = "email-new-subs-to-sales-non-manual-transfer.html"
+				mailParam["BuktiTransfer"] = "-"
+			}
+		} else if transaction.TransTypeKey == uint64(2) { // redm
+			subject = "[MotionFunds] Mohon Verifikasi Transaksi Redemption"
+			mailTempSales = "email-new-redm-to-sales.html"
+
+			mailParam["TipeTransaksi"] = "Redemption"
+			mailParam["NamaProduk"] = transaction.ProductName
+			mailParam["NamaBank"] = *transaction.BankRekBankCustomer
+			mailParam["NoRekeningBank"] = *transaction.NoRekBankCustomer
+			mailParam["NamaPadaRekeningBank"] = *transaction.NameRekBankCustomer
+			mailParam["Cabang"] = *transaction.CabangRekBankCustomer
+		} else { //switching
+			subject = "[MotionFunds] Mohon Verifikasi Transaksi Switching"
+			mailTempSales = "email-new-switching-to-sales.html"
+
+			mailParam["TipeTransaksi"] = "Switching"
+			mailParam["ProdukAsal"] = transaction.ProductName
+			mailParam["ProdukTujuan"] = *transaction.ProductTujuan
+		}
+
+		t := template.New(mailTempSales)
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTempSales)
+		if err != nil {
+			log.Error("Failed send mail: " + err.Error())
+			return
+		}
+		var tpl bytes.Buffer
+		if err := t.Execute(&tpl, mailParam); err != nil {
+			log.Error("Failed send mail: " + err.Error())
+			return
+		}
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", *transaction.SalesEmail)
+		mailer.SetHeader("Subject", subject)
+		mailer.SetBody("text/html", result)
+
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Failed send mail to sales: " + *transaction.SalesEmail)
+			log.Error("Failed send mail to sales: " + err.Error())
+		} else {
+			log.Println("Sukses email Sales : " + *transaction.SalesEmail)
+		}
+	} else {
+		log.Println("Data Sales tidak ada email")
+	}
+}
+
+func SentEmailSuccessTransactionToBackOffice(transaction models.DetailTransactionDataSentEmail, roleKey string) {
+	var err error
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+	if roleKey == lib.ROLE_CS {
+		mailParam["BackOfficeGroup"] = "Customer Service"
+	} else if roleKey == lib.ROLE_KYC {
+		mailParam["BackOfficeGroup"] = "Compliance"
+	} else if roleKey == lib.ROLE_FUND_ADMIN {
+		mailParam["BackOfficeGroup"] = "FundAdmin"
+	}
+
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+	mailParam["NamaLengkap"] = transaction.FullName
+	mailParam["CIF"] = *transaction.Cif
+	mailParam["TanggalTransaksi"] = transaction.TransDate
+	mailParam["WaktuTransaksi"] = transaction.TransTime
+	mailParam["Sales"] = *transaction.Sales
+	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
+	if *transaction.EntryMode == uint64(140) { //Amount
+		mailParam["JumlahTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+	} else { //Unit
+		mailParam["JumlahTransaksi"] = ac0.FormatMoneyDecimal(transaction.TransUnit.Truncate(2)) + " Unit"
+	}
+
+	mailParam["BiayaTransaksi"] = transaction.CurrencySymbol + ". " + ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+
+	if transaction.TransTypeKey == uint64(1) { // subs
+		subject = "[MotionFunds] Mohon Verifikasi Transaksi Subscription"
+
+		mailParam["TipeTransaksi"] = "Subscription"
+		mailParam["NamaProduk"] = transaction.ProductName
+		mailParam["MetodePembayaran"] = *transaction.PaymentMethodName
+		mailParam["RekeningBankKustodian"] = *transaction.RekBankCustodian
+		if *transaction.PaymentMethod == uint64(284) { //manual
+			log.Println("MANUAL TRANSFER")
+			mailTemp = "email-new-subs-to-cs-kyc-fundadmin.html"
+			linkBuktiTransfer := config.BaseUrl + "/images/user/" + transaction.UserLoginKey + "/transfer/" + *transaction.BuktiTransafer
+			mailParam["BuktiTransfer"] = linkBuktiTransfer
+		} else {
+			log.Println("NON MANUAL TRANSFER")
+			mailTemp = "email-new-subs-to-cs-kyc-fundadmin-non-manual-transfer.html"
+			mailParam["BuktiTransfer"] = "-"
+		}
+	} else if transaction.TransTypeKey == uint64(2) { // redm
+		subject = "[MotionFunds] Mohon Verifikasi Transaksi Redemption"
+		mailTemp = "email-new-redm-to-cs-kyc-fundadmin.html"
+
+		mailParam["TipeTransaksi"] = "Redemption"
+		mailParam["NamaProduk"] = transaction.ProductName
+		mailParam["NamaBank"] = *transaction.BankRekBankCustomer
+		mailParam["NoRekeningBank"] = *transaction.NoRekBankCustomer
+		mailParam["NamaPadaRekeningBank"] = *transaction.NameRekBankCustomer
+		mailParam["Cabang"] = *transaction.CabangRekBankCustomer
+	} else { //switching
+		subject = "[MotionFunds] Mohon Verifikasi Transaksi Switching"
+		mailTemp = "email-new-switching-to-cs-kyc-fundadmin.html"
+
+		mailParam["TipeTransaksi"] = "Switching"
+		mailParam["ProdukAsal"] = transaction.ProductName
+		mailParam["ProdukTujuan"] = *transaction.ProductTujuan
+	}
+
+	paramsScLogin := make(map[string]string)
+	paramsScLogin["role_key"] = roleKey
+	paramsScLogin["rec_status"] = "1"
+	var userLogin []models.ScUserLogin
+	_, err = models.GetAllScUserLogin(&userLogin, 0, 0, paramsScLogin, true)
+	if err != nil {
+		log.Println("Email BO kosong")
+		log.Error("User BO tidak ditemukan")
+		log.Error(err)
+	} else {
+		log.Println("Data User BO tersedia")
+		log.Println(len(userLogin))
+		t := template.New(mailTemp)
+
+		t, err = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+		if err != nil {
+			log.Error("Failed send mail: " + err.Error())
+		} else {
+			for _, scLogin := range userLogin {
+				strUserCat := strconv.FormatUint(scLogin.UserCategoryKey, 10)
+				if (strUserCat == "2") || (strUserCat == "3") {
+					var tpl bytes.Buffer
+					if err := t.Execute(&tpl, mailParam); err != nil {
+						log.Error("Failed send mail: " + err.Error())
+					} else {
+						result := tpl.String()
+
+						mailer := gomail.NewMessage()
+						mailer.SetHeader("From", config.EmailFrom)
+						mailer.SetHeader("To", scLogin.UloginEmail)
+						mailer.SetHeader("Subject", subject)
+						mailer.SetBody("text/html", result)
+
+						dialer := gomail.NewDialer(
+							config.EmailSMTPHost,
+							int(config.EmailSMTPPort),
+							config.EmailFrom,
+							config.EmailFromPassword,
+						)
+						dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+						err = dialer.DialAndSend(mailer)
+						if err != nil {
+							log.Error("Failed send mail to: " + scLogin.UloginEmail)
+							log.Error("Failed send mail: " + err.Error())
+						} else {
+							log.Println("Sukses email BO : " + scLogin.UloginEmail)
+						}
+					}
+				}
+			}
+		}
+	}
+}
+
+func SentEmailSuccessTransactionToCustomer(transaction models.DetailTransactionDataSentEmail) {
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+	mailParam["Name"] = transaction.FullName
+	mailParam["Cif"] = *transaction.Cif
+	mailParam["Date"] = transaction.TransDate
+	mailParam["Time"] = transaction.TransTime
+	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
+
+	if transaction.TransTypeKey == uint64(1) { // subs
+		if *transaction.FlagNewSub == uint8(1) {
+			subject = "Subscription Kamu sedang Diproses"
+			mailTemp = "index-subscription-complete.html"
+		} else {
+			mailTemp = "index-topup-complete.html"
+			subject = "Top Up sedang Diproses"
+		}
+
+		mailParam["ProductName"] = transaction.ProductName
+		mailParam["Symbol"] = transaction.CurrencySymbol + " "
+		mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+		mailParam["Fee"] = ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+	} else if transaction.TransTypeKey == uint64(2) { // redm
+		subject = "Redemption sedang Diproses"
+		mailTemp = "index-redemption.html"
+		mailParam["ProductName"] = transaction.ProductName
+		mailParam["Fee"] = ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+		if *transaction.EntryMode == uint64(140) { //Amount
+			mailParam["Symbol"] = transaction.CurrencySymbol + " "
+			mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+			mailParam["Str"] = ""
+		} else { //Unit
+			mailParam["Symbol"] = ""
+			mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransUnit.Truncate(2))
+			mailParam["Str"] = " Unit"
+		}
+		if transaction.BankRekBankCustomer != nil {
+			mailParam["BankName"] = *transaction.BankRekBankCustomer
+		} else {
+			mailParam["BankName"] = "-"
+		}
+		if transaction.NoRekBankCustomer != nil {
+			mailParam["BankAccNo"] = *transaction.NoRekBankCustomer
+		} else {
+			mailParam["BankAccNo"] = "-"
+		}
+		if transaction.NameRekBankCustomer != nil {
+			mailParam["AccHolderName"] = *transaction.NameRekBankCustomer
+		} else {
+			mailParam["AccHolderName"] = "-"
+		}
+		if transaction.CabangRekBankCustomer != nil {
+			mailParam["Branch"] = *transaction.CabangRekBankCustomer
+		} else {
+			mailParam["Branch"] = "-"
+		}
+
+	} else { //switching
+		subject = "Switching sedang Diproses"
+		mailTemp = "index-switching.html"
+		mailParam["ProductOut"] = transaction.ProductName
+		mailParam["ProductIn"] = *transaction.ProductTujuan
+		if *transaction.EntryMode == uint64(140) { //Amount
+			mailParam["Symbol"] = transaction.CurrencySymbol + " "
+			mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+			mailParam["Str"] = ""
+		} else { //Unit
+			mailParam["Symbol"] = ""
+			mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransUnit.Truncate(2))
+			mailParam["Str"] = " Unit"
+		}
+		mailParam["Fee"] = ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+	}
+
+	t := template.New(mailTemp)
+
+	t, _ = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, mailParam); err != nil {
+		log.Error("Failed send mail: " + err.Error())
+	} else {
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", transaction.UloginEmail)
+		mailer.SetHeader("Subject", subject)
+		mailer.SetBody("text/html", result)
+
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Failed send mail to: " + transaction.UloginEmail)
+			log.Error("Failed send mail: " + err.Error())
+		} else {
+			log.Println("Sukses email BO : " + transaction.UloginEmail)
+		}
+	}
 }

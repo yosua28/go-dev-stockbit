@@ -92,6 +92,8 @@ func router() *echo.Echo {
 	auth.GET("/mailportofolio", controllers.SendEmailPortofolio).Name = "SendEmailPortofolio"
 	auth.GET("/mailtransaction", controllers.SendEmailTransaction).Name = "SendEmailTransaction"
 	auth.POST("/validatepromo", controllers.ValidatePromoTransaction).Name = "ValidatePromoTransaction"
+	auth.POST("/resend-order-motion-pay", controllers.ResendOrderOtpMotionPay).Name = "ResendOrderOtpMotionPay"
+	auth.POST("/pay-order-motion-pay", controllers.PayTransactionOrderMotionPay).Name = "PayTransactionOrderMotionPay"
 
 	// Session
 	e.POST("/register", controllers.Register).Name = "Register"
@@ -114,7 +116,7 @@ func router() *echo.Echo {
 
 	// SPIN
 	auth.POST("/spincreateorder", controllers.SpinCreateOrder).Name = "SpinCreateOrder"
-	
+
 	//FM
 	e.POST("/fmnotif", controllers.FMNotif).Name = "FMNotif"
 	e.POST("/fmthankyou", controllers.FMThankYou).Name = "FMThankYou"

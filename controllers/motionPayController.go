@@ -357,14 +357,13 @@ func requestToMotionPay(
 	log.Info(res.StatusCode)
 	paramLog["status"] = strconv.FormatUint(uint64(res.StatusCode), 10)
 
-	if err != nil {
-		log.Error("Error2", err.Error())
+	if res.StatusCode != http.StatusOK {
 		_, err = models.CreateEndpoint3rdPartyLog(paramLog)
 		if err != nil {
 			log.Error("Error create log endpoint motion pay")
 			log.Error(err.Error())
 		}
-		return http.StatusBadGateway, "", paramLog["header"], err
+		return res.StatusCode, "", paramLog["header"], err
 	}
 	defer res.Body.Close()
 	body, err := ioutil.ReadAll(res.Body)
