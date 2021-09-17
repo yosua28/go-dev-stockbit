@@ -1257,6 +1257,10 @@ func Subscription(c echo.Context) error {
 		log.Error(err.Error())
 	}
 
+	if paymentMethod == lib.PAYMENT_VIRTUAL_ACCOUNT {
+		NotifTransactionVaBelumBayar(transactionID)
+	}
+
 	if paymentMethod == lib.PAYMENT_TRANSFER_MANUAL {
 		if file != nil { //Sudah upload bukti transfer
 			//notif sukses
@@ -3785,11 +3789,11 @@ func SentEmailSuccessTransactionToCustomer(transaction models.DetailTransactionD
 
 	if transaction.TransTypeKey == uint64(1) { // subs
 		if *transaction.FlagNewSub == uint8(1) {
-			subject = "Subscription Kamu sedang Diproses"
+			subject = "[MotionFunds] Subscription Kamu sedang Diproses"
 			mailTemp = "index-subscription-complete.html"
 		} else {
 			mailTemp = "index-topup-complete.html"
-			subject = "Top Up sedang Diproses"
+			subject = "[MotionFunds] Top Up sedang Diproses"
 		}
 
 		mailParam["ProductName"] = transaction.ProductName
@@ -3797,7 +3801,7 @@ func SentEmailSuccessTransactionToCustomer(transaction models.DetailTransactionD
 		mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
 		mailParam["Fee"] = ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
 	} else if transaction.TransTypeKey == uint64(2) { // redm
-		subject = "Redemption sedang Diproses"
+		subject = "[MotionFunds] Redemption sedang Diproses"
 		mailTemp = "index-redemption.html"
 		mailParam["ProductName"] = transaction.ProductName
 		mailParam["Fee"] = ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
@@ -3832,7 +3836,7 @@ func SentEmailSuccessTransactionToCustomer(transaction models.DetailTransactionD
 		}
 
 	} else { //switching
-		subject = "Switching sedang Diproses"
+		subject = "[MotionFunds] Switching sedang Diproses"
 		mailTemp = "index-switching.html"
 		mailParam["ProductOut"] = transaction.ProductName
 		mailParam["ProductIn"] = *transaction.ProductTujuan
@@ -3916,4 +3920,119 @@ func CheckTransactionCustomerProductVA(c echo.Context) error {
 	response.Status.MessageClient = "OK"
 	response.Data = res
 	return c.JSON(http.StatusOK, response)
+}
+
+func NotifTransactionVaBelumBayar(transactionKey string) {
+	var err error
+	var transaction models.DetailTransactionVaBelumBayar
+	_, err = models.AdminDetailTransactionVaBelumBayar(&transaction, transactionKey)
+	if err != nil {
+		log.Error("Failed get transaction: " + err.Error())
+		return
+	}
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	//save user_message
+	subject, body := SaveNotifAppTransaksiVaBelumBayar(transaction)
+	//send email ke customer
+	SentEmailCustomerTransaksiVaBelumBayar(transaction)
+	//push notif ke customer
+	lib.CreateNotifCustomerFromAdminByUserLoginKey(strIDUserLogin, subject, body, "TRANSACTION")
+}
+
+func SaveNotifAppTransaksiVaBelumBayar(transaction models.DetailTransactionVaBelumBayar) (string, string) {
+	var subject string
+	var body string
+
+	subject = "Segera Lakukan Pembayaran"
+	if *transaction.FlagNewSub == uint8(1) {
+		body = "Segera Lakukan Pembayaran Kamu agar Subscribe kamu dapat segera kami proses."
+	} else {
+		body = "Segera Lakukan Pembayaran  Kamu agar Top Up kamu dapat segera kami proses."
+	}
+
+	strIDUserLogin := strconv.FormatUint(lib.Profile.UserID, 10)
+	dateLayout := "2006-01-02 15:04:05"
+
+	paramsUserMessage := make(map[string]string)
+	paramsUserMessage["umessage_type"] = "245"
+	paramsUserMessage["umessage_recipient_key"] = strIDUserLogin
+	paramsUserMessage["umessage_receipt_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_read"] = "0"
+	paramsUserMessage["umessage_sent_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["flag_sent"] = "1"
+	paramsUserMessage["umessage_subject"] = subject
+	paramsUserMessage["umessage_body"] = body
+
+	paramsUserMessage["umessage_category"] = "248"
+	paramsUserMessage["flag_archieved"] = "0"
+	paramsUserMessage["archieved_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_status"] = "1"
+	paramsUserMessage["rec_created_date"] = time.Now().Format(dateLayout)
+	paramsUserMessage["rec_created_by"] = strIDUserLogin
+	_, err := models.CreateScUserMessage(paramsUserMessage)
+	if err != nil {
+		log.Error("Error create user message")
+	} else {
+		log.Error("Sukses insert user message")
+	}
+
+	return subject, body
+}
+
+func SentEmailCustomerTransaksiVaBelumBayar(transaction models.DetailTransactionVaBelumBayar) {
+	var mailTemp, subject string
+	mailParam := make(map[string]string)
+
+	mailParam["FileUrl"] = config.FileUrl + "/images/mail"
+	mailParam["Name"] = transaction.FullName
+	mailParam["Cif"] = *transaction.Cif
+	mailParam["Date"] = transaction.TransDate
+	mailParam["Time"] = transaction.TransTime
+	mailParam["PaymentMethod"] = "Mandiri Virtual Account"
+	mailParam["Day"] = transaction.LastDayPay
+	mailParam["LastDate"] = transaction.LastDatePay
+	mailParam["LastTime"] = transaction.LastTimePay
+	mailParam["NoVA"] = transaction.NoVa
+	ac0 := accounting.Accounting{Symbol: "", Precision: 0, Thousand: ".", Decimal: ","}
+
+	subject = "[MotionFunds] Menunggu Pembayaran Subscription melalui " + mailParam["PaymentMethod"] + " " + transaction.NoVa
+	mailTemp = "index-subscription-va-uncomplete.html"
+
+	mailParam["ProductName"] = transaction.ProductName
+	mailParam["Symbol"] = transaction.CurrencySymbol + " "
+	mailParam["TotalPembayaran"] = ac0.FormatMoneyDecimal(transaction.TotalPembayaran.Truncate(0))
+	mailParam["Amount"] = ac0.FormatMoneyDecimal(transaction.TransAmount.Truncate(0))
+	mailParam["Fee"] = ac0.FormatMoneyDecimal(transaction.Fee.Truncate(0))
+
+	t := template.New(mailTemp)
+
+	t, _ = t.ParseFiles(config.BasePath + "/mail/" + mailTemp)
+	var tpl bytes.Buffer
+	if err := t.Execute(&tpl, mailParam); err != nil {
+		log.Error("Failed send mail: " + err.Error())
+	} else {
+		result := tpl.String()
+
+		mailer := gomail.NewMessage()
+		mailer.SetHeader("From", config.EmailFrom)
+		mailer.SetHeader("To", transaction.UloginEmail)
+		mailer.SetHeader("Subject", subject)
+		mailer.SetBody("text/html", result)
+
+		dialer := gomail.NewDialer(
+			config.EmailSMTPHost,
+			int(config.EmailSMTPPort),
+			config.EmailFrom,
+			config.EmailFromPassword,
+		)
+		dialer.TLSConfig = &tls.Config{InsecureSkipVerify: true}
+
+		err = dialer.DialAndSend(mailer)
+		if err != nil {
+			log.Error("Failed send mail to: " + transaction.UloginEmail)
+			log.Error("Failed send mail: " + err.Error())
+		} else {
+			log.Println("Sukses email BO : " + transaction.UloginEmail)
+		}
+	}
 }

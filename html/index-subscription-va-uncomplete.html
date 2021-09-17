@@ -78,12 +78,12 @@
         </tr>
         <tr class="content">
             <td style="padding:10px;">
-                <h3>Ayo Segera Upload Bukti Transfer Kamu</h3>
+                <h3>Menunggu Pembayaran Subscription Kamu melalui {{.PaymentMethod}}</h3>
             </td>
         </tr>
         <tr style="text-align:center">
             <td>
-                <img src="{{.FileUrl}}/transaction-error.PNG" width="157"
+                <img src="{{.FileUrl}}/transaction-va-uncomplete.jpg" width="157"
                     class="mx-auto my-2 d-block">
             </td>
         </tr>
@@ -91,13 +91,64 @@
             <td style="padding:10px;">
                 <p style="text-align: justify">
                     Hai <b>{{.Name}}</b> <br />
-                    Mohon maaf, transaksi kamu belum dapat kami proses.
+                    Terima kasih telah melakukan transaksi Subscription:
                 </p>
             </td>
         </tr>
-        <tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    Pembayaran subscription kamu melalui {{.PaymentMethod}} ditunggu sampai dengan hari <b>{{.Day}}</b> tanggal <b>{{.LastDate}}</b> pukul <b>{{.LastTime}}</b> 
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
             <td style="padding:10px;">
                 <table style="margin:0;">
+                    <tr>
+                        <td>
+                            Total Pembayaran
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.TotalPembayaran}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            Metode Pembayaran
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.PaymentMethod}}
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            No. Virtual Account
+                        </td>
+                        <td>
+                            :
+                        </td>
+                        <td>
+                            {{.NoVA}}
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <table style="margin:0;">
+                    <tr>
+                        <td colspan="3">
+                            Rincian subscription :
+                        </td>
+                    </tr>
                     <tr>
                         <td>
                             Nama Lengkap
@@ -161,18 +212,18 @@
                             :
                         </td>
                         <td>
-                            {{.Symbol}}{{.Amount}}
+                            {{.Symbol}} {{.Amount}}
                         </td>
                     </tr>
                     <tr>
                         <td>
-                            Status
+                            Biaya Transaksi
                         </td>
                         <td>
                             :
                         </td>
                         <td>
-                            <b>Bukti transfer belum ada</b>
+                            {{.Symbol}}{{.Fee}}
                         </td>
                     </tr>
                 </table>
@@ -181,15 +232,122 @@
         <tr class="content">
             <td style="padding:10px;">
                 <p style="text-align: justify">
-                    Ayo segera upload bukti transfer kamu sebelum pukul 12:00 WIB untuk mendapatkan perhitungan NAB di
-                    hari yang sama.
+                    Kamu dapat melakukan pembayaran dengan metode pembayaran Mandiri Virtual Account dengan mengikuti langkah-langkah berikut :
+                </p>
+                <p style="text-align: justify">
+                    <b>ATM</b>:
+                <ol>
+                    <li>
+                        Pada ATM Mandiri, pilih menu <b>Bayar/Beli</b>.
+                    </li>
+                    <li>
+                        Pilih <b>Lainnya</b>.
+                    </li>
+                    <li>
+                        Pilih lagi <b>Lainnya</b>.
+                    </li>
+                    <li>
+                        Pilih <b>Multi Payment</b>.
+                    </li>
+                    <li>
+                        Masukkan <b>5 angka terkiri nomor Virtual Account</b>, lalu tekan Benar.
+                    </li>
+                    <li>
+                        Masukkan <b>Virtual Account</b>.
+                    </li>
+                    <li>
+                        Pada layar konfirmasi, pastikan tagihan Anda sudah sesuai.
+                    </li>
+                    <li>
+                        Jika sudah sesuai, tekan <b>1, lanjutkan dengan menekan <b>Ya</b>.
+                    </li>
+                    <li>
+                        Transaksi Selesai. Simpan Struk sebagai bukti pembayaran Anda.
+                    </li>
+                </ol>
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    <b>Internet Banking</b>:
+                <ol>
+                    <li>
+                        Masuk ke situs <b>https ://ib.bankmandiri.co.id.</b>
+                    </li>
+                    <li>
+                        Lakukan <b>log in</b> dengan akun <b>Mandiri Internet Banking</b> Anda.
+                    </li>
+                    <li>
+                        Klik menu <b>Bayar</b>.
+                    </li>
+                    <li>
+                        Klik <b>Multi Payment</b>.
+                    </li>
+                    <li>
+                        Pada kolom penyedia jasa pilih <b>Transferpay</b>.
+                    </li>
+                    <li>
+                        Masukan <b>Nomor Virtual Account</b> pada kolom Kode Bayar.
+                    </li>
+                    <li>
+                        Pada layar konfirmasi, pastikan tagihan Anda sudah sesuai.
+                    </li>
+                    <li>
+                        Jika sudah sesuai, <b>checklist</b> kotak tagihan dan klik <b>Lanjutkan</b>.
+                    </li>
+                    <li>
+                        Transaksi Selesai.
+                    </li>
+                </ol>
+                </p>
+            </td>
+        </tr>
+        <tr class="content">
+            <td style="padding:10px;">
+                <p style="text-align: justify">
+                    <b>Mandiri Online</b>:
+                <ol>
+                    <li>
+                        Login <b>Mandiri Online</b> dengan memasukkan <b>username</b> dan <b>password</b>
+                    </li>
+                    <li>
+                        Pilih menu <b>Pembayaran</b>
+                    </li>
+                    <li>
+                        Pilih menu <b>Multipayment</b>.
+                    </li>
+                    <li>
+                        Pilih penyedia jasa <b>Transferpay</b>
+                    </li>
+                    <li>
+                        Masukkan <b>Nomor Virtual Account</b>
+                    </li>
+                    <li>
+                        Setelah muncul tagihan, pilih Konfirmasi
+                    </li>
+                    <li>
+                        Masukkan <b>PIN / challange code token</b>
+                    </li>
+                    <li>
+                        Transaksi selesai, simpan bukti bayar anda
+                    </li>
+                </ol>
                 </p>
             </td>
         </tr>
         <tr>
             <td style="padding:10px;font-size: 15px;">
                 <p>
-                    Apabila ada pertanyaan silakan hubungi kami di :
+                    Apabila kamu memiliki transaksi pembayaran Mandiri Virtual Account yang belum diselesaikan yang ada sebelum transaksi ini, maka transaksi sebelumnya tersebut akan dibatalkan secara otomatis dan tergantikan dengan transaksi ini.
+                </p>
+            <td>
+        </tr>
+        <tr>
+            <td style="padding:10px;font-size: 15px;">
+                <p>
+                    Untuk pertanyaan lebih lanjut silakan hubungi kami di :
                 </p>
             <td>
         </tr>
@@ -280,7 +438,7 @@
         </tr>
         <tr class="footer">
             <td style="padding:10px;">
-                <p style="text-align: justify">
+                <p style="text-align: justify;">
                     Disclaimer : Investasi melalui reksa dana mengandung risiko. Sebelum memutuskan berinvestasi, calon
                     investor wajib membaca dan memahami prospektus. Kinerja masa lalu tidak menjamin / mencerminkan
                     indikasi kinerja di masa yang akan datang. Otoritas Jasa Keuangan tidak memberikan pernyataan

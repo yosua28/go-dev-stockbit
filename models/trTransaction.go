@@ -1415,3 +1415,107 @@ func TransactionProductCustomerVA(c *TrTransaction, productKey string, customerK
 
 	return http.StatusOK, nil
 }
+
+type DetailTransactionVaBelumBayar struct {
+	TransactionKey    uint64          `db:"transaction_key"           json:"transaction_key"`
+	TotalPembayaran   decimal.Decimal `db:"total_pembayaran"          json:"total_pembayaran"`
+	NoVa              string          `db:"no_va"                     json:"no_va"`
+	TransTypeKey      uint64          `db:"trans_type_key"            json:"trans_type_key"`
+	FullName          string          `db:"full_name"                 json:"full_name"`
+	Cif               *string         `db:"cif"                       json:"cif"`
+	TransDate         string          `db:"trans_date"                json:"trans_date"`
+	TransTime         string          `db:"trans_time"                json:"trans_time"`
+	LastDayPay        string          `db:"last_day_pay"              json:"last_day_pay"`
+	LastDatePay       string          `db:"last_date_pay"             json:"last_date_pay"`
+	LastTimePay       string          `db:"last_time_pay"             json:"last_time_pay"`
+	ProductName       string          `db:"product_name"              json:"product_name"`
+	CurrencySymbol    string          `db:"currency_symbol"           json:"currency_symbol"`
+	EntryMode         *uint64         `db:"entry_mode"                json:"entry_mode"`
+	TransAmount       decimal.Decimal `db:"trans_amount"              json:"trans_amount"`
+	Fee               decimal.Decimal `db:"fee"                       json:"fee"`
+	PaymentMethod     *uint64         `db:"payment_method"            json:"payment_method"`
+	PaymentMethodName *string         `db:"payment_method_name"       json:"payment_method_name"`
+	Sales             *string         `db:"sales"                     json:"sales"`
+	SalesEmail        *string         `db:"sales_email"               json:"sales_email"`
+	UserLoginKey      string          `db:"user_login_key"            json:"user_login_key"`
+	UloginEmail       string          `db:"ulogin_email"              json:"ulogin_email"`
+	FlagNewSub        *uint8          `db:"flag_newsub"               json:"flag_newsub"`
+}
+
+func AdminDetailTransactionVaBelumBayar(c *DetailTransactionVaBelumBayar, tansactionKey string) (int, error) {
+	query := `SELECT 
+				t.transaction_key,
+				ts.settle_nominal AS total_pembayaran,
+				ts.client_subaccount_no AS no_va,
+				t.flag_newsub,
+				t.trans_type_key, 
+				c.full_name AS full_name,
+				c.unit_holder_idno AS cif,
+				DATE_FORMAT(t.trans_date, '%d %M %Y') AS trans_date,
+				CONCAT(DATE_FORMAT(t.trans_date, '%H:%i'), " WIB") AS trans_time,
+				(CASE DAYOFWEEK(DATE_ADD(DATE_ADD(t.trans_date, INTERVAL 23 HOUR), INTERVAL 50 MINUTE))
+					WHEN 1 THEN 'Minggu'
+					WHEN 2 THEN 'Senin'
+					WHEN 3 THEN 'Selasa'
+					WHEN 4 THEN 'Rabu'
+					WHEN 5 THEN 'Kamis'
+					WHEN 6 THEN 'Jumat'
+					WHEN 7 THEN 'Sabtu'
+				END) AS last_day_pay,
+				CONCAT(
+					DAY(DATE_ADD(DATE_ADD(t.trans_date, INTERVAL 23 HOUR), INTERVAL 50 MINUTE)),
+				" ",
+					CASE MONTH(DATE_ADD(DATE_ADD(t.trans_date, INTERVAL 23 HOUR), INTERVAL 50 MINUTE)) 
+					WHEN 1 THEN 'Januari' 
+					WHEN 2 THEN 'Februari' 
+					WHEN 3 THEN 'Maret' 
+					WHEN 4 THEN 'April' 
+					WHEN 5 THEN 'Mei' 
+					WHEN 6 THEN 'Juni' 
+					WHEN 7 THEN 'Juli' 
+					WHEN 8 THEN 'Agustus' 
+					WHEN 9 THEN 'September'
+					WHEN 10 THEN 'Oktober' 
+					WHEN 11 THEN 'November' 
+					WHEN 12 THEN 'Desember' 
+				END, 
+				" ",
+				YEAR(DATE_ADD(DATE_ADD(t.trans_date, INTERVAL 23 HOUR), INTERVAL 50 MINUTE))
+				) AS last_date_pay,
+				CONCAT(
+				DATE_FORMAT(DATE_ADD(DATE_ADD(t.trans_date, INTERVAL 23 HOUR), INTERVAL 50 MINUTE), '%H:%i'), 
+				" WIB"
+				) AS last_time_pay,
+				p.product_name_alt AS product_name,
+				cu.symbol AS currency_symbol,
+				t.entry_mode,
+				t.trans_amount,
+				(t.trans_fee_amount + t.charges_fee_amount + t.services_fee_amount) AS fee,
+				t.payment_method,
+				mp.lkp_name AS payment_method_name,
+				CONCAT(a.agent_code, " - ", a.agent_name) AS sales,
+				a.agent_email AS sales_email,
+				ul.user_login_key,  
+				ul.ulogin_email 
+			FROM tr_transaction AS t
+			INNER JOIN tr_transaction_settlement AS ts ON ts.transaction_key = t.transaction_key
+			INNER JOIN ms_customer AS c ON t.customer_key = c.customer_key
+			LEFT JOIN ms_agent AS a ON a.agent_key = c.openacc_agent_key
+			INNER JOIN ms_product AS p ON p.product_key = t.product_key
+			LEFT JOIN ms_currency AS cu ON cu.currency_key = p.currency_key 
+			LEFT JOIN gen_lookup AS mp ON mp.lookup_key = t.payment_method 
+			LEFT JOIN tr_transaction AS t_ch ON t_ch.parent_key = t.transaction_key
+			INNER JOIN sc_user_login AS ul ON ul.customer_key = t.customer_key 
+			WHERE t.rec_status = 1 AND ts.rec_status = 1 
+			AND t.transaction_key = '` + tansactionKey + `'`
+
+	// Main query
+	log.Println(query)
+	err := db.Db.Get(c, query)
+	if err != nil {
+		log.Println(err)
+		return http.StatusBadGateway, err
+	}
+
+	return http.StatusOK, nil
+}
