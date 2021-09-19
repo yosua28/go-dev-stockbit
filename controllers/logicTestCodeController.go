@@ -1,16 +1,14 @@
 package controllers
 
 import (
-	"log"
 	"sort"
 	"strings"
 )
 
-func logisTest() []interface{} {
+func LogisTest(arrAnagram []string) []interface{} {
 
 	var result []interface{}
 
-	arrAnagram := []string{"kita", "atik", "tika", "aku", "kia", "makan", "kua"}
 	list := make(map[string][]string)
 	for _, word := range arrAnagram {
 		key := sortStr(word)
@@ -24,7 +22,6 @@ func logisTest() []interface{} {
 		}
 		result = append(result, data)
 	}
-	log.Println(result)
 	return result
 }
 

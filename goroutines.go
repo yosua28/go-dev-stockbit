@@ -6,13 +6,31 @@ import (
 	"log"
 	"net/http"
 	"net/http/httptest"
-	"testing"
 
 	"github.com/gin-gonic/gin"
 )
 
-func TestSearchMovies(t *testing.T) {
-	// Switch to test mode so you don't get such noisy output
+func f(from string) {
+	for i := 0; i < 3; i++ {
+		fmt.Println(from, ":", i)
+	}
+}
+
+func main() {
+
+	searchMoviesTest()
+	detailMoviesTest()
+
+	str := "test(oke stoctbit)"
+	res := controllers.FindFirstStringInBracket(str)
+	fmt.Println(res)
+
+	arrAnagram := []string{"kita", "atik", "tika", "aku", "kia", "makan", "kua"}
+	data := controllers.LogisTest(arrAnagram)
+	fmt.Println(data)
+}
+
+func searchMoviesTest() {
 	gin.SetMode(gin.TestMode)
 
 	// Setup your router, just like you did in your main function, and
@@ -29,7 +47,7 @@ func TestSearchMovies(t *testing.T) {
 	// block!
 	req, err := http.NewRequest(http.MethodGet, "/search-movies/Batmen/2", nil)
 	if err != nil {
-		t.Fatalf("Couldn't create request: %v\n", err)
+		fmt.Println("Couldn't create request: %v\n", err)
 	}
 
 	log.Println(req)
@@ -43,12 +61,13 @@ func TestSearchMovies(t *testing.T) {
 
 	// Check to see if the response was what you expected
 	if w.Code == http.StatusOK {
-		t.Logf("Expected to get status %d is same ast %d\n", http.StatusOK, w.Code)
+		fmt.Println("Expected to get status %d is same ast %d\n", http.StatusOK, w.Code)
 	} else {
-		t.Fatalf("Expected to get status %d but instead got %d\n", http.StatusOK, w.Code)
+		fmt.Println("Expected to get status %d but instead got %d\n", http.StatusOK, w.Code)
 	}
 }
-func TestDetailMovies(t *testing.T) {
+
+func detailMoviesTest() {
 	// Switch to test mode so you don't get such noisy output
 	gin.SetMode(gin.TestMode)
 
@@ -66,7 +85,7 @@ func TestDetailMovies(t *testing.T) {
 	// block!
 	req, err := http.NewRequest(http.MethodGet, "/detail-movies/tt4853102", nil)
 	if err != nil {
-		t.Fatalf("Couldn't create request: %v\n", err)
+		fmt.Println("Couldn't create request: %v\n", err)
 	}
 
 	log.Println(req)
@@ -80,18 +99,8 @@ func TestDetailMovies(t *testing.T) {
 
 	// Check to see if the response was what you expected
 	if w.Code == http.StatusOK {
-		t.Logf("Expected to get status %d is same ast %d\n", http.StatusOK, w.Code)
+		fmt.Println("Expected to get status %d is same ast %d\n", http.StatusOK, w.Code)
 	} else {
-		t.Fatalf("Expected to get status %d but instead got %d\n", http.StatusOK, w.Code)
+		fmt.Println("Expected to get status %d but instead got %d\n", http.StatusOK, w.Code)
 	}
-}
-func TestRefactorCode(t *testing.T) {
-	str := "test(oke stoctbit)"
-	res := controllers.FindFirstStringInBracket(str)
-	fmt.Println(res)
-}
-func TestLogicTest(t *testing.T) {
-	arrAnagram := []string{"kita", "atik", "tika", "aku", "kia", "makan", "kua"}
-	res := controllers.LogisTest(arrAnagram)
-	fmt.Println(res)
 }

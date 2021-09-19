@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-func findFirstStringInBracket(str string) string {
+func FindFirstStringInBracket(str string) string {
 	ret := ""
 	if len(str) > 0 {
 		indexFirstBracketFound := strings.Index(str, "(")
