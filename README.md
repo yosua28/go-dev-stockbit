@@ -2,6 +2,7 @@
     - file --> controller/query.go
 
 2. Write a microservice
+
     a. REST JSON HTTP
         - file --> controller/httpMovieController.go
 

@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/labstack/echo"
-	"github.com/labstack/gommon/log"
+	log "github.com/sirupsen/logrus"
 )
 
 func SearchMovies(c echo.Context) error {
@@ -21,7 +21,7 @@ func SearchMovies(c echo.Context) error {
 	pagination := c.Param("pagination")
 	urlparam := "&s=" + searchword + "&page" + pagination
 
-	status, res, _ := requestToOmdbapi("SEARCH", urlparam)
+	status, res, _ := requestToOmdbapi(config.API_SEARCH, urlparam)
 
 	var dataBody map[string]interface{}
 	_ = json.Unmarshal([]byte(res), &dataBody)
@@ -43,7 +43,7 @@ func DetailMovies(c echo.Context) error {
 	imdbid := c.Param("imdbid")
 	urlparam := "&i=" + imdbid
 
-	status, res, _ := requestToOmdbapi("DETAIL", urlparam)
+	status, res, _ := requestToOmdbapi(config.API_DETAIL, urlparam)
 	var dataBody map[string]interface{}
 	_ = json.Unmarshal([]byte(res), &dataBody)
 	if status != http.StatusOK {
