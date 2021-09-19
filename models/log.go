@@ -6,8 +6,8 @@ import (
 	"net/http"
 )
 
-func CreateEndpointAuditTrail(params map[string]string) (int, error) {
-	query := "INSERT INTO endpoint_audit_trail"
+func CreateLog(params map[string]string) (int, error) {
+	query := "INSERT INTO log"
 	// Get params
 	var fields, values string
 	var bindvars []interface{}

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"api/config"
 	"context"
 	"net/http"
 	"os"
@@ -23,11 +22,6 @@ func main() {
 			e.Logger.Info("Shutting down the server")
 		}
 	}()
-
-	//cron running
-	if config.Envi == "PROD" {
-		scheduler()
-	}
 
 	// Wait for interrupt signal to gracefully shutdown the server
 	quit := make(chan os.Signal)
