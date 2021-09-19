@@ -2,12 +2,7 @@
     - file --> controller/query.go
 
 2. Write a microservice
-
-    a. REST JSON HTTP
-        - file --> controller/httpMovieController.go
-
-    b. GRPC
-        - file --> controller/grpcMovieController.go
+    - controller/movieController.go
 
 3. Refactor Code
     - file --> controller/refactorCodeController.go

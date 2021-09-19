@@ -18,9 +18,23 @@ import (
 func SearchMovies(c echo.Context) error {
 
 	searchword := c.Param("searchword")
+	if searchword == "" {
+		log.Error("Missing required parameter: searchword")
+		return lib.CustomError(http.StatusBadRequest, "searchword can not be blank", "searchword can not be blank")
+	}
 	pagination := c.Param("pagination")
-	urlparam := "&s=" + searchword + "&page" + pagination
+	if pagination == "" {
+		log.Error("Missing required parameter: pagination")
+		return lib.CustomError(http.StatusBadRequest, "pagination can not be blank", "pagination can not be blank")
+	} else {
+		n, err := strconv.ParseUint(pagination, 10, 64)
+		if err != nil || n == 0 {
+			log.Error("Wrong input for parameter: pagination")
+			return lib.CustomError(http.StatusBadRequest, "Wrong input for parameter: pagination", "Wrong input for parameter: pagination")
+		}
+	}
 
+	urlparam := "&s=" + searchword + "&page" + pagination
 	status, res, _ := requestToOmdbapi(config.API_SEARCH, urlparam)
 
 	var dataBody map[string]interface{}
@@ -63,7 +77,9 @@ func requestToOmdbapi(apiname string, param string) (int, string, error) {
 	url := config.SandBox + "?apikey=" + config.OMDBKey + param
 	req, _ := http.NewRequest("GET", url, nil)
 	res, err := http.DefaultClient.Do(req)
-	defer res.Body.Close()
+	if err == nil {
+		defer res.Body.Close()
+	}
 	body, _ := ioutil.ReadAll(res.Body)
 
 	//CREATE LOG
@@ -77,10 +93,7 @@ func requestToOmdbapi(apiname string, param string) (int, string, error) {
 	paramLog["created_date"] = time.Now().Format(dateLayout)
 	_, err = models.CreateLog(paramLog)
 	if err != nil {
-		log.Error("Error create log endpoint motion pay")
-		log.Error(err.Error())
+		log.Error("Error create log" + err.Error())
 	}
-	// fmt.Println(res)
-	// fmt.Println(string(body))
 	return res.StatusCode, string(body), err
 }
