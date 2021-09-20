@@ -55,6 +55,11 @@ func SearchMovies(c echo.Context) error {
 func DetailMovies(c echo.Context) error {
 
 	imdbid := c.Param("imdbid")
+
+	if imdbid == "" {
+		log.Error("Missing required parameter: imdbid")
+		return lib.CustomError(http.StatusBadRequest, "imdbid can not be blank", "imdbid can not be blank")
+	}
 	urlparam := "&i=" + imdbid
 
 	status, res, _ := requestToOmdbapi(config.API_DETAIL, urlparam)

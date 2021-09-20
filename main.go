@@ -33,4 +33,5 @@ func main() {
 	} else {
 		e.Logger.Info("Gracefully shutdown")
 	}
+	Main()
 }
