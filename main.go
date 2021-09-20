@@ -16,6 +16,8 @@ func main() {
 		Addr: "0.0.0.0:8000",
 	}
 
+	go Goroutines()
+
 	// Start server
 	go func() {
 		if err := e.StartServer(s); err != nil {
@@ -33,5 +35,4 @@ func main() {
 	} else {
 		e.Logger.Info("Gracefully shutdown")
 	}
-	Main()
 }
